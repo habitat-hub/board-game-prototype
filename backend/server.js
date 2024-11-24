@@ -1,15 +1,17 @@
 const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-
+const cors = require("cors"); // corsをインポート
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+const PORT = 8080;
 
-io.on("connection", (socket) => {
-  console.log("a user connected");
-});
+// プロトタイプルートをインポート
+const prototypeRoutes = require("./routes/prototype");
 
-server.listen(8080, () => {
-  console.log("listening on *:8080");
+// CORSを有効にする
+app.use(cors());
+
+// ルートを使用
+app.use("/api/prototypes", prototypeRoutes);
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
