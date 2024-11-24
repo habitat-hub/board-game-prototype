@@ -1,5 +1,5 @@
-import React from "react";
-import PrototypeList from "../components/PrototypeList";
+import PrototypeList from '@/components/PrototypeList';
+import React from 'react';
 
 const PrototypesPage: React.FC = () => {
   return (
