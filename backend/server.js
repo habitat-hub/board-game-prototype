@@ -9,6 +9,9 @@ const prototypeRoutes = require("./routes/prototype");
 // CORSを有効にする
 app.use(cors());
 
+// JSONボディのパースを有効にする
+app.use(express.json());
+
 // ルートを使用
 app.use("/api/prototypes", prototypeRoutes);
 

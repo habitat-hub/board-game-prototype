@@ -10,4 +10,14 @@ router.get("/", (req, res) => {
   res.json(prototypes);
 });
 
+router.post("/", (req, res) => {
+  const { name } = req.body;
+  if (!name) {
+    return res.status(400).json({ error: "プロトタイプ名が必要です" });
+  }
+  const newPrototype = { id: prototypes.length + 1, name };
+  prototypes.push(newPrototype);
+  res.status(201).json(newPrototype);
+});
+
 module.exports = router;

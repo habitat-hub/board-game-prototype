@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 interface Prototype {
   id: number;
@@ -23,6 +24,14 @@ const PrototypeList: React.FC = () => {
       <h1 className="text-2xl font-bold mb-4 text-center">
         ボードゲームプロトタイプ一覧
       </h1>
+      <div className="mb-4 text-center">
+        <Link
+          href="/prototypes/create"
+          className="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+        >
+          新規作成
+        </Link>
+      </div>
       <div className="shadow-lg rounded-lg overflow-hidden">
         <ul className="divide-y divide-gray-200">
           {prototypes.map((prototype) => (
