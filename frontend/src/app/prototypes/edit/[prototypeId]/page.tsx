@@ -11,6 +11,8 @@ import { Prototype } from '@/features/prototype/type';
 const EditPrototypePage: React.FC = () => {
   const { prototypeId } = useParams();
   const [prototype, setPrototype] = useState<Prototype | null>(null);
+  const [isCreationViewOpen, setIsCreationViewOpen] = useState(true);
+  const [isPropertyViewOpen, setIsPropertyViewOpen] = useState(true);
 
   useEffect(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -26,9 +28,41 @@ const EditPrototypePage: React.FC = () => {
 
   return (
     <div className="flex h-screen">
-      <ComponentCreationView prototype={prototype} />
-      <ComponentMainView />
-      <ComponentPropertyView />
+      <div
+        className={`transition-width duration-300 ${
+          isCreationViewOpen ? 'w-1/6' : 'w-10'
+        }`}
+      >
+        <button
+          onClick={() => setIsCreationViewOpen(!isCreationViewOpen)}
+          className="bg-blue-500 text-white p-2"
+        >
+          {isCreationViewOpen ? '＜' : '＞'}
+        </button>
+        {isCreationViewOpen && <ComponentCreationView prototype={prototype} />}
+      </div>
+      <div
+        className={`flex-1 transition-width duration-300 ${
+          isCreationViewOpen && isPropertyViewOpen ? 'w-1/2' : 'w-full'
+        }`}
+      >
+        <ComponentMainView />
+      </div>
+      <div
+        className={`transition-width duration-300 ${
+          isPropertyViewOpen ? 'w-1/6' : 'w-10'
+        }`}
+      >
+        <div className="flex justify-end">
+          <button
+            onClick={() => setIsPropertyViewOpen(!isPropertyViewOpen)}
+            className="bg-blue-500 text-white p-2"
+          >
+            {isPropertyViewOpen ? '＞' : '＜'}
+          </button>
+        </div>
+        {isPropertyViewOpen && <ComponentPropertyView />}
+      </div>
     </div>
   );
 };
