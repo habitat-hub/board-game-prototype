@@ -1,18 +1,23 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
-import ComponentCreationView from '@/features/prototype/components/ComponentCreationView';
-import ComponentMainView from '@/features/prototype/components/ComponentMainView';
-import ComponentPropertyView from '@/features/prototype/components/ComponentPropertyView';
+import PartCreationView from '@/features/prototype/components/PartCreationView';
+import PartMainView from '@/features/prototype/components/PartMainView';
+import PartPropertyView from '@/features/prototype/components/PartPropertyView';
 import { useParams } from 'next/navigation';
-import { Prototype } from '@/features/prototype/type';
+import { Prototype, Part } from '@/features/prototype/type';
+import { io } from 'socket.io-client';
+
+const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
 const EditPrototypePage: React.FC = () => {
   const { prototypeId } = useParams();
   const [prototype, setPrototype] = useState<Prototype | null>(null);
+  const [parts, setParts] = useState<Part[]>([]);
   const [isCreationViewOpen, setIsCreationViewOpen] = useState(true);
   const [isPropertyViewOpen, setIsPropertyViewOpen] = useState(true);
+  const mainViewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -21,6 +26,24 @@ const EditPrototypePage: React.FC = () => {
       .then((data) => setPrototype(data))
       .catch((error) => console.error('Error fetching prototypes:', error));
   }, [prototypeId]);
+
+  useEffect(() => {
+    socket.on('UPDATE_PARTS', (parts) => {
+      setParts(parts);
+    });
+
+    return () => {
+      socket.off('UPDATE_PARTS');
+    };
+  }, []);
+
+  const handleAddPart = (part: Part) => {
+    socket.emit('ADD_PART', part);
+  };
+
+  const handleMovePart = (id: number, position: { x: number; y: number }) => {
+    socket.emit('MOVE_PART', { id, position });
+  };
 
   if (!prototype) {
     return <div>Loading...</div>;
@@ -39,14 +62,21 @@ const EditPrototypePage: React.FC = () => {
         >
           {isCreationViewOpen ? '＜' : '＞'}
         </button>
-        {isCreationViewOpen && <ComponentCreationView prototype={prototype} />}
+        {isCreationViewOpen && (
+          <PartCreationView
+            prototype={prototype}
+            onAddPart={handleAddPart}
+            mainViewRef={mainViewRef}
+          />
+        )}
       </div>
       <div
+        ref={mainViewRef}
         className={`flex-1 transition-width duration-300 ${
           isCreationViewOpen && isPropertyViewOpen ? 'w-1/2' : 'w-full'
         }`}
       >
-        <ComponentMainView />
+        <PartMainView parts={parts} onMovePart={handleMovePart} />
       </div>
       <div
         className={`transition-width duration-300 ${
@@ -61,7 +91,7 @@ const EditPrototypePage: React.FC = () => {
             {isPropertyViewOpen ? '＞' : '＜'}
           </button>
         </div>
-        {isPropertyViewOpen && <ComponentPropertyView />}
+        {isPropertyViewOpen && <PartPropertyView />}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const ComponentPropertyView: React.FC = () => {
+const PartPropertyView: React.FC = () => {
   const [selectedComponent, setSelectedComponent] = useState<string | null>(
     null
   );
@@ -12,7 +12,7 @@ const ComponentPropertyView: React.FC = () => {
   };
 
   return (
-    <div className="p-4 border-l">
+    <div className="p-4">
       <h2 className="text-lg font-bold mb-2">プロパティビュー</h2>
       {selectedComponent ? (
         <div>
@@ -36,4 +36,4 @@ const ComponentPropertyView: React.FC = () => {
   );
 };
 
-export default ComponentPropertyView;
+export default PartPropertyView;
