@@ -1,4 +1,4 @@
-import CreatePrototypeForm from '@/features/components/prototype/CreatePrototypeFrom';
+import CreatePrototypeForm from '@/features/prototype/components/CreatePrototypeFrom';
 import React from 'react';
 
 const CreatePrototypePage: React.FC = () => {

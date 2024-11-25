@@ -2,11 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-
-interface Prototype {
-  id: number;
-  name: string;
-}
+import { Prototype } from '../type';
 
 const PrototypeList: React.FC = () => {
   const [prototypes, setPrototypes] = useState<Prototype[]>([]);
@@ -37,9 +33,15 @@ const PrototypeList: React.FC = () => {
           {prototypes.map((prototype) => (
             <li
               key={prototype.id}
-              className="hover:bg-gray-100 transition-colors duration-200"
+              className="hover:bg-gray-100 transition-colors duration-200 flex justify-between items-center p-4"
             >
-              <div className="p-4">{prototype.name}</div>
+              <span>{prototype.name}</span>
+              <Link
+                href={`prototypes/edit/${prototype.id}`}
+                className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition-colors"
+              >
+                編集
+              </Link>
             </li>
           ))}
         </ul>

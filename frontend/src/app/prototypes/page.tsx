@@ -1,4 +1,4 @@
-import PrototypeList from '@/components/PrototypeList';
+import PrototypeList from '@/features/prototype/components/PrototypeList';
 import React from 'react';
 
 const PrototypesPage: React.FC = () => {
