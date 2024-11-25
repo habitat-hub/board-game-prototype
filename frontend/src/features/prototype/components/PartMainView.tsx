@@ -37,7 +37,7 @@ const PartMainView: React.FC<PartMainViewProps> = ({ parts, onMovePart }) => {
         </Link>
       </div>
       <div
-        className="border p-4 relative flex-1"
+        className="border border-gray-300 p-4 relative flex-1"
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
