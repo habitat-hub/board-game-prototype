@@ -13,7 +13,7 @@ const PART_DEFAULT_CONFIG = {
   },
   TOKEN: {
     id: 'token',
-    name: 'トークン',
+    name: 'token',
     width: 50,
     height: 50,
     description: '',

@@ -57,11 +57,11 @@ const PartPropertyView: React.FC<PartPropertyViewProps> = ({
       </div>
       <div className="mb-4">
         <label className="block mb-1">説明</label>
-        <input
-          type="text"
+        <textarea
           value={part.description}
           onChange={(e) => handlePropertyChange('description', e.target.value)}
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded h-24 resize-none"
+          rows={4}
         />
       </div>
       <div className="mb-4">
