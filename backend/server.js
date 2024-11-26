@@ -4,11 +4,11 @@ const cors = require('cors');
 const { Server } = require('socket.io');
 
 const app = express();
-const server = http.createServer(app); // HTTPサーバーを作成
+const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: '*', // ここで許可するオリジンを指定します。'*'はすべてのオリジンを許可します。
-    methods: ['GET', 'POST'], // 許可するHTTPメソッドを指定します。
+    origin: '*',
+    methods: ['GET', 'POST'],
   },
 });
 const PORT = 8080;
@@ -31,20 +31,29 @@ let parts = [];
 io.on('connection', (socket) => {
   console.log('a user connected');
 
-  // クライアントに現在のコンポーネントを送信
+  // クライアントに現在のパーツを送信
   socket.emit('UPDATE_PARTS', parts);
 
-  // 新しいコンポーネントの追加
+  // 新しいパーツの追加
   socket.on('ADD_PART', (part) => {
     parts.push(part);
     io.emit('UPDATE_PARTS', parts);
   });
 
-  // コンポーネントの移動
+  // パーツの移動
   socket.on('MOVE_PART', ({ id, position }) => {
     const part = parts.find((c) => c.id === id);
     if (part) {
       part.position = position;
+      io.emit('UPDATE_PARTS', parts);
+    }
+  });
+
+  // パーツの更新
+  socket.on('UPDATE_PART', (updatedPart) => {
+    const index = parts.findIndex((part) => part.id === updatedPart.id);
+    if (index !== -1) {
+      parts[index] = updatedPart;
       io.emit('UPDATE_PARTS', parts);
     }
   });

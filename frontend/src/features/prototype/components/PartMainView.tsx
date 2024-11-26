@@ -5,9 +5,14 @@ import { Part } from '../type';
 interface PartMainViewProps {
   parts: Part[];
   onMovePart: (id: number, position: { x: number; y: number }) => void;
+  onSelectPart: (part: Part) => void;
 }
 
-const PartMainView: React.FC<PartMainViewProps> = ({ parts, onMovePart }) => {
+const PartMainView: React.FC<PartMainViewProps> = ({
+  parts,
+  onMovePart,
+  onSelectPart,
+}) => {
   const handleDragStart = (e: React.DragEvent, partId: number) => {
     e.dataTransfer.setData('partId', partId.toString());
   };
@@ -46,6 +51,7 @@ const PartMainView: React.FC<PartMainViewProps> = ({ parts, onMovePart }) => {
             key={part.id}
             draggable
             onDragStart={(e) => handleDragStart(e, part.id)}
+            onClick={() => onSelectPart(part)}
             className="absolute cursor-move bg-white border rounded p-2 shadow-sm text-xs"
             style={{
               left: part.position.x,

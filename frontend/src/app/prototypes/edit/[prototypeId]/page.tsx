@@ -15,6 +15,7 @@ const EditPrototypePage: React.FC = () => {
   const { prototypeId } = useParams();
   const [prototype, setPrototype] = useState<Prototype | null>(null);
   const [parts, setParts] = useState<Part[]>([]);
+  const [selectedPart, setSelectedPart] = useState<Part | null>(null);
   const [isCreationViewOpen, setIsCreationViewOpen] = useState(true);
   const [isPropertyViewOpen, setIsPropertyViewOpen] = useState(true);
   const mainViewRef = useRef<HTMLDivElement>(null);
@@ -43,6 +44,17 @@ const EditPrototypePage: React.FC = () => {
 
   const handleMovePart = (id: number, position: { x: number; y: number }) => {
     socket.emit('MOVE_PART', { id, position });
+  };
+
+  const handleSelectPart = (part: Part) => {
+    setSelectedPart(part);
+  };
+
+  const handleUpdatePart = (updatedPart: Part) => {
+    setParts((prevParts) =>
+      prevParts.map((part) => (part.id === updatedPart.id ? updatedPart : part))
+    );
+    socket.emit('UPDATE_PART', updatedPart);
   };
 
   if (!prototype) {
@@ -76,7 +88,11 @@ const EditPrototypePage: React.FC = () => {
           isCreationViewOpen && isPropertyViewOpen ? 'w-1/2' : 'w-full'
         }`}
       >
-        <PartMainView parts={parts} onMovePart={handleMovePart} />
+        <PartMainView
+          parts={parts}
+          onMovePart={handleMovePart}
+          onSelectPart={handleSelectPart}
+        />
       </div>
       <div
         className={`transition-width duration-300 ${
@@ -91,7 +107,12 @@ const EditPrototypePage: React.FC = () => {
             {isPropertyViewOpen ? '＞' : '＜'}
           </button>
         </div>
-        {isPropertyViewOpen && <PartPropertyView />}
+        {isPropertyViewOpen && (
+          <PartPropertyView
+            selectedPart={selectedPart}
+            onUpdatePart={handleUpdatePart}
+          />
+        )}
       </div>
     </div>
   );
