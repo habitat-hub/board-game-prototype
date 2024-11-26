@@ -7,4 +7,6 @@ export interface Part {
   id: number;
   name: string;
   position: { x: number; y: number };
+  width: number;
+  height: number;
 }
