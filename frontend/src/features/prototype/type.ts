@@ -6,6 +6,8 @@ export interface Prototype {
 export interface Part {
   id: number;
   name: string;
+  description: string;
+  color: string;
   position: { x: number; y: number };
   width: number;
   height: number;

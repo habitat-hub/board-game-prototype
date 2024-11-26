@@ -52,12 +52,13 @@ const PartMainView: React.FC<PartMainViewProps> = ({
             draggable
             onDragStart={(e) => handleDragStart(e, part.id)}
             onClick={() => onSelectPart(part)}
-            className="absolute cursor-move bg-white border rounded p-2 shadow-sm text-xs"
+            className="absolute cursor-move border rounded p-2 shadow-sm text-xs"
             style={{
               left: part.position.x,
               top: part.position.y,
               width: part.width,
               height: part.height,
+              backgroundColor: part.color || 'white',
             }}
           >
             {part.name}

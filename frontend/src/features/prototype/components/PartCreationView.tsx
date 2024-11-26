@@ -8,24 +8,32 @@ const PART_DEFAULT_CONFIG = {
     name: 'カード',
     width: 100,
     height: 150,
+    description: '',
+    color: '#FFFFFF',
   },
   TOKEN: {
     id: 'token',
     name: 'トークン',
     width: 50,
     height: 50,
+    description: '',
+    color: '#FFFFFF',
   },
   HAND: {
     id: 'hand',
     name: '手札',
     width: 400,
     height: 150,
+    description: '',
+    color: '#FFFFFF',
   },
   DECK: {
     id: 'deck',
     name: '山札',
     width: 150,
     height: 150,
+    description: '',
+    color: '#FFFFFF',
   },
 };
 
@@ -66,6 +74,8 @@ const PartCreationView: React.FC<PartCreationViewProps> = ({
         position: { x: centerX, y: centerY },
         width: partConfig.width,
         height: partConfig.height,
+        description: partConfig.description,
+        color: partConfig.color,
       };
       onAddPart(newPart);
     }

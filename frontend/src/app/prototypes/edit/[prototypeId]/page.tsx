@@ -48,6 +48,9 @@ const EditPrototypePage: React.FC = () => {
 
   const handleSelectPart = (part: Part) => {
     setSelectedPart(part);
+    if (!isPropertyViewOpen) {
+      setIsPropertyViewOpen(true);
+    }
   };
 
   const handleUpdatePart = (updatedPart: Part) => {
