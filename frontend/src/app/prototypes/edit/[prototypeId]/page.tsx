@@ -60,6 +60,19 @@ const EditPrototypePage: React.FC = () => {
     socket.emit('UPDATE_PART', updatedPart);
   };
 
+  const handleDuplicatePart = (part: Part) => {
+    const newPart = {
+      ...part,
+      id: Date.now(),
+      position: {
+        x: part.position.x + 10,
+        y: part.position.y + 10,
+      },
+    };
+    setParts((prevParts) => [...prevParts, newPart]);
+    socket.emit('ADD_PART', newPart);
+  };
+
   if (!prototype) {
     return <div>Loading...</div>;
   }
@@ -114,6 +127,7 @@ const EditPrototypePage: React.FC = () => {
           <PartPropertyView
             selectedPart={selectedPart}
             onUpdatePart={handleUpdatePart}
+            onDuplicatePart={handleDuplicatePart}
           />
         )}
       </div>

@@ -4,6 +4,7 @@ import { Part } from '../type';
 interface PartPropertyViewProps {
   selectedPart: Part | null;
   onUpdatePart: (updatedPart: Part) => void;
+  onDuplicatePart: (part: Part) => void;
 }
 
 const colors = [
@@ -24,6 +25,7 @@ const colors = [
 const PartPropertyView: React.FC<PartPropertyViewProps> = ({
   selectedPart,
   onUpdatePart,
+  onDuplicatePart,
 }) => {
   const [part, setPart] = useState<Part | null>(selectedPart);
 
@@ -46,6 +48,12 @@ const PartPropertyView: React.FC<PartPropertyViewProps> = ({
   return (
     <div className="p-4">
       <h2 className="text-lg font-bold mb-2">プロパティビュー</h2>
+      <button
+        onClick={() => onDuplicatePart(part)}
+        className="bg-blue-500 text-white p-2 rounded mb-4"
+      >
+        複製
+      </button>
       <div className="mb-4">
         <label className="block mb-1">名前</label>
         <input
