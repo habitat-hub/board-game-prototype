@@ -78,7 +78,7 @@ const EditPrototypePage: React.FC = () => {
     );
   };
 
-  const handleMoveCardOnHand = (partId: number, x: number, y: number) => {
+  const handleMoveCardRelateToHand = (partId: number, x: number, y: number) => {
     const droppedPart = parts.find((part) => part.id === partId);
     if (droppedPart?.type !== PART_TYPE.CARD) return;
 
@@ -183,7 +183,7 @@ const EditPrototypePage: React.FC = () => {
           parts={parts}
           onMovePart={handleMovePart}
           onSelectPart={handleSelectPart}
-          onMoveCardOnHand={handleMoveCardOnHand}
+          onMoveCardOnHand={handleMoveCardRelateToHand}
         />
       </div>
       <div
