@@ -1,6 +1,7 @@
 export interface Prototype {
   id: number;
   name: string;
+  playerCount: number;
 }
 
 export type AllPart = Part | Card | Hand | Deck;

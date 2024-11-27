@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 
 let prototypes = [
-  { id: 1, name: 'プロトタイプ1' },
-  { id: 2, name: 'プロトタイプ2' },
+  { id: 1, name: 'プロトタイプ1', playerCount: 4 },
+  { id: 2, name: 'プロトタイプ2', playerCount: 4 },
 ];
 
 // プロトタイプ一覧取得
@@ -23,11 +23,14 @@ router.get('/:id', (req, res) => {
 
 // プロトタイプ作成
 router.post('/', (req, res) => {
-  const { name } = req.body;
+  const { name, playerCount } = req.body;
   if (!name) {
     return res.status(400).json({ error: 'プロトタイプ名が必要です' });
   }
-  const newPrototype = { id: prototypes.length + 1, name };
+  if (playerCount === 0) {
+    return res.status(400).json({ error: 'プレイヤー数が必要です' });
+  }
+  const newPrototype = { id: prototypes.length + 1, name, playerCount };
   prototypes.push(newPrototype);
   res.status(201).json(newPrototype);
 });

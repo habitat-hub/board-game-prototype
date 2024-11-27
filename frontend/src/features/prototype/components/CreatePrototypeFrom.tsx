@@ -2,13 +2,20 @@
 
 import Link from 'next/link';
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 const CreatePrototypeForm: React.FC = () => {
   const [name, setName] = useState('');
+  const [playerCount, setPlayerCount] = useState<number>(0);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!name) return;
+    if (!name || playerCount === 0) {
+      setError('プロトタイプ名とプレイヤー人数を入力してください。');
+      return;
+    }
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -17,18 +24,21 @@ const CreatePrototypeForm: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ name, playerCount }),
       });
 
       if (response.ok) {
         setName('');
-        alert('プロトタイプが作成されました！');
+        setPlayerCount(0);
+        setError(null);
+        router.push('/prototypes');
       } else {
-        alert('プロトタイプの作成に失敗しました。');
+        const errorMessage = await response.text();
+        setError(`プロトタイプの作成に失敗しました: ${errorMessage}`);
       }
     } catch (error) {
       console.error('Error creating prototype:', error);
-      alert('エラーが発生しました。');
+      setError('エラーが発生しました。');
     }
   };
 
@@ -41,12 +51,31 @@ const CreatePrototypeForm: React.FC = () => {
         <h2 className="text-xl font-bold mb-4 text-center">
           新しいプロトタイプを作成
         </h2>
+        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         <div className="mb-4">
+          <label htmlFor="prototypeName" className="block text-gray-700 mb-2">
+            プロトタイプ名
+          </label>
           <input
+            id="prototypeName"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="プロトタイプ名"
+            className="w-full p-2 border border-gray-300 rounded"
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="playerCount" className="block text-gray-700 mb-2">
+            プレイヤー人数
+          </label>
+          <input
+            id="playerCount"
+            type="number"
+            value={playerCount}
+            onChange={(e) => setPlayerCount(Number(e.target.value))}
+            placeholder="プレイヤー人数"
             className="w-full p-2 border border-gray-300 rounded"
             required
           />
