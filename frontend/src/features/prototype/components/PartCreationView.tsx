@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Part, Prototype } from '../type';
+import { AllPart, Card, Prototype } from '../type';
 
 const PART_DEFAULT_CONFIG = {
   CARD: {
@@ -10,6 +10,7 @@ const PART_DEFAULT_CONFIG = {
     height: 150,
     description: '',
     color: '#FFFFFF',
+    isReversible: false,
   },
   TOKEN: {
     id: 'token',
@@ -39,7 +40,7 @@ const PART_DEFAULT_CONFIG = {
 
 interface PartCreationViewProps {
   prototype: Prototype;
-  onAddPart: (part: Part) => void;
+  onAddPart: (part: AllPart) => void;
   mainViewRef: React.RefObject<HTMLDivElement>;
 }
 
@@ -68,7 +69,7 @@ const PartCreationView: React.FC<PartCreationViewProps> = ({
         return;
       }
 
-      const newPart = {
+      const newPart: AllPart = {
         id: Date.now(),
         name: partConfig.name,
         position: { x: centerX, y: centerY },
@@ -77,6 +78,12 @@ const PartCreationView: React.FC<PartCreationViewProps> = ({
         description: partConfig.description,
         color: partConfig.color,
       };
+      if (partId === 'card') {
+        (newPart as Card).isReversible = (
+          partConfig as typeof PART_DEFAULT_CONFIG.CARD
+        ).isReversible;
+      }
+
       onAddPart(newPart);
     }
   };

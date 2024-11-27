@@ -3,6 +3,9 @@ export interface Prototype {
   name: string;
 }
 
+export type AllPart = Part | Card | Hand | Deck;
+export type AllPartKey = keyof Part | keyof Card | keyof Hand | keyof Deck;
+
 export interface Part {
   id: number;
   name: string;
@@ -14,7 +17,7 @@ export interface Part {
 }
 
 export interface Card extends Part {
-  isFront: boolean;
+  isReversible: boolean;
 }
 
 export interface Hand extends Part {

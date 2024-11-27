@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Part } from '../type';
+import { AllPart, AllPartKey } from '../type';
 
 interface PartPropertyViewProps {
-  selectedPart: Part | null;
-  onUpdatePart: (updatedPart: Part) => void;
-  onDuplicatePart: (part: Part) => void;
+  selectedPart: AllPart | null;
+  onUpdatePart: (updatedPart: AllPart) => void;
+  onDuplicatePart: (part: AllPart) => void;
 }
 
 const colors = [
@@ -27,13 +27,13 @@ const PartPropertyView: React.FC<PartPropertyViewProps> = ({
   onUpdatePart,
   onDuplicatePart,
 }) => {
-  const [part, setPart] = useState<Part | null>(selectedPart);
+  const [part, setPart] = useState<AllPart | null>(selectedPart);
 
   useEffect(() => {
     setPart(selectedPart);
   }, [selectedPart]);
 
-  const handlePropertyChange = (key: keyof Part, value: string) => {
+  const handlePropertyChange = (key: AllPartKey, value: string | boolean) => {
     if (part) {
       const updatedPart = { ...part, [key]: value };
       setPart(updatedPart);
@@ -72,6 +72,18 @@ const PartPropertyView: React.FC<PartPropertyViewProps> = ({
           rows={4}
         />
       </div>
+      {'isReversible' in part && (
+        <div className="mb-4">
+          <label className="block mb-1">反転可能か？</label>
+          <input
+            type="checkbox"
+            checked={part.isReversible}
+            onChange={(e) =>
+              handlePropertyChange('isReversible', e.target.checked)
+            }
+          />
+        </div>
+      )}
       <div className="mb-4">
         <label className="block mb-1">カラー</label>
         <div className="grid grid-cols-4 gap-2">

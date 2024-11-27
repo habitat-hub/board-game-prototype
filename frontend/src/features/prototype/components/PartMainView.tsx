@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import React from 'react';
-import { Part } from '../type';
+import { AllPart } from '../type';
 
 interface PartMainViewProps {
-  parts: Part[];
+  parts: AllPart[];
   onMovePart: (id: number, position: { x: number; y: number }) => void;
-  onSelectPart: (part: Part) => void;
+  onSelectPart: (part: AllPart) => void;
 }
 
 const PartMainView: React.FC<PartMainViewProps> = ({
@@ -15,6 +15,7 @@ const PartMainView: React.FC<PartMainViewProps> = ({
 }) => {
   const handleDragStart = (e: React.DragEvent, partId: number) => {
     e.dataTransfer.setData('partId', partId.toString());
+    onSelectPart(parts.find((part) => part.id === partId) as AllPart);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
