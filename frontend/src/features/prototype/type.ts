@@ -9,6 +9,7 @@ export type AllPartKey = keyof Part | keyof Card | keyof Hand | keyof Deck;
 
 export interface Part {
   id: number;
+  prototypeId: number;
   name: string;
   description: string;
   color: string;

@@ -71,6 +71,7 @@ const PartCreationView: React.FC<PartCreationViewProps> = ({
 
       const newPart: AllPart = {
         id: Date.now(),
+        prototypeId: prototype.id,
         name: partConfig.name,
         position: { x: centerX, y: centerY },
         width: partConfig.width,
