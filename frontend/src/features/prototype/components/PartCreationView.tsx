@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { AllPart, Card, Hand, Prototype } from '../type';
 
@@ -40,16 +40,21 @@ const PART_DEFAULT_CONFIG = {
 
 interface PartCreationViewProps {
   prototype: Prototype;
+  parts: AllPart[];
   onAddPart: (part: AllPart) => void;
   mainViewRef: React.RefObject<HTMLDivElement>;
 }
 
 const PartCreationView: React.FC<PartCreationViewProps> = ({
   prototype,
+  parts,
   onAddPart,
   mainViewRef,
 }) => {
   const partIds = ['card', 'token', 'hand', 'deck'];
+  const maxOrder = useMemo(() => {
+    return parts.length > 0 ? Math.max(...parts.map((part) => part.order)) : 0;
+  }, [parts]);
 
   const handleCreatePart = (partId: string) => {
     if (mainViewRef.current) {
@@ -72,12 +77,14 @@ const PartCreationView: React.FC<PartCreationViewProps> = ({
       const newPart: AllPart = {
         id: Date.now(),
         prototypeId: prototype.id,
+        type: partId,
         name: partConfig.name,
         position: { x: centerX, y: centerY },
         width: partConfig.width,
         height: partConfig.height,
         description: partConfig.description,
         color: partConfig.color,
+        order: maxOrder + 0.1,
       };
       if (partId === 'card') {
         (newPart as Card).isReversible = (
@@ -86,6 +93,7 @@ const PartCreationView: React.FC<PartCreationViewProps> = ({
       }
       if (partId === 'hand') {
         (newPart as Hand).ownerId = prototype.players[0].id;
+        (newPart as Hand).cardIds = [];
       }
 
       onAddPart(newPart);

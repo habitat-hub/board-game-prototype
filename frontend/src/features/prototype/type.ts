@@ -9,6 +9,7 @@ export type AllPartKey = keyof Part | keyof Card | keyof Hand | keyof Deck;
 
 export interface Part {
   id: number;
+  type: string;
   prototypeId: number;
   name: string;
   description: string;
@@ -16,6 +17,7 @@ export interface Part {
   position: { x: number; y: number };
   width: number;
   height: number;
+  order: number; // @see https://www.figma.com/blog/realtime-editing-of-ordered-sequences/ , https://www.wantedly.com/companies/wantedly/post_articles/386188
 }
 
 export interface Card extends Part {

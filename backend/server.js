@@ -49,6 +49,24 @@ io.on('connection', (socket) => {
     }
   });
 
+  // カードの移動
+  socket.on(
+    'MOVE_CARD_RELATE_TO_HAND',
+    ({ cardId, nextHandId, previousHandIds }) => {
+      const nextHand = parts.find((part) => part.id === nextHandId);
+      if (nextHand) {
+        nextHand.cardIds = [...nextHand.cardIds, cardId];
+      }
+      const previousHands = parts.filter((part) =>
+        previousHandIds.includes(part.id)
+      );
+      previousHands.forEach((hand) => {
+        hand.cardIds = hand.cardIds.filter((id) => id !== cardId);
+      });
+      io.emit('UPDATE_PARTS', parts);
+    }
+  );
+
   // パーツの更新
   socket.on('UPDATE_PART', (updatedPart) => {
     const index = parts.findIndex((part) => part.id === updatedPart.id);

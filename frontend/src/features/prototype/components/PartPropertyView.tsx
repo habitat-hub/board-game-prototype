@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AllPart, AllPartKey, Player } from '../type';
+import { PART_TYPE } from '../const';
 
 interface PartPropertyViewProps {
   selectedPart: AllPart | null;
@@ -74,7 +75,7 @@ const PartPropertyView: React.FC<PartPropertyViewProps> = ({
           rows={4}
         />
       </div>
-      {'isReversible' in part && (
+      {part.type === PART_TYPE.CARD && 'isReversible' in part && (
         <div className="mb-4">
           <label className="block mb-1">反転可能か？</label>
           <input
@@ -86,7 +87,7 @@ const PartPropertyView: React.FC<PartPropertyViewProps> = ({
           />
         </div>
       )}
-      {'ownerId' in part && (
+      {part.type === PART_TYPE.HAND && 'ownerId' in part && (
         <div className="mb-4">
           <label className="block mb-1">オーナー</label>
           <select
