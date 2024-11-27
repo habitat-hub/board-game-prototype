@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { AllPart, Card, Prototype } from '../type';
+import { AllPart, Card, Hand, Prototype } from '../type';
 
 const PART_DEFAULT_CONFIG = {
   CARD: {
@@ -83,6 +83,9 @@ const PartCreationView: React.FC<PartCreationViewProps> = ({
         (newPart as Card).isReversible = (
           partConfig as typeof PART_DEFAULT_CONFIG.CARD
         ).isReversible;
+      }
+      if (partId === 'hand') {
+        (newPart as Hand).ownerId = prototype.players[0].id;
       }
 
       onAddPart(newPart);

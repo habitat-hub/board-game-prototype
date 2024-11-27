@@ -1,7 +1,7 @@
 export interface Prototype {
   id: number;
   name: string;
-  playerCount: number;
+  players: Player[];
 }
 
 export type AllPart = Part | Card | Hand | Deck;
@@ -29,4 +29,9 @@ export interface Hand extends Part {
 
 export interface Deck extends Part {
   cardIds: number[];
+}
+
+export interface Player {
+  id: string;
+  name: string;
 }

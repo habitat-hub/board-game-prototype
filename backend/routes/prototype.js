@@ -2,8 +2,19 @@ const express = require('express');
 const router = express.Router();
 
 let prototypes = [
-  { id: 1, name: 'プロトタイプ1', playerCount: 4 },
-  { id: 2, name: 'プロトタイプ2', playerCount: 4 },
+  {
+    id: 1,
+    name: 'プロトタイプ1',
+    players: [{ id: '1-1', name: 'プレイヤー1' }],
+  },
+  {
+    id: 2,
+    name: 'プロトタイプ2',
+    players: [
+      { id: '2-1', name: 'プレイヤー1' },
+      { id: '2-2', name: 'プレイヤー2' },
+    ],
+  },
 ];
 
 // プロトタイプ一覧取得
@@ -30,7 +41,14 @@ router.post('/', (req, res) => {
   if (playerCount === 0) {
     return res.status(400).json({ error: 'プレイヤー数が必要です' });
   }
-  const newPrototype = { id: prototypes.length + 1, name, playerCount };
+  const newPrototype = {
+    id: prototypes.length + 1,
+    name,
+    players: Array.from({ length: playerCount }, (_, i) => ({
+      id: `${newPrototype.id}-${i + 1}`,
+      name: `プレイヤー${i + 1}`,
+    })),
+  };
   prototypes.push(newPrototype);
   res.status(201).json(newPrototype);
 });

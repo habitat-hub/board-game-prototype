@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { AllPart, AllPartKey } from '../type';
+import { AllPart, AllPartKey, Player } from '../type';
 
 interface PartPropertyViewProps {
   selectedPart: AllPart | null;
   onUpdatePart: (updatedPart: AllPart) => void;
   onDuplicatePart: (part: AllPart) => void;
+  players: Player[];
 }
 
 const colors = [
@@ -26,6 +27,7 @@ const PartPropertyView: React.FC<PartPropertyViewProps> = ({
   selectedPart,
   onUpdatePart,
   onDuplicatePart,
+  players,
 }) => {
   const [part, setPart] = useState<AllPart | null>(selectedPart);
 
@@ -82,6 +84,23 @@ const PartPropertyView: React.FC<PartPropertyViewProps> = ({
               handlePropertyChange('isReversible', e.target.checked)
             }
           />
+        </div>
+      )}
+      {'ownerId' in part && (
+        <div className="mb-4">
+          <label className="block mb-1">オーナー</label>
+          <select
+            value={part.ownerId || ''}
+            onChange={(e) => handlePropertyChange('ownerId', e.target.value)}
+            className="w-full p-2 border rounded"
+          >
+            <option value="">選択してください</option>
+            {players.map((player) => (
+              <option key={player.id} value={player.id}>
+                {player.name}
+              </option>
+            ))}
+          </select>
         </div>
       )}
       <div className="mb-4">

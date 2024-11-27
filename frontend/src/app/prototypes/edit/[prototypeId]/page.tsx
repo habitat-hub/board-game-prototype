@@ -136,6 +136,7 @@ const EditPrototypePage: React.FC = () => {
         </div>
         {isPropertyViewOpen && (
           <PartPropertyView
+            players={prototype.players}
             selectedPart={selectedPart}
             onUpdatePart={handleUpdatePart}
             onDuplicatePart={handleDuplicatePart}

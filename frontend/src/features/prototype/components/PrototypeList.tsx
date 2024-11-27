@@ -59,7 +59,7 @@ const PrototypeList: React.FC = () => {
               {/* TODO: ボタン以外をクリックしたら、編集画面に遷移する */}
               {/* TODO: 更新日時と更新者を表示する */}
               <span className="flex-1">
-                {prototype.name} - {prototype.playerCount}人用ゲーム
+                {prototype.name} - {prototype.players.length}人用ゲーム
               </span>
               <div className="flex space-x-2 ml-auto">
                 <Link
