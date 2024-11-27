@@ -7,13 +7,33 @@ import { Prototype } from '../type';
 const PrototypeList: React.FC = () => {
   const [prototypes, setPrototypes] = useState<Prototype[]>([]);
 
-  useEffect(() => {
+  const fetchPrototypes = () => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     fetch(`${apiUrl}/api/prototypes`)
       .then((response) => response.json())
       .then((data) => setPrototypes(data))
       .catch((error) => console.error('Error fetching prototypes:', error));
+  };
+
+  useEffect(() => {
+    fetchPrototypes();
   }, []);
+
+  const handleDelete = async (id: number) => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    try {
+      const response = await fetch(`${apiUrl}/api/prototypes/${id}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        fetchPrototypes(); // 削除後に再fetch
+      } else {
+        console.error('Failed to delete prototype');
+      }
+    } catch (error) {
+      console.error('Error deleting prototype:', error);
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto mt-10">
@@ -61,8 +81,7 @@ const PrototypeList: React.FC = () => {
                   公開版
                 </Link>
                 <button
-                  // TODO: 削除APIを作成する
-                  onClick={() => {}}
+                  onClick={() => handleDelete(prototype.id)}
                   className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors"
                 >
                   削除

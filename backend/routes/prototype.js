@@ -35,4 +35,11 @@ router.post('/', (req, res) => {
   res.status(201).json(newPrototype);
 });
 
+// プロトタイプ削除
+router.delete('/:id', (req, res) => {
+  const prototypeId = parseInt(req.params.id, 10);
+  prototypes = prototypes.filter((p) => p.id !== prototypeId);
+  res.status(204).send();
+});
+
 module.exports = router;
