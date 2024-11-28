@@ -1,6 +1,8 @@
 import Link from 'next/link';
-import React from 'react';
-import { AllPart } from '../type';
+import React, { Fragment } from 'react';
+import { AllPart, Card } from '../type';
+import CardComponent from './CardComponent';
+import { Socket } from 'socket.io-client';
 
 interface PartMainViewProps {
   parts: AllPart[];
@@ -8,6 +10,7 @@ interface PartMainViewProps {
   onSelectPart: (part: AllPart) => void;
   onMoveCardOnHand: (partId: number, x: number, y: number) => void;
   onMoveCardOnDeck: (partId: number, x: number, y: number) => void;
+  socket: Socket;
 }
 
 const PartMainView: React.FC<PartMainViewProps> = ({
@@ -16,6 +19,7 @@ const PartMainView: React.FC<PartMainViewProps> = ({
   onSelectPart,
   onMoveCardOnHand,
   onMoveCardOnDeck,
+  socket,
 }) => {
   const handleDragStart = (e: React.DragEvent, partId: number) => {
     e.dataTransfer.setData('partId', partId.toString());
@@ -54,22 +58,33 @@ const PartMainView: React.FC<PartMainViewProps> = ({
         onDrop={handleDrop}
       >
         {parts.map((part) => (
-          <div
-            key={part.id}
-            draggable
-            onDragStart={(e) => handleDragStart(e, part.id)}
-            onClick={() => onSelectPart(part)}
-            className="absolute cursor-move border border-gray-300 rounded p-2 shadow-sm text-xs"
-            style={{
-              left: part.position.x,
-              top: part.position.y,
-              width: part.width,
-              height: part.height,
-              backgroundColor: part.color || 'white',
-            }}
-          >
-            {part.name}
-          </div>
+          <Fragment key={part.id}>
+            {part.type === 'card' && (
+              <CardComponent
+                part={part as Card}
+                onDragStart={handleDragStart}
+                onSelectPart={onSelectPart}
+                socket={socket}
+              />
+            )}
+            {part.type !== 'card' && (
+              <div
+                draggable
+                onDragStart={(e) => handleDragStart(e, part.id)}
+                onClick={() => onSelectPart(part)}
+                className="absolute cursor-move border border-gray-300 rounded p-2 shadow-sm text-xs"
+                style={{
+                  left: part.position.x,
+                  top: part.position.y,
+                  width: part.width,
+                  height: part.height,
+                  backgroundColor: part.color || 'white',
+                }}
+              >
+                {part.name}
+              </div>
+            )}
+          </Fragment>
         ))}
       </div>
     </div>

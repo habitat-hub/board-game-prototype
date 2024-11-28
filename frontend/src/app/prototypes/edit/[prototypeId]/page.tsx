@@ -227,6 +227,7 @@ const EditPrototypePage: React.FC = () => {
           onSelectPart={handleSelectPart}
           onMoveCardOnHand={handleMoveCardRelateToHand}
           onMoveCardOnDeck={handleMoveCardRelateToDeck}
+          socket={socket}
         />
       </div>
       <div

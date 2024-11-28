@@ -34,6 +34,11 @@ io.on('connection', (socket) => {
   // クライアントに現在のパーツを送信
   socket.emit('UPDATE_PARTS', parts);
 
+  // カードの反転
+  socket.on('FLIP_CARD', ({ cardId, isNextFlipped }) => {
+    io.emit('FLIP_CARD', { cardId, isNextFlipped });
+  });
+
   // 新しいパーツの追加
   socket.on('ADD_PART', (part) => {
     parts.push(part);
