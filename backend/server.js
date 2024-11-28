@@ -49,7 +49,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  // カードの移動
+  // カードの移動(手札に関わるカード)
   socket.on(
     'MOVE_CARD_RELATE_TO_HAND',
     ({ cardId, nextHandId, previousHandIds }) => {
@@ -62,6 +62,24 @@ io.on('connection', (socket) => {
       );
       previousHands.forEach((hand) => {
         hand.cardIds = hand.cardIds.filter((id) => id !== cardId);
+      });
+      io.emit('UPDATE_PARTS', parts);
+    }
+  );
+
+  // カードの移動(山札に関わるカード)
+  socket.on(
+    'MOVE_CARD_RELATE_TO_DECK',
+    ({ cardId, nextDeckId, previousDeckIds }) => {
+      const nextDeck = parts.find((part) => part.id === nextDeckId);
+      if (nextDeck) {
+        nextDeck.cardIds = [...nextDeck.cardIds, cardId];
+      }
+      const previousDecks = parts.filter((part) =>
+        previousDeckIds.includes(part.id)
+      );
+      previousDecks.forEach((deck) => {
+        deck.cardIds = deck.cardIds.filter((id) => id !== cardId);
       });
       io.emit('UPDATE_PARTS', parts);
     }

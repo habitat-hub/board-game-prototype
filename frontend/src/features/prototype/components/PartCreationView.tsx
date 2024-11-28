@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 
-import { AllPart, Card, Hand, Prototype } from '../type';
+import { AllPart, Card, Deck, Hand, Prototype } from '../type';
 
 const PART_DEFAULT_CONFIG = {
   CARD: {
@@ -94,6 +94,9 @@ const PartCreationView: React.FC<PartCreationViewProps> = ({
       if (partId === 'hand') {
         (newPart as Hand).ownerId = prototype.players[0].id;
         (newPart as Hand).cardIds = [];
+      }
+      if (partId === 'deck') {
+        (newPart as Deck).cardIds = [];
       }
 
       onAddPart(newPart);
