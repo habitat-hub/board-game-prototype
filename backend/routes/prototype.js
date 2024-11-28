@@ -4,16 +4,30 @@ const router = express.Router();
 let prototypes = [
   {
     id: 1,
+    groupId: 1,
     name: 'プロトタイプ1',
     players: [{ id: '1-1', name: 'プレイヤー1' }],
+    isPreview: true,
   },
   {
     id: 2,
     name: 'プロトタイプ2',
+    groupId: 2,
     players: [
       { id: '2-1', name: 'プレイヤー1' },
       { id: '2-2', name: 'プレイヤー2' },
     ],
+    isPreview: true,
+  },
+  {
+    id: 3,
+    name: 'プロトタイプ3',
+    groupId: 1,
+    players: [
+      { id: '3-1', name: 'プレイヤー1' },
+      { id: '3-2', name: 'プレイヤー2' },
+    ],
+    isPreview: false,
   },
 ];
 

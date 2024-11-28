@@ -1,7 +1,9 @@
 export interface Prototype {
   id: number;
+  groupId: number;
   name: string;
   players: Player[];
+  isPreview: boolean;
 }
 
 export type AllPart = Part | Card | Hand | Deck;
