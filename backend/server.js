@@ -54,7 +54,13 @@ io.on('connection', (socket) => {
     }
   });
 
-  // カードの移動(手札に関わるカード)
+  /**
+   * NOTE: カードの移動(手札に関わるカード)
+   * 手札外　→ 手札
+   * 手札　→ 異なる手札
+   * 手札　→ 手札外
+   * 手札外　→ 手札外
+   */
   socket.on(
     'MOVE_CARD_RELATE_TO_HAND',
     ({ cardId, nextHandId, previousHandIds }) => {
@@ -72,7 +78,13 @@ io.on('connection', (socket) => {
     }
   );
 
-  // カードの移動(山札に関わるカード)
+  /**
+   * NOTE: カードの移動(山札に関わるカード)
+   * 山札外　→ 山札
+   * 山札　→ 異なる山札
+   * 山札　→ 山札外
+   * 山札外　→ 山札外
+   */
   socket.on(
     'MOVE_CARD_RELATE_TO_DECK',
     ({ cardId, nextDeckId, previousDeckIds }) => {

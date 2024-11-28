@@ -154,12 +154,21 @@ const EditPrototypePage: React.FC = () => {
       .map((deck) => deck.id);
 
     // NOTE: カードが山札の上にのる/カードが山札の上から離れる時だけ配信
-    if (targetDeck || previousDeckIds.length > 0)
+    if (targetDeck || previousDeckIds.length > 0) {
       socket.emit('MOVE_CARD_RELATE_TO_DECK', {
         cardId: partId,
         nextDeckId: targetDeck?.id,
         previousDeckIds,
       });
+      // 山札の上に置くときは裏返す
+      if (previousDeckIds.length === 0 && targetDeck?.id) {
+        socket.emit('FLIP_CARD', { cardId: partId, isNextFlipped: true });
+      }
+      // 山札の上から離れるときは表にする
+      if (previousDeckIds.length > 0 && !targetDeck?.id) {
+        socket.emit('FLIP_CARD', { cardId: partId, isNextFlipped: false });
+      }
+    }
   };
 
   const handleSelectPart = (part: AllPart) => {
