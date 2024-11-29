@@ -41,6 +41,9 @@ const EditPrototypePage: React.FC = () => {
   }, [parts]);
 
   useEffect(() => {
+    // サーバーに接続した後、特定のプロトタイプに参加
+    socket.emit('JOIN_PROTOTYPE', Number(prototypeId));
+
     socket.on('UPDATE_PARTS', (parts) => {
       setParts(parts);
     });
@@ -48,14 +51,18 @@ const EditPrototypePage: React.FC = () => {
     return () => {
       socket.off('UPDATE_PARTS');
     };
-  }, []);
+  }, [prototypeId]);
 
   const handleAddPart = (part: AllPart) => {
-    socket.emit('ADD_PART', part);
+    socket.emit('ADD_PART', { prototypeId: Number(prototypeId), part });
   };
 
   const handleMovePart = (id: number, position: { x: number; y: number }) => {
-    socket.emit('MOVE_PART', { id, position });
+    socket.emit('MOVE_PART', {
+      prototypeId: Number(prototypeId),
+      id,
+      position,
+    });
   };
 
   const isPartOnOtherPart = (
@@ -124,6 +131,7 @@ const EditPrototypePage: React.FC = () => {
     // NOTE: カードが親パーツの上にのる/カードが親パーツから離れる時だけ配信
     if (card.parentId || targetParentPart)
       socket.emit('UPDATE_CARD_PARENT', {
+        prototypeId: Number(prototypeId),
         cardId: partId,
         nextParentId: targetParentPart?.id,
       });
@@ -138,6 +146,7 @@ const EditPrototypePage: React.FC = () => {
     ) {
       // 山札の上に置くときは裏返す、山札から離れるときは表にする
       socket.emit('FLIP_CARD', {
+        prototypeId: Number(prototypeId),
         cardId: card.id,
         isNextFlipped: targetParentPart?.type === PART_TYPE.DECK,
       });
@@ -155,7 +164,10 @@ const EditPrototypePage: React.FC = () => {
     setParts((prevParts) =>
       prevParts.map((part) => (part.id === updatedPart.id ? updatedPart : part))
     );
-    socket.emit('UPDATE_PART', updatedPart);
+    socket.emit('UPDATE_PART', {
+      prototypeId: Number(prototypeId),
+      updatedPart,
+    });
   };
 
   const handleDuplicatePart = (part: AllPart) => {
@@ -168,7 +180,10 @@ const EditPrototypePage: React.FC = () => {
       },
     };
     setParts((prevParts) => [...prevParts, newPart]);
-    socket.emit('ADD_PART', newPart);
+    socket.emit('ADD_PART', {
+      prototypeId: Number(prototypeId),
+      part: newPart,
+    });
   };
 
   if (!prototype) {
@@ -204,6 +219,7 @@ const EditPrototypePage: React.FC = () => {
         }`}
       >
         <PartMainView
+          prototypeId={Number(prototypeId)}
           parts={parts}
           onMovePart={handleMovePart}
           onSelectPart={handleSelectPart}

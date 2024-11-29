@@ -7,6 +7,7 @@ import DeckPart from './DeckPard';
 import { PART_TYPE } from '../const';
 
 interface PartMainViewProps {
+  prototypeId: number;
   parts: AllPart[];
   onMovePart: (id: number, position: { x: number; y: number }) => void;
   onSelectPart: (part: AllPart) => void;
@@ -15,6 +16,7 @@ interface PartMainViewProps {
 }
 
 const PartMainView: React.FC<PartMainViewProps> = ({
+  prototypeId,
   parts,
   onMovePart,
   onSelectPart,
@@ -62,6 +64,7 @@ const PartMainView: React.FC<PartMainViewProps> = ({
             <Fragment key={part.id}>
               {part.type === PART_TYPE.CARD && (
                 <CardPart
+                  prototypeId={prototypeId}
                   card={part as Card}
                   onDragStart={handleDragStart}
                   onSelectPart={onSelectPart}
@@ -71,6 +74,7 @@ const PartMainView: React.FC<PartMainViewProps> = ({
               )}
               {part.type === PART_TYPE.DECK && (
                 <DeckPart
+                  prototypeId={prototypeId}
                   deck={part}
                   onDragStart={handleDragStart}
                   onSelectPart={onSelectPart}

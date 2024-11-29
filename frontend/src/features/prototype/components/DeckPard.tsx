@@ -3,6 +3,7 @@ import { Part } from '../type';
 import { Socket } from 'socket.io-client';
 
 interface DeckProps {
+  prototypeId: number;
   deck: Part;
   onDragStart: (e: React.DragEvent<HTMLDivElement>, id: number) => void;
   onSelectPart: (part: Part) => void;
@@ -11,6 +12,7 @@ interface DeckProps {
 }
 
 const DeckPart: React.FC<DeckProps> = ({
+  prototypeId,
   deck,
   onDragStart,
   onSelectPart,
@@ -18,7 +20,7 @@ const DeckPart: React.FC<DeckProps> = ({
   order,
 }) => {
   const handleShuffle = () => {
-    socket.emit('SHUFFLE_DECK', { deckId: deck.id });
+    socket.emit('SHUFFLE_DECK', { prototypeId, deckId: deck.id });
   };
 
   return (

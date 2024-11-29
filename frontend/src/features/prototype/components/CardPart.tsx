@@ -4,6 +4,7 @@ import { Socket } from 'socket.io-client';
 import { VscSync, VscSyncIgnored } from 'react-icons/vsc';
 
 interface CardProps {
+  prototypeId: number;
   card: Card;
   onDragStart: (e: React.DragEvent<HTMLDivElement>, id: number) => void;
   onSelectPart: (part: Part) => void;
@@ -12,6 +13,7 @@ interface CardProps {
 }
 
 const CardPart: React.FC<CardProps> = ({
+  prototypeId,
   card,
   onDragStart,
   onSelectPart,
@@ -26,12 +28,13 @@ const CardPart: React.FC<CardProps> = ({
       if (card.isReversible && isFlipped != isNextFlipped) {
         setIsFlipped((prevState) => !prevState);
         socket.emit('FLIP_CARD', {
+          prototypeId,
           cardId: card.id,
           isNextFlipped: !isFlipped,
         });
       }
     },
-    [isFlipped, card.id, card.isReversible, socket]
+    [card.isReversible, card.id, isFlipped, socket, prototypeId]
   );
 
   useEffect(() => {

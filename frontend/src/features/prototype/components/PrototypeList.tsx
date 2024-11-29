@@ -80,19 +80,19 @@ const PrototypeList: React.FC = () => {
                   </span>
                   <div className="flex space-x-2 ml-auto">
                     <Link
-                      href={`prototypes/edit/${previewPrototype?.id}`}
+                      href={`prototypes/${previewPrototype?.id}/edit`}
                       className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 transition-colors"
                     >
                       編集
                     </Link>
                     <Link
-                      href={`prototypes/preview/${previewPrototype?.id}`}
+                      href={`prototypes/${previewPrototype?.id}/preview`}
                       className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition-colors"
                     >
                       プレビュー版
                     </Link>
                     <Link
-                      href={`prototypes/published/${publishedPrototype?.id}`}
+                      href={`prototypes/${publishedPrototype?.id}/published`}
                       className={`bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition-colors ${
                         !publishedPrototype
                           ? 'opacity-50 cursor-not-allowed'
