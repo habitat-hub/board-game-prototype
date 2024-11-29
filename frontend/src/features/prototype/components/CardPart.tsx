@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Card, Part } from '../type';
 import { Socket } from 'socket.io-client';
+import { VscSync, VscSyncIgnored } from 'react-icons/vsc';
 
 interface CardProps {
   card: Card;
@@ -56,7 +57,6 @@ const CardPart: React.FC<CardProps> = ({
       onDragStart={(e) => onDragStart(e, card.id)}
       onClick={() => onSelectPart(card)}
       className={`absolute cursor-move border border-gray-300 rounded p-2 shadow-sm text-xs
-        ${card.isReversible ? 'hover:bg-gray-50' : ''} 
         ${isFlipped ? 'flipped' : ''}`}
       style={{
         left: card.position.x,
@@ -70,6 +70,11 @@ const CardPart: React.FC<CardProps> = ({
       }}
     >
       {isFlipped ? '' : card.name}
+      {card.isReversible ? (
+        <VscSync className="absolute bottom-1 right-1" size={16} />
+      ) : (
+        <VscSyncIgnored className="absolute bottom-1 right-1" size={16} />
+      )}
     </div>
   );
 };
