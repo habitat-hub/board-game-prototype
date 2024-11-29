@@ -1,5 +1,8 @@
+'use client';
+
 import PrototypeList from '@/features/prototype/components/PrototypeList';
 import React from 'react';
+import { withAuth } from '@/app/components/withAuth';
 
 const PrototypesPage: React.FC = () => {
   return (
@@ -9,4 +12,4 @@ const PrototypesPage: React.FC = () => {
   );
 };
 
-export default PrototypesPage;
+export default withAuth(PrototypesPage);

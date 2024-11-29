@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-
+import { withAuth } from '@/app/components/withAuth';
 import PartCreationView from '@/features/prototype/components/PartCreationView';
 import PartMainView from '@/features/prototype/components/PartMainView';
 import PartPropertyView from '@/features/prototype/components/PartPropertyView';
@@ -253,4 +253,4 @@ const EditPrototypePage: React.FC = () => {
   );
 };
 
-export default EditPrototypePage;
+export default withAuth(EditPrototypePage);

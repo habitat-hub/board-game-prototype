@@ -1,28 +1,98 @@
 import express from 'express';
+import session from 'express-session';
+import passport from 'passport';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import dotenv from 'dotenv';
 import http from 'http';
 import cors from 'cors';
 import { Server, Socket } from 'socket.io';
+
 import { shuffleDeck } from './helpers/prototypeHelper';
 import prototypeRoutes from './routes/prototype';
 import { Card, Part, Prototype } from './type';
 import { PART_TYPE } from './const';
+import sequelize from './models';
+import User from './models/User';
+import authRoutes from './routes/auth';
+
+dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
+const PORT = 8080;
+
+// Socket.ioの設定
 const io = new Server(server, {
   cors: {
     origin: '*',
     methods: ['GET', 'POST', 'DELETE'],
   },
 });
-const PORT = 8080;
+
+// データベース接続
+sequelize.sync().then(() => {
+  console.log('Database connected');
+});
 
 // CORSを有効にする
-app.use(cors());
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  })
+);
 
 // JSONボディのパースを有効にする
 app.use(express.json());
+
+// セッション設定
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET!,
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
+// Passport初期化
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Googleストラテジー設定
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      callbackURL: '/auth/google/callback',
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        let user = await User.findOne({ where: { googleId: profile.id } });
+        if (!user) {
+          user = await User.create({
+            googleId: profile.id,
+            username: profile.displayName,
+          });
+        }
+        done(null, user);
+      } catch (err) {
+        done(err, undefined);
+      }
+    }
+  )
+);
+
+passport.serializeUser((user: any, done) => {
+  done(null, user.id);
+});
+passport.deserializeUser((id: string | number, done) => {
+  User.findByPk(id).then((user) => {
+    done(null, user);
+  });
+});
 app.use('/api/prototypes', prototypeRoutes);
+app.use('/auth', authRoutes);
 
 export const prototypes: Prototype[] = [
   {
