@@ -61,6 +61,25 @@ io.on('connection', (socket) => {
     io.emit('UPDATE_PARTS', parts);
   });
 
+  function shuffleDeck(cards) {
+    const originalOrders = cards.map((card) => card.order);
+    for (let i = cards.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [cards[i], cards[j]] = [cards[j], cards[i]];
+    }
+    cards.forEach((card, index) => {
+      card.order = originalOrders[index];
+    });
+  }
+
+  // 山札のシャッフル
+  socket.on('SHUFFLE_DECK', ({ deckId }) => {
+    const cardsOnDeck = parts.filter((part) => part.parentId === deckId);
+    shuffleDeck(cardsOnDeck);
+
+    io.emit('UPDATE_PARTS', parts);
+  });
+
   // パーツの更新
   socket.on('UPDATE_PART', (updatedPart) => {
     const index = parts.findIndex((part) => part.id === updatedPart.id);

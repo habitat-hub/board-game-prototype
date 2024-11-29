@@ -3,37 +3,39 @@ import { Card, Part } from '../type';
 import { Socket } from 'socket.io-client';
 
 interface CardProps {
-  part: Card;
+  card: Card;
   onDragStart: (e: React.DragEvent<HTMLDivElement>, id: number) => void;
   onSelectPart: (part: Part) => void;
   socket: Socket;
+  order: number;
 }
 
-const CardComponent: React.FC<CardProps> = ({
-  part,
+const CardPart: React.FC<CardProps> = ({
+  card,
   onDragStart,
   onSelectPart,
   socket,
+  order,
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
 
   const flipCard = useCallback(
     (isNextFlipped: boolean) => {
       // NOTE: このカードの反転により、socket通信が来た場合に、再度反転させてしまうと無限ループとなってしまうため、反転させる必要があるかをチェックする
-      if (part.isReversible && isFlipped != isNextFlipped) {
+      if (card.isReversible && isFlipped != isNextFlipped) {
         setIsFlipped((prevState) => !prevState);
         socket.emit('FLIP_CARD', {
-          cardId: part.id,
+          cardId: card.id,
           isNextFlipped: !isFlipped,
         });
       }
     },
-    [isFlipped, part.id, part.isReversible, socket]
+    [isFlipped, card.id, card.isReversible, socket]
   );
 
   useEffect(() => {
     socket.on('FLIP_CARD', ({ cardId, isNextFlipped }) => {
-      if (cardId === part.id) {
+      if (cardId === card.id) {
         flipCard(isNextFlipped);
       }
     });
@@ -41,7 +43,7 @@ const CardComponent: React.FC<CardProps> = ({
     return () => {
       socket.off('FLIP_CARD');
     };
-  }, [flipCard, part.id, socket]);
+  }, [flipCard, card.id, socket]);
 
   const handleDoubleClick = () => {
     flipCard(!isFlipped);
@@ -51,24 +53,25 @@ const CardComponent: React.FC<CardProps> = ({
     <div
       onDoubleClick={handleDoubleClick}
       draggable
-      onDragStart={(e) => onDragStart(e, part.id)}
-      onClick={() => onSelectPart(part)}
+      onDragStart={(e) => onDragStart(e, card.id)}
+      onClick={() => onSelectPart(card)}
       className={`absolute cursor-move border border-gray-300 rounded p-2 shadow-sm text-xs
-        ${part.isReversible ? 'hover:bg-gray-50' : ''} 
+        ${card.isReversible ? 'hover:bg-gray-50' : ''} 
         ${isFlipped ? 'flipped' : ''}`}
       style={{
-        left: part.position.x,
-        top: part.position.y,
-        width: part.width,
-        height: part.height,
-        backgroundColor: part.color || 'white',
+        left: card.position.x,
+        top: card.position.y,
+        width: card.width,
+        height: card.height,
+        backgroundColor: card.color || 'white',
         transition: 'transform 0.6s',
         transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+        zIndex: order,
       }}
     >
-      {isFlipped ? '' : part.name}
+      {isFlipped ? '' : card.name}
     </div>
   );
 };
 
-export default CardComponent;
+export default CardPart;

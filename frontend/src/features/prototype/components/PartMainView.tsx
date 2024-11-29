@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import React, { Fragment } from 'react';
 import { AllPart, Card } from '../type';
-import CardComponent from './CardComponent';
+import CardPart from './CardPart';
 import { Socket } from 'socket.io-client';
+import DeckPart from './DeckPard';
+import { PART_TYPE } from '../const';
 
 interface PartMainViewProps {
   parts: AllPart[];
@@ -54,35 +56,48 @@ const PartMainView: React.FC<PartMainViewProps> = ({
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
-        {parts.map((part) => (
-          <Fragment key={part.id}>
-            {part.type === 'card' && (
-              <CardComponent
-                part={part as Card}
-                onDragStart={handleDragStart}
-                onSelectPart={onSelectPart}
-                socket={socket}
-              />
-            )}
-            {part.type !== 'card' && (
-              <div
-                draggable
-                onDragStart={(e) => handleDragStart(e, part.id)}
-                onClick={() => onSelectPart(part)}
-                className="absolute cursor-move border border-gray-300 rounded p-2 shadow-sm text-xs"
-                style={{
-                  left: part.position.x,
-                  top: part.position.y,
-                  width: part.width,
-                  height: part.height,
-                  backgroundColor: part.color || 'white',
-                }}
-              >
-                {part.name}
-              </div>
-            )}
-          </Fragment>
-        ))}
+        {parts
+          .sort((a, b) => a.order - b.order)
+          .map((part, index) => (
+            <Fragment key={part.id}>
+              {part.type === PART_TYPE.CARD && (
+                <CardPart
+                  card={part as Card}
+                  onDragStart={handleDragStart}
+                  onSelectPart={onSelectPart}
+                  socket={socket}
+                  order={index}
+                />
+              )}
+              {part.type === PART_TYPE.DECK && (
+                <DeckPart
+                  deck={part}
+                  onDragStart={handleDragStart}
+                  onSelectPart={onSelectPart}
+                  socket={socket}
+                  order={index}
+                />
+              )}
+              {part.type !== 'card' && part.type !== 'deck' && (
+                <div
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, part.id)}
+                  onClick={() => onSelectPart(part)}
+                  className="absolute cursor-move border border-gray-300 rounded p-2 shadow-sm text-xs"
+                  style={{
+                    left: part.position.x,
+                    top: part.position.y,
+                    width: part.width,
+                    height: part.height,
+                    backgroundColor: part.color || 'white',
+                    zIndex: index,
+                  }}
+                >
+                  {part.name}
+                </div>
+              )}
+            </Fragment>
+          ))}
       </div>
     </div>
   );
