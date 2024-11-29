@@ -6,13 +6,14 @@ export interface Prototype {
   isPreview: boolean;
 }
 
-export type AllPart = Part | Card | Hand | Deck;
-export type AllPartKey = keyof Part | keyof Card | keyof Hand | keyof Deck;
+export type AllPart = Part | Card | Hand;
+export type AllPartKey = keyof Part | keyof Card | keyof Hand;
 
 export interface Part {
   id: number;
   type: string;
   prototypeId: number;
+  parentId: number | null;
   name: string;
   description: string;
   color: string;
@@ -20,6 +21,7 @@ export interface Part {
   width: number;
   height: number;
   order: number; // @see https://www.figma.com/blog/realtime-editing-of-ordered-sequences/ , https://www.wantedly.com/companies/wantedly/post_articles/386188
+  configurableTypeAsChild: string[];
 }
 
 export interface Card extends Part {
@@ -28,11 +30,6 @@ export interface Card extends Part {
 
 export interface Hand extends Part {
   ownerId: string;
-  cardIds: number[];
-}
-
-export interface Deck extends Part {
-  cardIds: number[];
 }
 
 export interface Player {

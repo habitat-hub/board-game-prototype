@@ -54,53 +54,12 @@ io.on('connection', (socket) => {
     }
   });
 
-  /**
-   * NOTE: カードの移動(手札に関わるカード)
-   * 手札外　→ 手札
-   * 手札　→ 異なる手札
-   * 手札　→ 手札外
-   * 手札外　→ 手札外
-   */
-  socket.on(
-    'MOVE_CARD_RELATE_TO_HAND',
-    ({ cardId, nextHandId, previousHandIds }) => {
-      const nextHand = parts.find((part) => part.id === nextHandId);
-      if (nextHand) {
-        nextHand.cardIds = [...nextHand.cardIds, cardId];
-      }
-      const previousHands = parts.filter((part) =>
-        previousHandIds.includes(part.id)
-      );
-      previousHands.forEach((hand) => {
-        hand.cardIds = hand.cardIds.filter((id) => id !== cardId);
-      });
-      io.emit('UPDATE_PARTS', parts);
-    }
-  );
-
-  /**
-   * NOTE: カードの移動(山札に関わるカード)
-   * 山札外　→ 山札
-   * 山札　→ 異なる山札
-   * 山札　→ 山札外
-   * 山札外　→ 山札外
-   */
-  socket.on(
-    'MOVE_CARD_RELATE_TO_DECK',
-    ({ cardId, nextDeckId, previousDeckIds }) => {
-      const nextDeck = parts.find((part) => part.id === nextDeckId);
-      if (nextDeck) {
-        nextDeck.cardIds = [...nextDeck.cardIds, cardId];
-      }
-      const previousDecks = parts.filter((part) =>
-        previousDeckIds.includes(part.id)
-      );
-      previousDecks.forEach((deck) => {
-        deck.cardIds = deck.cardIds.filter((id) => id !== cardId);
-      });
-      io.emit('UPDATE_PARTS', parts);
-    }
-  );
+  // カードの移動(親パーツの変更)
+  socket.on('UPDATE_CARD_PARENT', ({ cardId, nextParentId }) => {
+    const card = parts.find((part) => part.id === cardId);
+    card.parentId = nextParentId || null;
+    io.emit('UPDATE_PARTS', parts);
+  });
 
   // パーツの更新
   socket.on('UPDATE_PART', (updatedPart) => {

@@ -6,7 +6,7 @@ import PartCreationView from '@/features/prototype/components/PartCreationView';
 import PartMainView from '@/features/prototype/components/PartMainView';
 import PartPropertyView from '@/features/prototype/components/PartPropertyView';
 import { useParams } from 'next/navigation';
-import { Prototype, AllPart, Hand, Deck } from '@/features/prototype/type';
+import { Prototype, AllPart } from '@/features/prototype/type';
 import { io } from 'socket.io-client';
 import { PART_TYPE } from '@/features/prototype/const';
 
@@ -78,96 +78,69 @@ const EditPrototypePage: React.FC = () => {
     );
   };
 
-  const handleMoveCardRelateToHand = (partId: number, x: number, y: number) => {
-    const droppedPart = parts.find((part) => part.id === partId);
-    if (droppedPart?.type !== PART_TYPE.CARD) return;
+  const handleMoveCard = (partId: number, x: number, y: number) => {
+    const card = parts.find(
+      (part) => part.id === partId && part.type === PART_TYPE.CARD
+    );
+    if (!card) return;
 
     // カードの場合、手札との重なりをチェック
     const cardPosition = { x, y };
     const cardSize = {
-      width: droppedPart.width,
-      height: droppedPart.height,
+      width: card.width,
+      height: card.height,
     };
 
     // ドロップ位置の真下にある手札を探す
-    const hands = parts.filter(
-      (part) => part.type === PART_TYPE.HAND
-    ) as Hand[];
-    const targetHand = hands.find((hand) => {
-      const handPosition = { x: hand.position.x, y: hand.position.y };
-      const handSize = { width: hand.width, height: hand.height };
+    const parentParts = parts.filter((part) =>
+      part.configurableTypeAsChild.includes(PART_TYPE.CARD)
+    );
+    const targetParentPart = parentParts.find((parentPart) => {
+      const parentPartPosition = {
+        x: parentPart.position.x,
+        y: parentPart.position.y,
+      };
+      const parentPartSize = {
+        width: parentPart.width,
+        height: parentPart.height,
+      };
       return isPartOnOtherPart(
         cardPosition,
         cardSize,
-        droppedPart.order,
-        handPosition,
-        handSize,
-        hand.order
+        card.order,
+        parentPartPosition,
+        parentPartSize,
+        parentPart.order
       );
     });
-    const previousHandIds = hands
-      .filter(
-        (hand) => hand.cardIds.includes(partId) && hand.id !== targetHand?.id
-      )
-      .map((hand) => hand.id);
 
-    // NOTE: カードが手札の上にのる/カードが手札の上から離れる時だけ配信
-    if (targetHand || previousHandIds.length > 0)
-      socket.emit('MOVE_CARD_RELATE_TO_HAND', {
+    // 親が変わっていない場合は何もしない
+    if (
+      (!card.parentId && !targetParentPart) ||
+      card.parentId === targetParentPart?.id
+    )
+      return;
+
+    // NOTE: カードが親パーツの上にのる/カードが親パーツから離れる時だけ配信
+    if (card.parentId || targetParentPart)
+      socket.emit('UPDATE_CARD_PARENT', {
         cardId: partId,
-        nextHandId: targetHand?.id,
-        previousHandIds,
+        nextParentId: targetParentPart?.id,
       });
-  };
 
-  const handleMoveCardRelateToDeck = (partId: number, x: number, y: number) => {
-    const droppedPart = parts.find((part) => part.id === partId);
-    if (droppedPart?.type !== PART_TYPE.CARD) return;
-
-    // カードの場合、山札との重なりをチェック
-    const cardPosition = { x, y };
-    const cardSize = {
-      width: droppedPart.width,
-      height: droppedPart.height,
-    };
-
-    // ドロップ位置の真下にある山札を探す
-    const decks = parts.filter(
-      (part) => part.type === PART_TYPE.DECK
-    ) as Deck[];
-    const targetDeck = decks.find((deck) => {
-      const deckPosition = { x: deck.position.x, y: deck.position.y };
-      const deckSize = { width: deck.width, height: deck.height };
-      return isPartOnOtherPart(
-        cardPosition,
-        cardSize,
-        droppedPart.order,
-        deckPosition,
-        deckSize,
-        deck.order
-      );
-    });
-    const previousDeckIds = decks
-      .filter(
-        (deck) => deck.cardIds.includes(partId) && deck.id !== targetDeck?.id
-      )
-      .map((deck) => deck.id);
-
-    // NOTE: カードが山札の上にのる/カードが山札の上から離れる時だけ配信
-    if (targetDeck || previousDeckIds.length > 0) {
-      socket.emit('MOVE_CARD_RELATE_TO_DECK', {
-        cardId: partId,
-        nextDeckId: targetDeck?.id,
-        previousDeckIds,
+    const previousParentPart = parts.find((part) => part.id === card.parentId);
+    // NOTE: 山札から山札以外、山札以外から山札に変わるときは裏返す
+    if (
+      (previousParentPart?.type === PART_TYPE.DECK &&
+        targetParentPart?.type !== PART_TYPE.DECK) ||
+      (previousParentPart?.type !== PART_TYPE.DECK &&
+        targetParentPart?.type === PART_TYPE.DECK)
+    ) {
+      // 山札の上に置くときは裏返す、山札から離れるときは表にする
+      socket.emit('FLIP_CARD', {
+        cardId: card.id,
+        isNextFlipped: targetParentPart?.type === PART_TYPE.DECK,
       });
-      // 山札の上に置くときは裏返す
-      if (previousDeckIds.length === 0 && targetDeck?.id) {
-        socket.emit('FLIP_CARD', { cardId: partId, isNextFlipped: true });
-      }
-      // 山札の上から離れるときは表にする
-      if (previousDeckIds.length > 0 && !targetDeck?.id) {
-        socket.emit('FLIP_CARD', { cardId: partId, isNextFlipped: false });
-      }
     }
   };
 
@@ -234,8 +207,7 @@ const EditPrototypePage: React.FC = () => {
           parts={parts}
           onMovePart={handleMovePart}
           onSelectPart={handleSelectPart}
-          onMoveCardOnHand={handleMoveCardRelateToHand}
-          onMoveCardOnDeck={handleMoveCardRelateToDeck}
+          onMoveCard={handleMoveCard}
           socket={socket}
         />
       </div>

@@ -8,8 +8,7 @@ interface PartMainViewProps {
   parts: AllPart[];
   onMovePart: (id: number, position: { x: number; y: number }) => void;
   onSelectPart: (part: AllPart) => void;
-  onMoveCardOnHand: (partId: number, x: number, y: number) => void;
-  onMoveCardOnDeck: (partId: number, x: number, y: number) => void;
+  onMoveCard: (partId: number, x: number, y: number) => void;
   socket: Socket;
 }
 
@@ -17,8 +16,7 @@ const PartMainView: React.FC<PartMainViewProps> = ({
   parts,
   onMovePart,
   onSelectPart,
-  onMoveCardOnHand,
-  onMoveCardOnDeck,
+  onMoveCard,
   socket,
 }) => {
   const handleDragStart = (e: React.DragEvent, partId: number) => {
@@ -38,8 +36,7 @@ const PartMainView: React.FC<PartMainViewProps> = ({
     const y = e.clientY - rect.top;
 
     onMovePart(partId, { x, y });
-    onMoveCardOnHand(partId, x, y);
-    onMoveCardOnDeck(partId, x, y);
+    onMoveCard(partId, x, y);
   };
 
   return (

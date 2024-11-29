@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 
-import { AllPart, Card, Deck, Hand, Prototype } from '../type';
+import { AllPart, Card, Hand, Prototype } from '../type';
 
 const PART_DEFAULT_CONFIG = {
   CARD: {
@@ -11,6 +11,7 @@ const PART_DEFAULT_CONFIG = {
     description: '',
     color: '#FFFFFF',
     isReversible: false,
+    configurableTypeAsChild: [],
   },
   TOKEN: {
     id: 'token',
@@ -19,6 +20,7 @@ const PART_DEFAULT_CONFIG = {
     height: 50,
     description: '',
     color: '#FFFFFF',
+    configurableTypeAsChild: [],
   },
   HAND: {
     id: 'hand',
@@ -27,6 +29,7 @@ const PART_DEFAULT_CONFIG = {
     height: 150,
     description: '',
     color: '#FFFFFF',
+    configurableTypeAsChild: ['card'],
   },
   DECK: {
     id: 'deck',
@@ -35,6 +38,7 @@ const PART_DEFAULT_CONFIG = {
     height: 150,
     description: '',
     color: '#FFFFFF',
+    configurableTypeAsChild: ['card'],
   },
 };
 
@@ -77,6 +81,7 @@ const PartCreationView: React.FC<PartCreationViewProps> = ({
       const newPart: AllPart = {
         id: Date.now(),
         prototypeId: prototype.id,
+        parentId: null,
         type: partId,
         name: partConfig.name,
         position: { x: centerX, y: centerY },
@@ -85,6 +90,7 @@ const PartCreationView: React.FC<PartCreationViewProps> = ({
         description: partConfig.description,
         color: partConfig.color,
         order: maxOrder + 0.1,
+        configurableTypeAsChild: partConfig.configurableTypeAsChild,
       };
       if (partId === 'card') {
         (newPart as Card).isReversible = (
@@ -93,10 +99,6 @@ const PartCreationView: React.FC<PartCreationViewProps> = ({
       }
       if (partId === 'hand') {
         (newPart as Hand).ownerId = prototype.players[0].id;
-        (newPart as Hand).cardIds = [];
-      }
-      if (partId === 'deck') {
-        (newPart as Deck).cardIds = [];
       }
 
       onAddPart(newPart);
