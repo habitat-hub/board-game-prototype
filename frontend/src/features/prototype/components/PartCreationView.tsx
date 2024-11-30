@@ -45,7 +45,7 @@ const PART_DEFAULT_CONFIG = {
 interface PartCreationViewProps {
   prototype: Prototype;
   parts: AllPart[];
-  onAddPart: (part: AllPart) => void;
+  onAddPart: (part: Omit<AllPart, 'id' | 'prototypeId'>) => void;
   mainViewRef: React.RefObject<HTMLDivElement>;
 }
 
@@ -78,17 +78,15 @@ const PartCreationView: React.FC<PartCreationViewProps> = ({
         return;
       }
 
-      const newPart: AllPart = {
-        id: Date.now(),
-        prototypeId: prototype.id,
-        parentId: null,
+      const newPart: Omit<AllPart, 'id' | 'prototypeId'> = {
         type: partId,
+        parentId: null,
         name: partConfig.name,
+        description: partConfig.description,
+        color: partConfig.color,
         position: { x: centerX, y: centerY },
         width: partConfig.width,
         height: partConfig.height,
-        description: partConfig.description,
-        color: partConfig.color,
         order: maxOrder + 0.1,
         configurableTypeAsChild: partConfig.configurableTypeAsChild,
       };

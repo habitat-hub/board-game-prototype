@@ -23,7 +23,9 @@ const EditPrototypePage: React.FC = () => {
 
   useEffect(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    fetch(`${apiUrl}/api/prototypes/${prototypeId}`)
+    fetch(`${apiUrl}/api/prototypes/${prototypeId}`, {
+      credentials: 'include',
+    })
       .then((response) => response.json())
       .then((data) => setPrototype(data))
       .catch((error) => console.error('Error fetching prototypes:', error));
@@ -53,7 +55,7 @@ const EditPrototypePage: React.FC = () => {
     };
   }, [prototypeId]);
 
-  const handleAddPart = (part: AllPart) => {
+  const handleAddPart = (part: Omit<AllPart, 'id' | 'prototypeId'>) => {
     socket.emit('ADD_PART', { prototypeId: Number(prototypeId), part });
   };
 

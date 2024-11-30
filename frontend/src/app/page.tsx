@@ -19,7 +19,7 @@ function Home() {
           <button
             className="flex items-center justify-center bg-white border border-gray-300 rounded shadow-sm py-3 px-6 hover:bg-gray-50"
             onClick={() => {
-              window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/google`;
+              window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
             }}
           >
             <Image

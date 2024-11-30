@@ -1,9 +1,10 @@
 export interface Prototype {
   id: number;
+  userId: number;
   groupId: number;
   name: string;
-  players: Player[];
   isPreview: boolean;
+  players: Player[];
 }
 
 export type AllPart = Part | Card | Hand;

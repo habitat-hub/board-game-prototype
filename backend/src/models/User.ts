@@ -1,14 +1,19 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from './index';
 
-class User extends Model {
+class UserModel extends Model {
   public id!: number;
   public googleId!: string;
   public username!: string;
 }
 
-User.init(
+UserModel.init(
   {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
     googleId: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -25,4 +30,4 @@ User.init(
   }
 );
 
-export default User;
+export default UserModel;

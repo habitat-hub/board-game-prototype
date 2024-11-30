@@ -9,7 +9,9 @@ const PrototypeList: React.FC = () => {
 
   const fetchPrototypes = () => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    fetch(`${apiUrl}/api/prototypes`)
+    fetch(`${apiUrl}/api/prototypes`, {
+      credentials: 'include',
+    })
       .then((response) => response.json())
       .then((data) => setPrototypes(data))
       .catch((error) => console.error('Error fetching prototypes:', error));
@@ -33,6 +35,7 @@ const PrototypeList: React.FC = () => {
     try {
       const response = await fetch(`${apiUrl}/api/prototypes/${id}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
       if (response.ok) {
         fetchPrototypes(); // 削除後に再fetch

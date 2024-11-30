@@ -9,11 +9,11 @@ import { Server, Socket } from 'socket.io';
 
 import { shuffleDeck } from './helpers/prototypeHelper';
 import prototypeRoutes from './routes/prototype';
-import { Card, Part, Prototype } from './type';
 import { PART_TYPE } from './const';
 import sequelize from './models';
-import User from './models/User';
+import UserModel from './models/User';
 import authRoutes from './routes/auth';
+import PartModel from './models/Part';
 
 dotenv.config();
 
@@ -50,7 +50,7 @@ app.use(
   session({
     secret: process.env.SESSION_SECRET!,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
   })
 );
 
@@ -68,9 +68,9 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        let user = await User.findOne({ where: { googleId: profile.id } });
+        let user = await UserModel.findOne({ where: { googleId: profile.id } });
         if (!user) {
-          user = await User.create({
+          user = await UserModel.create({
             googleId: profile.id,
             username: profile.displayName,
           });
@@ -86,55 +86,34 @@ passport.use(
 passport.serializeUser((user: any, done) => {
   done(null, user.id);
 });
-passport.deserializeUser((id: string | number, done) => {
-  User.findByPk(id).then((user) => {
+passport.deserializeUser((id: number | number, done) => {
+  UserModel.findByPk(id).then((user) => {
     done(null, user);
   });
 });
 app.use('/api/prototypes', prototypeRoutes);
 app.use('/auth', authRoutes);
 
-export const prototypes: Prototype[] = [
-  {
-    id: 1,
-    groupId: 1,
-    name: 'プロトタイプ1',
-    players: [{ id: '1-1', name: 'プレイヤー1' }],
-    isPreview: true,
-    parts: [],
-  },
-  {
-    id: 2,
-    name: 'プロトタイプ2',
-    groupId: 2,
-    players: [
-      { id: '2-1', name: 'プレイヤー1' },
-      { id: '2-2', name: 'プレイヤー2' },
-    ],
-    isPreview: true,
-    parts: [],
-  },
-  {
-    id: 3,
-    name: 'プロトタイプ3',
-    groupId: 1,
-    players: [
-      { id: '3-1', name: 'プレイヤー1' },
-      { id: '3-2', name: 'プレイヤー2' },
-    ],
-    isPreview: false,
-    parts: [],
-  },
-];
-
 io.on('connection', (socket: Socket) => {
-  socket.on('JOIN_PROTOTYPE', (prototypeId: number) => {
-    if (!prototypes[prototypeId]) {
-      return;
-    }
+  socket.on('JOIN_PROTOTYPE', async (prototypeId: number) => {
+    const parts = await PartModel.findAll({ where: { prototypeId } });
+
     socket.join(prototypeId.toString());
-    socket.emit('UPDATE_PARTS', prototypes[prototypeId].parts);
+    socket.emit('UPDATE_PARTS', parts);
   });
+
+  socket.on(
+    'ADD_PART',
+    async ({ prototypeId, part }: { prototypeId: number; part: PartModel }) => {
+      await PartModel.create({
+        ...part,
+        prototypeId,
+      });
+      const parts = await PartModel.findAll({ where: { prototypeId } });
+
+      io.to(prototypeId.toString()).emit('UPDATE_PARTS', parts);
+    }
+  );
 
   socket.on(
     'FLIP_CARD',
@@ -155,23 +134,8 @@ io.on('connection', (socket: Socket) => {
   );
 
   socket.on(
-    'ADD_PART',
-    ({ prototypeId, part }: { prototypeId: number; part: Part }) => {
-      if (!prototypes[prototypeId]) {
-        return;
-      }
-
-      prototypes[prototypeId].parts.push(part);
-      io.to(prototypeId.toString()).emit(
-        'UPDATE_PARTS',
-        prototypes[prototypeId].parts
-      );
-    }
-  );
-
-  socket.on(
     'MOVE_PART',
-    ({
+    async ({
       prototypeId,
       id,
       position,
@@ -180,24 +144,16 @@ io.on('connection', (socket: Socket) => {
       id: number;
       position: { x: number; y: number };
     }) => {
-      if (!prototypes[prototypeId]) {
-        return;
-      }
+      await PartModel.update({ position }, { where: { id, prototypeId } });
+      const parts = await PartModel.findAll({ where: { prototypeId } });
 
-      const part = prototypes[prototypeId].parts.find((c) => c.id === id);
-      if (part) {
-        part.position = position;
-        io.to(prototypeId.toString()).emit(
-          'UPDATE_PARTS',
-          prototypes[prototypeId].parts
-        );
-      }
+      io.to(prototypeId.toString()).emit('UPDATE_PARTS', parts);
     }
   );
 
   socket.on(
     'UPDATE_CARD_PARENT',
-    ({
+    async ({
       prototypeId,
       cardId,
       nextParentId,
@@ -206,64 +162,50 @@ io.on('connection', (socket: Socket) => {
       cardId: number;
       nextParentId?: number | null;
     }) => {
-      if (!prototypes[prototypeId]) {
-        return;
-      }
-
-      const card = prototypes[prototypeId].parts.find(
-        (part) => part.id === cardId
+      await PartModel.update(
+        { parentId: nextParentId || null },
+        { where: { id: cardId, prototypeId } }
       );
-      if (card) {
-        card.parentId = nextParentId || null;
-        io.to(prototypeId.toString()).emit(
-          'UPDATE_PARTS',
-          prototypes[prototypeId].parts
-        );
-      }
+      const parts = await PartModel.findAll({ where: { prototypeId } });
+
+      io.to(prototypeId.toString()).emit('UPDATE_PARTS', parts);
     }
   );
 
   socket.on(
     'SHUFFLE_DECK',
-    ({ prototypeId, deckId }: { prototypeId: number; deckId: number }) => {
-      if (!prototypes[prototypeId]) {
-        return;
-      }
+    async ({
+      prototypeId,
+      deckId,
+    }: {
+      prototypeId: number;
+      deckId: number;
+    }) => {
+      const cardsOnDeck = await PartModel.findAll({
+        where: { prototypeId, type: PART_TYPE.CARD, parentId: deckId },
+      });
+      await shuffleDeck(cardsOnDeck);
+      const parts = await PartModel.findAll({ where: { prototypeId } });
 
-      const cardsOnDeck = prototypes[prototypeId].parts.filter(
-        (part) => part.type === PART_TYPE.CARD && part.parentId === deckId
-      );
-      shuffleDeck(cardsOnDeck as Card[]);
-      io.to(prototypeId.toString()).emit(
-        'UPDATE_PARTS',
-        prototypes[prototypeId].parts
-      );
+      io.to(prototypeId.toString()).emit('UPDATE_PARTS', parts);
     }
   );
 
   socket.on(
     'UPDATE_PART',
-    ({
+    async ({
       prototypeId,
       updatedPart,
     }: {
       prototypeId: number;
-      updatedPart: Part;
+      updatedPart: PartModel;
     }) => {
-      if (!prototypes[prototypeId]) {
-        return;
-      }
+      await PartModel.update(updatedPart, {
+        where: { id: updatedPart.id, prototypeId },
+      });
+      const parts = await PartModel.findAll({ where: { prototypeId } });
 
-      const index = prototypes[prototypeId].parts.findIndex(
-        (part) => part.id === updatedPart.id
-      );
-      if (index !== -1) {
-        prototypes[prototypeId].parts[index] = updatedPart;
-        io.to(prototypeId.toString()).emit(
-          'UPDATE_PARTS',
-          prototypes[prototypeId].parts
-        );
-      }
+      io.to(prototypeId.toString()).emit('UPDATE_PARTS', parts);
     }
   );
 
