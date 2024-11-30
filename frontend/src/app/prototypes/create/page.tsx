@@ -1,5 +1,8 @@
-import CreatePrototypeForm from '@/features/prototype/components/CreatePrototypeFrom';
+'use client';
+
+import CreatePrototypeForm from '@/features/prototype/components/organisms/CreatePrototypeFrom';
 import React from 'react';
+import { withAuth } from '@/app/components/withAuth';
 
 const CreatePrototypePage: React.FC = () => {
   return (
@@ -9,4 +12,4 @@ const CreatePrototypePage: React.FC = () => {
   );
 };
 
-export default CreatePrototypePage;
+export default withAuth(CreatePrototypePage);

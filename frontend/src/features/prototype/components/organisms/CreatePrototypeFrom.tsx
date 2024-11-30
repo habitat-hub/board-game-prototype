@@ -25,6 +25,7 @@ const CreatePrototypeForm: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ name, playerCount }),
+        credentials: 'include',
       });
 
       if (response.ok) {

@@ -1,6 +1,12 @@
 import React, { useMemo } from 'react';
 
-import { AllPart, Card, Hand, Prototype } from '../type';
+import {
+  AllPart,
+  Card,
+  Hand,
+  Player,
+  Prototype,
+} from '@/features/prototype/type';
 
 const PART_DEFAULT_CONFIG = {
   CARD: {
@@ -45,13 +51,15 @@ const PART_DEFAULT_CONFIG = {
 interface PartCreationViewProps {
   prototype: Prototype;
   parts: AllPart[];
-  onAddPart: (part: AllPart) => void;
+  onAddPart: (part: Omit<AllPart, 'id' | 'prototypeId'>) => void;
   mainViewRef: React.RefObject<HTMLDivElement>;
+  players: Player[];
 }
 
 const PartCreationView: React.FC<PartCreationViewProps> = ({
   prototype,
   parts,
+  players,
   onAddPart,
   mainViewRef,
 }) => {
@@ -78,17 +86,15 @@ const PartCreationView: React.FC<PartCreationViewProps> = ({
         return;
       }
 
-      const newPart: AllPart = {
-        id: Date.now(),
-        prototypeId: prototype.id,
-        parentId: null,
+      const newPart: Omit<AllPart, 'id' | 'prototypeId'> = {
         type: partId,
+        parentId: null,
         name: partConfig.name,
+        description: partConfig.description,
+        color: partConfig.color,
         position: { x: centerX, y: centerY },
         width: partConfig.width,
         height: partConfig.height,
-        description: partConfig.description,
-        color: partConfig.color,
         order: maxOrder + 0.1,
         configurableTypeAsChild: partConfig.configurableTypeAsChild,
       };
@@ -96,9 +102,10 @@ const PartCreationView: React.FC<PartCreationViewProps> = ({
         (newPart as Card).isReversible = (
           partConfig as typeof PART_DEFAULT_CONFIG.CARD
         ).isReversible;
+        (newPart as Card).isFlipped = false;
       }
       if (partId === 'hand') {
-        (newPart as Hand).ownerId = prototype.players[0].id;
+        (newPart as Hand).ownerId = players[0].id;
       }
 
       onAddPart(newPart);

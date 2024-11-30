@@ -1,9 +1,12 @@
 export interface Prototype {
   id: number;
+  userId: number;
   groupId: number;
   name: string;
-  players: Player[];
+  isEdit: boolean;
   isPreview: boolean;
+  isPublic: boolean;
+  players: Player[];
 }
 
 export type AllPart = Part | Card | Hand;
@@ -26,13 +29,21 @@ export interface Part {
 
 export interface Card extends Part {
   isReversible: boolean;
+  isFlipped: boolean;
 }
 
 export interface Hand extends Part {
-  ownerId: string;
+  ownerId: number;
 }
 
 export interface Player {
-  id: string;
+  id: number;
   name: string;
+  userId: number | null;
+  order: number;
+}
+
+export interface User {
+  id: number;
+  username: string;
 }
