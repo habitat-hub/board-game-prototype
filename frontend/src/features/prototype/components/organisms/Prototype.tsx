@@ -214,7 +214,7 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
         x: part.position.x + 10,
         y: part.position.y + 10,
       },
-      order: part.order + 0.1,
+      order: part.order + 0.1, // FIXME: パーツの重なりをチェックして順番をずらす(コレだと他のパーツと重なる可能性がある)
     };
     setParts((prevParts) => [...prevParts, newPart]);
     socket.emit('ADD_PART', {
