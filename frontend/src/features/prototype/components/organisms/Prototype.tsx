@@ -208,26 +208,28 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
 
   return (
     <div className="flex h-screen">
-      <div
-        className={`transition-width duration-300 ${
-          isCreationViewOpen ? 'w-1/6' : 'w-10'
-        }`}
-      >
-        <button
-          onClick={() => setIsCreationViewOpen(!isCreationViewOpen)}
-          className="bg-blue-500 text-white p-2"
+      {viewMode === VIEW_MODE.EDIT && (
+        <div
+          className={`transition-width duration-300 ${
+            isCreationViewOpen ? 'w-1/6' : 'w-10'
+          }`}
         >
-          {isCreationViewOpen ? '＜' : '＞'}
-        </button>
-        {isCreationViewOpen && (
-          <PartCreationView
-            prototype={prototype}
-            parts={parts}
-            onAddPart={handleAddPart}
-            mainViewRef={mainViewRef}
-          />
-        )}
-      </div>
+          <button
+            onClick={() => setIsCreationViewOpen(!isCreationViewOpen)}
+            className="bg-blue-500 text-white p-2"
+          >
+            {isCreationViewOpen ? '＜' : '＞'}
+          </button>
+          {isCreationViewOpen && (
+            <PartCreationView
+              prototype={prototype}
+              parts={parts}
+              onAddPart={handleAddPart}
+              mainViewRef={mainViewRef}
+            />
+          )}
+        </div>
+      )}
       <div
         ref={mainViewRef}
         className={`flex-1 transition-width duration-300 ${
@@ -244,28 +246,30 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
           viewMode={viewMode}
         />
       </div>
-      <div
-        className={`transition-width duration-300 ${
-          isPropertyViewOpen ? 'w-1/6' : 'w-10'
-        }`}
-      >
-        <div className="flex justify-end">
-          <button
-            onClick={() => setIsPropertyViewOpen(!isPropertyViewOpen)}
-            className="bg-blue-500 text-white p-2"
-          >
-            {isPropertyViewOpen ? '＞' : '＜'}
-          </button>
+      {viewMode === VIEW_MODE.EDIT && (
+        <div
+          className={`transition-width duration-300 ${
+            isPropertyViewOpen ? 'w-1/6' : 'w-10'
+          }`}
+        >
+          <div className="flex justify-end">
+            <button
+              onClick={() => setIsPropertyViewOpen(!isPropertyViewOpen)}
+              className="bg-blue-500 text-white p-2"
+            >
+              {isPropertyViewOpen ? '＞' : '＜'}
+            </button>
+          </div>
+          {isPropertyViewOpen && (
+            <PartPropertyView
+              players={prototype.players}
+              selectedPart={selectedPart}
+              onUpdatePart={handleUpdatePart}
+              onDuplicatePart={handleDuplicatePart}
+            />
+          )}
         </div>
-        {isPropertyViewOpen && (
-          <PartPropertyView
-            players={prototype.players}
-            selectedPart={selectedPart}
-            onUpdatePart={handleUpdatePart}
-            onDuplicatePart={handleDuplicatePart}
-          />
-        )}
-      </div>
+      )}
     </div>
   );
 };
