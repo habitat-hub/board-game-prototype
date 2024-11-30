@@ -24,6 +24,7 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
   const [players, setPlayers] = useState<Player[]>([]);
   const mainViewRef = useRef<HTMLDivElement>(null);
   const [accessibleUsers, setAccessibleUsers] = useState<User[]>([]);
+  const [userId, setUserId] = useState<number | null>(null);
 
   useEffect(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -49,6 +50,15 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
       })
       .catch((error) => console.error('Error fetching prototypes:', error));
   }, [prototypeId, viewMode]);
+
+  useEffect(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    fetch(`${apiUrl}/auth/user`, {
+      credentials: 'include',
+    })
+      .then((response) => response.json())
+      .then((user) => setUserId(user.id));
+  }, []);
 
   // NOTE: 他クライアントからパーツ更新の配信があった際にプロパティビューを最新化する
   // 選択中のパーツを依存配列に入れると無限ループになってしまうため、意図的に依存配列から外している
@@ -117,14 +127,14 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
     );
     if (!card) return;
 
-    // カードの場合、手札との重なりをチェック
+    // カードの場合、他の親になりえるパーツとの重なりをチェック
     const cardPosition = { x, y };
     const cardSize = {
       width: card.width,
       height: card.height,
     };
 
-    // ドロップ位置の真下にある手札を探す
+    // ドロップ位置の真下にある親になりえるパーツを探す
     const parentParts = parts.filter((part) =>
       part.configurableTypeAsChild.includes(PART_TYPE.CARD)
     );
@@ -196,14 +206,15 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
     });
   };
 
+  // NOTE: 同じプロトタイプないでの複製
   const handleDuplicatePart = (part: AllPart) => {
     const newPart = {
       ...part,
-      id: Date.now(),
       position: {
         x: part.position.x + 10,
         y: part.position.y + 10,
       },
+      order: part.order + 0.1,
     };
     setParts((prevParts) => [...prevParts, newPart]);
     socket.emit('ADD_PART', {
@@ -220,7 +231,7 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
     });
   };
 
-  if (!prototype) {
+  if (!prototype || !userId) {
     return <div>Loading...</div>;
   }
 
@@ -244,6 +255,7 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
               parts={parts}
               onAddPart={handleAddPart}
               mainViewRef={mainViewRef}
+              players={players}
             />
           )}
         </div>
@@ -255,8 +267,10 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
         }`}
       >
         <PartMainView
+          userId={userId}
           prototypeId={Number(prototypeId)}
           parts={parts}
+          players={players}
           onMovePart={handleMovePart}
           onSelectPart={handleSelectPart}
           onMoveCard={handleMoveCard}
@@ -280,7 +294,7 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
           </div>
           {isPropertyViewOpen && (
             <PartPropertyView
-              players={prototype.players}
+              players={players}
               selectedPart={selectedPart}
               onUpdatePart={handleUpdatePart}
               onDuplicatePart={handleDuplicatePart}

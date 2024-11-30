@@ -1,14 +1,16 @@
 import Link from 'next/link';
 import React, { Fragment, useState } from 'react';
-import { AllPart, Card } from '@/features/prototype/type';
+import { AllPart, Card, Hand, Player } from '@/features/prototype/type';
 import { Socket } from 'socket.io-client';
 import { PART_TYPE, VIEW_MODE } from '@/features/prototype/const';
 import CardPart from '@/features/prototype/components/atoms/CardPart';
 import DeckPart from '@/features/prototype/components/atoms/DeckPard';
 
 interface PartMainViewProps {
+  userId: number;
   prototypeId: number;
   parts: AllPart[];
+  players: Player[];
   onMovePart: (id: number, position: { x: number; y: number }) => void;
   onSelectPart: (part: AllPart) => void;
   onMoveCard: (partId: number, x: number, y: number) => void;
@@ -17,8 +19,10 @@ interface PartMainViewProps {
 }
 
 const PartMainView: React.FC<PartMainViewProps> = ({
+  userId,
   prototypeId,
   parts,
+  players,
   onMovePart,
   onSelectPart,
   onMoveCard,
@@ -152,6 +156,12 @@ const PartMainView: React.FC<PartMainViewProps> = ({
             <Fragment key={part.id}>
               {part.type === PART_TYPE.CARD && (
                 <CardPart
+                  userId={userId}
+                  hands={
+                    parts.filter((p) => p.type === PART_TYPE.HAND) as Hand[]
+                  }
+                  players={players}
+                  viewMode={viewMode}
                   prototypeId={prototypeId}
                   card={part as Card}
                   onDragStart={handleDragStart}

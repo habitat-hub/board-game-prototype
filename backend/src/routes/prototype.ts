@@ -9,6 +9,7 @@ import {
   checkPrototypeOwner,
 } from '../middlewares/accessControle';
 import PartModel from '../models/Part';
+import { clonePlayersAndParts } from '../helpers/prototypeHelper';
 
 const router = express.Router();
 
@@ -73,9 +74,7 @@ router.get(
   checkPrototypeAccess,
   async (req: Request, res: Response) => {
     const prototypeId = parseInt(req.params.prototypeId, 10);
-    const prototype = await PrototypeModel.findByPk(prototypeId, {
-      include: [{ model: PlayerModel, as: 'players' }],
-    });
+    const prototype = await PrototypeModel.findByPk(prototypeId);
     if (!prototype) {
       res.status(404).json({ error: 'プロトタイプが見つかりません' });
       return;
@@ -127,17 +126,12 @@ router.post(
         prototypeId: newPrototype.id,
       });
 
-      // パーツとプレイヤーをコピー
-      await Promise.all(
-        editPrototypeParts.map((part) =>
-          part.clone({ newPrototypeId: newPrototype.id })
-        )
+      await clonePlayersAndParts(
+        editPrototypePlayers,
+        editPrototypeParts,
+        newPrototype
       );
-      await Promise.all(
-        editPrototypePlayers.map((player) =>
-          player.clone({ newPrototypeId: newPrototype.id })
-        )
-      );
+
       res.json(newPrototype);
       return;
     }
@@ -149,15 +143,10 @@ router.post(
     // 既存のパーツとプレイヤーを削除した上で、新しいパーツとプレイヤーをコピー
     await PartModel.destroy({ where: { prototypeId: previewPrototype.id } });
     await PlayerModel.destroy({ where: { prototypeId: previewPrototype.id } });
-    await Promise.all(
-      editPrototypeParts.map((part) =>
-        part.clone({ newPrototypeId: previewPrototype.id })
-      )
-    );
-    await Promise.all(
-      editPrototypePlayers.map((player) =>
-        player.clone({ newPrototypeId: previewPrototype.id })
-      )
+    await clonePlayersAndParts(
+      editPrototypePlayers,
+      editPrototypeParts,
+      previewPrototype
     );
     res.json(updatedPreviewPrototype[1][0]);
   }
@@ -197,17 +186,12 @@ router.post(
         prototypeId: newPrototype.id,
       });
 
-      // パーツとプレイヤーをコピー
-      await Promise.all(
-        previewPrototypeParts.map((part) =>
-          part.clone({ newPrototypeId: newPrototype.id })
-        )
+      await clonePlayersAndParts(
+        previewPrototypePlayers,
+        previewPrototypeParts,
+        newPrototype
       );
-      await Promise.all(
-        previewPrototypePlayers.map((player) =>
-          player.clone({ newPrototypeId: newPrototype.id })
-        )
-      );
+
       res.json(newPrototype);
       return;
     }
@@ -221,16 +205,12 @@ router.post(
     await PlayerModel.destroy({
       where: { prototypeId: publishedPrototype.id },
     });
-    await Promise.all(
-      previewPrototypeParts.map((part) =>
-        part.clone({ newPrototypeId: publishedPrototype.id })
-      )
+    await clonePlayersAndParts(
+      previewPrototypePlayers,
+      previewPrototypeParts,
+      publishedPrototype
     );
-    await Promise.all(
-      previewPrototypePlayers.map((player) =>
-        player.clone({ newPrototypeId: publishedPrototype.id })
-      )
-    );
+
     res.json(updatedPublishedPrototype[1][0]);
   }
 );

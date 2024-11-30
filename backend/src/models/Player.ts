@@ -9,11 +9,21 @@ class PlayerModel extends Model {
   public prototypeId!: number;
   public userId!: number | null;
   public order!: number;
-  async clone({ newPrototypeId }: { newPrototypeId: number }) {
+  public originalPlayerId: number | undefined;
+
+  async clone({
+    newPrototypeId,
+    originalPlayerId,
+  }: {
+    newPrototypeId: number;
+    originalPlayerId: number;
+  }) {
     return PlayerModel.create({
       name: this.name,
       prototypeId: newPrototypeId,
+      userId: this.userId,
       order: this.order,
+      originalPlayerId,
     });
   }
 }
@@ -40,6 +50,10 @@ PlayerModel.init(
     order: {
       type: DataTypes.INTEGER,
       allowNull: false,
+    },
+    originalPlayerId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
     },
   },
   {

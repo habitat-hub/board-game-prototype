@@ -1,9 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Card, Part } from '@/features/prototype/type';
+import { Card, Hand, Part, Player } from '@/features/prototype/type';
 import { Socket } from 'socket.io-client';
 import { VscSync, VscSyncIgnored } from 'react-icons/vsc';
+import { VIEW_MODE } from '../../const';
 
 interface CardProps {
+  userId: number;
+  hands: Hand[];
+  players: Player[];
+  viewMode: string;
   prototypeId: number;
   card: Card;
   onDragStart: (e: React.DragEvent<HTMLDivElement>, id: number) => void;
@@ -13,6 +18,10 @@ interface CardProps {
 }
 
 const CardPart: React.FC<CardProps> = ({
+  userId,
+  hands,
+  players,
+  viewMode,
   prototypeId,
   card,
   onDragStart,
@@ -52,6 +61,32 @@ const CardPart: React.FC<CardProps> = ({
   const handleDoubleClick = () => {
     flipCard(!isFlipped);
   };
+
+  const parentHand = hands.find((hand) => hand.id === card.parentId);
+  const isOwner =
+    parentHand &&
+    players.find((player) => player.id === parentHand.ownerId)?.userId ===
+      userId;
+  // NOTE: ゲームプレイ中の場合は、オーナー以外カードを見れない
+  if (viewMode !== VIEW_MODE.EDIT && parentHand && !isOwner) {
+    return (
+      <div
+        draggable
+        onDragStart={(e) => onDragStart(e, card.id)}
+        className="absolute cursor-move border border-gray-300 rounded p-2 shadow-sm text-xs flipped"
+        style={{
+          left: card.position.x,
+          top: card.position.y,
+          width: card.width,
+          height: card.height,
+          backgroundColor: card.color || 'white',
+          zIndex: order,
+        }}
+      >
+        <VscSyncIgnored className="absolute bottom-1 right-1" size={16} />
+      </div>
+    );
+  }
 
   return (
     <div
