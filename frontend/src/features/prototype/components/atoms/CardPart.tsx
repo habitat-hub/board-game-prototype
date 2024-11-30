@@ -20,7 +20,7 @@ const CardPart: React.FC<CardProps> = ({
   socket,
   order,
 }) => {
-  const [isFlipped, setIsFlipped] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(card.isFlipped);
 
   const flipCard = useCallback(
     (isNextFlipped: boolean) => {

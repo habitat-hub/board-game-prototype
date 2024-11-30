@@ -122,7 +122,7 @@ io.on('connection', (socket: Socket) => {
 
   socket.on(
     'FLIP_CARD',
-    ({
+    async ({
       prototypeId,
       cardId,
       isNextFlipped,
@@ -131,6 +131,11 @@ io.on('connection', (socket: Socket) => {
       cardId: number;
       isNextFlipped: boolean;
     }) => {
+      await PartModel.update(
+        { isFlipped: isNextFlipped },
+        { where: { id: cardId } }
+      );
+
       io.to(prototypeId.toString()).emit('FLIP_CARD', {
         cardId,
         isNextFlipped,

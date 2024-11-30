@@ -16,7 +16,8 @@ class PartModel extends Model {
   public order!: number;
   public configurableTypeAsChild!: string[];
   public isReversible: boolean | undefined;
-  public ownerId: string | undefined;
+  public isFlipped: boolean | undefined;
+  public ownerId: number | undefined;
 
   async clone({ newPrototypeId }: { newPrototypeId: number }) {
     return PartModel.create({
@@ -32,6 +33,7 @@ class PartModel extends Model {
       order: this.order,
       configurableTypeAsChild: this.configurableTypeAsChild,
       isReversible: this.isReversible,
+      isFlipped: this.isFlipped,
       ownerId: this.ownerId,
     });
   }
@@ -92,8 +94,12 @@ PartModel.init(
       type: DataTypes.BOOLEAN,
       allowNull: true,
     },
+    isFlipped: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+    },
     ownerId: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
   },

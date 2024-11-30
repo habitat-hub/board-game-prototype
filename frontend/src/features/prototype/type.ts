@@ -29,10 +29,11 @@ export interface Part {
 
 export interface Card extends Part {
   isReversible: boolean;
+  isFlipped: boolean;
 }
 
 export interface Hand extends Part {
-  ownerId: string;
+  ownerId: number;
 }
 
 export interface Player {

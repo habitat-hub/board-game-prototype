@@ -94,6 +94,7 @@ const PartCreationView: React.FC<PartCreationViewProps> = ({
         (newPart as Card).isReversible = (
           partConfig as typeof PART_DEFAULT_CONFIG.CARD
         ).isReversible;
+        (newPart as Card).isFlipped = false;
       }
       if (partId === 'hand') {
         (newPart as Hand).ownerId = prototype.players[0].id;
