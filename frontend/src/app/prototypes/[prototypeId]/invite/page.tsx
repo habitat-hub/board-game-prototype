@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { User } from '@/features/prototype/type';
 import { useParams, useRouter } from 'next/navigation';
 
+export const runtime = 'edge';
 const InvitePage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestedUsers, setSuggestedUsers] = useState<User[]>([]);
