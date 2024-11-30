@@ -7,6 +7,8 @@ import http from 'http';
 import cors from 'cors';
 import { Server, Socket } from 'socket.io';
 
+dotenv.config();
+
 import { shuffleDeck } from './helpers/prototypeHelper';
 import { PART_TYPE } from './const';
 import sequelize from './models';
@@ -16,8 +18,6 @@ import prototypeRoutes from './routes/prototype';
 import userRoutes from './routes/user';
 import PartModel from './models/Part';
 import PlayerModel from './models/Player';
-
-dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
