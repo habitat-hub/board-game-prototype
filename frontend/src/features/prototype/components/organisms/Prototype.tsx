@@ -6,9 +6,10 @@ import PartCreationView from '@/features/prototype/components/molecules/PartCrea
 import PartMainView from '@/features/prototype/components/molecules/PartMainView';
 import PartPropertyView from '@/features/prototype/components/molecules/PartPropertyView';
 import { useParams } from 'next/navigation';
-import { Prototype, AllPart } from '@/features/prototype/type';
+import { Prototype, AllPart, User, Player } from '@/features/prototype/type';
 import { io } from 'socket.io-client';
 import { PART_TYPE, VIEW_MODE } from '@/features/prototype/const';
+import GameSettingsView from '../molecules/GameSettingView';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
@@ -19,7 +20,10 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
   const [selectedPart, setSelectedPart] = useState<AllPart | null>(null);
   const [isCreationViewOpen, setIsCreationViewOpen] = useState(true);
   const [isPropertyViewOpen, setIsPropertyViewOpen] = useState(true);
+  const [isGameSettingsViewOpen, setIsGameSettingsViewOpen] = useState(false);
+  const [players, setPlayers] = useState<Player[]>([]);
   const mainViewRef = useRef<HTMLDivElement>(null);
+  const [accessibleUsers, setAccessibleUsers] = useState<User[]>([]);
 
   useEffect(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -27,23 +31,24 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
       credentials: 'include',
     })
       .then((response) => response.json())
-      .then((data) => {
-        if (data.isEdit && viewMode !== VIEW_MODE.EDIT) {
-          window.location.href = `/prototypes/${data.id}/edit`;
+      .then(({ prototype, accessibleUsers }) => {
+        if (prototype.isEdit && viewMode !== VIEW_MODE.EDIT) {
+          window.location.href = `/prototypes/${prototype.id}/edit`;
           return;
         }
-        if (data.isPreview && viewMode !== VIEW_MODE.PREVIEW) {
-          window.location.href = `/prototypes/${data.id}/preview`;
+        if (prototype.isPreview && viewMode !== VIEW_MODE.PREVIEW) {
+          window.location.href = `/prototypes/${prototype.id}/preview`;
           return;
         }
-        if (data.isPublic && viewMode !== VIEW_MODE.PUBLIC) {
-          window.location.href = `/prototypes/${data.id}/published`;
+        if (prototype.isPublic && viewMode !== VIEW_MODE.PUBLIC) {
+          window.location.href = `/prototypes/${prototype.id}/published`;
           return;
         }
-        setPrototype(data);
+        setPrototype(prototype);
+        setAccessibleUsers(accessibleUsers);
       })
       .catch((error) => console.error('Error fetching prototypes:', error));
-  }, [prototypeId]);
+  }, [prototypeId, viewMode]);
 
   // NOTE: 他クライアントからパーツ更新の配信があった際にプロパティビューを最新化する
   // 選択中のパーツを依存配列に入れると無限ループになってしまうため、意図的に依存配列から外している
@@ -64,8 +69,13 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
       setParts(parts);
     });
 
+    socket.on('UPDATE_PLAYERS', (players) => {
+      setPlayers(players);
+    });
+
     return () => {
       socket.off('UPDATE_PARTS');
+      socket.off('UPDATE_PLAYERS');
     };
   }, [prototypeId]);
 
@@ -202,6 +212,14 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
     });
   };
 
+  const handleUpdatePlayerUser = (playerId: number, userId: number | null) => {
+    socket.emit('UPDATE_PLAYER_USER', {
+      prototypeId: Number(prototypeId),
+      playerId,
+      userId,
+    });
+  };
+
   if (!prototype) {
     return <div>Loading...</div>;
   }
@@ -266,6 +284,29 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
               selectedPart={selectedPart}
               onUpdatePart={handleUpdatePart}
               onDuplicatePart={handleDuplicatePart}
+            />
+          )}
+        </div>
+      )}
+      {viewMode !== VIEW_MODE.EDIT && (
+        <div
+          className={`transition-width duration-300 ${
+            isGameSettingsViewOpen ? 'w-1/6' : 'w-10'
+          }`}
+        >
+          <div className="flex justify-end">
+            <button
+              onClick={() => setIsGameSettingsViewOpen(!isGameSettingsViewOpen)}
+              className="bg-blue-500 text-white p-2"
+            >
+              {isGameSettingsViewOpen ? '＞' : '＜'}
+            </button>
+          </div>
+          {isGameSettingsViewOpen && (
+            <GameSettingsView
+              players={players}
+              accessibleUsers={accessibleUsers}
+              onUserChange={handleUpdatePlayerUser}
             />
           )}
         </div>

@@ -14,6 +14,7 @@ import sequelize from './models';
 import UserModel from './models/User';
 import authRoutes from './routes/auth';
 import PartModel from './models/Part';
+import PlayerModel from './models/Player';
 
 dotenv.config();
 
@@ -97,9 +98,13 @@ app.use('/auth', authRoutes);
 io.on('connection', (socket: Socket) => {
   socket.on('JOIN_PROTOTYPE', async (prototypeId: number) => {
     const parts = await PartModel.findAll({ where: { prototypeId } });
+    const players = await PlayerModel.findAll({
+      where: { prototypeId },
+    });
 
     socket.join(prototypeId.toString());
     socket.emit('UPDATE_PARTS', parts);
+    socket.emit('UPDATE_PLAYERS', players);
   });
 
   socket.on(
@@ -206,6 +211,26 @@ io.on('connection', (socket: Socket) => {
       const parts = await PartModel.findAll({ where: { prototypeId } });
 
       io.to(prototypeId.toString()).emit('UPDATE_PARTS', parts);
+    }
+  );
+
+  socket.on(
+    'UPDATE_PLAYER_USER',
+    async ({
+      prototypeId,
+      playerId,
+      userId,
+    }: {
+      prototypeId: number;
+      playerId: number;
+      userId: number | null;
+    }) => {
+      await PlayerModel.update({ userId }, { where: { id: playerId } });
+      const players = await PlayerModel.findAll({
+        where: { prototypeId },
+      });
+
+      io.to(prototypeId.toString()).emit('UPDATE_PLAYERS', players);
     }
   );
 

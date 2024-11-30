@@ -60,6 +60,7 @@ router.post('/', async (req: Request, res: Response) => {
       await PlayerModel.create({
         prototypeId: newPrototype.id,
         name: `プレイヤー${i + 1}`,
+        order: i,
       });
     })
   );
@@ -79,7 +80,16 @@ router.get(
       res.status(404).json({ error: 'プロトタイプが見つかりません' });
       return;
     }
-    res.json(prototype);
+
+    // FIXME: アクセス可能なユーザーを中間テーブルを通じて、一つの関数で取得する(現状なぜかエラーになる)
+    const accessRights = await AccessModel.findAll({
+      where: { prototypeId },
+    });
+    const accessibleUsers = await UserModel.findAll({
+      where: { id: accessRights.map((p) => p.userId) },
+    });
+
+    res.json({ prototype, accessibleUsers });
   }
 );
 

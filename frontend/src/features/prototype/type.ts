@@ -36,6 +36,13 @@ export interface Hand extends Part {
 }
 
 export interface Player {
-  id: string;
+  id: number;
   name: string;
+  userId: number | null;
+  order: number;
+}
+
+export interface User {
+  id: number;
+  username: string;
 }

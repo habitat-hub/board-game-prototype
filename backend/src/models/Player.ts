@@ -1,16 +1,19 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
 import PrototypeModel from './Prototype';
+import UserModel from './User';
 
 class PlayerModel extends Model {
   public id!: number;
   public name!: string;
   public prototypeId!: number;
-
+  public userId!: number | null;
+  public order!: number;
   async clone({ newPrototypeId }: { newPrototypeId: number }) {
     return PlayerModel.create({
       name: this.name,
       prototypeId: newPrototypeId,
+      order: this.order,
     });
   }
 }
@@ -30,6 +33,14 @@ PlayerModel.init(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    order: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
   },
   {
     sequelize,
@@ -37,6 +48,7 @@ PlayerModel.init(
   }
 );
 
+PlayerModel.belongsTo(UserModel, { foreignKey: 'userId' });
 PlayerModel.belongsTo(PrototypeModel, { foreignKey: 'prototypeId' });
 PrototypeModel.hasMany(PlayerModel, {
   foreignKey: 'prototypeId',
