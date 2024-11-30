@@ -67,10 +67,15 @@ const PartMainView: React.FC<PartMainViewProps> = ({
       `${apiUrl}/api/prototypes/${prototypeId}/published`,
       {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
       }
     );
     if (response.ok) {
-      window.location.href = `/prototypes/${prototypeId}/public`;
+      const publishedPrototype = await response.json();
+      window.location.href = `/prototypes/${publishedPrototype.id}/published`;
     } else {
       const errorMessage = await response.text();
       console.error('Error creating public:', errorMessage);

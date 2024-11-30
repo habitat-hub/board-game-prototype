@@ -87,23 +87,27 @@ router.post(
   '/:prototypeId/preview',
   checkPrototypeAccess,
   async (req: Request, res: Response) => {
-    const prototypeId = parseInt(req.params.prototypeId, 10);
-    const prototype = await PrototypeModel.findByPk(prototypeId);
-    if (!prototype?.isEdit) {
+    const editPrototypeId = parseInt(req.params.prototypeId, 10);
+    const editPrototype = await PrototypeModel.findByPk(editPrototypeId);
+    if (!editPrototype?.isEdit) {
       res.status(404).json({ error: 'プロトタイプが見つかりません' });
       return;
     }
 
     const previewPrototype = await PrototypeModel.findOne({
-      where: { groupId: prototypeId, isPreview: true },
+      where: { groupId: editPrototype.groupId, isPreview: true },
     });
-    const parts = await PartModel.findAll({ where: { prototypeId } });
-    const players = await PlayerModel.findAll({ where: { prototypeId } });
+    const editPrototypeParts = await PartModel.findAll({
+      where: { prototypeId: editPrototypeId },
+    });
+    const editPrototypePlayers = await PlayerModel.findAll({
+      where: { prototypeId: editPrototypeId },
+    });
     if (!previewPrototype) {
       const newPrototype = await PrototypeModel.create({
-        userId: prototype.userId,
-        groupId: prototype.groupId,
-        name: prototype.name,
+        userId: editPrototype.userId,
+        groupId: editPrototype.groupId,
+        name: editPrototype.name,
         isEdit: false,
         isPreview: true,
         isPublic: false,
@@ -115,10 +119,12 @@ router.post(
 
       // パーツとプレイヤーをコピー
       await Promise.all(
-        parts.map((part) => part.clone({ newPrototypeId: newPrototype.id }))
+        editPrototypeParts.map((part) =>
+          part.clone({ newPrototypeId: newPrototype.id })
+        )
       );
       await Promise.all(
-        players.map((player) =>
+        editPrototypePlayers.map((player) =>
           player.clone({ newPrototypeId: newPrototype.id })
         )
       );
@@ -127,17 +133,19 @@ router.post(
     }
 
     const updatedPreviewPrototype = await PrototypeModel.update(
-      { name: prototype.name },
+      { name: editPrototype.name },
       { returning: true, where: { id: previewPrototype.id } }
     );
     // 既存のパーツとプレイヤーを削除した上で、新しいパーツとプレイヤーをコピー
     await PartModel.destroy({ where: { prototypeId: previewPrototype.id } });
     await PlayerModel.destroy({ where: { prototypeId: previewPrototype.id } });
     await Promise.all(
-      parts.map((part) => part.clone({ newPrototypeId: previewPrototype.id }))
+      editPrototypeParts.map((part) =>
+        part.clone({ newPrototypeId: previewPrototype.id })
+      )
     );
     await Promise.all(
-      players.map((player) =>
+      editPrototypePlayers.map((player) =>
         player.clone({ newPrototypeId: previewPrototype.id })
       )
     );
@@ -149,25 +157,27 @@ router.post(
   '/:prototypeId/published',
   checkPrototypeAccess,
   async (req: Request, res: Response) => {
-    const prototypeId = parseInt(req.params.prototypeId, 10);
-    const prototype = await PrototypeModel.findByPk(prototypeId, {
-      include: [{ model: PlayerModel, as: 'players' }],
-    });
-    if (!prototype?.isPreview) {
+    const previewPrototypeId = parseInt(req.params.prototypeId, 10);
+    const previewPrototype = await PrototypeModel.findByPk(previewPrototypeId);
+    if (!previewPrototype?.isPreview) {
       res.status(404).json({ error: 'プロトタイプが見つかりません' });
       return;
     }
 
     const publishedPrototype = await PrototypeModel.findOne({
-      where: { groupId: prototypeId, isPublic: true },
+      where: { groupId: previewPrototype.groupId, isPublic: true },
     });
-    const parts = await PartModel.findAll({ where: { prototypeId } });
-    const players = await PlayerModel.findAll({ where: { prototypeId } });
+    const previewPrototypeParts = await PartModel.findAll({
+      where: { prototypeId: previewPrototypeId },
+    });
+    const previewPrototypePlayers = await PlayerModel.findAll({
+      where: { prototypeId: previewPrototypeId },
+    });
     if (!publishedPrototype) {
       const newPrototype = await PrototypeModel.create({
-        userId: prototype.userId,
-        groupId: prototype.groupId,
-        name: prototype.name,
+        userId: previewPrototype.userId,
+        groupId: previewPrototype.groupId,
+        name: previewPrototype.name,
         isEdit: false,
         isPreview: false,
         isPublic: true,
@@ -179,10 +189,12 @@ router.post(
 
       // パーツとプレイヤーをコピー
       await Promise.all(
-        parts.map((part) => part.clone({ newPrototypeId: newPrototype.id }))
+        previewPrototypeParts.map((part) =>
+          part.clone({ newPrototypeId: newPrototype.id })
+        )
       );
       await Promise.all(
-        players.map((player) =>
+        previewPrototypePlayers.map((player) =>
           player.clone({ newPrototypeId: newPrototype.id })
         )
       );
@@ -190,8 +202,8 @@ router.post(
       return;
     }
 
-    const updatedPreviewPrototype = await PrototypeModel.update(
-      { name: prototype.name },
+    const updatedPublishedPrototype = await PrototypeModel.update(
+      { name: previewPrototype.name },
       { returning: true, where: { id: publishedPrototype.id } }
     );
     // 既存のパーツとプレイヤーを削除した上で、新しいパーツとプレイヤーをコピー
@@ -200,14 +212,16 @@ router.post(
       where: { prototypeId: publishedPrototype.id },
     });
     await Promise.all(
-      parts.map((part) => part.clone({ newPrototypeId: publishedPrototype.id }))
+      previewPrototypeParts.map((part) =>
+        part.clone({ newPrototypeId: publishedPrototype.id })
+      )
     );
     await Promise.all(
-      players.map((player) =>
+      previewPrototypePlayers.map((player) =>
         player.clone({ newPrototypeId: publishedPrototype.id })
       )
     );
-    res.json(updatedPreviewPrototype[1][0]);
+    res.json(updatedPublishedPrototype[1][0]);
   }
 );
 

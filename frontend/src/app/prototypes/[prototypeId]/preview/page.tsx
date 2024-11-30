@@ -3,8 +3,11 @@
 import React from 'react';
 import { withAuth } from '@/app/components/withAuth';
 
+import PrototypeComponent from '@/features/prototype/components/organisms/Prototype';
+import { VIEW_MODE } from '@/features/prototype/const';
+
 const PreviewPrototypePage: React.FC = () => {
-  return <div>PreviewPrototypePage</div>;
+  return <PrototypeComponent viewMode={VIEW_MODE.PREVIEW} />;
 };
 
 export default withAuth(PreviewPrototypePage);
