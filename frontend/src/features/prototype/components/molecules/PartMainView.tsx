@@ -107,6 +107,10 @@ const PartMainView: React.FC<PartMainViewProps> = ({
     onMoveCard(partId, x, y);
   };
 
+  const handleInvite = () => {
+    window.location.href = `/prototypes/${prototypeId}/invite`;
+  };
+
   return (
     <div className="flex-1 p-4 flex flex-col h-full">
       <div className="mb-4 flex justify-between items-center">
@@ -116,8 +120,8 @@ const PartMainView: React.FC<PartMainViewProps> = ({
         >
           プロトタイプ一覧へ
         </Link>
-        {viewMode === VIEW_MODE.EDIT && (
-          <div className="flex">
+        <div className="flex">
+          {viewMode === VIEW_MODE.EDIT && (
             <button
               onClick={handleClickPreview}
               disabled={isPreviewLoading}
@@ -129,10 +133,8 @@ const PartMainView: React.FC<PartMainViewProps> = ({
             >
               プレビュー版配信
             </button>
-          </div>
-        )}
-        {viewMode === VIEW_MODE.PREVIEW && (
-          <div className="flex">
+          )}
+          {viewMode === VIEW_MODE.PREVIEW && (
             <button
               onClick={handleClickPublic}
               disabled={isPublicLoading}
@@ -142,8 +144,14 @@ const PartMainView: React.FC<PartMainViewProps> = ({
             >
               公開版配信
             </button>
-          </div>
-        )}
+          )}
+          <button
+            onClick={handleInvite}
+            className="ml-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+          >
+            招待
+          </button>
+        </div>
       </div>
       <div
         className="border border-gray-300 p-4 relative flex-1"

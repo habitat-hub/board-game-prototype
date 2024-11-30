@@ -8,11 +8,12 @@ import cors from 'cors';
 import { Server, Socket } from 'socket.io';
 
 import { shuffleDeck } from './helpers/prototypeHelper';
-import prototypeRoutes from './routes/prototype';
 import { PART_TYPE } from './const';
 import sequelize from './models';
 import UserModel from './models/User';
 import authRoutes from './routes/auth';
+import prototypeRoutes from './routes/prototype';
+import userRoutes from './routes/user';
 import PartModel from './models/Part';
 import PlayerModel from './models/Player';
 
@@ -92,8 +93,9 @@ passport.deserializeUser((id: number | number, done) => {
     done(null, user);
   });
 });
-app.use('/api/prototypes', prototypeRoutes);
 app.use('/auth', authRoutes);
+app.use('/api/prototypes', prototypeRoutes);
+app.use('/api/users', userRoutes);
 
 io.on('connection', (socket: Socket) => {
   socket.on('JOIN_PROTOTYPE', async (prototypeId: number) => {

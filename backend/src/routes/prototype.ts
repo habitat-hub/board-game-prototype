@@ -10,6 +10,7 @@ import {
 } from '../middlewares/accessControle';
 import PartModel from '../models/Part';
 import { clonePlayersAndParts } from '../helpers/prototypeHelper';
+import { Op } from 'sequelize';
 
 const router = express.Router();
 
@@ -236,30 +237,34 @@ router.delete(
 );
 
 // ユーザーをプロトタイプに招待する
-router.post(
-  '/:prototypeId/invite/:guestId',
-  checkPrototypeOwner,
-  async (req, res) => {
-    const prototypeId = parseInt(req.params.prototypeId, 10);
-    const guestId = parseInt(req.params.guestId, 10);
+router.post('/:prototypeId/invite', checkPrototypeOwner, async (req, res) => {
+  const prototypeId = parseInt(req.params.prototypeId, 10);
+  const guestIds = req.body.guestIds;
 
-    try {
-      const prototype = await PrototypeModel.findByPk(prototypeId);
-      const guest = await UserModel.findByPk(guestId);
-
-      if (!prototype || !guest) {
-        res
-          .status(404)
-          .json({ message: 'Prototype, User, or Inviter not found' });
-        return;
-      }
-
-      await AccessModel.create({ userId: guest.id, prototypeId: prototype.id });
-      res.status(200).json({ message: 'User invited successfully' });
-    } catch (error) {
-      res.status(500).json({ message: 'Internal server error' });
+  try {
+    const prototype = await PrototypeModel.findByPk(prototypeId);
+    const guests = await UserModel.findAll({
+      where: { id: { [Op.in]: guestIds } },
+    });
+    if (!prototype || !guests) {
+      res
+        .status(404)
+        .json({ message: 'Prototype, User, or Inviter not found' });
+      return;
     }
+
+    await Promise.all(
+      guests.map(async (guest) => {
+        await AccessModel.upsert({
+          userId: guest.id,
+          prototypeId: prototype.id,
+        });
+      })
+    );
+    res.status(200).json({ message: 'User invited successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
   }
-);
+});
 
 export default router;
