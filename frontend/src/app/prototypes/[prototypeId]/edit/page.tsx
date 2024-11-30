@@ -2,13 +2,13 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { withAuth } from '@/app/components/withAuth';
-import PartCreationView from '@/features/prototype/components/PartCreationView';
-import PartMainView from '@/features/prototype/components/PartMainView';
-import PartPropertyView from '@/features/prototype/components/PartPropertyView';
+import PartCreationView from '@/features/prototype/components/molecules/PartCreationView';
+import PartMainView from '@/features/prototype/components/molecules/PartMainView';
+import PartPropertyView from '@/features/prototype/components/molecules/PartPropertyView';
 import { useParams } from 'next/navigation';
 import { Prototype, AllPart } from '@/features/prototype/type';
 import { io } from 'socket.io-client';
-import { PART_TYPE } from '@/features/prototype/const';
+import { PART_TYPE, VIEW_MODE } from '@/features/prototype/const';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
@@ -227,6 +227,7 @@ const EditPrototypePage: React.FC = () => {
           onSelectPart={handleSelectPart}
           onMoveCard={handleMoveCard}
           socket={socket}
+          viewMode={VIEW_MODE.EDIT}
         />
       </div>
       <div

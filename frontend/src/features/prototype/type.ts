@@ -3,7 +3,9 @@ export interface Prototype {
   userId: number;
   groupId: number;
   name: string;
+  isEdit: boolean;
   isPreview: boolean;
+  isPublic: boolean;
   players: Player[];
 }
 

@@ -6,6 +6,13 @@ class PlayerModel extends Model {
   public id!: number;
   public name!: string;
   public prototypeId!: number;
+
+  async clone({ newPrototypeId }: { newPrototypeId: number }) {
+    return PlayerModel.create({
+      name: this.name,
+      prototypeId: newPrototypeId,
+    });
+  }
 }
 
 PlayerModel.init(

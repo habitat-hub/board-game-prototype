@@ -4,3 +4,9 @@ export const PART_TYPE = {
   HAND: 'hand',
   DECK: 'deck',
 };
+
+export const VIEW_MODE = {
+  EDIT: 'edit',
+  PREVIEW: 'preview',
+  PUBLIC: 'public',
+};

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Part } from '../type';
+import { Part } from '@/features/prototype/type';
 import { Socket } from 'socket.io-client';
 
 interface DeckProps {

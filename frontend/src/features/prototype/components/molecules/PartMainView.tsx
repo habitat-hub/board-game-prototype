@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import React, { Fragment } from 'react';
-import { AllPart, Card } from '../type';
-import CardPart from './CardPart';
+import React, { Fragment, useState } from 'react';
+import { AllPart, Card } from '@/features/prototype/type';
 import { Socket } from 'socket.io-client';
-import DeckPart from './DeckPard';
-import { PART_TYPE } from '../const';
+import { PART_TYPE, VIEW_MODE } from '@/features/prototype/const';
+import CardPart from '@/features/prototype/components/atoms/CardPart';
+import DeckPart from '@/features/prototype/components/atoms/DeckPard';
 
 interface PartMainViewProps {
   prototypeId: number;
@@ -13,6 +13,7 @@ interface PartMainViewProps {
   onSelectPart: (part: AllPart) => void;
   onMoveCard: (partId: number, x: number, y: number) => void;
   socket: Socket;
+  viewMode: string;
 }
 
 const PartMainView: React.FC<PartMainViewProps> = ({
@@ -22,7 +23,61 @@ const PartMainView: React.FC<PartMainViewProps> = ({
   onSelectPart,
   onMoveCard,
   socket,
+  viewMode,
 }) => {
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const [isPublicLoading, setIsPublicLoading] = useState(false);
+
+  const handleClickPreview = async () => {
+    if (viewMode !== VIEW_MODE.EDIT) {
+      return;
+    }
+
+    setIsPreviewLoading(true);
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const response = await fetch(
+      `${apiUrl}/api/prototypes/${prototypeId}/preview`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      }
+    );
+
+    if (response.ok) {
+      const previewPrototype = await response.json();
+      window.location.href = `/prototypes/${previewPrototype.id}/preview`;
+    } else {
+      const errorMessage = await response.text();
+      console.error('Error creating preview:', errorMessage);
+    }
+    setIsPreviewLoading(false);
+  };
+
+  const handleClickPublic = async () => {
+    if (viewMode !== VIEW_MODE.PREVIEW) {
+      return;
+    }
+
+    setIsPublicLoading(true);
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const response = await fetch(
+      `${apiUrl}/api/prototypes/${prototypeId}/published`,
+      {
+        method: 'POST',
+      }
+    );
+    if (response.ok) {
+      window.location.href = `/prototypes/${prototypeId}/public`;
+    } else {
+      const errorMessage = await response.text();
+      console.error('Error creating public:', errorMessage);
+    }
+    setIsPublicLoading(false);
+  };
+
   const handleDragStart = (e: React.DragEvent, partId: number) => {
     e.dataTransfer.setData('partId', partId.toString());
     onSelectPart(parts.find((part) => part.id === partId) as AllPart);
@@ -45,13 +100,41 @@ const PartMainView: React.FC<PartMainViewProps> = ({
 
   return (
     <div className="flex-1 p-4 flex flex-col h-full">
-      <div className="mb-4">
+      <div className="mb-4 flex justify-between items-center">
         <Link
           href="/prototypes"
           className="text-blue-500 hover:text-blue-700 hover:underline"
         >
           プロトタイプ一覧へ
         </Link>
+        {viewMode === VIEW_MODE.EDIT && (
+          <div className="flex">
+            <button
+              onClick={handleClickPreview}
+              disabled={isPreviewLoading}
+              className={`bg-yellow-500 text-white px-4 py-2 rounded transition ${
+                isPreviewLoading
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-yellow-600'
+              }`}
+            >
+              プレビュー版配信
+            </button>
+          </div>
+        )}
+        {viewMode === VIEW_MODE.PREVIEW && (
+          <div className="flex">
+            <button
+              onClick={handleClickPublic}
+              disabled={isPublicLoading}
+              className={`bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition ${
+                isPublicLoading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              公開版配信
+            </button>
+          </div>
+        )}
       </div>
       <div
         className="border border-gray-300 p-4 relative flex-1"

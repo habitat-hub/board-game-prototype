@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Card, Part } from '../type';
+import { Card, Part } from '@/features/prototype/type';
 import { Socket } from 'socket.io-client';
 import { VscSync, VscSyncIgnored } from 'react-icons/vsc';
 

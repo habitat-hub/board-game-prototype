@@ -7,7 +7,9 @@ class PrototypeModel extends Model {
   public userId!: number;
   public groupId!: number;
   public name!: string;
+  public isEdit!: boolean;
   public isPreview!: boolean;
+  public isPublic!: boolean;
 }
 
 PrototypeModel.init(
@@ -29,7 +31,15 @@ PrototypeModel.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    isEdit: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+    },
     isPreview: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+    },
+    isPublic: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
     },

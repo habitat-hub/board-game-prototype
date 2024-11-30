@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Prototype } from '../type';
+import { Prototype } from '@/features/prototype/type';
 
 const PrototypeList: React.FC = () => {
   const [prototypes, setPrototypes] = useState<Prototype[]>([]);
@@ -64,9 +64,10 @@ const PrototypeList: React.FC = () => {
         <ul className="divide-y divide-gray-200">
           {Object.entries(groupedPrototypes).map(
             ([groupId, groupPrototypes]) => {
+              const editPrototype = groupPrototypes.find((p) => p.isEdit);
               const previewPrototype = groupPrototypes.find((p) => p.isPreview);
               const publishedPrototype = groupPrototypes.find(
-                (p) => !p.isPreview
+                (p) => p.isPublic
               );
 
               return (
@@ -78,19 +79,22 @@ const PrototypeList: React.FC = () => {
                   {/* TODO: ボタン以外をクリックしたら、編集画面に遷移する */}
                   {/* TODO: 更新日時と更新者を表示する */}
                   <span className="flex-1">
-                    {previewPrototype?.name} -{' '}
-                    {previewPrototype?.players.length}人用ゲーム
+                    {editPrototype?.name} - {editPrototype?.players.length}
+                    人用ゲーム
                   </span>
                   <div className="flex space-x-2 ml-auto">
                     <Link
-                      href={`prototypes/${previewPrototype?.id}/edit`}
+                      href={`prototypes/${editPrototype?.id}/edit`}
                       className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 transition-colors"
                     >
                       編集
                     </Link>
                     <Link
                       href={`prototypes/${previewPrototype?.id}/preview`}
-                      className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition-colors"
+                      className={`bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition-colors ${
+                        !previewPrototype ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                      onClick={(e) => !previewPrototype && e.preventDefault()}
                     >
                       プレビュー版
                     </Link>
@@ -107,6 +111,9 @@ const PrototypeList: React.FC = () => {
                     </Link>
                     <button
                       onClick={() => {
+                        if (editPrototype) {
+                          handleDelete(editPrototype.id);
+                        }
                         if (previewPrototype) {
                           handleDelete(previewPrototype.id);
                         }

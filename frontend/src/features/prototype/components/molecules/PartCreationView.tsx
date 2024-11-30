@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 
-import { AllPart, Card, Hand, Prototype } from '../type';
+import { AllPart, Card, Hand, Prototype } from '@/features/prototype/type';
 
 const PART_DEFAULT_CONFIG = {
   CARD: {

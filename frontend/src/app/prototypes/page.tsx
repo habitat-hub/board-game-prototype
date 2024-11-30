@@ -1,6 +1,6 @@
 'use client';
 
-import PrototypeList from '@/features/prototype/components/PrototypeList';
+import PrototypeList from '@/features/prototype/components/organisms/PrototypeList';
 import React from 'react';
 import { withAuth } from '@/app/components/withAuth';
 

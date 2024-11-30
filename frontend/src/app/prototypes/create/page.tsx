@@ -1,6 +1,6 @@
 'use client';
 
-import CreatePrototypeForm from '@/features/prototype/components/CreatePrototypeFrom';
+import CreatePrototypeForm from '@/features/prototype/components/organisms/CreatePrototypeFrom';
 import React from 'react';
 import { withAuth } from '@/app/components/withAuth';
 

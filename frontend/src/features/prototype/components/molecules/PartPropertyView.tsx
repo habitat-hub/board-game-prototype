@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { AllPart, AllPartKey, Player } from '../type';
-import { PART_TYPE } from '../const';
+import { AllPart, AllPartKey, Player } from '@/features/prototype/type';
+import { PART_TYPE } from '@/features/prototype/const';
 
 interface PartPropertyViewProps {
   selectedPart: AllPart | null;

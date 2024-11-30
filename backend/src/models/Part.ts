@@ -17,6 +17,24 @@ class PartModel extends Model {
   public configurableTypeAsChild!: string[];
   public isReversible: boolean | undefined;
   public ownerId: string | undefined;
+
+  async clone({ newPrototypeId }: { newPrototypeId: number }) {
+    return PartModel.create({
+      type: this.type,
+      prototypeId: newPrototypeId,
+      parentId: this.parentId,
+      name: this.name,
+      description: this.description,
+      color: this.color,
+      position: this.position,
+      width: this.width,
+      height: this.height,
+      order: this.order,
+      configurableTypeAsChild: this.configurableTypeAsChild,
+      isReversible: this.isReversible,
+      ownerId: this.ownerId,
+    });
+  }
 }
 
 PartModel.init(

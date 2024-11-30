@@ -8,6 +8,7 @@ import {
   checkPrototypeAccess,
   checkPrototypeOwner,
 } from '../middlewares/accessControle';
+import PartModel from '../models/Part';
 
 const router = express.Router();
 
@@ -43,9 +44,11 @@ router.post('/', async (req: Request, res: Response) => {
   const newPrototype = await PrototypeModel.create({
     userId: user.id,
     name,
-    isPreview: true,
+    isEdit: true,
+    isPreview: false,
+    isPublic: false,
   });
-  // NOTE: グループIDはプレビューのIDと同じにする
+  // NOTE: グループIDは編集用のプロトタイプのIDと同じにする
   await PrototypeModel.update(
     { groupId: newPrototype.id },
     { where: { id: newPrototype.id } }
@@ -77,6 +80,134 @@ router.get(
       return;
     }
     res.json(prototype);
+  }
+);
+
+router.post(
+  '/:prototypeId/preview',
+  checkPrototypeAccess,
+  async (req: Request, res: Response) => {
+    const prototypeId = parseInt(req.params.prototypeId, 10);
+    const prototype = await PrototypeModel.findByPk(prototypeId);
+    if (!prototype?.isEdit) {
+      res.status(404).json({ error: 'プロトタイプが見つかりません' });
+      return;
+    }
+
+    const previewPrototype = await PrototypeModel.findOne({
+      where: { groupId: prototypeId, isPreview: true },
+    });
+    const parts = await PartModel.findAll({ where: { prototypeId } });
+    const players = await PlayerModel.findAll({ where: { prototypeId } });
+    if (!previewPrototype) {
+      const newPrototype = await PrototypeModel.create({
+        userId: prototype.userId,
+        groupId: prototype.groupId,
+        name: prototype.name,
+        isEdit: false,
+        isPreview: true,
+        isPublic: false,
+      });
+      await AccessModel.create({
+        userId: newPrototype.userId,
+        prototypeId: newPrototype.id,
+      });
+
+      // パーツとプレイヤーをコピー
+      await Promise.all(
+        parts.map((part) => part.clone({ newPrototypeId: newPrototype.id }))
+      );
+      await Promise.all(
+        players.map((player) =>
+          player.clone({ newPrototypeId: newPrototype.id })
+        )
+      );
+      res.json(newPrototype);
+      return;
+    }
+
+    const updatedPreviewPrototype = await PrototypeModel.update(
+      { name: prototype.name },
+      { returning: true, where: { id: previewPrototype.id } }
+    );
+    // 既存のパーツとプレイヤーを削除した上で、新しいパーツとプレイヤーをコピー
+    await PartModel.destroy({ where: { prototypeId: previewPrototype.id } });
+    await PlayerModel.destroy({ where: { prototypeId: previewPrototype.id } });
+    await Promise.all(
+      parts.map((part) => part.clone({ newPrototypeId: previewPrototype.id }))
+    );
+    await Promise.all(
+      players.map((player) =>
+        player.clone({ newPrototypeId: previewPrototype.id })
+      )
+    );
+    res.json(updatedPreviewPrototype[1][0]);
+  }
+);
+
+router.post(
+  '/:prototypeId/published',
+  checkPrototypeAccess,
+  async (req: Request, res: Response) => {
+    const prototypeId = parseInt(req.params.prototypeId, 10);
+    const prototype = await PrototypeModel.findByPk(prototypeId, {
+      include: [{ model: PlayerModel, as: 'players' }],
+    });
+    if (!prototype?.isPreview) {
+      res.status(404).json({ error: 'プロトタイプが見つかりません' });
+      return;
+    }
+
+    const publishedPrototype = await PrototypeModel.findOne({
+      where: { groupId: prototypeId, isPublic: true },
+    });
+    const parts = await PartModel.findAll({ where: { prototypeId } });
+    const players = await PlayerModel.findAll({ where: { prototypeId } });
+    if (!publishedPrototype) {
+      const newPrototype = await PrototypeModel.create({
+        userId: prototype.userId,
+        groupId: prototype.groupId,
+        name: prototype.name,
+        isEdit: false,
+        isPreview: false,
+        isPublic: true,
+      });
+      await AccessModel.create({
+        userId: newPrototype.userId,
+        prototypeId: newPrototype.id,
+      });
+
+      // パーツとプレイヤーをコピー
+      await Promise.all(
+        parts.map((part) => part.clone({ newPrototypeId: newPrototype.id }))
+      );
+      await Promise.all(
+        players.map((player) =>
+          player.clone({ newPrototypeId: newPrototype.id })
+        )
+      );
+      res.json(newPrototype);
+      return;
+    }
+
+    const updatedPreviewPrototype = await PrototypeModel.update(
+      { name: prototype.name },
+      { returning: true, where: { id: publishedPrototype.id } }
+    );
+    // 既存のパーツとプレイヤーを削除した上で、新しいパーツとプレイヤーをコピー
+    await PartModel.destroy({ where: { prototypeId: publishedPrototype.id } });
+    await PlayerModel.destroy({
+      where: { prototypeId: publishedPrototype.id },
+    });
+    await Promise.all(
+      parts.map((part) => part.clone({ newPrototypeId: publishedPrototype.id }))
+    );
+    await Promise.all(
+      players.map((player) =>
+        player.clone({ newPrototypeId: publishedPrototype.id })
+      )
+    );
+    res.json(updatedPreviewPrototype[1][0]);
   }
 );
 
