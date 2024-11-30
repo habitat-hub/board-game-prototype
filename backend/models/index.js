@@ -6,20 +6,7 @@ const Sequelize = require('sequelize');
 const basename = path.basename(__filename);
 const db = {};
 
-let sequelize;
-const config = {
-  username: process.env.DATABASE_USERNAME,
-  password: process.env.DATABASE_PASSWORD,
-  database: process.env.DATABASE_NAME,
-  host: process.env.DATABASE_HOST,
-  dialect: 'postgres',
-};
-sequelize = new Sequelize(
-  config.database,
-  config.username,
-  config.password,
-  config
-);
+const sequelize = new Sequelize(process.env.DATABASE_URL);
 
 fs.readdirSync(__dirname)
   .filter((file) => {
