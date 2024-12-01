@@ -72,7 +72,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         className="bg-blue-600 text-white p-4 flex justify-between items-center"
         style={{ height: '48px' }}
       >
-        <h1 className="text-lg">Code-Son</h1>
+        <button
+          onClick={() => {
+            if (pathname !== '/prototypes' && pathname !== '/') {
+              router.push('/prototypes');
+            }
+          }}
+          className="text-lg font-bold p-2 rounded"
+        >
+          Code-Son
+        </button>
         {userName && pathname !== '/' && (
           <div className="relative" ref={logoutRef}>
             <button
