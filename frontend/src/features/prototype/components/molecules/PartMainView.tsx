@@ -4,8 +4,9 @@ import { AllPart, Card, Hand, Player } from '@/features/prototype/type';
 import { Socket } from 'socket.io-client';
 import { PART_TYPE, VIEW_MODE } from '@/features/prototype/const';
 import CardPart from '@/features/prototype/components/atoms/CardPart';
-import DeckPart from '@/features/prototype/components/atoms/DeckPard';
+import DeckPart from '@/features/prototype/components/atoms/DeckPart';
 import axiosInstance from '@/utils/axiosInstance';
+import PartWrapper from '../atoms/PartWrapper';
 
 interface PartMainViewProps {
   userId: number;
@@ -209,26 +210,15 @@ const PartMainView: React.FC<PartMainViewProps> = ({
                   order={index}
                 />
               )}
-              {part.type !== 'card' && part.type !== 'deck' && (
-                <div
-                  draggable
+              {part.type !== PART_TYPE.CARD && part.type !== PART_TYPE.DECK && (
+                <PartWrapper
+                  part={part}
+                  order={index}
                   onDragStart={(e) => handleDragStart(e, part.id)}
                   onClick={() => onSelectPart(part)}
-                  className="absolute cursor-move border border-gray-300 rounded p-2 shadow-sm text-xs"
-                  style={{
-                    left: part.position.x,
-                    top: part.position.y,
-                    width: part.width,
-                    height: part.height,
-                    backgroundColor: part.color || 'white',
-                    zIndex: index,
-                    overflow: 'hidden',
-                    whiteSpace: 'normal',
-                    textOverflow: 'ellipsis',
-                  }}
                 >
                   {part.name}
-                </div>
+                </PartWrapper>
               )}
             </Fragment>
           ))}

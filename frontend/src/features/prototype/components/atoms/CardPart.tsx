@@ -3,6 +3,7 @@ import { Card, Hand, Part, Player } from '@/features/prototype/type';
 import { Socket } from 'socket.io-client';
 import { VscSync, VscSyncIgnored } from 'react-icons/vsc';
 import { VIEW_MODE } from '../../const';
+import PartWrapper from './PartWrapper';
 
 interface CardProps {
   userId: number;
@@ -70,44 +71,28 @@ const CardPart: React.FC<CardProps> = ({
   // NOTE: ゲームプレイ中の場合は、オーナー以外カードを見れない
   if (viewMode !== VIEW_MODE.EDIT && parentHand && !isOwner) {
     return (
-      <div
-        draggable
+      <PartWrapper
+        part={card}
+        order={order}
+        customClassName={'flipped'}
         onDragStart={(e) => onDragStart(e, card.id)}
-        className="absolute cursor-move border border-gray-300 rounded p-2 shadow-sm text-xs flipped"
-        style={{
-          left: card.position.x,
-          top: card.position.y,
-          width: card.width,
-          height: card.height,
-          backgroundColor: card.color || 'white',
-          zIndex: order,
-        }}
       >
         <VscSyncIgnored className="absolute bottom-1 right-1" size={16} />
-      </div>
+      </PartWrapper>
     );
   }
 
   return (
-    <div
-      onDoubleClick={handleDoubleClick}
-      draggable
-      onDragStart={(e) => onDragStart(e, card.id)}
+    <PartWrapper
+      part={card}
+      order={order}
       onClick={() => onSelectPart(card)}
-      className={`absolute cursor-move border border-gray-300 rounded p-2 shadow-sm text-xs
-        ${isFlipped ? 'flipped' : ''}`}
-      style={{
-        left: card.position.x,
-        top: card.position.y,
-        width: card.width,
-        height: card.height,
-        backgroundColor: card.color || 'white',
+      onDoubleClick={handleDoubleClick}
+      onDragStart={(e) => onDragStart(e, card.id)}
+      customClassName={`${isFlipped ? 'flipped' : ''}`}
+      customStyle={{
         transition: 'transform 0.6s',
         transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-        zIndex: order,
-        overflow: 'hidden',
-        whiteSpace: 'normal',
-        textOverflow: 'ellipsis',
       }}
     >
       {isFlipped ? '' : card.name}
@@ -116,7 +101,7 @@ const CardPart: React.FC<CardProps> = ({
       ) : (
         <VscSyncIgnored className="absolute bottom-1 right-1" size={16} />
       )}
-    </div>
+    </PartWrapper>
   );
 };
 

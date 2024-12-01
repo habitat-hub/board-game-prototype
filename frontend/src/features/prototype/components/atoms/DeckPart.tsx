@@ -1,6 +1,7 @@
 import React from 'react';
 import { Part } from '@/features/prototype/type';
 import { Socket } from 'socket.io-client';
+import PartWrapper from './PartWrapper';
 
 interface DeckProps {
   prototypeId: number;
@@ -24,26 +25,15 @@ const DeckPart: React.FC<DeckProps> = ({
   };
 
   return (
-    <div
-      onDoubleClick={handleShuffle}
-      draggable
-      onDragStart={(e) => onDragStart(e, deck.id)}
+    <PartWrapper
+      part={deck}
+      order={order}
       onClick={() => onSelectPart(deck)}
-      className={`absolute cursor-move border border-gray-300 rounded p-2 shadow-sm text-xs`}
-      style={{
-        left: deck.position.x,
-        top: deck.position.y,
-        width: deck.width,
-        height: deck.height,
-        backgroundColor: deck.color || 'white',
-        zIndex: order,
-        overflow: 'hidden',
-        whiteSpace: 'normal',
-        textOverflow: 'ellipsis',
-      }}
+      onDragStart={(e) => onDragStart(e, deck.id)}
+      onDoubleClick={handleShuffle}
     >
       {deck.name}
-    </div>
+    </PartWrapper>
   );
 };
 
