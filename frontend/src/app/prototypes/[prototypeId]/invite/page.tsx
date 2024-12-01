@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { User } from '@/features/prototype/type';
 import { useParams, useRouter } from 'next/navigation';
-
+import axiosInstance from '@/utils/axiosInstance';
 export const runtime = 'edge';
 const InvitePage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -17,15 +17,13 @@ const InvitePage: React.FC = () => {
   useEffect(() => {
     if (searchTerm) {
       // メールアドレスでユーザーを検索
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      fetch(
-        `${apiUrl}/api/users/search?username=${encodeURIComponent(searchTerm)}`,
-        {
-          credentials: 'include',
-        }
-      )
-        .then((response) => response.json())
-        .then((data) => setSuggestedUsers(data));
+      axiosInstance
+        .get(`/api/users/search?username=${encodeURIComponent(searchTerm)}`)
+        .then((response) => setSuggestedUsers(response.data))
+        .catch((error) => {
+          console.error('Error fetching users:', error);
+          setError('ユーザーの検索に失敗しました。');
+        });
     } else {
       setSuggestedUsers([]);
     }
@@ -51,36 +49,20 @@ const InvitePage: React.FC = () => {
     }
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      const response = await fetch(
-        `${apiUrl}/api/prototypes/${prototypeId}/invite`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            guestIds: selectedUsers.map((user) => user.id),
-          }),
-          credentials: 'include',
-        }
-      );
+      await axiosInstance.post(`/api/prototypes/${prototypeId}/invite`, {
+        guestIds: selectedUsers.map((user) => user.id),
+      });
 
-      if (response.ok) {
-        setSelectedUsers([]);
-        setSearchTerm('');
-        setError(null);
-        setSuccessMessage('招待が成功しました！');
-        setTimeout(() => {
-          router.push(`/prototypes/${prototypeId}/edit`);
-        }, 2000);
-      } else {
-        const errorMessage = await response.text();
-        setError(`プロトタイプの作成に失敗しました: ${errorMessage}`);
-      }
+      setSelectedUsers([]);
+      setSearchTerm('');
+      setError(null);
+      setSuccessMessage('招待が成功しました！');
+      setTimeout(() => {
+        router.push(`/prototypes/${prototypeId}/edit`);
+      }, 2000);
     } catch (error) {
-      console.error('Error creating prototype:', error);
-      setError('エラーが発生しました。');
+      console.error('Error inviting users:', error);
+      setError('プロトタイプの作成に失敗しました。');
     }
   };
 

@@ -9,6 +9,7 @@ import { Prototype, AllPart, User, Player } from '@/features/prototype/type';
 import { io } from 'socket.io-client';
 import { PART_TYPE, VIEW_MODE } from '@/features/prototype/const';
 import GameSettingsView from '../molecules/GameSettingView';
+import axiosInstance from '@/utils/axiosInstance';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
@@ -26,12 +27,10 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
   const [userId, setUserId] = useState<number | null>(null);
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    fetch(`${apiUrl}/api/prototypes/${prototypeId}`, {
-      credentials: 'include',
-    })
-      .then((response) => response.json())
-      .then(({ prototype, accessibleUsers }) => {
+    axiosInstance
+      .get(`/api/prototypes/${prototypeId}`)
+      .then((response) => {
+        const { prototype, accessibleUsers } = response.data;
         if (prototype.isEdit && viewMode !== VIEW_MODE.EDIT) {
           window.location.href = `/prototypes/${prototype.id}/edit`;
           return;
@@ -51,12 +50,10 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
   }, [prototypeId, viewMode]);
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    fetch(`${apiUrl}/auth/user`, {
-      credentials: 'include',
-    })
-      .then((response) => response.json())
-      .then((user) => setUserId(user.id));
+    axiosInstance
+      .get('/auth/user')
+      .then((response) => setUserId(response.data.id))
+      .catch((error) => console.error('Error fetching user:', error));
   }, []);
 
   // NOTE: 他クライアントからパーツ更新の配信があった際にプロパティビューを最新化する

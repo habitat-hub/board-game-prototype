@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import passport from 'passport';
+import UserModel from '../models/User';
 
 const router = Router();
 
@@ -43,8 +44,11 @@ router.post('/logout', (req, res) => {
 // ユーザー情報取得ルート
 router.get('/user', (req, res) => {
   if (req.isAuthenticated()) {
-    // ユーザーがログインしている場合、ユーザー情報を返す
-    res.json(req.user);
+    const user = req.user as UserModel;
+    res.json({
+      id: user.id,
+      username: user.username,
+    });
   } else {
     // ログインしていない場合、空のオブジェクトを返す
     res.json({});

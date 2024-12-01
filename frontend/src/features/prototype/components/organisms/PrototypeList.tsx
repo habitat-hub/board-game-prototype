@@ -3,22 +3,16 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Prototype } from '@/features/prototype/type';
+import axiosInstance from '@/utils/axiosInstance';
 
 const PrototypeList: React.FC = () => {
   const [prototypes, setPrototypes] = useState<Prototype[]>([]);
 
   const fetchPrototypes = () => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    fetch(`${apiUrl}/api/prototypes`, {
-      credentials: 'include',
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => setPrototypes(data))
+    axiosInstance
+      .get(`${apiUrl}/api/prototypes`)
+      .then((response) => setPrototypes(response.data))
       .catch((error) => console.error('Error fetching prototypes:', error));
   };
 
@@ -38,15 +32,8 @@ const PrototypeList: React.FC = () => {
   const handleDelete = async (id: number) => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     try {
-      const response = await fetch(`${apiUrl}/api/prototypes/${id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      if (response.ok) {
-        fetchPrototypes(); // 削除後に再fetch
-      } else {
-        console.error('Failed to delete prototype');
-      }
+      await axiosInstance.delete(`${apiUrl}/api/prototypes/${id}`);
+      fetchPrototypes(); // 削除後に再fetch
     } catch (error) {
       console.error('Error deleting prototype:', error);
     }

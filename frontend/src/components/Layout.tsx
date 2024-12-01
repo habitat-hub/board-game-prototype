@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import axiosInstance from '@/utils/axiosInstance';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -51,13 +52,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const handleLogout = () => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    fetch(`${apiUrl}/auth/logout`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-    })
+    axiosInstance
+      .post(`${apiUrl}/auth/logout`)
       .then(() => {
         localStorage.removeItem('user'); // ログアウト時にユーザー情報を削除
         window.dispatchEvent(new Event('userUpdated')); // カスタムイベントを発火

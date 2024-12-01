@@ -2,6 +2,7 @@
 
 import React, { ComponentType, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import axiosInstance from '@/utils/axiosInstance';
 
 export function withAuth<P>(WrappedComponent: ComponentType<P>) {
   return function AuthenticatedComponent(props: P) {
@@ -15,12 +16,10 @@ export function withAuth<P>(WrappedComponent: ComponentType<P>) {
         setUser(JSON.parse(storedUser));
         setLoading(false);
       } else {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-        fetch(`${apiUrl}/auth/user`, {
-          credentials: 'include',
-        })
-          .then((response) => response.json())
-          .then((data) => {
+        axiosInstance
+          .get('/auth/user')
+          .then((response) => {
+            const data = response.data;
             if (data.username) {
               setUser(data);
               localStorage.setItem('user', JSON.stringify(data));

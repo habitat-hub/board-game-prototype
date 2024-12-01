@@ -5,6 +5,7 @@ import { Socket } from 'socket.io-client';
 import { PART_TYPE, VIEW_MODE } from '@/features/prototype/const';
 import CardPart from '@/features/prototype/components/atoms/CardPart';
 import DeckPart from '@/features/prototype/components/atoms/DeckPard';
+import axiosInstance from '@/utils/axiosInstance';
 
 interface PartMainViewProps {
   userId: number;
@@ -38,26 +39,18 @@ const PartMainView: React.FC<PartMainViewProps> = ({
     }
 
     setIsPreviewLoading(true);
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    const response = await fetch(
-      `${apiUrl}/api/prototypes/${prototypeId}/preview`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      }
-    );
+    try {
+      const response = await axiosInstance.post(
+        `/api/prototypes/${prototypeId}/preview`
+      );
 
-    if (response.ok) {
-      const previewPrototype = await response.json();
+      const previewPrototype = response.data;
       window.location.href = `/prototypes/${previewPrototype.id}/preview`;
-    } else {
-      const errorMessage = await response.text();
-      console.error('Error creating preview:', errorMessage);
+    } catch (error) {
+      console.error('Error creating preview:', error);
+    } finally {
+      setIsPreviewLoading(false);
     }
-    setIsPreviewLoading(false);
   };
 
   const handleClickPublic = async () => {
@@ -66,25 +59,18 @@ const PartMainView: React.FC<PartMainViewProps> = ({
     }
 
     setIsPublicLoading(true);
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    const response = await fetch(
-      `${apiUrl}/api/prototypes/${prototypeId}/published`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      }
-    );
-    if (response.ok) {
-      const publishedPrototype = await response.json();
+    try {
+      const response = await axiosInstance.post(
+        `/api/prototypes/${prototypeId}/published`
+      );
+
+      const publishedPrototype = response.data;
       window.location.href = `/prototypes/${publishedPrototype.id}/published`;
-    } else {
-      const errorMessage = await response.text();
-      console.error('Error creating public:', errorMessage);
+    } catch (error) {
+      console.error('Error creating public:', error);
+    } finally {
+      setIsPublicLoading(false);
     }
-    setIsPublicLoading(false);
   };
 
   const handleDragStart = (e: React.DragEvent, partId: number) => {

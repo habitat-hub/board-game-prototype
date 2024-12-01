@@ -8,10 +8,9 @@ export async function checkPrototypeOwner(
   res: Response,
   next: NextFunction
 ) {
-  const { prototypeId } = req.params;
-
   try {
     // プロトタイプの作成者かどうかを確認
+    const prototypeId = parseInt(req.params.prototypeId, 10);
     const prototype = await Prototype.findByPk(prototypeId);
     if (prototype && prototype.userId === (req.user as UserModel).id) {
       return next();
@@ -31,11 +30,12 @@ export async function checkPrototypeAccess(
   res: Response,
   next: NextFunction
 ) {
-  const { prototypeId } = req.params;
   const userId = (req.user as UserModel).id;
 
   try {
     // プロトタイプの作成者かどうかを確認
+    const prototypeId = parseInt(req.params.prototypeId, 10);
+    console.log(prototypeId);
     const prototype = await Prototype.findByPk(prototypeId);
     if (prototype && prototype.userId === userId) {
       return next();
@@ -56,6 +56,7 @@ export async function checkPrototypeAccess(
     res.status(403).json({ message: 'Forbidden: No access to this prototype' });
     return;
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Internal server error' });
     return;
   }

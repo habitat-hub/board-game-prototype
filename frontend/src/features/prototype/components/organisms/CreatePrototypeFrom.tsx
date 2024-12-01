@@ -3,40 +3,32 @@
 import Link from 'next/link';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import axiosInstance from '@/utils/axiosInstance';
 
 const CreatePrototypeForm: React.FC = () => {
   const [name, setName] = useState('');
-  const [playerCount, setPlayerCount] = useState<number>(0);
+  const [playerCount, setPlayerCount] = useState<number>(4); // 初期値を4に設定
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!name || playerCount === 0) {
+    if (!name || playerCount <= 0) {
       setError('プロトタイプ名とプレイヤー人数を入力してください。');
       return;
     }
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      const response = await fetch(`${apiUrl}/api/prototypes`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, playerCount }),
-        credentials: 'include',
+      await axiosInstance.post(`${apiUrl}/api/prototypes`, {
+        name,
+        playerCount,
       });
 
-      if (response.ok) {
-        setName('');
-        setPlayerCount(0);
-        setError(null);
-        router.push('/prototypes');
-      } else {
-        const errorMessage = await response.text();
-        setError(`プロトタイプの作成に失敗しました: ${errorMessage}`);
-      }
+      setName('');
+      setPlayerCount(4); // 初期値にリセット
+      setError(null);
+      router.push('/prototypes');
     } catch (error) {
       console.error('Error creating prototype:', error);
       setError('エラーが発生しました。');
@@ -75,7 +67,12 @@ const CreatePrototypeForm: React.FC = () => {
             id="playerCount"
             type="number"
             value={playerCount}
-            onChange={(e) => setPlayerCount(Number(e.target.value))}
+            onChange={(e) => {
+              const value = Number(e.target.value);
+              if (value >= 0) {
+                setPlayerCount(value);
+              }
+            }}
             placeholder="プレイヤー人数"
             className="w-full p-2 border border-gray-300 rounded"
             required

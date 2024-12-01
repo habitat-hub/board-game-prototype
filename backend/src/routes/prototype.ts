@@ -223,10 +223,6 @@ router.delete(
     const prototypeId = parseInt(req.params.prototypeId, 10);
 
     try {
-      // まず関連するプレイヤーを削除
-      await PlayerModel.destroy({ where: { prototypeId } });
-
-      // その後プロトタイプを削除
       await PrototypeModel.destroy({ where: { id: prototypeId } });
 
       res.status(204).send();
