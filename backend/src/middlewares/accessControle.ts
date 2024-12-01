@@ -35,7 +35,6 @@ export async function checkPrototypeAccess(
   try {
     // プロトタイプの作成者かどうかを確認
     const prototypeId = parseInt(req.params.prototypeId, 10);
-    console.log(prototypeId);
     const prototype = await Prototype.findByPk(prototypeId);
     if (prototype && prototype.userId === userId) {
       return next();
