@@ -193,26 +193,26 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
   };
 
   const handleUpdatePart = (updatedPart: AllPart) => {
-    setParts((prevParts) =>
-      prevParts.map((part) => (part.id === updatedPart.id ? updatedPart : part))
-    );
     socket.emit('UPDATE_PART', {
       prototypeId: Number(prototypeId),
       updatedPart,
     });
   };
 
-  // NOTE: 同じプロトタイプないでの複製
+  // NOTE: 同じプロトタイプ内での複製
   const handleDuplicatePart = (part: AllPart) => {
+    // NOTE: idは自動生成されるため、partからidを削除
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, ...rest } = part;
+
     const newPart = {
-      ...part,
+      ...rest,
       position: {
         x: part.position.x + 10,
         y: part.position.y + 10,
       },
       order: part.order + 0.1, // FIXME: パーツの重なりをチェックして順番をずらす(コレだと他のパーツと重なる可能性がある)
     };
-    setParts((prevParts) => [...prevParts, newPart]);
     socket.emit('ADD_PART', {
       prototypeId: Number(prototypeId),
       part: newPart,
