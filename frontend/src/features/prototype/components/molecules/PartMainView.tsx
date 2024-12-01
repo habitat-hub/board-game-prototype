@@ -33,6 +33,9 @@ const PartMainView: React.FC<PartMainViewProps> = ({
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [isPublicLoading, setIsPublicLoading] = useState(false);
 
+  /**
+   * プレビュー版配信
+   */
   const handleClickPreview = async () => {
     if (viewMode !== VIEW_MODE.EDIT) {
       return;
@@ -53,6 +56,9 @@ const PartMainView: React.FC<PartMainViewProps> = ({
     }
   };
 
+  /**
+   * 公開版配信
+   */
   const handleClickPublic = async () => {
     if (viewMode !== VIEW_MODE.PREVIEW) {
       return;
@@ -73,26 +79,52 @@ const PartMainView: React.FC<PartMainViewProps> = ({
     }
   };
 
+  /**
+   * パーツのドラッグ開始
+   * @param e - ドラッグイベント
+   * @param partId - ドラッグするパーツのid
+   */
   const handleDragStart = (e: React.DragEvent, partId: number) => {
     e.dataTransfer.setData('partId', partId.toString());
-    onSelectPart(parts.find((part) => part.id === partId) as AllPart);
+    const part = parts.find((part) => part.id === partId) as AllPart;
+    onSelectPart(part);
+
+    // パウスの位置とパーツの左上のオフセットを計算して保存
+    const rect = e.currentTarget.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const offsetY = e.clientY - rect.top;
+    e.dataTransfer.setData('offsetX', offsetX.toString());
+    e.dataTransfer.setData('offsetY', offsetY.toString());
   };
 
+  /**
+   * パーツのドラッグオーバー
+   * @param e - ドラッグオーバーイベント
+   */
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
   };
 
+  /**
+   * パーツのドロップ
+   * @param e - ドロップイベント
+   */
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const partId = parseInt(e.dataTransfer.getData('partId'));
+    const offsetX = parseFloat(e.dataTransfer.getData('offsetX'));
+    const offsetY = parseFloat(e.dataTransfer.getData('offsetY'));
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = e.clientX - rect.left - offsetX;
+    const y = e.clientY - rect.top - offsetY;
 
     onMovePart(partId, { x, y });
     onMoveCard(partId, x, y);
   };
 
+  /**
+   * ユーザー招待
+   */
   const handleInvite = () => {
     window.location.href = `/prototypes/${prototypeId}/invite`;
   };

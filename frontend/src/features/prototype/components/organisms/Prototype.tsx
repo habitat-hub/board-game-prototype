@@ -26,6 +26,7 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
   const [accessibleUsers, setAccessibleUsers] = useState<User[]>([]);
   const [userId, setUserId] = useState<number | null>(null);
 
+  // プロタイプの取得＆ビューモードが不一致の場合はリダイレクト
   useEffect(() => {
     axiosInstance
       .get(`/api/prototypes/${prototypeId}`)
@@ -49,6 +50,7 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
       .catch((error) => console.error('Error fetching prototypes:', error));
   }, [prototypeId, viewMode]);
 
+  // ユーザーの取得
   useEffect(() => {
     axiosInstance
       .get('/auth/user')
@@ -67,6 +69,7 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
     setSelectedPart(updatedPart);
   }, [parts]);
 
+  // socket通信の設定
   useEffect(() => {
     // サーバーに接続した後、特定のプロトタイプに参加
     socket.emit('JOIN_PROTOTYPE', Number(prototypeId));
@@ -85,10 +88,19 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
     };
   }, [prototypeId]);
 
+  /**
+   * パーツの追加
+   * @param part - 追加するパーツ
+   */
   const handleAddPart = (part: Omit<AllPart, 'id' | 'prototypeId'>) => {
     socket.emit('ADD_PART', { prototypeId: Number(prototypeId), part });
   };
 
+  /**
+   * パーツの移動
+   * @param id - 移動するパーツのid
+   * @param position - 移動するパーツの位置
+   */
   const handleMovePart = (id: number, position: { x: number; y: number }) => {
     socket.emit('MOVE_PART', {
       prototypeId: Number(prototypeId),
@@ -97,6 +109,15 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
     });
   };
 
+  /**
+   * パーツの重なりチェック
+   * @param partPosition - チェックするパーツの位置
+   * @param partSize - チェックするパーツのサイズ
+   * @param partOrder - チェックするパーツの順番
+   * @param otherPartPosition - 他のパーツの位置
+   * @param otherPartSize - 他のパーツのサイズ
+   * @param otherPartOrder - 他のパーツの順番
+   */
   const isPartOnOtherPart = (
     partPosition: { x: number; y: number },
     partSize: { width: number; height: number },
@@ -117,6 +138,12 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
     );
   };
 
+  /**
+   * カードの移動（親の設定を行う）
+   * @param partId - 移動するカードのid
+   * @param x - 移動するカードのx座標
+   * @param y - 移動するカードのy座標
+   */
   const handleMoveCard = (partId: number, x: number, y: number) => {
     const card = parts.find(
       (part) => part.id === partId && part.type === PART_TYPE.CARD
@@ -185,6 +212,10 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
     }
   };
 
+  /**
+   * パーツの選択
+   * @param part - 選択するパーツ
+   */
   const handleSelectPart = (part: AllPart) => {
     setSelectedPart(part);
     if (!isPropertyViewOpen) {
@@ -192,6 +223,10 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
     }
   };
 
+  /**
+   * パーツの更新
+   * @param updatedPart - 更新するパーツ
+   */
   const handleUpdatePart = (updatedPart: AllPart) => {
     socket.emit('UPDATE_PART', {
       prototypeId: Number(prototypeId),
@@ -199,7 +234,10 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
     });
   };
 
-  // NOTE: 同じプロトタイプ内での複製
+  /**
+   * パーツの複製
+   * @param part - 複製するパーツ
+   */
   const handleDuplicatePart = (part: AllPart) => {
     // NOTE: idは自動生成されるため、partからidを削除
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -219,6 +257,11 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
     });
   };
 
+  /**
+   * プレイヤーのユーザー更新
+   * @param playerId - 更新するプレイヤーのid
+   * @param userId - 更新するプレイヤーのユーザーid
+   */
   const handleUpdatePlayerUser = (playerId: number, userId: number | null) => {
     socket.emit('UPDATE_PLAYER_USER', {
       prototypeId: Number(prototypeId),
@@ -234,6 +277,7 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
   return (
     <div className="flex h-full">
       {viewMode === VIEW_MODE.EDIT && (
+        // パーツ作成ビュー
         <div
           className={`transition-width duration-300 ${
             isCreationViewOpen ? 'w-1/6' : 'w-10'
@@ -256,6 +300,7 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
           )}
         </div>
       )}
+      {/* パーツメインビュー */}
       <div
         ref={mainViewRef}
         className={`flex-1 transition-width duration-300 ${
@@ -275,6 +320,7 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
         />
       </div>
       {viewMode === VIEW_MODE.EDIT && (
+        // パーツプロパティビュー
         <div
           className={`transition-width duration-300 ${
             isPropertyViewOpen ? 'w-1/6' : 'w-10'
@@ -299,6 +345,7 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
         </div>
       )}
       {viewMode !== VIEW_MODE.EDIT && (
+        // ゲーム設定ビュー
         <div
           className={`transition-width duration-300 ${
             isGameSettingsViewOpen ? 'w-1/6' : 'w-10'
