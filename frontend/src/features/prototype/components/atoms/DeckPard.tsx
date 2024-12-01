@@ -37,6 +37,9 @@ const DeckPart: React.FC<DeckProps> = ({
         height: deck.height,
         backgroundColor: deck.color || 'white',
         zIndex: order,
+        overflow: 'hidden',
+        whiteSpace: 'normal',
+        textOverflow: 'ellipsis',
       }}
     >
       {deck.name}

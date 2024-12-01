@@ -222,6 +222,9 @@ const PartMainView: React.FC<PartMainViewProps> = ({
                     height: part.height,
                     backgroundColor: part.color || 'white',
                     zIndex: index,
+                    overflow: 'hidden',
+                    whiteSpace: 'normal',
+                    textOverflow: 'ellipsis',
                   }}
                 >
                   {part.name}

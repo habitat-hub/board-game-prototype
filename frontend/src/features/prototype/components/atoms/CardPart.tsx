@@ -105,6 +105,9 @@ const CardPart: React.FC<CardProps> = ({
         transition: 'transform 0.6s',
         transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         zIndex: order,
+        overflow: 'hidden',
+        whiteSpace: 'normal',
+        textOverflow: 'ellipsis',
       }}
     >
       {isFlipped ? '' : card.name}
