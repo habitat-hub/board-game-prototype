@@ -2,6 +2,10 @@ import PartModel from '../models/Part';
 import PlayerModel from '../models/Player';
 import PrototypeModel from '../models/Prototype';
 
+/**
+ * デッキをシャッフルする
+ * @param cards - シャッフルするパーツ
+ */
 export async function shuffleDeck(cards: PartModel[]) {
   const originalOrders = cards.map((card) => card.order);
   for (let i = cards.length - 1; i > 0; i--) {
@@ -19,6 +23,12 @@ export async function shuffleDeck(cards: PartModel[]) {
   );
 }
 
+/**
+ * プレイヤーとパーツをコピーする
+ * @param editPrototypePlayers - コピーするプレイヤー
+ * @param editPrototypeParts - コピーするパーツ
+ * @param prototype - コピー先のプロトタイプ
+ */
 export async function clonePlayersAndParts(
   editPrototypePlayers: PlayerModel[],
   editPrototypeParts: PartModel[],

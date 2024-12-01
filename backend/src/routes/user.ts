@@ -5,9 +5,10 @@ import { Op } from 'sequelize';
 
 const router = express.Router();
 
-// すべてのルートに認証ミドルウェアを適用
+// ログインチェック
 router.use(ensureAuthenticated);
 
+// ユーザー検索
 router.get('/search', async (req: Request, res: Response) => {
   const { username } = req.query;
 

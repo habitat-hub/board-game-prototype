@@ -4,7 +4,7 @@ import UserModel from '../models/User';
 
 const router = Router();
 
-// Googleログインルート
+// Googleログイン
 router.get(
   '/google',
   passport.authenticate('google', {
@@ -12,7 +12,7 @@ router.get(
   })
 );
 
-// Googleログインコールバックルート
+// Googleログインコールバック
 router.get(
   '/google/callback',
   passport.authenticate('google', {
@@ -23,7 +23,7 @@ router.get(
   }
 );
 
-// ログアウトルート
+// ログアウト
 router.post('/logout', (req, res) => {
   req.logout((err) => {
     if (err) {
@@ -41,7 +41,7 @@ router.post('/logout', (req, res) => {
   });
 });
 
-// ユーザー情報取得ルート
+// ユーザー情報取得
 router.get('/user', (req, res) => {
   if (req.isAuthenticated()) {
     const user = req.user as UserModel;

@@ -36,7 +36,7 @@ sequelize.sync().then(() => {
   console.log('Database connected');
 });
 
-// CORSを有効にする
+// CORS設定
 app.use(
   cors({
     origin: process.env.FRONTEND_URL,
@@ -93,11 +93,15 @@ passport.deserializeUser((id: number | number, done) => {
     done(null, user);
   });
 });
+
+// ルーティング設定
 app.use('/auth', authRoutes);
 app.use('/api/prototypes', prototypeRoutes);
 app.use('/api/users', userRoutes);
 
+// Socket.io接続
 io.on('connection', (socket: Socket) => {
+  // プロトタイプ参加
   socket.on('JOIN_PROTOTYPE', async (prototypeId: number) => {
     const parts = await PartModel.findAll({ where: { prototypeId } });
     const players = await PlayerModel.findAll({
@@ -109,6 +113,7 @@ io.on('connection', (socket: Socket) => {
     socket.emit('UPDATE_PLAYERS', players);
   });
 
+  // パーツ追加
   socket.on(
     'ADD_PART',
     async ({ prototypeId, part }: { prototypeId: number; part: PartModel }) => {
@@ -122,6 +127,7 @@ io.on('connection', (socket: Socket) => {
     }
   );
 
+  // カードを反転させる
   socket.on(
     'FLIP_CARD',
     async ({
@@ -145,6 +151,7 @@ io.on('connection', (socket: Socket) => {
     }
   );
 
+  // パーツ移動
   socket.on(
     'MOVE_PART',
     async ({
@@ -163,6 +170,7 @@ io.on('connection', (socket: Socket) => {
     }
   );
 
+  // カードの親を更新
   socket.on(
     'UPDATE_CARD_PARENT',
     async ({
@@ -184,6 +192,7 @@ io.on('connection', (socket: Socket) => {
     }
   );
 
+  // カードをシャッフル
   socket.on(
     'SHUFFLE_DECK',
     async ({
@@ -203,6 +212,7 @@ io.on('connection', (socket: Socket) => {
     }
   );
 
+  // パーツ更新
   socket.on(
     'UPDATE_PART',
     async ({
@@ -221,6 +231,7 @@ io.on('connection', (socket: Socket) => {
     }
   );
 
+  // プレイヤーに紐づけるユーザーを更新
   socket.on(
     'UPDATE_PLAYER_USER',
     async ({

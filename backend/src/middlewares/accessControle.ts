@@ -3,6 +3,13 @@ import Access from '../models/Access';
 import Prototype from '../models/Prototype';
 import UserModel from '../models/User';
 
+/**
+ * プロトタイプの作成者かどうかを確認する
+ * @param req - リクエスト
+ * @param res - レスポンス
+ * @param next - 次のミドルウェアを呼び出す
+ * @returns
+ */
 export async function checkPrototypeOwner(
   req: Request,
   res: Response,
@@ -25,6 +32,13 @@ export async function checkPrototypeOwner(
   }
 }
 
+/**
+ * プロトタイプへのアクセス権を確認する
+ * @param req - リクエスト
+ * @param res - レスポンス
+ * @param next - 次のミドルウェアを呼び出す
+ * @returns
+ */
 export async function checkPrototypeAccess(
   req: Request,
   res: Response,
@@ -55,7 +69,6 @@ export async function checkPrototypeAccess(
     res.status(403).json({ message: 'Forbidden: No access to this prototype' });
     return;
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: 'Internal server error' });
     return;
   }

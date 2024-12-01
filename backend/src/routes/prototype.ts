@@ -14,9 +14,10 @@ import { Op } from 'sequelize';
 
 const router = express.Router();
 
-// すべてのルートに認証ミドルウェアを適用
+// ログインチェック
 router.use(ensureAuthenticated);
 
+// プロトタイプ一覧取得
 router.get('/', async (req: Request, res: Response) => {
   const user = req.user as UserModel;
   const accessRights = await AccessModel.findAll({
@@ -30,6 +31,7 @@ router.get('/', async (req: Request, res: Response) => {
   res.json(accessiblePrototypes);
 });
 
+// プロトタイプ作成
 router.post('/', async (req: Request, res: Response) => {
   const user = req.user as UserModel;
 
@@ -70,6 +72,7 @@ router.post('/', async (req: Request, res: Response) => {
   res.status(201).json(newPrototype);
 });
 
+// プロトタイプ取得
 router.get(
   '/:prototypeId',
   checkPrototypeAccess,
@@ -93,6 +96,7 @@ router.get(
   }
 );
 
+// プレビュー版作成
 router.post(
   '/:prototypeId/preview',
   checkPrototypeAccess,
@@ -153,6 +157,7 @@ router.post(
   }
 );
 
+// 公開版作成
 router.post(
   '/:prototypeId/published',
   checkPrototypeAccess,
@@ -216,6 +221,7 @@ router.post(
   }
 );
 
+// プロトタイプ削除
 router.delete(
   '/:prototypeId',
   checkPrototypeOwner,
@@ -232,7 +238,7 @@ router.delete(
   }
 );
 
-// ユーザーをプロトタイプに招待する
+// ユーザーにプロトタイプへのアクセス権を付与
 router.post('/:prototypeId/invite', checkPrototypeOwner, async (req, res) => {
   const prototypeId = parseInt(req.params.prototypeId, 10);
   const guestIds = req.body.guestIds;
