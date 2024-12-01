@@ -10,6 +10,8 @@ import { io } from 'socket.io-client';
 import { PART_TYPE, VIEW_MODE } from '@/features/prototype/const';
 import GameSettingsView from '../molecules/GameSettingView';
 import axiosInstance from '@/utils/axiosInstance';
+import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumberTool';
+import { AiOutlineTool } from 'react-icons/ai';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
@@ -25,6 +27,7 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
   const mainViewRef = useRef<HTMLDivElement>(null);
   const [accessibleUsers, setAccessibleUsers] = useState<User[]>([]);
   const [userId, setUserId] = useState<number | null>(null);
+  const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
 
   // プロタイプの取得＆ビューモードが不一致の場合はリダイレクト
   useEffect(() => {
@@ -367,6 +370,18 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
             />
           )}
         </div>
+      )}
+      {/* 乱数ツールボタン */}
+      <button
+        onClick={() => setIsRandomToolOpen(!isRandomToolOpen)}
+        className="fixed bottom-4 right-4 bg-purple-500 text-white p-2 rounded-full shadow-lg"
+      >
+        <AiOutlineTool size={30} />
+      </button>
+
+      {/* 乱数計算UI */}
+      {isRandomToolOpen && (
+        <RandomNumberTool onClose={() => setIsRandomToolOpen(false)} />
       )}
     </div>
   );
