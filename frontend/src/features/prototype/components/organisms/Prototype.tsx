@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { withAuth } from '@/app/components/withAuth';
 import PartCreationView from '@/features/prototype/components/molecules/PartCreationView';
 import PartMainView from '@/features/prototype/components/molecules/PartMainView';
 import PartPropertyView from '@/features/prototype/components/molecules/PartPropertyView';
@@ -236,7 +235,7 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-full">
       {viewMode === VIEW_MODE.EDIT && (
         <div
           className={`transition-width duration-300 ${
@@ -329,4 +328,4 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
   );
 };
 
-export default withAuth(PrototypeComponent);
+export default PrototypeComponent;

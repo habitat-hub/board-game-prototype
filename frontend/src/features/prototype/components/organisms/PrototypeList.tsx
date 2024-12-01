@@ -12,7 +12,12 @@ const PrototypeList: React.FC = () => {
     fetch(`${apiUrl}/api/prototypes`, {
       credentials: 'include',
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then((data) => setPrototypes(data))
       .catch((error) => console.error('Error fetching prototypes:', error));
   };

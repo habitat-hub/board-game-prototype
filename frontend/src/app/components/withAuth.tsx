@@ -10,24 +10,32 @@ export function withAuth<P>(WrappedComponent: ComponentType<P>) {
     const router = useRouter();
 
     useEffect(() => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      fetch(`${apiUrl}/auth/user`, {
-        credentials: 'include',
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.username) {
-            setUser(data);
-          } else {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+        setLoading(false);
+      } else {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        fetch(`${apiUrl}/auth/user`, {
+          credentials: 'include',
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.username) {
+              setUser(data);
+              localStorage.setItem('user', JSON.stringify(data));
+              window.dispatchEvent(new Event('userUpdated'));
+            } else {
+              router.replace('/');
+            }
+          })
+          .catch(() => {
             router.replace('/');
-          }
-        })
-        .catch(() => {
-          router.replace('/');
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+      }
     }, [router]);
 
     if (loading) {

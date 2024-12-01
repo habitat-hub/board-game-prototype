@@ -112,7 +112,7 @@ const PartMainView: React.FC<PartMainViewProps> = ({
   };
 
   return (
-    <div className="flex-1 p-4 flex flex-col h-full">
+    <div className="flex-1 flex flex-col h-full">
       <div className="mb-4 flex justify-between items-center">
         <Link
           href="/prototypes"
@@ -125,11 +125,12 @@ const PartMainView: React.FC<PartMainViewProps> = ({
             <button
               onClick={handleClickPreview}
               disabled={isPreviewLoading}
-              className={`bg-yellow-500 text-white px-4 py-2 rounded transition ${
+              className={`bg-yellow-500 text-white p-1 rounded transition ${
                 isPreviewLoading
                   ? 'opacity-50 cursor-not-allowed'
                   : 'hover:bg-yellow-600'
               }`}
+              style={{ fontSize: '0.875rem' }}
             >
               プレビュー版配信
             </button>
@@ -138,23 +139,25 @@ const PartMainView: React.FC<PartMainViewProps> = ({
             <button
               onClick={handleClickPublic}
               disabled={isPublicLoading}
-              className={`bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition ${
+              className={`bg-green-500 text-white p-2 rounded hover:bg-green-600 transition ${
                 isPublicLoading ? 'opacity-50 cursor-not-allowed' : ''
               }`}
+              style={{ fontSize: '0.875rem' }}
             >
               公開版配信
             </button>
           )}
           <button
             onClick={handleInvite}
-            className="ml-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+            className="ml-2 bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition"
+            style={{ fontSize: '0.875rem' }}
           >
             招待
           </button>
         </div>
       </div>
       <div
-        className="border border-gray-300 p-4 relative flex-1"
+        className="border border-gray-300 p-2 relative flex-1"
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >

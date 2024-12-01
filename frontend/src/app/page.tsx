@@ -1,13 +1,12 @@
 'use client';
 
 import React from 'react';
-import { withAuth } from '@/app/components/withAuth';
 import Image from 'next/image';
 
 function Home() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <div className="p-10 rounded border border-gray-300 shadow-md w-1/3 min-w-[450px] text-center min-h-[450px] flex flex-col">
+    <div className="flex flex-col items-center justify-center">
+      <div className="p-10 mt-20 rounded border border-gray-300 shadow-md w-1/3 min-w-[450px] text-center min-h-[450px] flex flex-col">
         <h1 className="text-3xl font-bold mb-8 mt-10">
           プロトタイプ作成アプリ
         </h1>
@@ -37,4 +36,4 @@ function Home() {
   );
 }
 
-export default withAuth(Home);
+export default Home;
