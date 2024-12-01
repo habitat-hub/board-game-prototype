@@ -63,11 +63,13 @@ PlayerModel.init(
 );
 
 PlayerModel.belongsTo(UserModel, { foreignKey: 'userId' });
-PlayerModel.belongsTo(PrototypeModel, { foreignKey: 'prototypeId' });
+PlayerModel.belongsTo(PrototypeModel, {
+  foreignKey: 'prototypeId',
+  onDelete: 'CASCADE',
+});
 PrototypeModel.hasMany(PlayerModel, {
   foreignKey: 'prototypeId',
   as: 'players',
-  onDelete: 'CASCADE',
 });
 
 export default PlayerModel;

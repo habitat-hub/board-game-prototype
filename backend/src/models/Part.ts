@@ -125,7 +125,12 @@ PartModel.init(
   }
 );
 
-PartModel.belongsTo(PrototypeModel, { foreignKey: 'prototypeId' });
-PrototypeModel.hasMany(PartModel, { foreignKey: 'prototypeId' });
+PartModel.belongsTo(PrototypeModel, {
+  foreignKey: 'prototypeId',
+  onDelete: 'CASCADE',
+});
+PrototypeModel.hasMany(PartModel, {
+  foreignKey: 'prototypeId',
+});
 
 export default PartModel;
