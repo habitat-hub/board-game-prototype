@@ -15,6 +15,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const pathname = usePathname();
   const logoutRef = useRef(null);
 
+  // ヘッダーにユーザー名を表示する
   useEffect(() => {
     const updateUserName = () => {
       const user = localStorage.getItem('user');
@@ -25,7 +26,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       }
     };
 
-    // 初回ロード時にユーザー名を設定
     updateUserName();
     window.addEventListener('userUpdated', updateUserName);
 
@@ -34,6 +34,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     };
   }, [pathname]);
 
+  // ログアウトエリアの外側をクリックしたらログアウトボタンを非表示にする
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -50,6 +51,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     };
   }, [logoutRef]);
 
+  /**
+   * ログアウトする
+   */
   const handleLogout = () => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     axiosInstance

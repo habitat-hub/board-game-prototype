@@ -11,6 +11,10 @@ const CreatePrototypeForm: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
+  /**
+   * プロトタイプを作成する
+   * @param event - イベント
+   */
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!name || playerCount <= 0) {

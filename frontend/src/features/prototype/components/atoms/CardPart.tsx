@@ -30,8 +30,13 @@ const CardPart: React.FC<CardProps> = ({
   socket,
   order,
 }) => {
+  // カードが反転しているかどうか
   const [isFlipped, setIsFlipped] = useState(card.isFlipped);
 
+  /**
+   * カードを反転させる
+   * @param isNextFlipped - 次の反転状態
+   */
   const flipCard = useCallback(
     (isNextFlipped: boolean) => {
       // NOTE: このカードの反転により、socket通信が来た場合に、再度反転させてしまうと無限ループとなってしまうため、反転させる必要があるかをチェックする
@@ -59,6 +64,9 @@ const CardPart: React.FC<CardProps> = ({
     };
   }, [flipCard, card.id, socket]);
 
+  /**
+   * カードをダブルクリックしたときは、カードを反転させる
+   */
   const handleDoubleClick = () => {
     flipCard(!isFlipped);
   };

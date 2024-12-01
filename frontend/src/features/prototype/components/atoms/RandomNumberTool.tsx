@@ -10,6 +10,9 @@ const RandomNumberTool: React.FC<RandomNumberToolProps> = ({ onClose }) => {
   const [randomResult, setRandomResult] = useState<number | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
+  /**
+   * 乱数を生成する
+   */
   const generateRandomNumber = () => {
     if (minValue > maxValue) {
       alert('最小値は最大値以下でなければなりません。');

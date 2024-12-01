@@ -25,6 +25,11 @@ const GameSettingsView: React.FC<GameSettingsViewProps> = ({
     [players]
   );
 
+  /**
+   * プレイヤーにユーザーを割り当てる
+   * @param playerId - プレイヤーのID
+   * @param userId - ユーザーのID
+   */
   const handleUserSelect = (playerId: number, userId: number | null) => {
     onUserChange(playerId, userId);
   };

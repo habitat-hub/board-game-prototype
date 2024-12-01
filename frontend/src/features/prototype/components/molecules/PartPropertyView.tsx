@@ -36,6 +36,11 @@ const PartPropertyView: React.FC<PartPropertyViewProps> = ({
     setPart(selectedPart);
   }, [selectedPart]);
 
+  /**
+   * プロパティを変更する
+   * @param key - プロパティのキー
+   * @param value - プロパティの値
+   */
   const handlePropertyChange = (key: AllPartKey, value: string | boolean) => {
     if (part) {
       const updatedPart = { ...part, [key]: value };

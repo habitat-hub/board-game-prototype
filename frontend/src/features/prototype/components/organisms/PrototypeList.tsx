@@ -8,6 +8,9 @@ import axiosInstance from '@/utils/axiosInstance';
 const PrototypeList: React.FC = () => {
   const [prototypes, setPrototypes] = useState<Prototype[]>([]);
 
+  /**
+   * プロトタイプを取得する
+   */
   const fetchPrototypes = () => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     axiosInstance
@@ -29,6 +32,10 @@ const PrototypeList: React.FC = () => {
     return acc;
   }, {} as Record<number, Prototype[]>);
 
+  /**
+   * プロトタイプを削除する
+   * @param id - 削除するプロトタイプのID
+   */
   const handleDelete = async (id: number) => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     try {

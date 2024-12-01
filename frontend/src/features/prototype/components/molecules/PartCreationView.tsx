@@ -68,6 +68,10 @@ const PartCreationView: React.FC<PartCreationViewProps> = ({
     return parts.length > 0 ? Math.max(...parts.map((part) => part.order)) : 0;
   }, [parts]);
 
+  /**
+   * コンポーネントを作成する
+   * @param partId - コンポーネントのID
+   */
   const handleCreatePart = (partId: string) => {
     if (mainViewRef.current) {
       // メインビューの幅と高さを取得

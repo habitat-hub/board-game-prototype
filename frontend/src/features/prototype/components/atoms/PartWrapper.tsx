@@ -47,6 +47,9 @@ const PartWrapper: React.FC<PartWrapperProps> = ({
 
   let hoverTimeout: NodeJS.Timeout;
 
+  /**
+   * 1秒ホバーした時にツールチップを表示する
+   */
   const handleMouseEnter = (e: React.MouseEvent, description: string) => {
     hoverTimeout = setTimeout(() => {
       setTooltip({
@@ -55,9 +58,12 @@ const PartWrapper: React.FC<PartWrapperProps> = ({
         y: defaultTooltipPosition.y,
         text: description,
       });
-    }, 1000); // 0.5秒後にツールチップを表示
+    }, 1000);
   };
 
+  /**
+   * ツールチップを非表示する
+   */
   const handleMouseLeave = () => {
     clearTimeout(hoverTimeout);
     setTooltip({

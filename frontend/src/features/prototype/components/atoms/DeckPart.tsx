@@ -20,6 +20,9 @@ const DeckPart: React.FC<DeckProps> = ({
   socket,
   order,
 }) => {
+  /**
+   * デッキをシャッフルする
+   */
   const handleShuffle = () => {
     socket.emit('SHUFFLE_DECK', { prototypeId, deckId: deck.id });
   };
