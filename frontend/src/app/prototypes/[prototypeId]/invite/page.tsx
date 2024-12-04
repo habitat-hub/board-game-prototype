@@ -5,18 +5,28 @@ import { User } from '@/features/prototype/type';
 import { useParams, useRouter } from 'next/navigation';
 import axiosInstance from '@/utils/axiosInstance';
 export const runtime = 'edge';
+
 const InvitePage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestedUsers, setSuggestedUsers] = useState<User[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [invitedUsers, setInvitedUsers] = useState<User[]>([]);
   const router = useRouter();
   const { prototypeId } = useParams();
 
   useEffect(() => {
+    axiosInstance
+      .get(`/api/prototypes/${prototypeId}/invitedUsers`)
+      .then((response) => setInvitedUsers(response.data))
+      .catch((error) => {
+        console.error('Error fetching invited users:', error);
+      });
+  }, [prototypeId]);
+
+  useEffect(() => {
     if (searchTerm) {
-      // メールアドレスでユーザーを検索
       axiosInstance
         .get(`/api/users/search?username=${encodeURIComponent(searchTerm)}`)
         .then((response) => setSuggestedUsers(response.data))
@@ -66,6 +76,19 @@ const InvitePage: React.FC = () => {
     }
   };
 
+  const handleRemoveInvitedUser = async (userId: number) => {
+    try {
+      await axiosInstance.delete(
+        `/api/prototypes/${prototypeId}/invite/${userId}`
+      );
+      setInvitedUsers((prev) => prev.filter((user) => user.id !== userId));
+      setSuccessMessage('ユーザーが削除されました。');
+    } catch (error) {
+      console.error('Error removing user:', error);
+      setError('ユーザーの削除に失敗しました。');
+    }
+  };
+
   const handleBack = () => {
     router.push(`/prototypes/${prototypeId}/edit`);
   };
@@ -100,11 +123,33 @@ const InvitePage: React.FC = () => {
           </li>
         ))}
       </ul>
-      <h3 className="text-md font-bold mb-2">選択されたユーザー</h3>
-      <ul>
-        {selectedUsers.map((user) => (
-          <li key={user.id} className="mb-2">
+      <h3 className="text-md font-bold mb-2">招待されたユーザー</h3>
+      <ul className="mb-8">
+        {invitedUsers.map((user) => (
+          <li key={user.id} className="mb-2 flex justify-between items-center">
             {user.username}
+            <button
+              onClick={() => handleRemoveInvitedUser(user.id)}
+              className="text-red-500 hover:underline ml-2"
+            >
+              削除
+            </button>
+          </li>
+        ))}
+      </ul>
+      <h3 className="text-md font-bold mb-2">選択されたユーザー</h3>
+      <ul className="mb-2">
+        {selectedUsers.map((user) => (
+          <li key={user.id} className="mb-2 flex justify-between items-center">
+            {user.username}
+            <button
+              onClick={() =>
+                setSelectedUsers((prev) => prev.filter((u) => u.id !== user.id))
+              }
+              className="text-red-500 hover:underline ml-2"
+            >
+              削除
+            </button>
           </li>
         ))}
       </ul>

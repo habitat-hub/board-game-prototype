@@ -166,13 +166,15 @@ const PartMainView: React.FC<PartMainViewProps> = ({
               公開版配信
             </button>
           )}
-          <button
-            onClick={handleInvite}
-            className="ml-2 bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition"
-            style={{ fontSize: '0.875rem' }}
-          >
-            招待
-          </button>
+          {(viewMode === VIEW_MODE.EDIT || viewMode === VIEW_MODE.PREVIEW) && (
+            <button
+              onClick={handleInvite}
+              className="ml-2 bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition"
+              style={{ fontSize: '0.875rem' }}
+            >
+              招待
+            </button>
+          )}
         </div>
       </div>
       <div

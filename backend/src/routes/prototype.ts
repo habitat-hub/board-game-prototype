@@ -7,7 +7,7 @@ import PlayerModel from '../models/Player';
 import {
   checkPrototypeAccess,
   checkPrototypeOwner,
-} from '../middlewares/accessControle';
+} from '../middlewares/accessControl';
 import PartModel from '../models/Part';
 import { clonePlayersAndParts } from '../helpers/prototypeHelper';
 import { Op } from 'sequelize';
@@ -59,14 +59,12 @@ router.post('/', async (req: Request, res: Response) => {
   );
 
   await AccessModel.create({ userId: user.id, prototypeId: newPrototype.id });
-  await Promise.all(
-    Array.from({ length: playerCount }).map(async (_, i) => {
-      await PlayerModel.create({
-        prototypeId: newPrototype.id,
-        name: `プレイヤー${i + 1}`,
-        order: i,
-      });
-    })
+  await PlayerModel.bulkCreate(
+    Array.from({ length: playerCount }).map((_, i) => ({
+      prototypeId: newPrototype.id,
+      name: `プレイヤー${i + 1}`,
+      order: i,
+    }))
   );
 
   res.status(201).json(newPrototype);
@@ -117,6 +115,9 @@ router.post(
     const editPrototypePlayers = await PlayerModel.findAll({
       where: { prototypeId: editPrototypeId },
     });
+    const editAccessRights = await AccessModel.findAll({
+      where: { prototypeId: editPrototypeId },
+    });
     if (!previewPrototype) {
       const newPrototype = await PrototypeModel.create({
         userId: editPrototype.userId,
@@ -126,10 +127,13 @@ router.post(
         isPreview: true,
         isPublic: false,
       });
-      await AccessModel.create({
-        userId: newPrototype.userId,
-        prototypeId: newPrototype.id,
-      });
+      // プレビュー版にアクセス権を付与
+      await AccessModel.bulkCreate(
+        editAccessRights.map((access) => ({
+          userId: access.userId,
+          prototypeId: newPrototype.id,
+        }))
+      );
 
       await clonePlayersAndParts(
         editPrototypePlayers,
@@ -145,6 +149,19 @@ router.post(
       { name: editPrototype.name },
       { returning: true, where: { id: previewPrototype.id } }
     );
+    await AccessModel.destroy({
+      where: {
+        prototypeId: previewPrototype.id,
+      },
+    });
+    // プレビュー版にアクセス権を付与
+    await AccessModel.bulkCreate(
+      editAccessRights.map((access) => ({
+        userId: access.userId,
+        prototypeId: previewPrototype.id,
+      }))
+    );
+
     // 既存のパーツとプレイヤーを削除した上で、新しいパーツとプレイヤーをコピー
     await PartModel.destroy({ where: { prototypeId: previewPrototype.id } });
     await PlayerModel.destroy({ where: { prototypeId: previewPrototype.id } });
@@ -187,6 +204,7 @@ router.post(
         isPreview: false,
         isPublic: true,
       });
+      // 公開版のアクセス権は一旦作成者のみにする
       await AccessModel.create({
         userId: newPrototype.userId,
         prototypeId: newPrototype.id,
@@ -233,8 +251,25 @@ router.delete(
 
       res.status(204).send();
     } catch (error) {
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
     }
+  }
+);
+
+// プロトタイプへのアクセス権を取得
+router.get(
+  '/:prototypeId/invitedUsers',
+  checkPrototypeOwner,
+  async (req, res) => {
+    const prototypeId = parseInt(req.params.prototypeId, 10);
+    const accessRights = await AccessModel.findAll({
+      where: { prototypeId },
+    });
+    const accessibleUsers = await UserModel.findAll({
+      where: { id: accessRights.map((p) => p.userId) },
+    });
+
+    res.json(accessibleUsers);
   }
 );
 
@@ -251,7 +286,7 @@ router.post('/:prototypeId/invite', checkPrototypeOwner, async (req, res) => {
     if (!prototype || !guests) {
       res
         .status(404)
-        .json({ message: 'Prototype, User, or Inviter not found' });
+        .json({ message: 'プロトタイプまたはユーザーが見つかりません' });
       return;
     }
 
@@ -263,10 +298,36 @@ router.post('/:prototypeId/invite', checkPrototypeOwner, async (req, res) => {
         });
       })
     );
-    res.status(200).json({ message: 'User invited successfully' });
+
+    res.status(200).json({ message: 'ユーザーを招待しました' });
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: '予期せぬエラーが発生しました' });
   }
 });
+
+router.delete(
+  '/:prototypeId/invite/:guestId',
+  checkPrototypeOwner,
+  async (req, res) => {
+    const prototypeId = parseInt(req.params.prototypeId, 10);
+    const guestId = parseInt(req.params.guestId, 10);
+
+    try {
+      const prototype = await PrototypeModel.findByPk(prototypeId);
+      if (!prototype) {
+        res.status(404).json({ message: 'プロトタイプが見つかりません' });
+        return;
+      }
+
+      await AccessModel.destroy({
+        where: { userId: guestId, prototypeId },
+      });
+
+      res.status(200).json({ message: 'ユーザーのアクセス権を削除しました' });
+    } catch (error) {
+      res.status(500).json({ message: '予期せぬエラーが発生しました' });
+    }
+  }
+);
 
 export default router;
