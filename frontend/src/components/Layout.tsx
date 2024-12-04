@@ -80,7 +80,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           }}
           className="text-lg font-bold p-2 rounded"
         >
-          Code-Son
+          BoardCraft
         </button>
         {userName && pathname !== '/' && (
           <div className="relative" ref={logoutRef}>
