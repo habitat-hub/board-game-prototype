@@ -14,7 +14,7 @@ router.get('/search', async (req: Request, res: Response) => {
 
   // 10件まで取得
   const suggestedUsers = await UserModel.findAll({
-    where: { username: { [Op.like]: `%${username}%` } },
+    where: { username: { [Op.iLike]: `%${username}%` } },
     limit: 10,
   });
   res.json(suggestedUsers);

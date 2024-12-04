@@ -23,10 +23,10 @@ export async function checkPrototypeOwner(
       return next();
     }
 
-    res.status(403).json({ message: 'Forbidden: No access to this prototype' });
+    res.status(403).json({ message: 'プロトタイプの作成者ではありません' });
     return;
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: '予期せぬエラーが発生しました' });
     next(error);
     return;
   }
@@ -66,10 +66,10 @@ export async function checkPrototypeAccess(
       return next();
     }
 
-    res.status(403).json({ message: 'Forbidden: No access to this prototype' });
+    res.status(403).json({ message: 'プロトタイプへのアクセス権がありません' });
     return;
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: '予期せぬエラーが発生しました' });
     return;
   }
 }

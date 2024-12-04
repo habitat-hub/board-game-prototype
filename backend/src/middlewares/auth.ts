@@ -15,6 +15,6 @@ export function ensureAuthenticated(
   if (req.isAuthenticated()) {
     return next();
   }
-  res.status(401).json({ message: 'Unauthorized' });
+  res.status(401).json({ message: '権限がありません' });
   return;
 }
