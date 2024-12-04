@@ -15,6 +15,10 @@ axiosInstance.interceptors.response.use(
       // 401 エラーの場合はトップページにリダイレクト
       window.location.replace('/');
     }
+    if (error.response && error.response.status === 403) {
+      // 403 エラーの場合はプロトタイプ一覧ページにリダイレクト
+      window.location.replace('/prototypes');
+    }
     return Promise.reject(error);
   }
 );
