@@ -9,6 +9,7 @@ export const metadata: Metadata = {
     default: 'BoardCraft',
   },
   description: '気軽にボードゲームを作ろう',
+  icons: [{ rel: 'icon', url: '/favicon.ico' }],
 };
 
 export default function RootLayout({
