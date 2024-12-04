@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import PartCreationView from '@/features/prototype/components/molecules/PartCreationView';
 import PartMainView from '@/features/prototype/components/molecules/PartMainView';
 import PartPropertyView from '@/features/prototype/components/molecules/PartPropertyView';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Prototype, AllPart, User, Player } from '@/features/prototype/type';
 import { io } from 'socket.io-client';
 import { PART_TYPE, VIEW_MODE } from '@/features/prototype/const';
@@ -16,6 +16,7 @@ import { AiOutlineTool } from 'react-icons/ai';
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
 const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
+  const router = useRouter();
   const { prototypeId } = useParams();
   const [prototype, setPrototype] = useState<Prototype | null>(null);
   const [parts, setParts] = useState<AllPart[]>([]);
@@ -36,22 +37,22 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
       .then((response) => {
         const { prototype, accessibleUsers } = response.data;
         if (prototype.isEdit && viewMode !== VIEW_MODE.EDIT) {
-          window.location.href = `/prototypes/${prototype.id}/edit`;
+          router.replace(`/prototypes/${prototype.id}/edit`);
           return;
         }
         if (prototype.isPreview && viewMode !== VIEW_MODE.PREVIEW) {
-          window.location.href = `/prototypes/${prototype.id}/preview`;
+          router.replace(`/prototypes/${prototype.id}/preview`);
           return;
         }
         if (prototype.isPublic && viewMode !== VIEW_MODE.PUBLIC) {
-          window.location.href = `/prototypes/${prototype.id}/published`;
+          router.replace(`/prototypes/${prototype.id}/published`);
           return;
         }
         setPrototype(prototype);
         setAccessibleUsers(accessibleUsers);
       })
       .catch((error) => console.error('Error fetching prototypes:', error));
-  }, [prototypeId, viewMode]);
+  }, [prototypeId, router, viewMode]);
 
   // ユーザーの取得
   useEffect(() => {

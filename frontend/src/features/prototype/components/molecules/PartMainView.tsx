@@ -7,6 +7,7 @@ import CardPart from '@/features/prototype/components/atoms/CardPart';
 import DeckPart from '@/features/prototype/components/atoms/DeckPart';
 import axiosInstance from '@/utils/axiosInstance';
 import PartWrapper from '../atoms/PartWrapper';
+import { useRouter } from 'next/navigation';
 
 interface PartMainViewProps {
   userId: number;
@@ -31,6 +32,7 @@ const PartMainView: React.FC<PartMainViewProps> = ({
   socket,
   viewMode,
 }) => {
+  const router = useRouter();
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [isPublicLoading, setIsPublicLoading] = useState(false);
 
@@ -49,7 +51,7 @@ const PartMainView: React.FC<PartMainViewProps> = ({
       );
 
       const previewPrototype = response.data;
-      window.location.href = `/prototypes/${previewPrototype.id}/preview`;
+      router.push(`/prototypes/${previewPrototype.id}/preview`);
     } catch (error) {
       console.error('Error creating preview:', error);
     } finally {
@@ -72,7 +74,7 @@ const PartMainView: React.FC<PartMainViewProps> = ({
       );
 
       const publishedPrototype = response.data;
-      window.location.href = `/prototypes/${publishedPrototype.id}/published`;
+      router.push(`/prototypes/${publishedPrototype.id}/published`);
     } catch (error) {
       console.error('Error creating public:', error);
     } finally {
@@ -127,7 +129,7 @@ const PartMainView: React.FC<PartMainViewProps> = ({
    * ユーザー招待
    */
   const handleInvite = () => {
-    window.location.href = `/prototypes/${prototypeId}/invite`;
+    router.push(`/prototypes/${prototypeId}/invite`);
   };
 
   return (
