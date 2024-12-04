@@ -1,8 +1,10 @@
-'use client';
-
-import CreatePrototypeForm from '@/features/prototype/components/organisms/CreatePrototypeFrom';
 import React from 'react';
-import { withAuth } from '@/app/components/withAuth';
+import { Metadata } from 'next';
+import CreatePrototypeForm from '@/features/prototype/components/organisms/CreatePrototypeFrom';
+
+export const metadata: Metadata = {
+  title: 'プロトタイプ作成',
+};
 
 const CreatePrototypePage: React.FC = () => {
   return (
@@ -12,4 +14,4 @@ const CreatePrototypePage: React.FC = () => {
   );
 };
 
-export default withAuth(CreatePrototypePage);
+export default CreatePrototypePage;

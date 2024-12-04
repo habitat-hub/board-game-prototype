@@ -1,8 +1,10 @@
-'use client';
-
-import PrototypeList from '@/features/prototype/components/organisms/PrototypeList';
 import React from 'react';
-import { withAuth } from '@/app/components/withAuth';
+import { Metadata } from 'next';
+import PrototypeList from '@/features/prototype/components/organisms/PrototypeList';
+
+export const metadata: Metadata = {
+  title: 'プロトタイプ一覧',
+};
 
 const PrototypesPage: React.FC = () => {
   return (
@@ -12,4 +14,4 @@ const PrototypesPage: React.FC = () => {
   );
 };
 
-export default withAuth(PrototypesPage);
+export default PrototypesPage;
