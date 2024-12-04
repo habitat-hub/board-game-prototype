@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import clsx from 'clsx';
 import { AllPart } from '@/features/prototype/type';
 
@@ -45,13 +45,14 @@ const PartWrapper: React.FC<PartWrapperProps> = ({
     text: '',
   });
 
-  let hoverTimeout: NodeJS.Timeout;
+  // ホバー時間を管理するref
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
    * 1秒ホバーした時にツールチップを表示する
    */
   const handleMouseEnter = (e: React.MouseEvent, description: string) => {
-    hoverTimeout = setTimeout(() => {
+    hoverTimeoutRef.current = setTimeout(() => {
       setTooltip({
         visible: true,
         x: defaultTooltipPosition.x,
@@ -65,7 +66,10 @@ const PartWrapper: React.FC<PartWrapperProps> = ({
    * ツールチップを非表示する
    */
   const handleMouseLeave = () => {
-    clearTimeout(hoverTimeout);
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
     setTooltip({
       visible: false,
       x: defaultTooltipPosition.x,
