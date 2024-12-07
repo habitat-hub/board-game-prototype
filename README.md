@@ -22,7 +22,7 @@
 リポジトリをクローン
 
 ```bash
-git clone https://github.com/Mellbrother/board-game-prototype.git
+git clone https://github.com/habitat-hub/board-game-prototype.git
 cd board-game-prototype
 ```
 
@@ -61,6 +61,7 @@ cp .env_example .env
 ```
 
 Google Cloud の API キーを取得して、`.env`ファイルに設定する
+
 postgres の接続情報が異なる場合は、`.env`ファイルの DATABASE_URL を変更する
 
 ## 実行方法
