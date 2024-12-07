@@ -10,7 +10,7 @@
     "dev": "ts-node-dev --env-file=.env --respawn --transpile-only src/server.ts",
     "generate-erd": "ts-node src/generate-erd.ts",
     "lint": "eslint .",
-    "redoc": "redocly build-docs swagger-output.json",
+    "redoc": "redocly build-docs swagger-output.json --output ../docs/index.html",
     "prepare": "cd ../ && husky backend/.husky"
   },
   "keywords": [],
