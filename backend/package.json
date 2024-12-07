@@ -9,7 +9,8 @@
     "start": "npm run build && node dist/server.js",
     "dev": "ts-node-dev --env-file=.env --respawn --transpile-only src/server.ts",
     "generate-erd": "ts-node-dev src/generate-erd.ts",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "redoc": "redocly build-docs swagger-output.json"
   },
   "keywords": [],
   "author": "",
@@ -27,12 +28,16 @@
     "pg": "^8.13.1",
     "sequelize": "^6.37.5",
     "socket.io": "^4.8.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "typescript": "^5.7.2"
   },
   "devDependencies": {
+    "@redocly/cli": "^1.25.15",
     "@types/express-session": "^1.18.1",
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.16",
+    "@types/swagger-ui-express": "^4.1.7",
     "eslint": "^9.15.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",

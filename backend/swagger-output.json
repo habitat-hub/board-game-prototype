@@ -1,0 +1,426 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Board Game Prototype API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/auth/google": {
+      "get": {
+        "summary": "Googleログイン",
+        "description": "Googleアカウントを使用してログインします。",
+        "responses": {
+          "302": {
+            "description": "リダイレクト"
+          }
+        }
+      }
+    },
+    "/auth/google/callback": {
+      "get": {
+        "summary": "Googleログインコールバック",
+        "description": "GoogleログインのコールバックURL。",
+        "responses": {
+          "302": {
+            "description": "ログイン成功時にリダイレクト"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "ログアウト",
+        "description": "現在のセッションを終了し、ユーザーをログアウトします。",
+        "responses": {
+          "200": {
+            "description": "ログアウト成功"
+          },
+          "500": {
+            "description": "ログアウト失敗"
+          }
+        }
+      }
+    },
+    "/auth/user": {
+      "get": {
+        "summary": "ユーザー情報取得",
+        "description": "現在ログインしているユーザーの情報を取得します。",
+        "responses": {
+          "200": {
+            "description": "ユーザー情報を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/prototypes": {
+      "get": {
+        "summary": "プロトタイプ一覧取得",
+        "description": "ユーザーがアクセス可能なプロトタイプの一覧を取得します。",
+        "responses": {
+          "200": {
+            "description": "アクセス可能なプロトタイプの一覧を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "players": {
+                        "type": "array",
+                        "items": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "プロトタイプ作成",
+        "description": "新しいプロトタイプを作成します。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "playerCount": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "新しいプロトタイプを作成しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/prototypes/{prototypeId}": {
+      "get": {
+        "summary": "プロトタイプ取得",
+        "description": "指定されたIDのプロトタイプを取得します。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプのID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "プロトタイプの詳細を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "prototype": {
+                      "type": "object"
+                    },
+                    "accessibleUsers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "プロトタイプ削除",
+        "description": "指定されたプロトタイプを削除します。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプのID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "プロトタイプを削除しました"
+          },
+          "500": {
+            "description": "サーバーエラー"
+          }
+        }
+      }
+    },
+    "/api/prototypes/{prototypeId}/preview": {
+      "post": {
+        "summary": "プレビュー版作成",
+        "description": "指定されたプロトタイプのプレビュー版を作成します。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプのID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "プレビュー版を作成しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/prototypes/{prototypeId}/published": {
+      "post": {
+        "summary": "公開版作成",
+        "description": "指定されたプレビュー版の公開版を作成します。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プレビュー版のID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "公開版を作成しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/prototypes/{prototypeId}/invitedUsers": {
+      "get": {
+        "summary": "プロトタイプへのアクセス権を取得",
+        "description": "指定されたプロトタイプにアクセス可能なユーザーを取得します。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプのID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "アクセス可能なユーザーの一覧を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/prototypes/{prototypeId}/invite": {
+      "post": {
+        "summary": "ユーザーにプロトタイプへのアクセス権を付与",
+        "description": "指定されたプロトタイプにユーザーを招待します。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプのID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "guestIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ユーザーを招待しました"
+          },
+          "404": {
+            "description": "プロトタイプまたはユーザーが見つかりません"
+          },
+          "500": {
+            "description": "サーバーエラー"
+          }
+        }
+      }
+    },
+    "/api/prototypes/{prototypeId}/invite/{guestId}": {
+      "delete": {
+        "summary": "ユーザーのアクセス権を削除",
+        "description": "指定されたプロトタイプからユーザーのアクセス権を削除します。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプのID",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "guestId",
+            "in": "path",
+            "required": true,
+            "description": "ゲストユーザーのID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ユーザーのアクセス権を削除しました"
+          },
+          "404": {
+            "description": "プロトタイプが見つかりません"
+          },
+          "500": {
+            "description": "サーバーエラー"
+          }
+        }
+      }
+    },
+    "/user/search": {
+      "get": {
+        "summary": "ユーザー検索",
+        "description": "ユーザー名でユーザーを検索します。",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "required": true,
+            "description": "検索するユーザー名",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "検索結果を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer"
+                      },
+                      "username": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {},
+  "tags": []
+}

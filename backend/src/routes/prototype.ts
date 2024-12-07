@@ -17,7 +17,31 @@ const router = express.Router();
 // ログインチェック
 router.use(ensureAuthenticated);
 
-// プロトタイプ一覧取得
+/**
+ * @swagger
+ * /api/prototypes:
+ *   get:
+ *     summary: プロトタイプ一覧取得
+ *     description: ユーザーがアクセス可能なプロトタイプの一覧を取得します。
+ *     responses:
+ *       '200':
+ *         description: アクセス可能なプロトタイプの一覧を返します
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   name:
+ *                     type: string
+ *                   players:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ */
 router.get('/', async (req: Request, res: Response) => {
   const user = req.user as UserModel;
   const accessRights = await AccessModel.findAll({
@@ -31,7 +55,36 @@ router.get('/', async (req: Request, res: Response) => {
   res.json(accessiblePrototypes);
 });
 
-// プロトタイプ作成
+/**
+ * @swagger
+ * /api/prototypes:
+ *   post:
+ *     summary: プロトタイプ作成
+ *     description: 新しいプロトタイプを作成します。
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               playerCount:
+ *                 type: integer
+ *     responses:
+ *       '201':
+ *         description: 新しいプロトタイプを作成しました
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ */
 router.post('/', async (req: Request, res: Response) => {
   const user = req.user as UserModel;
 
@@ -70,7 +123,34 @@ router.post('/', async (req: Request, res: Response) => {
   res.status(201).json(newPrototype);
 });
 
-// プロトタイプ取得
+/**
+ * @swagger
+ * /api/prototypes/{prototypeId}:
+ *   get:
+ *     summary: プロトタイプ取得
+ *     description: 指定されたIDのプロトタイプを取得します。
+ *     parameters:
+ *       - name: prototypeId
+ *         in: path
+ *         required: true
+ *         description: プロトタイプのID
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: プロトタイプの詳細を返します
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 prototype:
+ *                   type: object
+ *                 accessibleUsers:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ */
 router.get(
   '/:prototypeId',
   checkPrototypeAccess,
@@ -94,7 +174,27 @@ router.get(
   }
 );
 
-// プレビュー版作成
+/**
+ * @swagger
+ * /api/prototypes/{prototypeId}/preview:
+ *   post:
+ *     summary: プレビュー版作成
+ *     description: 指定されたプロトタイプのプレビュー版を作成します。
+ *     parameters:
+ *       - name: prototypeId
+ *         in: path
+ *         required: true
+ *         description: プロトタイプのID
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: プレビュー版を作成しました
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
 router.post(
   '/:prototypeId/preview',
   checkPrototypeAccess,
@@ -174,7 +274,27 @@ router.post(
   }
 );
 
-// 公開版作成
+/**
+ * @swagger
+ * /api/prototypes/{prototypeId}/published:
+ *   post:
+ *     summary: 公開版作成
+ *     description: 指定されたプレビュー版の公開版を作成します。
+ *     parameters:
+ *       - name: prototypeId
+ *         in: path
+ *         required: true
+ *         description: プレビュー版のID
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: 公開版を作成しました
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
 router.post(
   '/:prototypeId/published',
   checkPrototypeAccess,
@@ -239,7 +359,25 @@ router.post(
   }
 );
 
-// プロトタイプ削除
+/**
+ * @swagger
+ * /api/prototypes/{prototypeId}:
+ *   delete:
+ *     summary: プロトタイプ削除
+ *     description: 指定されたプロトタイプを削除します。
+ *     parameters:
+ *       - name: prototypeId
+ *         in: path
+ *         required: true
+ *         description: プロトタイプのID
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '204':
+ *         description: プロトタイプを削除しました
+ *       '500':
+ *         description: サーバーエラー
+ */
 router.delete(
   '/:prototypeId',
   checkPrototypeOwner,
@@ -256,7 +394,29 @@ router.delete(
   }
 );
 
-// プロトタイプへのアクセス権を取得
+/**
+ * @swagger
+ * /api/prototypes/{prototypeId}/invitedUsers:
+ *   get:
+ *     summary: プロトタイプへのアクセス権を取得
+ *     description: 指定されたプロトタイプにアクセス可能なユーザーを取得します。
+ *     parameters:
+ *       - name: prototypeId
+ *         in: path
+ *         required: true
+ *         description: プロトタイプのID
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: アクセス可能なユーザーの一覧を返します
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ */
 router.get(
   '/:prototypeId/invitedUsers',
   checkPrototypeOwner,
@@ -273,7 +433,38 @@ router.get(
   }
 );
 
-// ユーザーにプロトタイプへのアクセス権を付与
+/**
+ * @swagger
+ * /api/prototypes/{prototypeId}/invite:
+ *   post:
+ *     summary: ユーザーにプロトタイプへのアクセス権を付与
+ *     description: 指定されたプロトタイプにユーザーを招待します。
+ *     parameters:
+ *       - name: prototypeId
+ *         in: path
+ *         required: true
+ *         description: プロトタイプのID
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               guestIds:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *     responses:
+ *       '200':
+ *         description: ユーザーを招待しました
+ *       '404':
+ *         description: プロトタイプまたはユーザーが見つかりません
+ *       '500':
+ *         description: サーバーエラー
+ */
 router.post('/:prototypeId/invite', checkPrototypeOwner, async (req, res) => {
   const prototypeId = parseInt(req.params.prototypeId, 10);
   const guestIds = req.body.guestIds;
@@ -305,6 +496,33 @@ router.post('/:prototypeId/invite', checkPrototypeOwner, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/prototypes/{prototypeId}/invite/{guestId}:
+ *   delete:
+ *     summary: ユーザーのアクセス権を削除
+ *     description: 指定されたプロトタイプからユーザーのアクセス権を削除します。
+ *     parameters:
+ *       - name: prototypeId
+ *         in: path
+ *         required: true
+ *         description: プロトタイプのID
+ *         schema:
+ *           type: integer
+ *       - name: guestId
+ *         in: path
+ *         required: true
+ *         description: ゲストユーザーのID
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: ユーザーのアクセス権を削除しました
+ *       '404':
+ *         description: プロトタイプが見つかりません
+ *       '500':
+ *         description: サーバーエラー
+ */
 router.delete(
   '/:prototypeId/invite/:guestId',
   checkPrototypeOwner,

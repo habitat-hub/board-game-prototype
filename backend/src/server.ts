@@ -6,6 +6,9 @@ import dotenv from 'dotenv';
 import http from 'http';
 import cors from 'cors';
 import { Server, Socket } from 'socket.io';
+import swaggerUi from 'swagger-ui-express';
+import swaggerJsdoc from 'swagger-jsdoc';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -22,6 +25,27 @@ import PlayerModel from './models/Player';
 const app = express();
 const server = http.createServer(app);
 const PORT = 8080;
+
+// 開発環境でのみSwagger UIを有効にする
+if (process.env.NODE_ENV === 'development') {
+  const options = {
+    definition: {
+      openapi: '3.0.0',
+      info: {
+        title: 'Board Game Prototype API',
+        version: '1.0.0',
+      },
+    },
+    apis: ['./src/routes/*.ts'], // JSDocコメントを含むファイルのパス
+  };
+  const swaggerSpec = swaggerJsdoc(options);
+  fs.writeFileSync(
+    './swagger-output.json',
+    JSON.stringify(swaggerSpec, null, 2)
+  );
+
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+}
 
 // Socket.ioの設定
 const io = new Server(server, {

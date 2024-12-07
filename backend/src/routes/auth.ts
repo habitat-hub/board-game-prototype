@@ -4,7 +4,16 @@ import UserModel from '../models/User';
 
 const router = Router();
 
-// Googleログイン
+/**
+ * @swagger
+ * /auth/google:
+ *   get:
+ *     summary: Googleログイン
+ *     description: Googleアカウントを使用してログインします。
+ *     responses:
+ *       '302':
+ *         description: リダイレクト
+ */
 router.get(
   '/google',
   passport.authenticate('google', {
@@ -12,7 +21,16 @@ router.get(
   })
 );
 
-// Googleログインコールバック
+/**
+ * @swagger
+ * /auth/google/callback:
+ *   get:
+ *     summary: Googleログインコールバック
+ *     description: GoogleログインのコールバックURL。
+ *     responses:
+ *       '302':
+ *         description: ログイン成功時にリダイレクト
+ */
 router.get(
   '/google/callback',
   passport.authenticate('google', {
@@ -23,7 +41,18 @@ router.get(
   }
 );
 
-// ログアウト
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: ログアウト
+ *     description: 現在のセッションを終了し、ユーザーをログアウトします。
+ *     responses:
+ *       '200':
+ *         description: ログアウト成功
+ *       '500':
+ *         description: ログアウト失敗
+ */
 router.post('/logout', (req, res) => {
   req.logout((err) => {
     if (err) {
@@ -41,7 +70,25 @@ router.post('/logout', (req, res) => {
   });
 });
 
-// ユーザー情報取得
+/**
+ * @swagger
+ * /auth/user:
+ *   get:
+ *     summary: ユーザー情報取得
+ *     description: 現在ログインしているユーザーの情報を取得します。
+ *     responses:
+ *       '200':
+ *         description: ユーザー情報を返します
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 username:
+ *                   type: string
+ */
 router.get('/user', (req, res) => {
   if (req.isAuthenticated()) {
     const user = req.user as UserModel;
@@ -50,7 +97,6 @@ router.get('/user', (req, res) => {
       username: user.username,
     });
   } else {
-    // ログインしていない場合、空のオブジェクトを返す
     res.json({});
   }
 });
