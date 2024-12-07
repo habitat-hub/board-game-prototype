@@ -40,7 +40,7 @@ router.use(ensureAuthenticated);
  *                   players:
  *                     type: array
  *                     items:
- *                       type: object
+ *                       type: PlayerModel
  */
 router.get('/', async (req: Request, res: Response) => {
   const user = req.user as UserModel;

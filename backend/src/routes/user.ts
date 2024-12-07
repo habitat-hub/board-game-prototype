@@ -35,6 +35,13 @@ router.use(ensureAuthenticated);
  *                     type: integer
  *                   username:
  *                     type: string
+ *             examples:
+ *               search:
+ *                 summary: 検索結果
+ *                 value:
+ *                   - id: 1
+ *                     googleId: "exampleGoogleId"
+ *                     username: "exampleUser"
  */
 router.get('/search', async (req: Request, res: Response) => {
   const { username } = req.query;

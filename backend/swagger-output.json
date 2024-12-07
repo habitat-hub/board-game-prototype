@@ -11,7 +11,16 @@
         "description": "Googleアカウントを使用してログインします。",
         "responses": {
           "302": {
-            "description": "リダイレクト"
+            "description": "リダイレクト",
+            "headers": {
+              "Location": {
+                "description": "リダイレクト先のURL",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "https://accounts.google.com/o/oauth2/auth"
+              }
+            }
           }
         }
       }
@@ -22,7 +31,16 @@
         "description": "GoogleログインのコールバックURL。",
         "responses": {
           "302": {
-            "description": "ログイン成功時にリダイレクト"
+            "description": "ログイン成功時にリダイレクト",
+            "headers": {
+              "Location": {
+                "description": "リダイレクト先のURL",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "http://localhost:3000/prototypes"
+              }
+            }
           }
         }
       }
@@ -33,10 +51,24 @@
         "description": "現在のセッションを終了し、ユーザーをログアウトします。",
         "responses": {
           "200": {
-            "description": "ログアウト成功"
+            "description": "ログアウト成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Logged out successfully"
+                }
+              }
+            }
           },
           "500": {
-            "description": "ログアウト失敗"
+            "description": "ログアウト失敗",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "Failed to logout"
+                }
+              }
+            }
           }
         }
       }
@@ -59,6 +91,19 @@
                     "username": {
                       "type": "string"
                     }
+                  }
+                },
+                "examples": {
+                  "authenticated": {
+                    "summary": "認証済みユーザー",
+                    "value": {
+                      "id": 1,
+                      "username": "exampleUser"
+                    }
+                  },
+                  "unauthenticated": {
+                    "summary": "未認証ユーザー",
+                    "value": {}
                   }
                 }
               }
@@ -90,7 +135,7 @@
                       "players": {
                         "type": "array",
                         "items": {
-                          "type": "object"
+                          "type": "PlayerModel"
                         }
                       }
                     }
@@ -412,6 +457,18 @@
                         "type": "string"
                       }
                     }
+                  }
+                },
+                "examples": {
+                  "search": {
+                    "summary": "検索結果",
+                    "value": [
+                      {
+                        "id": 1,
+                        "googleId": "exampleGoogleId",
+                        "username": "exampleUser"
+                      }
+                    ]
                   }
                 }
               }
