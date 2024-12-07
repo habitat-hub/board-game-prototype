@@ -4,6 +4,10 @@
 
 ボードゲームのプロトタイプを作成するためのアプリケーション
 
+## ドキュメント
+
+https://habitat-hub.github.io/board-game-prototype/
+
 ## ディレクトリ構成
 
 - `frontend/`: フロントエンドのソースコード
