@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+
 import PlayerInvite from '@/features/prototype/components/organisms/PlayerInvite';
 
 export const metadata: Metadata = {

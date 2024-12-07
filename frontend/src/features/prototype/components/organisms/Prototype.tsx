@@ -1,17 +1,20 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { io } from 'socket.io-client';
+import { AiOutlineTool } from 'react-icons/ai';
+
 import PartCreationView from '@/features/prototype/components/molecules/PartCreationView';
 import PartMainView from '@/features/prototype/components/molecules/PartMainView';
 import PartPropertyView from '@/features/prototype/components/molecules/PartPropertyView';
-import { useParams, useRouter } from 'next/navigation';
 import { Prototype, AllPart, User, Player } from '@/features/prototype/type';
-import { io } from 'socket.io-client';
 import { PART_TYPE, VIEW_MODE } from '@/features/prototype/const';
-import GameSettingsView from '../molecules/GameSettingView';
 import axiosInstance from '@/utils/axiosInstance';
 import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumberTool';
-import { AiOutlineTool } from 'react-icons/ai';
+
+import GameSettingsView from '../molecules/GameSettingView';
+
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 

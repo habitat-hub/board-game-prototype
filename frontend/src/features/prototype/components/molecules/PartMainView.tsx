@@ -1,13 +1,16 @@
 import Link from 'next/link';
 import React, { Fragment, useState } from 'react';
-import { AllPart, Card, Hand, Player } from '@/features/prototype/type';
 import { Socket } from 'socket.io-client';
+import { useRouter } from 'next/navigation';
+
+import { AllPart, Card, Hand, Player } from '@/features/prototype/type';
 import { PART_TYPE, VIEW_MODE } from '@/features/prototype/const';
 import CardPart from '@/features/prototype/components/atoms/CardPart';
 import DeckPart from '@/features/prototype/components/atoms/DeckPart';
 import axiosInstance from '@/utils/axiosInstance';
+
 import PartWrapper from '../atoms/PartWrapper';
-import { useRouter } from 'next/navigation';
+
 
 interface PartMainViewProps {
   userId: number;

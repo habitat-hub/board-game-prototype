@@ -1,8 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Card, Hand, Part, Player } from '@/features/prototype/type';
 import { Socket } from 'socket.io-client';
 import { VscSync, VscSyncIgnored } from 'react-icons/vsc';
+
+import { Card, Hand, Part, Player } from '@/features/prototype/type';
+
 import { VIEW_MODE } from '../../const';
+
 import PartWrapper from './PartWrapper';
 
 interface CardProps {

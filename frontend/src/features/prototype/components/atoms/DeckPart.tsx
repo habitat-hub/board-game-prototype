@@ -1,6 +1,8 @@
 import React from 'react';
-import { Part } from '@/features/prototype/type';
 import { Socket } from 'socket.io-client';
+
+import { Part } from '@/features/prototype/type';
+
 import PartWrapper from './PartWrapper';
 
 interface DeckProps {

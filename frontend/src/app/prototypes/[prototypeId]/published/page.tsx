@@ -1,5 +1,6 @@
 import React from 'react';
 import { Metadata } from 'next';
+
 import PrototypeComponent from '@/features/prototype/components/organisms/Prototype';
 import { VIEW_MODE } from '@/features/prototype/const';
 

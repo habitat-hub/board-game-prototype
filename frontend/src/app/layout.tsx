@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+
 import './globals.css';
 import Layout from '@/components/Layout';
 import UserProvider from '@/components/UserProvider';

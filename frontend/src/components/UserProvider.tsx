@@ -1,8 +1,9 @@
 'use client';
 
 import React, { ReactNode, useState, useEffect } from 'react';
-import axiosInstance from '@/utils/axiosInstance';
 import { useRouter } from 'next/navigation';
+
+import axiosInstance from '@/utils/axiosInstance';
 
 interface UserProviderProps {
   children: ReactNode;

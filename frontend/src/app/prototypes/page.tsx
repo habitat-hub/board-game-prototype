@@ -1,5 +1,6 @@
 import React from 'react';
 import { Metadata } from 'next';
+
 import PrototypeList from '@/features/prototype/components/organisms/PrototypeList';
 
 export const metadata: Metadata = {

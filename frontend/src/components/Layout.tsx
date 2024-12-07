@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+
 import axiosInstance from '@/utils/axiosInstance';
 
 interface LayoutProps {
