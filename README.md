@@ -78,3 +78,7 @@ npm run dev
 cd backend
 npm run dev
 ```
+
+## ER 図
+
+![ER図](backend/erd.svg)
