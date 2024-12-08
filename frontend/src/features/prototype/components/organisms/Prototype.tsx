@@ -15,7 +15,6 @@ import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumber
 
 import GameSettingsView from '../molecules/GameSettingView';
 
-
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
 const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
@@ -32,6 +31,10 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
   const [accessibleUsers, setAccessibleUsers] = useState<User[]>([]);
   const [userId, setUserId] = useState<number | null>(null);
   const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
+  const [cursors, setCursors] = useState<{
+    [key: number]: { x: number; y: number; color: string };
+  }>({});
+  const color = useRef(`#${Math.floor(Math.random() * 16777215).toString(16)}`);
 
   // プロタイプの取得＆ビューモードが不一致の場合はリダイレクト
   useEffect(() => {
@@ -89,11 +92,32 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
       setPlayers(players);
     });
 
+    socket.on('UPDATE_CURSORS', (data) => {
+      console.log(data);
+      setCursors(data);
+    });
+
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!userId) return;
+      const mousePosition = { x: event.clientX, y: event.clientY };
+      socket.emit('MOUSE_MOVE', Number(prototypeId), {
+        id: userId,
+        properties: {
+          x: mousePosition.x,
+          y: mousePosition.y,
+          color: color.current,
+        },
+      });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+
     return () => {
       socket.off('UPDATE_PARTS');
       socket.off('UPDATE_PLAYERS');
+      socket.off('MOUSE_MOVE');
+      window.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [prototypeId]);
+  }, [prototypeId, userId]);
 
   /**
    * パーツの追加
@@ -314,6 +338,22 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
           isCreationViewOpen && isPropertyViewOpen ? 'w-1/2' : 'w-full'
         }`}
       >
+        {Object.entries(cursors).map(([id, element]) => (
+          <div
+            key={id}
+            className="cursor"
+            style={{
+              position: 'absolute',
+              left: `${element.x}px`,
+              top: `${element.y}px`,
+              width: '10px',
+              height: '10px',
+              backgroundColor: element.color,
+              borderRadius: '50%',
+              pointerEvents: 'none',
+            }}
+          />
+        ))}
         <PartMainView
           userId={userId}
           prototypeId={Number(prototypeId)}

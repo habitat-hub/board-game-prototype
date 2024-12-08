@@ -125,6 +125,10 @@ app.use('/api/users', userRoutes);
 
 // Socket.io接続
 io.on('connection', (socket: Socket) => {
+  const cursors: {
+    [key: number]: { [key: number]: { x: number; y: number; color: string } };
+  } = {};
+
   // プロトタイプ参加
   socket.on('JOIN_PROTOTYPE', async (prototypeId: number) => {
     const parts = await PartModel.findAll({ where: { prototypeId } });
@@ -135,6 +139,11 @@ io.on('connection', (socket: Socket) => {
     socket.join(prototypeId.toString());
     socket.emit('UPDATE_PARTS', parts);
     socket.emit('UPDATE_PLAYERS', players);
+
+    if (!cursors[prototypeId]) {
+      cursors[prototypeId] = {};
+    }
+    socket.emit('UPDATE_CURSORS', cursors[prototypeId]);
   });
 
   // パーツ追加
@@ -273,6 +282,26 @@ io.on('connection', (socket: Socket) => {
       });
 
       io.to(prototypeId.toString()).emit('UPDATE_PLAYERS', players);
+    }
+  );
+
+  socket.on(
+    'MOUSE_MOVE',
+    (
+      prototypeId: number,
+      data: {
+        id: number;
+        properties: { x: number; y: number; color: string };
+      }
+    ) => {
+      cursors[prototypeId] = {
+        ...cursors[prototypeId],
+        [data.id]: data.properties,
+      };
+      io.to(prototypeId.toString()).emit(
+        'UPDATE_CURSORS',
+        cursors[prototypeId]
+      );
     }
   );
 
