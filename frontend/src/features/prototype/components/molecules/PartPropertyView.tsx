@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { debounce } from 'lodash';
 
 import { AllPart, AllPartKey, Player } from '@/features/prototype/type';
 import { PART_TYPE } from '@/features/prototype/const';
@@ -37,6 +38,14 @@ const PartPropertyView: React.FC<PartPropertyViewProps> = ({
     setPart(selectedPart);
   }, [selectedPart]);
 
+  // デバウンスされた更新関数
+  const debouncedUpdatePart = useCallback(
+    debounce((updatedPart: AllPart) => {
+      onUpdatePart(updatedPart);
+    }, 300),
+    [onUpdatePart]
+  );
+
   /**
    * プロパティを変更する
    * @param key - プロパティのキー
@@ -46,7 +55,7 @@ const PartPropertyView: React.FC<PartPropertyViewProps> = ({
     if (part) {
       const updatedPart = { ...part, [key]: value };
       setPart(updatedPart);
-      onUpdatePart(updatedPart);
+      debouncedUpdatePart(updatedPart);
     }
   };
 
