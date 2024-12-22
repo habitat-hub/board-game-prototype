@@ -18,6 +18,7 @@ AccessModel.init(
     },
     prototypeGroupId: {
       type: DataTypes.UUID,
+      unique: true,
       allowNull: false,
     },
     name: {

@@ -5,7 +5,7 @@ import AccessModel from './Access';
 
 class UserAccessModel extends Model {
   public userId!: string;
-  public accessGroupId!: number;
+  public accessId!: number;
 }
 
 UserAccessModel.init(
@@ -15,7 +15,7 @@ UserAccessModel.init(
       primaryKey: true,
       allowNull: false,
     },
-    accessGroupId: {
+    accessId: {
       type: DataTypes.BIGINT,
       primaryKey: true,
       allowNull: false,
@@ -35,7 +35,7 @@ UserModel.belongsToMany(AccessModel, {
 });
 AccessModel.belongsToMany(UserModel, {
   through: UserAccessModel,
-  foreignKey: 'accessGroupId',
+  foreignKey: 'accessId',
   onDelete: 'CASCADE',
 });
 

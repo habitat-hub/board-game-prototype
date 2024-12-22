@@ -6,46 +6,25 @@ import Link from 'next/link';
 import { Prototype } from '@/features/prototype/type';
 import axiosInstance from '@/utils/axiosInstance';
 
-const PrototypeList: React.FC = () => {
-  const [prototypes, setPrototypes] = useState<Prototype[]>([]);
+import { PROTOTYPE_TYPE } from '../../const';
 
-  /**
-   * プロトタイプを取得する
-   */
-  const fetchPrototypes = () => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const PrototypeList: React.FC = () => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const [editPrototypes, setEditPrototypes] = useState<Prototype[]>([]);
+
+  // プロトタイプを取得する
+  useEffect(() => {
     axiosInstance
       .get(`${apiUrl}/api/prototypes`)
-      .then((response) => setPrototypes(response.data))
+      .then((response) =>
+        setEditPrototypes(
+          response.data.filter(
+            ({ type }: { type: string }) => type === PROTOTYPE_TYPE.EDIT
+          )
+        )
+      )
       .catch((error) => console.error('Error fetching prototypes:', error));
-  };
-
-  useEffect(() => {
-    fetchPrototypes();
-  }, []);
-
-  // グループIDごとにプロトタイプを分類
-  const groupedPrototypes = prototypes.reduce((acc, prototype) => {
-    if (!acc[prototype.groupId]) {
-      acc[prototype.groupId] = [];
-    }
-    acc[prototype.groupId].push(prototype);
-    return acc;
-  }, {} as Record<number, Prototype[]>);
-
-  /**
-   * プロトタイプを削除する
-   * @param id - 削除するプロトタイプのID
-   */
-  const handleDelete = async (id: number) => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    try {
-      await axiosInstance.delete(`${apiUrl}/api/prototypes/${id}`);
-      fetchPrototypes(); // 削除後に再fetch
-    } catch (error) {
-      console.error('Error deleting prototype:', error);
-    }
-  };
+  }, [apiUrl]);
 
   return (
     <div className="max-w-4xl mx-auto mt-10">
@@ -62,71 +41,19 @@ const PrototypeList: React.FC = () => {
       </div>
       <div className="shadow-lg rounded-lg overflow-hidden">
         <ul className="divide-y divide-gray-200">
-          {Object.entries(groupedPrototypes).map(
-            ([groupId, groupPrototypes]) => {
-              const editPrototype = groupPrototypes.find((p) => p.isEdit);
-              const previewPrototype = groupPrototypes.find((p) => p.isPreview);
-              const publishedPrototype = groupPrototypes.find(
-                (p) => p.isPublic
-              );
-
+          {editPrototypes.map(
+            ({ id, groupId, name, minPlayers, maxPlayers }) => {
               return (
-                <li
-                  key={groupId}
-                  className="hover:bg-gray-100 transition-colors duration-200 flex justify-between items-center p-4"
-                >
-                  {/* TODO: プロトタイプ名を編集できるようにする */}
-                  {/* TODO: ボタン以外をクリックしたら、編集画面に遷移する */}
-                  {/* TODO: 更新日時と更新者を表示する */}
-                  <span className="flex-1">
-                    {editPrototype?.name} - {editPrototype?.players.length}
-                    人用ゲーム
-                  </span>
-                  <div className="flex space-x-2 ml-auto">
-                    <Link
-                      href={`prototypes/${editPrototype?.id}/edit`}
-                      className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 transition-colors"
-                    >
-                      編集
-                    </Link>
-                    <Link
-                      href={`prototypes/${previewPrototype?.id}/preview`}
-                      className={`bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition-colors ${
-                        !previewPrototype ? 'opacity-50 cursor-not-allowed' : ''
-                      }`}
-                      onClick={(e) => !previewPrototype && e.preventDefault()}
-                    >
-                      プレビュー版
-                    </Link>
-                    <Link
-                      href={`prototypes/${publishedPrototype?.id}/published`}
-                      className={`bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition-colors ${
-                        !publishedPrototype
-                          ? 'opacity-50 cursor-not-allowed'
-                          : ''
-                      }`}
-                      onClick={(e) => !publishedPrototype && e.preventDefault()}
-                    >
-                      公開版
-                    </Link>
-                    <button
-                      onClick={() => {
-                        if (editPrototype) {
-                          handleDelete(editPrototype.id);
-                        }
-                        if (previewPrototype) {
-                          handleDelete(previewPrototype.id);
-                        }
-                        if (publishedPrototype) {
-                          handleDelete(publishedPrototype.id);
-                        }
-                      }}
-                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors"
-                    >
-                      削除
-                    </button>
-                  </div>
-                </li>
+                <Link key={id} href={`prototypes/groups/${groupId}`}>
+                  <li className="hover:bg-gray-100 transition-colors duration-200 flex justify-between items-center p-4">
+                    <span className="flex-1">
+                      {name} -{' '}
+                      {minPlayers !== maxPlayers
+                        ? `${minPlayers} 〜 ${maxPlayers} 人用ゲーム`
+                        : `${minPlayers} 人用ゲーム`}
+                    </span>
+                  </li>
+                </Link>
               );
             }
           )}

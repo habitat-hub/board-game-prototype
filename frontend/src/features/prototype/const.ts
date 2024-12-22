@@ -5,8 +5,51 @@ export const PART_TYPE = {
   DECK: 'deck',
 };
 
-export const VIEW_MODE = {
-  EDIT: 'edit',
-  PREVIEW: 'preview',
-  PUBLIC: 'public',
+export const PROTOTYPE_TYPE = {
+  EDIT: 'EDIT',
+  PREVIEW: 'PREVIEW',
+};
+
+export const VERSION_NUMBER = {
+  MASTER: '0',
+};
+
+export const PART_DEFAULT_CONFIG = {
+  CARD: {
+    id: 'card',
+    name: 'カード',
+    width: 100,
+    height: 150,
+    description: '',
+    color: '#FFFFFF',
+    isReversible: false,
+    configurableTypeAsChild: [],
+  },
+  TOKEN: {
+    id: 'token',
+    name: 'token',
+    width: 50,
+    height: 50,
+    description: '',
+    color: '#FFFFFF',
+    configurableTypeAsChild: [],
+  },
+  HAND: {
+    id: 'hand',
+    name: '手札',
+    width: 400,
+    height: 150,
+    description: '',
+    color: '#FFFFFF',
+    configurableTypeAsChild: ['card'],
+  },
+  DECK: {
+    id: 'deck',
+    name: '山札',
+    width: 150,
+    height: 150,
+    description: '',
+    color: '#FFFFFF',
+    configurableTypeAsChild: ['card'],
+  },
 };

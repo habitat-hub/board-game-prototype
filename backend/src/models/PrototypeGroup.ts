@@ -27,10 +27,6 @@ PrototypeGroupModel.init(
   }
 );
 
-PrototypeModel.belongsTo(PrototypeGroupModel, {
-  foreignKey: 'groupId',
-  onDelete: 'CASCADE',
-});
 PrototypeGroupModel.belongsTo(PrototypeModel, {
   foreignKey: 'prototypeId',
   onDelete: 'CASCADE',
