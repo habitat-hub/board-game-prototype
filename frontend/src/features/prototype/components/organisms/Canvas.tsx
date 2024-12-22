@@ -1,16 +1,43 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
+import { Socket } from 'socket.io-client';
+import { AiOutlineTool } from 'react-icons/ai';
 
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
-import { Camera, CanvasMode, CanvasState } from '@/features/prototype/type';
+import {
+  AllPart,
+  Camera,
+  CanvasMode,
+  CanvasState,
+  Player,
+} from '@/features/prototype/type';
 
-export default function Canvas() {
+import Sidebars from '../molecules/Sidebars';
+import RandomNumberTool from '../atoms/RandomNumberTool';
+
+interface CanvasProps {
+  prototypeName: string;
+  prototypeVersionId: string;
+  parts: AllPart[];
+  players: Player[];
+  socket: Socket;
+}
+
+export default function Canvas({
+  prototypeName,
+  prototypeVersionId,
+  parts,
+  players,
+  socket,
+}: CanvasProps) {
   const [canvasState, setState] = useState<CanvasState>({
     mode: CanvasMode.None,
   });
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, zoom: 1 });
-
+  const [leftIsMinimized, setLeftIsMinimized] = useState(false);
+  const mainViewRef = useRef<HTMLDivElement>(null);
+  const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
   const onWheel = useCallback((e: React.WheelEvent) => {
     // TODO: スクロールの上限を決める
     setCamera((camera) => ({
@@ -20,9 +47,19 @@ export default function Canvas() {
     }));
   }, []);
 
+  /**
+   * パーツの追加
+   * @param part - 追加するパーツ
+   */
+  const onAddPart = (
+    part: Omit<AllPart, 'id' | 'prototypeVersionId' | 'order'>
+  ) => {
+    socket.emit('ADD_PART', { prototypeVersionId, part });
+  };
+
   return (
     <div className="flex h-full w-full">
-      <main className="h-full w-full">
+      <main className="h-full w-full" ref={mainViewRef}>
         <div className="h-full w-full touch-none">
           <svg
             onWheel={onWheel}
@@ -34,19 +71,16 @@ export default function Canvas() {
                 transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom})`,
               }}
             >
-              {/* TODO: 実際のパーツに置き換える */}
-              {['0', '1', '2', '3'].map((layerId) => (
+              {parts.map((part) => (
                 <rect
-                  key={layerId}
-                  id={layerId}
+                  key={part.id}
+                  id={part.id.toString()}
                   style={{
                     fill: 'red',
-                    transform: `translate(${50 * 2 * Number(layerId)}px, ${
-                      50 * 2 * Number(layerId)
-                    }px)`,
+                    transform: `translate(${part.position.x}px, ${part.position.y}px)`,
                   }}
-                  width={100}
-                  height={100}
+                  width={part.width}
+                  height={part.height}
                 />
               ))}
             </g>
@@ -66,6 +100,25 @@ export default function Canvas() {
         canZoomIn={camera.zoom < 2}
         canZoomOut={camera.zoom > 0.5}
       />
+      <Sidebars
+        prototypeName={prototypeName}
+        leftIsMinimized={leftIsMinimized}
+        setLeftIsMinimized={setLeftIsMinimized}
+        players={players}
+        onAddPart={onAddPart}
+        mainViewRef={mainViewRef}
+      />
+      {/* 乱数ツールボタン */}
+      <button
+        onClick={() => setIsRandomToolOpen(!isRandomToolOpen)}
+        className="fixed bottom-4 right-4 bg-purple-500 text-white p-2 rounded-full shadow-lg"
+      >
+        <AiOutlineTool size={30} />
+      </button>
+      {/* 乱数計算UI */}
+      {isRandomToolOpen && (
+        <RandomNumberTool onClose={() => setIsRandomToolOpen(false)} />
+      )}
     </div>
   );
 }

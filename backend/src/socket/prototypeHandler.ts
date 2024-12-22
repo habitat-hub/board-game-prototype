@@ -2,22 +2,34 @@ import { Server, Socket } from 'socket.io';
 import PartModel from '../models/Part';
 import PlayerModel from '../models/Player';
 import { PART_TYPE } from '../const';
+import PrototypeVersionModel from '../models/PrototypeVersion';
 
 /**
  * プロトタイプ参加
  * @param socket - Socket
  */
 function handleJoinPrototype(socket: Socket) {
-  socket.on('JOIN_PROTOTYPE', async (prototypeId: number) => {
-    const parts = await PartModel.findAll({ where: { prototypeId } });
-    const players = await PlayerModel.findAll({
-      where: { prototypeId },
-    });
+  socket.on(
+    'JOIN_PROTOTYPE',
+    async ({ prototypeVersionId }: { prototypeVersionId: string }) => {
+      const prototypeVersion =
+        await PrototypeVersionModel.findByPk(prototypeVersionId);
+      if (!prototypeVersion) {
+        return;
+      }
 
-    socket.join(prototypeId.toString());
-    socket.emit('UPDATE_PARTS', parts);
-    socket.emit('UPDATE_PLAYERS', players);
-  });
+      const parts = await PartModel.findAll({
+        where: { prototypeVersionId: prototypeVersionId },
+      });
+      const players = await PlayerModel.findAll({
+        where: { prototypeVersionId: prototypeVersionId },
+      });
+
+      socket.join(prototypeVersionId);
+      socket.emit('UPDATE_PARTS', parts);
+      socket.emit('UPDATE_PLAYERS', players);
+    }
+  );
 }
 
 /**
@@ -28,14 +40,27 @@ function handleJoinPrototype(socket: Socket) {
 function handleAddPart(socket: Socket, io: Server) {
   socket.on(
     'ADD_PART',
-    async ({ prototypeId, part }: { prototypeId: number; part: PartModel }) => {
+    async ({
+      prototypeVersionId,
+      part,
+    }: {
+      prototypeVersionId: string;
+      part: PartModel;
+    }) => {
+      const maxOrder = await PartModel.max('order', {
+        where: { prototypeVersionId },
+      });
+
       await PartModel.create({
         ...part,
-        prototypeId,
+        prototypeVersionId,
+        order: (maxOrder as number) + 0.1,
       });
-      const parts = await PartModel.findAll({ where: { prototypeId } });
+      const parts = await PartModel.findAll({
+        where: { prototypeVersionId },
+      });
 
-      io.to(prototypeId.toString()).emit('UPDATE_PARTS', parts);
+      io.to(prototypeVersionId).emit('UPDATE_PARTS', parts);
     }
   );
 }

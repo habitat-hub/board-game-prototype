@@ -6,7 +6,6 @@ class PlayerModel extends Model {
   public id!: number;
   public prototypeVersionId!: string;
   public playerName!: string;
-  public order!: number;
 }
 
 PlayerModel.init(
@@ -23,10 +22,6 @@ PlayerModel.init(
     },
     playerName: {
       type: DataTypes.STRING,
-      allowNull: false,
-    },
-    order: {
-      type: DataTypes.INTEGER,
       allowNull: false,
     },
   },

@@ -72,7 +72,6 @@ export async function createPrototype({
     Array.from({ length: maxPlayers }).map((_, i) => ({
       prototypeVersionId: prototypeVersion.id,
       playerName: `プレイヤー${i + 1}`,
-      order: i,
     })),
     { transaction }
   );

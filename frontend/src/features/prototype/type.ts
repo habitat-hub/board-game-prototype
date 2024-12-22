@@ -12,7 +12,7 @@ export interface Prototype {
 }
 
 export interface PrototypeVersion {
-  id: number;
+  id: string;
   prototypeId: string;
   versionNumber: string;
   description: string;
@@ -24,7 +24,7 @@ export type AllPartKey = keyof Part | keyof Card | keyof Hand;
 export interface Part {
   id: number;
   type: string;
-  prototypeId: number;
+  prototypeVersionId: string;
   parentId: number | null;
   name: string;
   description: string;
@@ -34,6 +34,7 @@ export interface Part {
   height: number;
   order: number; // @see https://www.figma.com/blog/realtime-editing-of-ordered-sequences/ , https://www.wantedly.com/companies/wantedly/post_articles/386188
   configurableTypeAsChild: string[];
+  originalPartId: number | null;
 }
 
 export interface Card extends Part {
@@ -47,13 +48,12 @@ export interface Hand extends Part {
 
 export interface Player {
   id: number;
-  name: string;
-  userId: number | null;
-  order: number;
+  prototypeVersionId: string;
+  playerName: string;
 }
 
 export interface User {
-  id: number;
+  id: string;
   username: string;
 }
 
