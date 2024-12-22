@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Socket } from 'socket.io-client';
 import { AiOutlineTool } from 'react-icons/ai';
 
@@ -19,6 +19,7 @@ import RandomNumberTool from '../atoms/RandomNumberTool';
 interface CanvasProps {
   prototypeName: string;
   prototypeVersionId: string;
+  groupId: number;
   parts: AllPart[];
   players: Player[];
   socket: Socket;
@@ -27,6 +28,7 @@ interface CanvasProps {
 export default function Canvas({
   prototypeName,
   prototypeVersionId,
+  groupId,
   parts,
   players,
   socket,
@@ -36,8 +38,9 @@ export default function Canvas({
   });
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, zoom: 1 });
   const [leftIsMinimized, setLeftIsMinimized] = useState(false);
-  const mainViewRef = useRef<HTMLDivElement>(null);
   const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
+  const [selectedPart, setSelectedPart] = useState<AllPart | null>(null);
+  const mainViewRef = useRef<HTMLDivElement>(null);
   const onWheel = useCallback((e: React.WheelEvent) => {
     // TODO: スクロールの上限を決める
     setCamera((camera) => ({
@@ -46,6 +49,11 @@ export default function Canvas({
       zoom: camera.zoom,
     }));
   }, []);
+
+  // FIXME: あとで削除
+  useEffect(() => {
+    setSelectedPart(parts[0]);
+  }, [parts]);
 
   /**
    * パーツの追加
@@ -104,8 +112,12 @@ export default function Canvas({
         prototypeName={prototypeName}
         leftIsMinimized={leftIsMinimized}
         setLeftIsMinimized={setLeftIsMinimized}
+        groupId={groupId}
         players={players}
+        selectedPart={selectedPart}
         onAddPart={onAddPart}
+        // TODO: パーツの更新
+        updatePart={() => {}}
         mainViewRef={mainViewRef}
       />
       {/* 乱数ツールボタン */}

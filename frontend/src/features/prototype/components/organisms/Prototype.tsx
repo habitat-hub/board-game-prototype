@@ -59,7 +59,7 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
   // ユーザーの取得
   useEffect(() => {
     axiosInstance
-      .get('/user')
+      .get('/api/users/info')
       .then((response) => setUserId(response.data.id))
       .catch((error) => console.error('Error fetching user:', error));
   }, []);

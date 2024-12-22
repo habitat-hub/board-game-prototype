@@ -53,3 +53,18 @@ export const PART_DEFAULT_CONFIG = {
     configurableTypeAsChild: ['card'],
   },
 };
+
+export const COLORS = [
+  '#FF0000', // Red
+  '#00FF00', // Green
+  '#0000FF', // Blue
+  '#FFFF00', // Yellow
+  '#FF00FF', // Magenta
+  '#00FFFF', // Cyan
+  '#FFA500', // Orange
+  '#800080', // Purple
+  '#008000', // Dark Green
+  '#FFC0CB', // Pink
+  '#FFFFFF', // White
+  '#808080', // Gray
+];

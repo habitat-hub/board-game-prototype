@@ -76,6 +76,7 @@ const PrototypeEdit: React.FC = () => {
       players={players}
       prototypeVersionId={versionId}
       socket={socket}
+      groupId={prototype.groupId}
     />
   );
 };
