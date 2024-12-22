@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import PrototypeModel from '../models/Prototype';
 import UserModel from '../models/User';
 import { getAccessiblePrototypes } from '../helpers/prototypeHelper';
+import AccessModel from '../models/Access';
 
 /**
  * プロトタイプの作成者かどうかを確認する
@@ -58,6 +59,43 @@ export async function checkPrototypeAccess(
 
     res.status(403).json({ message: 'プロトタイプへのアクセス権がありません' });
     return;
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: '予期せぬエラーが発生しました' });
+    return;
+  }
+}
+
+/**
+ * グループへのアクセス権を確認する
+ * @param req - リクエスト
+ * @param res - レスポンス
+ * @param next - 次のミドルウェアを呼び出す
+ * @returns
+ */
+export async function checkGroupAccess(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const userId = (req.user as UserModel).id;
+  const groupId = req.params.groupId;
+
+  try {
+    const user = await UserModel.findOne({
+      include: {
+        model: AccessModel,
+        where: { prototypeGroupId: groupId },
+      },
+      where: { id: userId },
+    });
+
+    if (!user) {
+      res.status(403).json({ message: 'グループへのアクセス権がありません' });
+      return;
+    }
+
+    return next();
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: '予期せぬエラーが発生しました' });

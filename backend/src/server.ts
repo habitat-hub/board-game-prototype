@@ -12,15 +12,12 @@ import fs from 'fs';
 
 dotenv.config();
 
-import { shuffleDeck } from './helpers/prototypeHelper';
-import { PART_TYPE } from './const';
 import sequelize from './models';
 import UserModel from './models/User';
 import authRoutes from './routes/auth';
 import prototypeRoutes from './routes/prototype';
 import userRoutes from './routes/user';
-import PartModel from './models/Part';
-import PlayerModel from './models/Player';
+import handlePrototype from './socket/prototypeHandler';
 
 const app = express();
 const server = http.createServer(app);
@@ -125,156 +122,7 @@ app.use('/api/users', userRoutes);
 
 // Socket.io接続
 io.on('connection', (socket: Socket) => {
-  // プロトタイプ参加
-  socket.on('JOIN_PROTOTYPE', async (prototypeId: number) => {
-    const parts = await PartModel.findAll({ where: { prototypeId } });
-    const players = await PlayerModel.findAll({
-      where: { prototypeId },
-    });
-
-    socket.join(prototypeId.toString());
-    socket.emit('UPDATE_PARTS', parts);
-    socket.emit('UPDATE_PLAYERS', players);
-  });
-
-  // パーツ追加
-  socket.on(
-    'ADD_PART',
-    async ({ prototypeId, part }: { prototypeId: number; part: PartModel }) => {
-      await PartModel.create({
-        ...part,
-        prototypeId,
-      });
-      const parts = await PartModel.findAll({ where: { prototypeId } });
-
-      io.to(prototypeId.toString()).emit('UPDATE_PARTS', parts);
-    }
-  );
-
-  // カードを反転させる
-  socket.on(
-    'FLIP_CARD',
-    async ({
-      prototypeId,
-      cardId,
-      isNextFlipped,
-    }: {
-      prototypeId: number;
-      cardId: number;
-      isNextFlipped: boolean;
-    }) => {
-      await PartModel.update(
-        { isFlipped: isNextFlipped },
-        { where: { id: cardId } }
-      );
-
-      io.to(prototypeId.toString()).emit('FLIP_CARD', {
-        cardId,
-        isNextFlipped,
-      });
-    }
-  );
-
-  // パーツ移動
-  socket.on(
-    'MOVE_PART',
-    async ({
-      prototypeId,
-      id,
-      position,
-    }: {
-      prototypeId: number;
-      id: number;
-      position: { x: number; y: number };
-    }) => {
-      await PartModel.update({ position }, { where: { id, prototypeId } });
-      const parts = await PartModel.findAll({ where: { prototypeId } });
-
-      io.to(prototypeId.toString()).emit('UPDATE_PARTS', parts);
-    }
-  );
-
-  // カードの親を更新
-  socket.on(
-    'UPDATE_CARD_PARENT',
-    async ({
-      prototypeId,
-      cardId,
-      nextParentId,
-    }: {
-      prototypeId: number;
-      cardId: number;
-      nextParentId?: number | null;
-    }) => {
-      await PartModel.update(
-        { parentId: nextParentId || null },
-        { where: { id: cardId, prototypeId } }
-      );
-      const parts = await PartModel.findAll({ where: { prototypeId } });
-
-      io.to(prototypeId.toString()).emit('UPDATE_PARTS', parts);
-    }
-  );
-
-  // カードをシャッフル
-  socket.on(
-    'SHUFFLE_DECK',
-    async ({
-      prototypeId,
-      deckId,
-    }: {
-      prototypeId: number;
-      deckId: number;
-    }) => {
-      const cardsOnDeck = await PartModel.findAll({
-        where: { prototypeId, type: PART_TYPE.CARD, parentId: deckId },
-      });
-      await shuffleDeck(cardsOnDeck);
-      const parts = await PartModel.findAll({ where: { prototypeId } });
-
-      io.to(prototypeId.toString()).emit('UPDATE_PARTS', parts);
-    }
-  );
-
-  // パーツ更新
-  socket.on(
-    'UPDATE_PART',
-    async ({
-      prototypeId,
-      updatedPart,
-    }: {
-      prototypeId: number;
-      updatedPart: PartModel;
-    }) => {
-      await PartModel.update(updatedPart, {
-        where: { id: updatedPart.id, prototypeId },
-      });
-      const parts = await PartModel.findAll({ where: { prototypeId } });
-
-      io.to(prototypeId.toString()).emit('UPDATE_PARTS', parts);
-    }
-  );
-
-  // プレイヤーに紐づけるユーザーを更新
-  socket.on(
-    'UPDATE_PLAYER_USER',
-    async ({
-      prototypeId,
-      playerId,
-      userId,
-    }: {
-      prototypeId: number;
-      playerId: number;
-      userId: number | null;
-    }) => {
-      await PlayerModel.update({ userId }, { where: { id: playerId } });
-      const players = await PlayerModel.findAll({
-        where: { prototypeId },
-      });
-
-      io.to(prototypeId.toString()).emit('UPDATE_PLAYERS', players);
-    }
-  );
+  handlePrototype(socket, io);
 
   socket.on('disconnect', () => {
     console.log('user disconnected');

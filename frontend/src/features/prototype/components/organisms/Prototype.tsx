@@ -15,7 +15,6 @@ import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumber
 
 import GameSettingsView from '../molecules/GameSettingView';
 
-
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
 const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
@@ -60,7 +59,7 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
   // ユーザーの取得
   useEffect(() => {
     axiosInstance
-      .get('/auth/user')
+      .get('/user')
       .then((response) => setUserId(response.data.id))
       .catch((error) => console.error('Error fetching user:', error));
   }, []);

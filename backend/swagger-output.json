@@ -137,6 +137,205 @@
         }
       }
     },
+    "/api/prototypes/{prototypeId}": {
+      "get": {
+        "summary": "プロトタイプ取得",
+        "description": "指定されたIDのプロトタイプを取得します。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプのID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "プロトタイプの詳細を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "PrototypeModel"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "プロトタイプが見つかりません"
+          }
+        }
+      },
+      "put": {
+        "summary": "プロトタイプ更新",
+        "description": "指定されたIDのプロトタイプを更新します。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプのID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "プロトタイプを更新しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "PrototypeModel"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "プロトタイプが見つかりません"
+          }
+        }
+      },
+      "delete": {
+        "summary": "プロトタイプ削除",
+        "description": "指定されたIDのプロトタイプを削除します。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプのID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "プロトタイプを削除しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "PrototypeModel"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "プロトタイプが見つかりません"
+          }
+        }
+      }
+    },
+    "/api/prototypes/{prototypeId}/accessUsers": {
+      "get": {
+        "summary": "プロトタイプへのアクセス権を取得",
+        "description": "指定されたプロトタイプにアクセス可能なユーザーを取得します。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "アクセス可能なユーザーの一覧を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "UserModel"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/prototypes/{prototypeId}/versions": {
+      "get": {
+        "summary": "プロトタイプバージョン一覧取得",
+        "description": "指定されたプロトタイプのバージョン一覧を取得します。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "プロトタイプのバージョン一覧を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "prototype": {
+                      "type": "PrototypeModel"
+                    },
+                    "versions": {
+                      "type": "array",
+                      "items": {
+                        "type": "PrototypeVersionModel"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "プロトタイプが見つかりません"
+          }
+        }
+      }
+    },
+    "/api/prototypes/groups/{groupId}": {
+      "get": {
+        "summary": "グループのプロトタイプ一覧取得",
+        "description": "指定されたグループに属するプロトタイプの一覧を取得します。",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "description": "グループのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "グループに属するプロトタイプの一覧を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "PrototypeModel"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/user": {
       "get": {
         "summary": "ユーザー情報取得",

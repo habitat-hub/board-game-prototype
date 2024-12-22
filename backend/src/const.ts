@@ -13,3 +13,7 @@ export const PROTOTYPE_TYPE = {
 export const PROTOTYPE_VERSION = {
   INITIAL: '0',
 };
+
+export const UPDATABLE_PROTOTYPE_FIELDS = {
+  PROTOTYPE: ['name', 'minPlayers', 'maxPlayers'],
+};
