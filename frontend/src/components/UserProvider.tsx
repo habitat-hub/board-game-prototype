@@ -21,7 +21,7 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     }
 
     axiosInstance
-      .get('/user')
+      .get('/api/users/info')
       .then((response) => {
         const data = response.data;
         if (data.username) {

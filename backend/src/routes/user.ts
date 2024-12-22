@@ -33,7 +33,7 @@ router.use(ensureAuthenticated);
  *                   id: 1
  *                   username: "exampleUser"
  */
-router.get('/', (req, res) => {
+router.get('/info', (req, res) => {
   const user = req.user as UserModel;
   res.json({
     id: user.id,

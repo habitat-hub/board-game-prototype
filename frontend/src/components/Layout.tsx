@@ -103,9 +103,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         )}
       </header>
-      <main className="p-4" style={{ height: 'calc(100vh - 80px)' }}>
-        {children}
-      </main>
+      <main style={{ height: 'calc(100vh - 80px)' }}>{children}</main>
       <footer
         className="bg-blue-600 text-white p-2 text-center"
         style={{ height: '32px' }}
