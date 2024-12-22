@@ -4,3 +4,12 @@ export const PART_TYPE = {
   HAND: 'hand',
   DECK: 'deck',
 };
+
+export const PROTOTYPE_TYPE = {
+  EDIT: 'EDIT',
+  PREVIEW: 'PREVIEW',
+};
+
+export const PROTOTYPE_VERSION = {
+  INITIAL: '0',
+};

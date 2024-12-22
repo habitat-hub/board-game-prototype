@@ -1,42 +1,40 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
-import User from './User';
-import PrototypeModel from './Prototype';
+import PrototypeGroupModel from './PrototypeGroup';
 
-class Access extends Model {
-  public userId!: number;
-  public prototypeId!: number;
+class AccessModel extends Model {
+  public id!: number;
+  public prototypeGroupId!: string;
+  public name!: string;
 }
 
-Access.init(
+AccessModel.init(
   {
-    userId: {
-      type: DataTypes.INTEGER,
+    id: {
+      type: DataTypes.BIGINT,
+      autoIncrement: true,
+      primaryKey: true,
       allowNull: false,
-      references: {
-        model: User,
-        key: 'id',
-      },
     },
-    prototypeId: {
-      type: DataTypes.INTEGER,
+    prototypeGroupId: {
+      type: DataTypes.UUID,
       allowNull: false,
-      references: {
-        model: PrototypeModel,
-        key: 'id',
-      },
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
   },
   {
     sequelize,
     modelName: 'Access',
+    timestamps: false,
   }
 );
 
-User.belongsToMany(PrototypeModel, { through: Access, foreignKey: 'userId' });
-PrototypeModel.belongsToMany(User, {
-  through: Access,
-  foreignKey: 'prototypeId',
+AccessModel.belongsTo(PrototypeGroupModel, {
+  foreignKey: 'prototypeGroupId',
+  onDelete: 'CASCADE',
 });
 
-export default Access;
+export default AccessModel;

@@ -1,11 +1,11 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
-import PrototypeModel from './Prototype';
+import PrototypeVersionModel from './PrototypeVersion';
 
 class PartModel extends Model {
   public id!: number;
   public type!: string;
-  public prototypeId!: number;
+  public prototypeVersionId!: string;
   public parentId!: number | null;
   public name!: string;
   public description!: string;
@@ -19,36 +19,6 @@ class PartModel extends Model {
   public isFlipped: boolean | undefined;
   public ownerId: number | undefined;
   public originalPartId: number | undefined;
-
-  async clone({
-    newPrototypeId,
-    parentId,
-    ownerId,
-    originalPartId,
-  }: {
-    newPrototypeId: number;
-    parentId: number | null;
-    ownerId: number | null;
-    originalPartId: number;
-  }) {
-    return PartModel.create({
-      type: this.type,
-      prototypeId: newPrototypeId,
-      parentId,
-      name: this.name,
-      description: this.description,
-      color: this.color,
-      position: this.position,
-      width: this.width,
-      height: this.height,
-      order: this.order,
-      configurableTypeAsChild: this.configurableTypeAsChild,
-      isReversible: this.isReversible,
-      isFlipped: this.isFlipped,
-      ownerId,
-      originalPartId,
-    });
-  }
 }
 
 PartModel.init(
@@ -62,8 +32,8 @@ PartModel.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    prototypeId: {
-      type: DataTypes.INTEGER,
+    prototypeVersionId: {
+      type: DataTypes.UUID,
       allowNull: false,
     },
     parentId: {
@@ -125,12 +95,12 @@ PartModel.init(
   }
 );
 
-PartModel.belongsTo(PrototypeModel, {
-  foreignKey: 'prototypeId',
+PartModel.belongsTo(PrototypeVersionModel, {
+  foreignKey: 'prototypeVersionId',
   onDelete: 'CASCADE',
 });
-PrototypeModel.hasMany(PartModel, {
-  foreignKey: 'prototypeId',
+PrototypeVersionModel.hasMany(PartModel, {
+  foreignKey: 'prototypeVersionId',
 });
 
 export default PartModel;

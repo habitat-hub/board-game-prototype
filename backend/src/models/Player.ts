@@ -1,75 +1,57 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
-import PrototypeModel from './Prototype';
-import UserModel from './User';
+import PrototypeVersionModel from './PrototypeVersion';
 
 class PlayerModel extends Model {
   public id!: number;
-  public name!: string;
-  public prototypeId!: number;
-  public userId!: number | null;
+  public prototypeVersionId!: string;
+  public playerName!: string;
   public order!: number;
-  public originalPlayerId: number | undefined;
-
-  async clone({
-    newPrototypeId,
-    originalPlayerId,
-  }: {
-    newPrototypeId: number;
-    originalPlayerId: number;
-  }) {
-    return PlayerModel.create({
-      name: this.name,
-      prototypeId: newPrototypeId,
-      userId: this.userId,
-      order: this.order,
-      originalPlayerId,
-    });
-  }
 }
 
 PlayerModel.init(
   {
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
       autoIncrement: true,
       primaryKey: true,
+      allowNull: false,
     },
-    name: {
+    prototypeVersionId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    playerName: {
       type: DataTypes.STRING,
       allowNull: false,
-    },
-    prototypeId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
     },
     order: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    originalPlayerId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
   },
   {
     sequelize,
     modelName: 'Player',
+    indexes: [
+      {
+        unique: true,
+        fields: ['id'],
+      },
+      {
+        fields: ['prototypeVersionId'],
+      },
+    ],
   }
 );
 
-PlayerModel.belongsTo(UserModel, { foreignKey: 'userId' });
-PlayerModel.belongsTo(PrototypeModel, {
-  foreignKey: 'prototypeId',
+PlayerModel.belongsTo(PrototypeVersionModel, {
+  foreignKey: 'prototypeVersionId',
   onDelete: 'CASCADE',
 });
-PrototypeModel.hasMany(PlayerModel, {
-  foreignKey: 'prototypeId',
-  as: 'players',
+PrototypeVersionModel.hasMany(PlayerModel, {
+  foreignKey: 'prototypeVersionId',
+  onDelete: 'CASCADE',
 });
 
 export default PlayerModel;

@@ -2,7 +2,7 @@ import { DataTypes, Model } from 'sequelize';
 import sequelize from './index';
 
 class UserModel extends Model {
-  public id!: number;
+  public id!: string;
   public googleId!: string;
   public username!: string;
 }
@@ -10,9 +10,10 @@ class UserModel extends Model {
 UserModel.init(
   {
     id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
+      allowNull: false,
     },
     googleId: {
       type: DataTypes.STRING,
@@ -27,6 +28,9 @@ UserModel.init(
   {
     sequelize,
     modelName: 'User',
+    defaultScope: {
+      attributes: { exclude: ['googleId'] },
+    },
   }
 );
 
