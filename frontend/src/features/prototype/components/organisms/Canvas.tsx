@@ -59,11 +59,23 @@ export default function Canvas({
    * パーツの追加
    * @param part - 追加するパーツ
    */
-  const onAddPart = (
-    part: Omit<AllPart, 'id' | 'prototypeVersionId' | 'order'>
-  ) => {
-    socket.emit('ADD_PART', { prototypeVersionId, part });
-  };
+  const onAddPart = useCallback(
+    (part: Omit<AllPart, 'id' | 'prototypeVersionId' | 'order'>) => {
+      socket.emit('ADD_PART', { prototypeVersionId, part });
+    },
+    [prototypeVersionId, socket]
+  );
+
+  /**
+   * パーツの更新
+   * @param part - 更新するパーツ
+   */
+  const updatePart = useCallback(
+    (partId: number, updatePart: Partial<AllPart>) => {
+      socket.emit('UPDATE_PART', { prototypeVersionId, partId, updatePart });
+    },
+    [prototypeVersionId, socket]
+  );
 
   return (
     <div className="flex h-full w-full">
@@ -116,8 +128,7 @@ export default function Canvas({
         players={players}
         selectedPart={selectedPart}
         onAddPart={onAddPart}
-        // TODO: パーツの更新
-        updatePart={() => {}}
+        updatePart={updatePart}
         mainViewRef={mainViewRef}
       />
       {/* 乱数ツールボタン */}

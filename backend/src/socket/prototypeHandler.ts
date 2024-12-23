@@ -1,7 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import PartModel from '../models/Part';
 import PlayerModel from '../models/Player';
-import { PART_TYPE } from '../const';
+import { PART_TYPE, UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import PrototypeVersionModel from '../models/PrototypeVersion';
 
 /**
@@ -183,18 +183,34 @@ function handleUpdatePart(socket: Socket, io: Server) {
   socket.on(
     'UPDATE_PART',
     async ({
-      prototypeId,
-      updatedPart,
+      prototypeVersionId,
+      partId,
+      updatePart,
     }: {
-      prototypeId: number;
-      updatedPart: PartModel;
+      prototypeVersionId: string;
+      partId: number;
+      updatePart: PartModel;
     }) => {
-      await PartModel.update(updatedPart, {
-        where: { id: updatedPart.id, prototypeId },
+      const updateData = Object.entries(updatePart).reduce(
+        (acc, [key, value]) => {
+          if (
+            value !== undefined &&
+            UPDATABLE_PROTOTYPE_FIELDS.PART.includes(key)
+          ) {
+            return { ...acc, [key]: value };
+          }
+          return acc;
+        },
+        {} as Partial<PartModel>
+      );
+      await PartModel.update(updateData, {
+        where: { id: partId },
       });
-      const parts = await PartModel.findAll({ where: { prototypeId } });
 
-      io.to(prototypeId.toString()).emit('UPDATE_PARTS', parts);
+      const parts = await PartModel.findAll({
+        where: { prototypeVersionId },
+      });
+      io.to(prototypeVersionId).emit('UPDATE_PARTS', parts);
     }
   );
 }

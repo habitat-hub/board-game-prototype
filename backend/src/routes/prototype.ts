@@ -182,18 +182,15 @@ router.put(
       return;
     }
 
-    const updateData = Object.entries(req.body).reduce(
-      (acc, [key, value]) => {
-        if (
-          value !== undefined &&
-          UPDATABLE_PROTOTYPE_FIELDS.PROTOTYPE.includes(key)
-        ) {
-          return { ...acc, [key]: value };
-        }
-        return acc;
-      },
-      {} as Partial<{ name: string; minPlayers: number; maxPlayers: number }>
-    );
+    const updateData = Object.entries(req.body).reduce((acc, [key, value]) => {
+      if (
+        value !== undefined &&
+        UPDATABLE_PROTOTYPE_FIELDS.PROTOTYPE.includes(key)
+      ) {
+        return { ...acc, [key]: value };
+      }
+      return acc;
+    }, {} as Partial<PrototypeModel>);
     await PrototypeModel.update(updateData, { where: { id: prototypeId } });
 
     res.json(prototype);

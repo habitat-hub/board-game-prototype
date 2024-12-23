@@ -16,4 +16,18 @@ export const PROTOTYPE_VERSION = {
 
 export const UPDATABLE_PROTOTYPE_FIELDS = {
   PROTOTYPE: ['name', 'minPlayers', 'maxPlayers'],
+  PART: [
+    'parentId',
+    'name',
+    'description',
+    'color',
+    'position',
+    'width',
+    'height',
+    'order',
+    'isReversible',
+    'isFlipped',
+    'ownerId',
+    'originalPartId',
+  ],
 };

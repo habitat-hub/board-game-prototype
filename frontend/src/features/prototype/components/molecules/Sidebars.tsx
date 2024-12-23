@@ -17,8 +17,8 @@ import {
 } from '@/features/prototype/const';
 import NumberInput from '@/components/atoms/NumberInput';
 import TextInput from '@/components/atoms/TextInput';
-
-import { AllPart, Card, Hand, Player } from '../../type';
+import Dropdown from '@/components/atoms/Dropdown';
+import { AllPart, Card, Hand, Player } from '@/features/prototype/type';
 
 export default function Sidebars({
   prototypeName,
@@ -38,7 +38,7 @@ export default function Sidebars({
   players: Player[];
   selectedPart: AllPart | null;
   onAddPart: (part: AllPart) => void;
-  updatePart: (part: Partial<AllPart>) => void;
+  updatePart: (partId: number, updatePart: Partial<AllPart>) => void;
   mainViewRef: React.RefObject<HTMLDivElement>;
 }) {
   const router = useRouter();
@@ -167,7 +167,7 @@ export default function Sidebars({
                 <NumberInput
                   value={selectedPart.position.x}
                   onChange={(number) => {
-                    updatePart({
+                    updatePart(selectedPart.id, {
                       position: { ...selectedPart.position, x: number },
                     });
                   }}
@@ -177,7 +177,7 @@ export default function Sidebars({
                 <NumberInput
                   value={selectedPart.position.y}
                   onChange={(number) => {
-                    updatePart({
+                    updatePart(selectedPart.id, {
                       position: { ...selectedPart.position, y: number },
                     });
                   }}
@@ -190,7 +190,7 @@ export default function Sidebars({
                 <NumberInput
                   value={selectedPart.width}
                   onChange={(number) => {
-                    updatePart({ width: number });
+                    updatePart(selectedPart.id, { width: number });
                   }}
                   classNames="w-1/2"
                   icon={<p>W</p>}
@@ -198,7 +198,7 @@ export default function Sidebars({
                 <NumberInput
                   value={selectedPart.height}
                   onChange={(number) => {
-                    updatePart({ height: number });
+                    updatePart(selectedPart.id, { height: number });
                   }}
                   classNames="w-1/2"
                   icon={<p>H</p>}
@@ -209,7 +209,7 @@ export default function Sidebars({
                 <TextInput
                   value={selectedPart.name}
                   onChange={(name) => {
-                    updatePart({ name });
+                    updatePart(selectedPart.id, { name });
                   }}
                   classNames="w-full"
                   icon={<p>T</p>}
@@ -221,7 +221,7 @@ export default function Sidebars({
                   {COLORS.map((color) => (
                     <button
                       key={color}
-                      onClick={() => updatePart({ color })}
+                      onClick={() => updatePart(selectedPart.id, { color })}
                       className={`w-5 h-5 rounded-full border-2 ${
                         selectedPart.color === color
                           ? 'border-blue-500'
@@ -236,7 +236,9 @@ export default function Sidebars({
                   <input
                     type="color"
                     value={selectedPart.color || '#FFFFFF'}
-                    onChange={(e) => updatePart({ color: e.target.value })}
+                    onChange={(e) =>
+                      updatePart(selectedPart.id, { color: e.target.value })
+                    }
                     className="w-5 h-5"
                   />
                   <span className="text-sm text-gray-600">
@@ -246,7 +248,6 @@ export default function Sidebars({
               </div>
             </div>
           </div>
-          {/* TODO: セレクトボックス or チェックボックス */}
           {selectedPart.type === PART_TYPE.CARD && (
             <>
               <div className="border-b border-gray-200"></div>
@@ -257,20 +258,26 @@ export default function Sidebars({
                     反転可能か？
                   </p>
                   <div className="flex w-full mb-2">
-                    <TextInput
-                      value={selectedPart.name}
-                      onChange={(name) => {
-                        updatePart({ name });
+                    <Dropdown
+                      value={
+                        'isReversible' in selectedPart &&
+                        selectedPart.isReversible
+                          ? 'はい'
+                          : 'いいえ'
+                      }
+                      onChange={(value) => {
+                        updatePart(selectedPart.id, {
+                          isReversible: value === 'はい',
+                        });
                       }}
-                      classNames="w-full"
-                      icon={<p>T</p>}
+                      options={['はい', 'いいえ']}
+                      className="w-full"
                     />
                   </div>
                 </div>
               </div>
             </>
           )}
-          {/* TODO: セレクトボックス */}
           {selectedPart.type === PART_TYPE.HAND && (
             <>
               <div className="border-b border-gray-200"></div>
@@ -279,13 +286,24 @@ export default function Sidebars({
                 <div className="flex flex-col gap-1">
                   <p className="text-[9px] font-medium text-gray-500">所有者</p>
                   <div className="flex w-full mb-2">
-                    <TextInput
-                      value={selectedPart.name}
-                      onChange={(name) => {
-                        updatePart({ name });
+                    <Dropdown
+                      value={
+                        players.find(
+                          (player) =>
+                            'ownerId' in selectedPart &&
+                            player.id === selectedPart.ownerId
+                        )?.playerName ?? '未設定'
+                      }
+                      onChange={(value) => {
+                        const player = players.find(
+                          (player) => player.playerName === value
+                        );
+                        if (player) {
+                          updatePart(selectedPart.id, { ownerId: player.id });
+                        }
                       }}
-                      classNames="w-full"
-                      icon={<p>T</p>}
+                      options={players.map((player) => player.playerName)}
+                      className="w-full"
                     />
                   </div>
                 </div>
