@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { Socket } from 'socket.io-client';
 import { AiOutlineTool } from 'react-icons/ai';
 
@@ -40,6 +40,11 @@ export default function Canvas({
   const [leftIsMinimized, setLeftIsMinimized] = useState(false);
   const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
   const [selectedPart, setSelectedPart] = useState<AllPart | null>(null);
+  const [draggingPartId, setDraggingPartId] = useState<number | null>(null);
+  const [offset, setOffset] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
   const mainViewRef = useRef<HTMLDivElement>(null);
   const onWheel = useCallback((e: React.WheelEvent) => {
     // TODO: スクロールの上限を決める
@@ -49,11 +54,6 @@ export default function Canvas({
       zoom: camera.zoom,
     }));
   }, []);
-
-  // FIXME: あとで削除
-  useEffect(() => {
-    setSelectedPart(parts[0]);
-  }, [parts]);
 
   /**
    * パーツの追加
@@ -77,10 +77,49 @@ export default function Canvas({
     [prototypeVersionId, socket]
   );
 
+  /**
+   * パーツのドラッグ開始
+   * @param e - ドラッグイベント
+   * @param partId - ドラッグするパーツのid
+   */
+  const onDragStart = (e: React.MouseEvent, partId: number) => {
+    const part = parts.find((part) => part.id === partId) as AllPart;
+    setSelectedPart(part);
+    setDraggingPartId(partId);
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const offsetY = e.clientY - rect.top;
+    setOffset({ x: offsetX, y: offsetY });
+  };
+
+  /**
+   * パーツのドラッグ
+   * @param e - ドラッグイベント
+   */
+  const onDrag = (e: React.MouseEvent) => {
+    if (draggingPartId !== null) {
+      const x = e.clientX - offset.x;
+      const y = e.clientY - offset.y;
+      updatePart(draggingPartId, { position: { x, y } });
+    }
+  };
+
+  /**
+   * パーツのドラッグ終了
+   */
+  const onDragEnd = () => {
+    setDraggingPartId(null);
+  };
+
   return (
     <div className="flex h-full w-full">
       <main className="h-full w-full" ref={mainViewRef}>
-        <div className="h-full w-full touch-none">
+        <div
+          className="h-full w-full touch-none"
+          onMouseMove={onDrag}
+          onMouseUp={onDragEnd}
+        >
           <svg
             onWheel={onWheel}
             className="h-full w-full"
@@ -92,16 +131,23 @@ export default function Canvas({
               }}
             >
               {parts.map((part) => (
-                <rect
+                <svg
                   key={part.id}
-                  id={part.id.toString()}
-                  style={{
-                    fill: 'red',
-                    transform: `translate(${part.position.x}px, ${part.position.y}px)`,
-                  }}
-                  width={part.width}
-                  height={part.height}
-                />
+                  onClick={() => setSelectedPart(part)}
+                  onMouseDown={(e) => onDragStart(e, part.id)}
+                  className="cursor-move border"
+                >
+                  <rect
+                    id={part.id.toString()}
+                    style={{
+                      stroke: 'gray',
+                      fill: part.color || 'white',
+                      transform: `translate(${part.position.x}px, ${part.position.y}px)`,
+                    }}
+                    width={part.width}
+                    height={part.height}
+                  />
+                </svg>
               ))}
             </g>
           </svg>

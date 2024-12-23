@@ -66,6 +66,47 @@ function handleAddPart(socket: Socket, io: Server) {
 }
 
 /**
+ * パーツ更新
+ * @param socket - Socket
+ * @param io - Server
+ */
+function handleUpdatePart(socket: Socket, io: Server) {
+  socket.on(
+    'UPDATE_PART',
+    async ({
+      prototypeVersionId,
+      partId,
+      updatePart,
+    }: {
+      prototypeVersionId: string;
+      partId: number;
+      updatePart: PartModel;
+    }) => {
+      const updateData = Object.entries(updatePart).reduce(
+        (acc, [key, value]) => {
+          if (
+            value !== undefined &&
+            UPDATABLE_PROTOTYPE_FIELDS.PART.includes(key)
+          ) {
+            return { ...acc, [key]: value };
+          }
+          return acc;
+        },
+        {} as Partial<PartModel>
+      );
+      await PartModel.update(updateData, {
+        where: { id: partId },
+      });
+
+      const parts = await PartModel.findAll({
+        where: { prototypeVersionId },
+      });
+      io.to(prototypeVersionId).emit('UPDATE_PARTS', parts);
+    }
+  );
+}
+
+/**
  * カードを反転させる
  * @param socket - Socket
  * @param io - Server
@@ -91,31 +132,6 @@ function handleFlipCard(socket: Socket, io: Server) {
         cardId,
         isNextFlipped,
       });
-    }
-  );
-}
-
-/**
- * パーツ移動
- * @param socket - Socket
- * @param io - Server
- */
-function handleMovePart(socket: Socket, io: Server) {
-  socket.on(
-    'MOVE_PART',
-    async ({
-      prototypeId,
-      id,
-      position,
-    }: {
-      prototypeId: number;
-      id: number;
-      position: { x: number; y: number };
-    }) => {
-      await PartModel.update({ position }, { where: { id, prototypeId } });
-      const parts = await PartModel.findAll({ where: { prototypeId } });
-
-      io.to(prototypeId.toString()).emit('UPDATE_PARTS', parts);
     }
   );
 }
@@ -175,47 +191,6 @@ function handleShuffleDeck(socket: Socket, io: Server) {
 }
 
 /**
- * パーツ更新
- * @param socket - Socket
- * @param io - Server
- */
-function handleUpdatePart(socket: Socket, io: Server) {
-  socket.on(
-    'UPDATE_PART',
-    async ({
-      prototypeVersionId,
-      partId,
-      updatePart,
-    }: {
-      prototypeVersionId: string;
-      partId: number;
-      updatePart: PartModel;
-    }) => {
-      const updateData = Object.entries(updatePart).reduce(
-        (acc, [key, value]) => {
-          if (
-            value !== undefined &&
-            UPDATABLE_PROTOTYPE_FIELDS.PART.includes(key)
-          ) {
-            return { ...acc, [key]: value };
-          }
-          return acc;
-        },
-        {} as Partial<PartModel>
-      );
-      await PartModel.update(updateData, {
-        where: { id: partId },
-      });
-
-      const parts = await PartModel.findAll({
-        where: { prototypeVersionId },
-      });
-      io.to(prototypeVersionId).emit('UPDATE_PARTS', parts);
-    }
-  );
-}
-
-/**
  * プレイヤーに紐づけるユーザーを更新
  * @param socket - Socket
  * @param io - Server
@@ -245,10 +220,9 @@ function handleUpdatePlayerUser(socket: Socket, io: Server) {
 export default function handlePrototype(socket: Socket, io: Server) {
   handleJoinPrototype(socket);
   handleAddPart(socket, io);
-  handleFlipCard(socket, io);
-  handleMovePart(socket, io);
-  handleUpdateCardParent(socket, io);
-  handleShuffleDeck(socket, io);
   handleUpdatePart(socket, io);
-  handleUpdatePlayerUser(socket, io);
+  // handleFlipCard(socket, io);
+  // handleUpdateCardParent(socket, io);
+  // handleShuffleDeck(socket, io);
+  // handleUpdatePlayerUser(socket, io);
 }
