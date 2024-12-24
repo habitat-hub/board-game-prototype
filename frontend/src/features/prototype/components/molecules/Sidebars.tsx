@@ -1,6 +1,7 @@
 'use client';
 
 import { PiSidebarSimpleThin } from 'react-icons/pi';
+import { IoArrowBack } from 'react-icons/io5';
 import {
   Gi3dMeeple,
   GiCard10Clubs,
@@ -95,11 +96,17 @@ export default function Sidebars({
     <>
       {/* Left Sidebar */}
       {!leftIsMinimized ? (
-        // TODO: 戻るボタン
         <div className="fixed left-0 flex h-full w-[240px] flex-col border-r border-gray-200 bg-white">
           <div className="p-4">
-            <div className="flex justify-between">
-              <h2 className="scroll-m-20 text-sm font-medium">
+            <div className="flex justify-between items-center">
+              <button
+                onClick={() => router.push(`/prototypes/groups/${groupId}`)}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                title="戻る"
+              >
+                <IoArrowBack className="h-5 w-5 text-gray-600" />
+              </button>
+              <h2 className="scroll-m-20 text-sm font-medium flex-grow ml-2">
                 {prototypeName}
               </h2>
               <PiSidebarSimpleThin
@@ -137,6 +144,13 @@ export default function Sidebars({
         </div>
       ) : (
         <div className="fixed left-2 top-14 flex h-[48px] w-[250px] items-center justify-between rounded-xl border bg-white p-4">
+          <button
+            onClick={() => router.push(`/prototypes/groups/${groupId}`)}
+            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+            title="戻る"
+          >
+            <IoArrowBack className="h-5 w-5 text-gray-600" />
+          </button>
           <h2 className="scroll-m-20 text-sm font-medium">{prototypeName}</h2>
           <PiSidebarSimpleThin
             onClick={() => setLeftIsMinimized(false)}

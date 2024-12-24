@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Socket } from 'socket.io-client';
 import { AiOutlineTool } from 'react-icons/ai';
 
@@ -15,6 +15,7 @@ import {
 
 import Sidebars from '../molecules/Sidebars';
 import RandomNumberTool from '../atoms/RandomNumberTool';
+import Part from '../atoms/Part';
 
 interface CanvasProps {
   prototypeName: string;
@@ -46,7 +47,22 @@ export default function Canvas({
     y: 0,
   });
   const mainViewRef = useRef<HTMLDivElement>(null);
-  const onWheel = useCallback((e: React.WheelEvent) => {
+  const [isDraggingCanvas, setIsDraggingCanvas] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  // 選択したパーツが更新されたら、最新化
+  useEffect(() => {
+    const part = parts.find((part) => part.id === selectedPart?.id);
+    if (part) {
+      setSelectedPart(part);
+    }
+  }, [parts, selectedPart?.id]);
+
+  /**
+   * ズーム操作
+   * @param e - ホイールイベント
+   */
+  const handleWheel = useCallback((e: React.WheelEvent) => {
     // TODO: スクロールの上限を決める
     setCamera((camera) => ({
       x: camera.x - e.deltaX,
@@ -59,7 +75,7 @@ export default function Canvas({
    * パーツの追加
    * @param part - 追加するパーツ
    */
-  const onAddPart = useCallback(
+  const handleAddPart = useCallback(
     (part: Omit<AllPart, 'id' | 'prototypeVersionId' | 'order'>) => {
       socket.emit('ADD_PART', { prototypeVersionId, part });
     },
@@ -70,7 +86,7 @@ export default function Canvas({
    * パーツの更新
    * @param part - 更新するパーツ
    */
-  const updatePart = useCallback(
+  const handleUpdatePart = useCallback(
     (partId: number, updatePart: Partial<AllPart>) => {
       socket.emit('UPDATE_PART', { prototypeVersionId, partId, updatePart });
     },
@@ -78,38 +94,65 @@ export default function Canvas({
   );
 
   /**
-   * パーツのドラッグ開始
-   * @param e - ドラッグイベント
-   * @param partId - ドラッグするパーツのid
+   * マウスダウンイベントのハンドラー
+   * @param e - マウスイベント
+   * @param partId - パーツID（パーツからの呼び出し時のみ）
    */
-  const onDragStart = (e: React.MouseEvent, partId: number) => {
-    const part = parts.find((part) => part.id === partId) as AllPart;
-    setSelectedPart(part);
-    setDraggingPartId(partId);
+  const handleMouseDown = (e: React.MouseEvent, partId?: number) => {
+    if (partId !== undefined) {
+      // パーツのドラッグ開始
+      const part = parts.find((part) => part.id === partId) as AllPart;
+      const rect = mainViewRef.current?.getBoundingClientRect();
+      if (!rect) return;
 
-    const rect = e.currentTarget.getBoundingClientRect();
-    const offsetX = e.clientX - rect.left;
-    const offsetY = e.clientY - rect.top;
-    setOffset({ x: offsetX, y: offsetY });
-  };
+      setSelectedPart(part);
+      setDraggingPartId(partId);
 
-  /**
-   * パーツのドラッグ
-   * @param e - ドラッグイベント
-   */
-  const onDrag = (e: React.MouseEvent) => {
-    if (draggingPartId !== null) {
-      const x = e.clientX - offset.x;
-      const y = e.clientY - offset.y;
-      updatePart(draggingPartId, { position: { x, y } });
+      const x = (e.clientX - rect.left) / camera.zoom - part.position.x;
+      const y = (e.clientY - rect.top) / camera.zoom - part.position.y;
+      setOffset({ x, y });
+    } else if (e.target === e.currentTarget || e.target instanceof SVGElement) {
+      // キャンバスの移動開始
+      setIsDraggingCanvas(true);
+      setDragStart({
+        x: e.clientX - camera.x,
+        y: e.clientY - camera.y,
+      });
     }
   };
 
   /**
-   * パーツのドラッグ終了
+   * マウス移動イベントのハンドラー
+   * @param e - マウス移動イベント
    */
-  const onDragEnd = () => {
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (draggingPartId !== null) {
+      // パーツのドラッグ処理
+      const rect = mainViewRef.current?.getBoundingClientRect();
+      if (!rect) return;
+
+      // マウス位置からパーツの新しい位置を計算
+      const x = (e.clientX - rect.left) / camera.zoom - offset.x;
+      const y = (e.clientY - rect.top) / camera.zoom - offset.y;
+
+      handleUpdatePart(draggingPartId, { position: { x, y } });
+    } else if (isDraggingCanvas) {
+      // カメラの移動処理
+      setCamera((prev) => ({
+        ...prev,
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y,
+      }));
+      setSelectedPart(null);
+    }
+  };
+
+  /**
+   * マウスアップイベントのハンドラー
+   */
+  const handleMouseUp = () => {
     setDraggingPartId(null);
+    setIsDraggingCanvas(false);
   };
 
   return (
@@ -117,13 +160,16 @@ export default function Canvas({
       <main className="h-full w-full" ref={mainViewRef}>
         <div
           className="h-full w-full touch-none"
-          onMouseMove={onDrag}
-          onMouseUp={onDragEnd}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
         >
           <svg
-            onWheel={onWheel}
+            onWheel={handleWheel}
             className="h-full w-full"
             onContextMenu={(e) => e.preventDefault()}
+            onMouseDown={(e) => handleMouseDown(e)}
+            style={{ cursor: isDraggingCanvas ? 'grabbing' : 'grab' }}
           >
             <g
               style={{
@@ -131,29 +177,17 @@ export default function Canvas({
               }}
             >
               {parts.map((part) => (
-                <svg
+                <Part
                   key={part.id}
-                  onClick={() => setSelectedPart(part)}
-                  onMouseDown={(e) => onDragStart(e, part.id)}
-                  className="cursor-move border"
-                >
-                  <rect
-                    id={part.id.toString()}
-                    style={{
-                      stroke: 'gray',
-                      fill: part.color || 'white',
-                      transform: `translate(${part.position.x}px, ${part.position.y}px)`,
-                    }}
-                    width={part.width}
-                    height={part.height}
-                  />
-                </svg>
+                  part={part}
+                  onMouseDown={(e) => handleMouseDown(e, part.id)}
+                />
               ))}
             </g>
           </svg>
         </div>
       </main>
-
+      {/* ツールバー */}
       <ToolsBar
         canvasState={canvasState}
         setCanvasState={(newState) => setState(newState)}
@@ -166,6 +200,7 @@ export default function Canvas({
         canZoomIn={camera.zoom < 2}
         canZoomOut={camera.zoom > 0.5}
       />
+      {/* サイドバー */}
       <Sidebars
         prototypeName={prototypeName}
         leftIsMinimized={leftIsMinimized}
@@ -173,8 +208,8 @@ export default function Canvas({
         groupId={groupId}
         players={players}
         selectedPart={selectedPart}
-        onAddPart={onAddPart}
-        updatePart={updatePart}
+        onAddPart={handleAddPart}
+        updatePart={handleUpdatePart}
         mainViewRef={mainViewRef}
       />
       {/* 乱数ツールボタン */}
