@@ -9,6 +9,7 @@ import { Server, Socket } from 'socket.io';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import fs from 'fs';
+import pgSession from 'connect-pg-simple';
 
 dotenv.config();
 
@@ -68,12 +69,26 @@ app.use(
 // JSONボディのパースを有効にする
 app.use(express.json());
 
+// セッションテーブルの作成
+const PostgresStore = pgSession(session);
+const sessionStore = new PostgresStore({
+  conObject: {
+    connectionString: process.env.DATABASE_URL,
+  },
+  createTableIfMissing: true,
+});
+
 // セッション設定
 app.use(
   session({
+    store: sessionStore,
     secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30日
+    },
   })
 );
 
