@@ -229,6 +229,18 @@ export default function Sidebars({
                   icon={<p>T</p>}
                 />
               </div>
+              <p className="text-[9px] font-medium text-gray-500">説明</p>
+              <div className="flex w-full mb-2">
+                <TextInput
+                  value={selectedPart.description}
+                  onChange={(description) => {
+                    updatePart(selectedPart.id, { description });
+                  }}
+                  classNames="w-full"
+                  icon={<p>T</p>}
+                  multiline={true}
+                />
+              </div>
               <p className="text-[9px] font-medium text-gray-500">カラー</p>
               <div className="w-full mb-2 px-4">
                 <div className="grid grid-cols-4 gap-2">

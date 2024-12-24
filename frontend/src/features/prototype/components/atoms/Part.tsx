@@ -57,12 +57,15 @@ const Part = forwardRef<PartHandle, PartProps>(
           }
         }}
         onMouseDown={(e) => onMouseDown(e, part.id)}
-        className="cursor-move border"
+        className="cursor-move border group relative"
         style={{
           transformOrigin: 'center center',
           transformStyle: 'preserve-3d',
         }}
       >
+        {/* ツールチップ */}
+        <title>{part.description}</title>
+
         {/* 画像設定その1 */}
         {/* <defs>
           <pattern
