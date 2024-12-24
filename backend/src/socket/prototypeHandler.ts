@@ -107,6 +107,30 @@ function handleUpdatePart(socket: Socket, io: Server) {
 }
 
 /**
+ * パーツ削除
+ * @param socket - Socket
+ * @param io - Server
+ */
+function handleDeletePart(socket: Socket, io: Server) {
+  socket.on(
+    'DELETE_PART',
+    async ({
+      prototypeVersionId,
+      partId,
+    }: {
+      prototypeVersionId: string;
+      partId: number;
+    }) => {
+      await PartModel.destroy({ where: { id: partId } });
+      const parts = await PartModel.findAll({
+        where: { prototypeVersionId },
+      });
+      io.to(prototypeVersionId).emit('UPDATE_PARTS', parts);
+    }
+  );
+}
+
+/**
  * カードを反転させる
  * @param socket - Socket
  * @param io - Server
@@ -115,11 +139,11 @@ function handleFlipCard(socket: Socket, io: Server) {
   socket.on(
     'FLIP_CARD',
     async ({
-      prototypeId,
+      prototypeVersionId,
       cardId,
       isNextFlipped,
     }: {
-      prototypeId: number;
+      prototypeVersionId: string;
       cardId: number;
       isNextFlipped: boolean;
     }) => {
@@ -128,7 +152,7 @@ function handleFlipCard(socket: Socket, io: Server) {
         { where: { id: cardId } }
       );
 
-      io.to(prototypeId.toString()).emit('FLIP_CARD', {
+      io.to(prototypeVersionId).emit('FLIP_CARD', {
         cardId,
         isNextFlipped,
       });
@@ -221,7 +245,8 @@ export default function handlePrototype(socket: Socket, io: Server) {
   handleJoinPrototype(socket);
   handleAddPart(socket, io);
   handleUpdatePart(socket, io);
-  // handleFlipCard(socket, io);
+  handleDeletePart(socket, io);
+  handleFlipCard(socket, io);
   // handleUpdateCardParent(socket, io);
   // handleShuffleDeck(socket, io);
   // handleUpdatePlayerUser(socket, io);

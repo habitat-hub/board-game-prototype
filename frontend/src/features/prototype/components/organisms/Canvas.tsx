@@ -16,6 +16,7 @@ import {
 import Sidebars from '../molecules/Sidebars';
 import RandomNumberTool from '../atoms/RandomNumberTool';
 import Part from '../atoms/Part';
+import { PartHandle } from '../atoms/Part';
 
 interface CanvasProps {
   prototypeName: string;
@@ -49,6 +50,7 @@ export default function Canvas({
   const mainViewRef = useRef<HTMLDivElement>(null);
   const [isDraggingCanvas, setIsDraggingCanvas] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const partRefs = useRef<{ [key: number]: React.RefObject<PartHandle> }>({});
 
   // 選択したパーツが更新されたら、最新化
   useEffect(() => {
@@ -155,6 +157,52 @@ export default function Canvas({
     setIsDraggingCanvas(false);
   };
 
+  /**
+   * キーボードイベントのハンドラー
+   * @param e - キーボードイベント
+   */
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Backspace' && selectedPart) {
+        socket.emit('DELETE_PART', {
+          prototypeVersionId,
+          partId: selectedPart.id,
+        });
+        setSelectedPart(null);
+      }
+    },
+    [prototypeVersionId, selectedPart, socket]
+  );
+
+  // キーボードイベントの登録
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
+
+  // ソケットイベントの購読
+  useEffect(() => {
+    socket.on(
+      'FLIP_CARD',
+      ({
+        cardId,
+        isNextFlipped,
+      }: {
+        cardId: number;
+        isNextFlipped: boolean;
+      }) => {
+        // 該当するパーツのflip関数を呼び出し
+        partRefs.current[cardId]?.current?.flip(isNextFlipped);
+      }
+    );
+
+    return () => {
+      socket.off('FLIP_CARD');
+    };
+  }, [socket]);
+
   return (
     <div className="flex h-full w-full">
       <main className="h-full w-full" ref={mainViewRef}>
@@ -176,13 +224,22 @@ export default function Canvas({
                 transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom})`,
               }}
             >
-              {parts.map((part) => (
-                <Part
-                  key={part.id}
-                  part={part}
-                  onMouseDown={(e) => handleMouseDown(e, part.id)}
-                />
-              ))}
+              {parts.map((part) => {
+                // パーツごとにrefを作成
+                if (!partRefs.current[part.id]) {
+                  partRefs.current[part.id] = React.createRef<PartHandle>();
+                }
+
+                return (
+                  <Part
+                    key={part.id}
+                    ref={partRefs.current[part.id]}
+                    part={part}
+                    onMouseDown={(e) => handleMouseDown(e, part.id)}
+                    socket={socket}
+                  />
+                );
+              })}
             </g>
           </svg>
         </div>

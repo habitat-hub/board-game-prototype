@@ -1,40 +1,70 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState, forwardRef, useImperativeHandle } from 'react';
 import { VscSync, VscSyncIgnored } from 'react-icons/vsc';
+import { Socket } from 'socket.io-client';
 
 import { AllPart } from '@/features/prototype/type';
 import { PART_TYPE } from '@/features/prototype/const';
 
+// 外部から呼び出せる関数のインターフェース
+export interface PartHandle {
+  flip: (isNextFlipped: boolean) => void;
+}
+
 interface PartProps {
   part: AllPart;
   onMouseDown: (e: React.MouseEvent, partId: number) => void;
+  socket: Socket;
 }
 
-const Part: React.FC<PartProps> = ({ part, onMouseDown }) => {
-  // カードが反転しているかどうか
-  const [isFlipped, setIsFlipped] = useState(false);
-  // transition設定をしているか
-  const [needsTransition, setNeedsTransition] = useState(false);
+const Part = forwardRef<PartHandle, PartProps>(
+  ({ part, onMouseDown, socket }, ref) => {
+    // カードが反転しているかどうか
+    const [isFlipped, setIsFlipped] = useState(
+      'isFlipped' in part ? part.isFlipped : false
+    );
+    // transition設定をしているか
+    const [needsTransition, setNeedsTransition] = useState(false);
 
-  const onDoubleClick = useCallback(() => {
-    if (part.type === PART_TYPE.CARD) {
-      setNeedsTransition(true);
-      setIsFlipped(!isFlipped);
-    }
-  }, [isFlipped, part.type]);
+    /**
+     * カードを反転させる
+     * @param isNextFlipped - 次に反転させるかどうか
+     */
+    const flip = (isNextFlipped: boolean) => {
+      if (isFlipped !== isNextFlipped) {
+        setNeedsTransition(true);
+        setIsFlipped(isNextFlipped);
+      }
+    };
 
-  return (
-    <svg
-      key={part.id}
-      onDoubleClick={onDoubleClick}
-      onMouseDown={(e) => onMouseDown(e, part.id)}
-      className="cursor-move border"
-      style={{
-        transformOrigin: 'center center',
-        transformStyle: 'preserve-3d',
-      }}
-    >
-      {/* 画像設定その1 */}
-      {/* <defs>
+    // 外部から呼び出せる関数を定義
+    useImperativeHandle(ref, () => ({
+      flip: (isNextFlipped: boolean) => {
+        flip(isNextFlipped);
+      },
+    }));
+
+    return (
+      <svg
+        key={part.id}
+        onDoubleClick={() => {
+          if (part.type === PART_TYPE.CARD) {
+            flip(!isFlipped);
+            socket.emit('FLIP_CARD', {
+              prototypeVersionId: part.prototypeVersionId,
+              cardId: part.id,
+              isNextFlipped: !isFlipped,
+            });
+          }
+        }}
+        onMouseDown={(e) => onMouseDown(e, part.id)}
+        className="cursor-move border"
+        style={{
+          transformOrigin: 'center center',
+          transformStyle: 'preserve-3d',
+        }}
+      >
+        {/* 画像設定その1 */}
+        {/* <defs>
           <pattern
             id="bgPattern"
             patternUnits="userSpaceOnUse"
@@ -50,57 +80,60 @@ const Part: React.FC<PartProps> = ({ part, onMouseDown }) => {
             />
           </pattern>
         </defs> */}
-      <rect
-        id={part.id.toString()}
-        onTransitionEnd={() => setNeedsTransition(false)}
-        style={{
-          stroke: 'gray',
-          fill: part.color || 'white',
-          // fill: `url(#bgPattern)`, // 画像設定その2
-          transform: `
+        <rect
+          id={part.id.toString()}
+          onTransitionEnd={() => setNeedsTransition(false)}
+          style={{
+            stroke: 'gray',
+            fill: part.color || 'white',
+            // fill: `url(#bgPattern)`, // 画像設定その2
+            transform: `
             translate(${part.position.x}px, ${part.position.y}px)
             translate(${part.width / 2}px, ${part.height / 2}px)
             rotateY(${isFlipped ? 180 : 0}deg)
             translate(${-part.width / 2}px, ${-part.height / 2}px)
           `,
-          transition: needsTransition ? 'transform 0.6s' : 'none',
-          transformStyle: 'preserve-3d',
-        }}
-        width={part.width}
-        height={part.height}
-        rx={10}
-      />
-      {/* タイトル */}
-      {!isFlipped && (
-        <text
-          x={part.position.x + 10}
-          y={part.position.y + 20}
-          style={{
-            fill: 'black',
-            fontSize: '14px',
-            userSelect: 'none',
+            transition: needsTransition ? 'transform 0.6s' : 'none',
+            transformStyle: 'preserve-3d',
           }}
-        >
-          {part.name}
-        </text>
-      )}
-      {/* 反転可能アイコン（カードの場合のみ） */}
-      {'isReversible' in part && part.type === PART_TYPE.CARD && (
-        <foreignObject
-          x={part.position.x + part.width - 30}
-          y={part.position.y + part.height - 30}
-          width={20}
-          height={20}
-        >
-          {part.isReversible ? (
-            <VscSync className="text-gray-600" />
-          ) : (
-            <VscSyncIgnored className="text-gray-600" />
-          )}
-        </foreignObject>
-      )}
-    </svg>
-  );
-};
+          width={part.width}
+          height={part.height}
+          rx={10}
+        />
+        {/* タイトル */}
+        {!isFlipped && (
+          <text
+            x={part.position.x + 10}
+            y={part.position.y + 20}
+            style={{
+              fill: 'black',
+              fontSize: '14px',
+              userSelect: 'none',
+            }}
+          >
+            {part.name}
+          </text>
+        )}
+        {/* 反転可能アイコン��カードの場合のみ） */}
+        {'isReversible' in part && part.type === PART_TYPE.CARD && (
+          <foreignObject
+            x={part.position.x + part.width - 30}
+            y={part.position.y + part.height - 30}
+            width={20}
+            height={20}
+          >
+            {part.isReversible ? (
+              <VscSync className="text-gray-600" />
+            ) : (
+              <VscSyncIgnored className="text-gray-600" />
+            )}
+          </foreignObject>
+        )}
+      </svg>
+    );
+  }
+);
+
+Part.displayName = 'Part';
 
 export default Part;
