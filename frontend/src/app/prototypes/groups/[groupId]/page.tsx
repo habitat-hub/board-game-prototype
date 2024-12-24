@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: 'グループプロトタイプ一覧',
 };
 
+export const runtime = 'edge';
 const PrototypesPage: React.FC = () => {
   return (
     <div>

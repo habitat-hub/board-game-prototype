@@ -12,15 +12,16 @@ import { createPrototype } from '../factories/prototypeFactory';
 import { PROTOTYPE_TYPE, UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import sequelize from '../models';
 import { getAccessibleUsers } from '../helpers/useHelper';
-import prototypeVersionRouter from './prototypeVersion';
 import PrototypeVersionModel from '../models/PrototypeVersion';
+import AccessModel from '../models/Access';
+import { Op } from 'sequelize';
+import UserAccessModel from '../models/UserAccess';
+import PrototypeGroupModel from '../models/PrototypeGroup';
 
 const router = express.Router();
 
 // ログインチェック
 router.use(ensureAuthenticated);
-
-router.use('/versions', prototypeVersionRouter);
 
 /**
  * @swagger
@@ -239,38 +240,6 @@ router.delete(
 
 /**
  * @swagger
- * /api/prototypes/{prototypeId}/accessUsers:
- *   get:
- *     summary: プロトタイプへのアクセス権を取得
- *     description: 指定されたプロトタイプにアクセス可能なユーザーを取得します。
- *     parameters:
- *       - name: prototypeId
- *         in: path
- *         required: true
- *         description: プロトタイプのID
- *         schema:
- *           type: string
- *     responses:
- *       '200':
- *         description: アクセス可能なユーザーの一覧を返します
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: UserModel
- */
-router.get(
-  '/:prototypeId/accessUsers',
-  checkPrototypeAccess,
-  async (req: Request, res: Response) => {
-    const prototypeId = req.params.prototypeId;
-    res.json(await getAccessibleUsers({ prototypeId }));
-  }
-);
-
-/**
- * @swagger
  * /api/prototypes/{prototypeId}/versions:
  *   get:
  *     summary: プロトタイプバージョン一覧取得
@@ -355,5 +324,277 @@ router.get('/groups/:groupId', checkGroupAccess, async (req, res) => {
 
   res.json(result);
 });
+
+/**
+ * @swagger
+ * /api/prototypes/groups/{groupId}/accessUsers:
+ *   get:
+ *     summary: グループへのアクセス権を取得
+ *     description: 指定されたグループにアクセス可能なユーザーを取得します。
+ *     parameters:
+ *       - name: groupId
+ *         in: path
+ *         required: true
+ *         description: グループのID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: アクセス可能なユーザーの一覧を返します
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: UserModel
+ */
+router.get(
+  '/groups/:groupId/accessUsers',
+  checkGroupAccess,
+  async (req: Request, res: Response) => {
+    const groupId = req.params.groupId;
+    res.json(await getAccessibleUsers({ groupId }));
+  }
+);
+
+/**
+ * @swagger
+ * /api/prototypes/groups/{groupId}/invite:
+ *   post:
+ *     summary: ユーザーにプロトタイプへのアクセス権を付与
+ *     description: 指定されたグループにユーザーを招待します。
+ *     parameters:
+ *       - name: groupId
+ *         in: path
+ *         required: true
+ *         description: グループのID
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               guestIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       '200':
+ *         description: ユーザーを招待しました
+ *       '400':
+ *         description: リクエストが不正です
+ *       '404':
+ *         description: グループが見つかりません
+ *       '500':
+ *         description: サーバーエラー
+ */
+router.post('/groups/:groupId/invite', checkGroupAccess, async (req, res) => {
+  const groupId = req.params.groupId;
+  const guestIds = req.body.guestIds;
+
+  try {
+    const access = await AccessModel.findOne({
+      where: { prototypeGroupId: groupId },
+    });
+    if (!access) {
+      res.status(400).json({ message: 'リクエストが不正です' });
+      return;
+    }
+
+    const guests = await UserModel.findAll({
+      where: { id: { [Op.in]: guestIds } },
+    });
+    if (guests.length === 0) {
+      res.status(404).json({ message: '招待できるユーザーが見つかりません' });
+      return;
+    }
+
+    await Promise.all(
+      guests.map(async (guest) => {
+        await UserAccessModel.upsert({
+          userId: guest.id,
+          accessId: access.id,
+        });
+      })
+    );
+
+    res.status(200).json({ message: 'ユーザーを招待しました' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: '予期せぬエラーが発生しました' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/prototypes/groups/{groupId}/invite/{guestId}:
+ *   delete:
+ *     summary: ユーザーのアクセス権を削除
+ *     description: 指定されたグループからユーザーのアクセス権を削除します。
+ *     parameters:
+ *       - name: groupId
+ *         in: path
+ *         required: true
+ *         description: グループのID
+ *         schema:
+ *           type: string
+ *       - name: guestId
+ *         in: path
+ *         required: true
+ *         description: ゲストユーザーのID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: ユーザーのアクセス権を削除しました
+ *       '400':
+ *         description: リクエストが不正です
+ *       '404':
+ *         description: グループが見つかりません
+ *       '500':
+ *         description: サーバーエラー
+ */
+router.delete(
+  '/groups/:groupId/invite/:guestId',
+  checkGroupAccess,
+  async (req, res) => {
+    const groupId = req.params.groupId;
+    const guestId = req.params.guestId;
+
+    try {
+      const prototype = await PrototypeModel.findOne({
+        where: { groupId, type: PROTOTYPE_TYPE.EDIT },
+      });
+      if (!prototype) {
+        throw new Error('プロトタイプが見つかりません');
+      }
+
+      if (prototype.userId === guestId) {
+        res.status(400).json({ message: '作成者は削除できません' });
+        return;
+      }
+
+      const access = await AccessModel.findOne({
+        where: { prototypeGroupId: groupId },
+      });
+      if (!access) {
+        res.status(400).json({ message: 'リクエストが不正です' });
+        return;
+      }
+
+      await UserAccessModel.destroy({
+        where: { userId: guestId, accessId: access.id },
+      });
+
+      res.status(200).json({ message: 'ユーザーのアクセス権を削除しました' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: '予期せぬエラーが発生しました' });
+    }
+  }
+);
+
+// /**
+//  * @swagger
+//  * /api/prototypes/{prototypeId}/preview:
+//  *   post:
+//  *     summary: プレビュー版作成
+//  *     description: 指定されたプロトタイプのプレビュー版を作成します。
+//  *     parameters:
+//  *       - name: prototypeId
+//  *         in: path
+//  *         required: true
+//  *         description: プロトタイプのID
+//  *         schema:
+//  *           type: integer
+//  *     responses:
+//  *       '200':
+//  *         description: プレビュー版を作成しました
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  */
+// router.post(
+//   '/:prototypeId/preview',
+//   checkPrototypeAccess,
+//   async (req: Request, res: Response) => {
+//     const editPrototypeId = parseInt(req.params.prototypeId, 10);
+//     const editPrototype = await PrototypeModel.findByPk(editPrototypeId);
+//     if (!editPrototype?.isEdit) {
+//       res.status(404).json({ error: 'プロトタイプが見つかりません' });
+//       return;
+//     }
+
+//     const previewPrototype = await PrototypeModel.findOne({
+//       where: { groupId: editPrototype.groupId, isPreview: true },
+//     });
+//     const editPrototypeParts = await PartModel.findAll({
+//       where: { prototypeId: editPrototypeId },
+//     });
+//     const editPrototypePlayers = await PlayerModel.findAll({
+//       where: { prototypeId: editPrototypeId },
+//     });
+//     const editAccessRights = await AccessModel.findAll({
+//       where: { prototypeId: editPrototypeId },
+//     });
+//     if (!previewPrototype) {
+//       const newPrototype = await PrototypeModel.create({
+//         userId: editPrototype.userId,
+//         groupId: editPrototype.groupId,
+//         name: editPrototype.name,
+//         isEdit: false,
+//         isPreview: true,
+//         isPublic: false,
+//       });
+//       // プレビュー版にアクセス権を付与
+//       await AccessModel.bulkCreate(
+//         editAccessRights.map((access) => ({
+//           userId: access.userId,
+//           prototypeId: newPrototype.id,
+//         }))
+//       );
+
+//       await clonePlayersAndParts(
+//         editPrototypePlayers,
+//         editPrototypeParts,
+//         newPrototype
+//       );
+
+//       res.json(newPrototype);
+//       return;
+//     }
+
+//     const updatedPreviewPrototype = await PrototypeModel.update(
+//       { name: editPrototype.name },
+//       { returning: true, where: { id: previewPrototype.id } }
+//     );
+//     await AccessModel.destroy({
+//       where: {
+//         prototypeId: previewPrototype.id,
+//       },
+//     });
+//     // プレビュー版にアクセス権を付与
+//     await AccessModel.bulkCreate(
+//       editAccessRights.map((access) => ({
+//         userId: access.userId,
+//         prototypeId: previewPrototype.id,
+//       }))
+//     );
+
+//     // 既存のパーツとプレイヤーを削除した上で、新しいパーツとプレイヤーをコピー
+//     await PartModel.destroy({ where: { prototypeId: previewPrototype.id } });
+//     await PlayerModel.destroy({ where: { prototypeId: previewPrototype.id } });
+//     await clonePlayersAndParts(
+//       editPrototypePlayers,
+//       editPrototypeParts,
+//       previewPrototype
+//     );
+//     res.json(updatedPreviewPrototype[1][0]);
+//   }
+// );
 
 export default router;

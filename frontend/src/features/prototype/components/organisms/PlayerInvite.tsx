@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 import { User } from '@/features/prototype/type';
@@ -14,22 +14,29 @@ const PlayerInvite: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [invitedUsers, setInvitedUsers] = useState<User[]>([]);
   const router = useRouter();
-  const { prototypeId } = useParams();
+  const { groupId } = useParams();
 
+  const fetchInvitedUsers = useCallback(async () => {
+    const response = await axiosInstance.get(
+      `/api/prototypes/groups/${groupId}/accessUsers`
+    );
+    setInvitedUsers(response.data);
+  }, [groupId]);
+
+  // グループにアクセス可能なユーザーを取得
   useEffect(() => {
-    axiosInstance
-      .get(`/api/prototypes/${prototypeId}/invitedUsers`)
-      .then((response) => setInvitedUsers(response.data))
-      .catch((error) => {
-        console.error('Error fetching invited users:', error);
-      });
-  }, [prototypeId]);
+    fetchInvitedUsers();
+  }, [fetchInvitedUsers]);
 
+  // ユーザーを検索
   useEffect(() => {
     if (searchTerm) {
       axiosInstance
         .get(`/api/users/search?username=${encodeURIComponent(searchTerm)}`)
-        .then((response) => setSuggestedUsers(response.data))
+        .then((response) => {
+          setSuggestedUsers(response.data);
+          setError(null);
+        })
         .catch((error) => {
           console.error('Error fetching users:', error);
           setError('ユーザーの検索に失敗しました。');
@@ -39,6 +46,7 @@ const PlayerInvite: React.FC = () => {
     }
   }, [searchTerm]);
 
+  // ユーザーを選択
   const handleSelectUser = (user: User) => {
     if (selectedUsers.some((u) => u.id === user.id)) {
       setSearchTerm('');
@@ -51,6 +59,7 @@ const PlayerInvite: React.FC = () => {
     setSuggestedUsers([]);
   };
 
+  // ユーザーを招待
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedUsers.length === 0) {
@@ -59,7 +68,7 @@ const PlayerInvite: React.FC = () => {
     }
 
     try {
-      await axiosInstance.post(`/api/prototypes/${prototypeId}/invite`, {
+      await axiosInstance.post(`/api/prototypes/groups/${groupId}/invite`, {
         guestIds: selectedUsers.map((user) => user.id),
       });
 
@@ -67,19 +76,18 @@ const PlayerInvite: React.FC = () => {
       setSearchTerm('');
       setError(null);
       setSuccessMessage('招待が成功しました！');
-      setTimeout(() => {
-        router.push(`/prototypes/${prototypeId}/edit`);
-      }, 2000);
+      fetchInvitedUsers();
     } catch (error) {
       console.error('Error inviting users:', error);
       setError('プロトタイプの作成に失敗しました。');
     }
   };
 
-  const handleRemoveInvitedUser = async (userId: number) => {
+  // ユーザーを削除
+  const handleRemoveInvitedUser = async (userId: string) => {
     try {
       await axiosInstance.delete(
-        `/api/prototypes/${prototypeId}/invite/${userId}`
+        `/api/prototypes/groups/${groupId}/invite/${userId}`
       );
       setInvitedUsers((prev) => prev.filter((user) => user.id !== userId));
       setSuccessMessage('ユーザーが削除されました。');
@@ -89,8 +97,9 @@ const PlayerInvite: React.FC = () => {
     }
   };
 
+  // 戻る
   const handleBack = () => {
-    router.push(`/prototypes/${prototypeId}/edit`);
+    router.push(`/prototypes/groups/${groupId}`);
   };
 
   return (

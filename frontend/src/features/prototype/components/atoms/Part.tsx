@@ -43,6 +43,8 @@ const Part = forwardRef<PartHandle, PartProps>(
       },
     }));
 
+    // TODO: オーナー設定のあるパーツは、オーナーのみが見れるようにする
+
     return (
       <svg
         key={part.id}

@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: 'プロトタイプ編集',
 };
 
+export const runtime = 'edge';
 const PrototypesEditPage: React.FC = () => {
   return <PrototypeEdit />;
 };

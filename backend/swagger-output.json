@@ -229,38 +229,6 @@
         }
       }
     },
-    "/api/prototypes/{prototypeId}/accessUsers": {
-      "get": {
-        "summary": "プロトタイプへのアクセス権を取得",
-        "description": "指定されたプロトタイプにアクセス可能なユーザーを取得します。",
-        "parameters": [
-          {
-            "name": "prototypeId",
-            "in": "path",
-            "required": true,
-            "description": "プロトタイプのID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "アクセス可能なユーザーの一覧を返します",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "UserModel"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/prototypes/{prototypeId}/versions": {
       "get": {
         "summary": "プロトタイプバージョン一覧取得",
@@ -332,6 +300,127 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/prototypes/groups/{groupId}/accessUsers": {
+      "get": {
+        "summary": "グループへのアクセス権を取得",
+        "description": "指定されたグループにアクセス可能なユーザーを取得します。",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "description": "グループのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "アクセス可能なユーザーの一覧を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "UserModel"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/prototypes/groups/{groupId}/invite": {
+      "post": {
+        "summary": "ユーザーにプロトタイプへのアクセス権を付与",
+        "description": "指定されたグループにユーザーを招待します。",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "description": "グループのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "guestIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ユーザーを招待しました"
+          },
+          "400": {
+            "description": "リクエストが不正です"
+          },
+          "404": {
+            "description": "グループが見つかりません"
+          },
+          "500": {
+            "description": "サーバーエラー"
+          }
+        }
+      }
+    },
+    "/api/prototypes/groups/{groupId}/invite/{guestId}": {
+      "delete": {
+        "summary": "ユーザーのアクセス権を削除",
+        "description": "指定されたグループからユーザーのアクセス権を削除します。",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "description": "グループのID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "guestId",
+            "in": "path",
+            "required": true,
+            "description": "ゲストユーザーのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ユーザーのアクセス権を削除しました"
+          },
+          "400": {
+            "description": "リクエストが不正です"
+          },
+          "404": {
+            "description": "グループが見つかりません"
+          },
+          "500": {
+            "description": "サーバーエラー"
           }
         }
       }

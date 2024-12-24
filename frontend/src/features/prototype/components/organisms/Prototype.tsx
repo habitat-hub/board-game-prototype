@@ -1,119 +1,17 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { useParams } from 'next/navigation';
 import { io } from 'socket.io-client';
-import { AiOutlineTool } from 'react-icons/ai';
 
-import PartCreationView from '@/features/prototype/components/molecules/PartCreationView';
-import PartMainView from '@/features/prototype/components/molecules/PartMainView';
-import PartPropertyView from '@/features/prototype/components/molecules/PartPropertyView';
-import { Prototype, AllPart, User, Player } from '@/features/prototype/type';
-import { PART_TYPE, VIEW_MODE } from '@/features/prototype/const';
-import axiosInstance from '@/utils/axiosInstance';
-import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumberTool';
-
-import GameSettingsView from '../molecules/GameSettingView';
+import { AllPart } from '@/features/prototype/type';
+import { PART_TYPE } from '@/features/prototype/const';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
 const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
-  const router = useRouter();
   const { prototypeId } = useParams();
-  const [prototype, setPrototype] = useState<Prototype | null>(null);
   const [parts, setParts] = useState<AllPart[]>([]);
-  const [selectedPart, setSelectedPart] = useState<AllPart | null>(null);
-  const [isCreationViewOpen, setIsCreationViewOpen] = useState(true);
-  const [isPropertyViewOpen, setIsPropertyViewOpen] = useState(true);
-  const [isGameSettingsViewOpen, setIsGameSettingsViewOpen] = useState(false);
-  const [players, setPlayers] = useState<Player[]>([]);
-  const mainViewRef = useRef<HTMLDivElement>(null);
-  const [accessibleUsers, setAccessibleUsers] = useState<User[]>([]);
-  const [userId, setUserId] = useState<number | null>(null);
-  const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
-
-  // プロタイプの取得＆ビューモードが不一致の場合はリダイレクト
-  useEffect(() => {
-    axiosInstance
-      .get(`/api/prototypes/${prototypeId}`)
-      .then((response) => {
-        const { prototype, accessibleUsers } = response.data;
-        if (prototype.isEdit && viewMode !== VIEW_MODE.EDIT) {
-          router.replace(`/prototypes/${prototype.id}/edit`);
-          return;
-        }
-        if (prototype.isPreview && viewMode !== VIEW_MODE.PREVIEW) {
-          router.replace(`/prototypes/${prototype.id}/preview`);
-          return;
-        }
-        if (prototype.isPublic && viewMode !== VIEW_MODE.PUBLIC) {
-          router.replace(`/prototypes/${prototype.id}/published`);
-          return;
-        }
-        setPrototype(prototype);
-        setAccessibleUsers(accessibleUsers);
-      })
-      .catch((error) => console.error('Error fetching prototypes:', error));
-  }, [prototypeId, router, viewMode]);
-
-  // ユーザーの取得
-  useEffect(() => {
-    axiosInstance
-      .get('/api/users/info')
-      .then((response) => setUserId(response.data.id))
-      .catch((error) => console.error('Error fetching user:', error));
-  }, []);
-
-  // NOTE: 他クライアントからパーツ更新の配信があった際にプロパティビューを最新化する
-  // 選択中のパーツを依存配列に入れると無限ループになってしまうため、意図的に依存配列から外している
-  useEffect(() => {
-    if (!selectedPart || !isPropertyViewOpen) return;
-
-    const updatedPart = parts.find((part) => part.id === selectedPart?.id);
-    if (!updatedPart) return;
-
-    setSelectedPart(updatedPart);
-  }, [parts]);
-
-  // socket通信の設定
-  useEffect(() => {
-    // サーバーに接続した後、特定のプロトタイプに参加
-    socket.emit('JOIN_PROTOTYPE', Number(prototypeId));
-
-    socket.on('UPDATE_PARTS', (parts) => {
-      setParts(parts);
-    });
-
-    socket.on('UPDATE_PLAYERS', (players) => {
-      setPlayers(players);
-    });
-
-    return () => {
-      socket.off('UPDATE_PARTS');
-      socket.off('UPDATE_PLAYERS');
-    };
-  }, [prototypeId]);
-
-  /**
-   * パーツの追加
-   * @param part - 追加するパーツ
-   */
-  const handleAddPart = (part: Omit<AllPart, 'id' | 'prototypeId'>) => {
-    socket.emit('ADD_PART', { prototypeId: Number(prototypeId), part });
-  };
-
-  /**
-   * パーツの移動
-   * @param id - 移動するパーツのid
-   * @param position - 移動するパーツの位置
-   */
-  const handleMovePart = (id: number, position: { x: number; y: number }) => {
-    socket.emit('MOVE_PART', {
-      prototypeId: Number(prototypeId),
-      id,
-      position,
-    });
-  };
 
   /**
    * パーツの重なりチェック
@@ -219,28 +117,6 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
   };
 
   /**
-   * パーツの選択
-   * @param part - 選択するパーツ
-   */
-  const handleSelectPart = (part: AllPart) => {
-    setSelectedPart(part);
-    if (!isPropertyViewOpen) {
-      setIsPropertyViewOpen(true);
-    }
-  };
-
-  /**
-   * パーツの更新
-   * @param updatedPart - 更新するパーツ
-   */
-  const handleUpdatePart = (updatedPart: AllPart) => {
-    socket.emit('UPDATE_PART', {
-      prototypeId: Number(prototypeId),
-      updatedPart,
-    });
-  };
-
-  /**
    * パーツの複製
    * @param part - 複製するパーツ
    */
@@ -276,118 +152,7 @@ const PrototypeComponent: React.FC<{ viewMode: string }> = ({ viewMode }) => {
     });
   };
 
-  if (!prototype || !userId) {
-    return <div>Loading...</div>;
-  }
-
-  return (
-    <div className="flex h-full">
-      {viewMode === VIEW_MODE.EDIT && (
-        // パーツ作成ビュー
-        <div
-          className={`transition-width duration-300 ${
-            isCreationViewOpen ? 'w-1/6' : 'w-10'
-          }`}
-        >
-          <button
-            onClick={() => setIsCreationViewOpen(!isCreationViewOpen)}
-            className="bg-blue-500 text-white p-2"
-          >
-            {isCreationViewOpen ? '＜' : '＞'}
-          </button>
-          {isCreationViewOpen && (
-            <PartCreationView
-              prototype={prototype}
-              parts={parts}
-              onAddPart={handleAddPart}
-              mainViewRef={mainViewRef}
-              players={players}
-            />
-          )}
-        </div>
-      )}
-      {/* パーツメインビュー */}
-      <div
-        ref={mainViewRef}
-        className={`flex-1 transition-width duration-300 ${
-          isCreationViewOpen && isPropertyViewOpen ? 'w-1/2' : 'w-full'
-        }`}
-      >
-        <PartMainView
-          userId={userId}
-          prototypeId={Number(prototypeId)}
-          parts={parts}
-          players={players}
-          onMovePart={handleMovePart}
-          onSelectPart={handleSelectPart}
-          onMoveCard={handleMoveCard}
-          socket={socket}
-          viewMode={viewMode}
-        />
-      </div>
-      {viewMode === VIEW_MODE.EDIT && (
-        // パーツプロパティビュー
-        <div
-          className={`transition-width duration-300 ${
-            isPropertyViewOpen ? 'w-1/6' : 'w-10'
-          }`}
-        >
-          <div className="flex justify-end">
-            <button
-              onClick={() => setIsPropertyViewOpen(!isPropertyViewOpen)}
-              className="bg-blue-500 text-white p-2"
-            >
-              {isPropertyViewOpen ? '＞' : '＜'}
-            </button>
-          </div>
-          {isPropertyViewOpen && (
-            <PartPropertyView
-              players={players}
-              selectedPart={selectedPart}
-              onUpdatePart={handleUpdatePart}
-              onDuplicatePart={handleDuplicatePart}
-            />
-          )}
-        </div>
-      )}
-      {viewMode !== VIEW_MODE.EDIT && (
-        // ゲーム設定ビュー
-        <div
-          className={`transition-width duration-300 ${
-            isGameSettingsViewOpen ? 'w-1/6' : 'w-10'
-          }`}
-        >
-          <div className="flex justify-end">
-            <button
-              onClick={() => setIsGameSettingsViewOpen(!isGameSettingsViewOpen)}
-              className="bg-blue-500 text-white p-2"
-            >
-              {isGameSettingsViewOpen ? '＞' : '＜'}
-            </button>
-          </div>
-          {isGameSettingsViewOpen && (
-            <GameSettingsView
-              players={players}
-              accessibleUsers={accessibleUsers}
-              onUserChange={handleUpdatePlayerUser}
-            />
-          )}
-        </div>
-      )}
-      {/* 乱数ツールボタン */}
-      <button
-        onClick={() => setIsRandomToolOpen(!isRandomToolOpen)}
-        className="fixed bottom-4 right-4 bg-purple-500 text-white p-2 rounded-full shadow-lg"
-      >
-        <AiOutlineTool size={30} />
-      </button>
-
-      {/* 乱数計算UI */}
-      {isRandomToolOpen && (
-        <RandomNumberTool onClose={() => setIsRandomToolOpen(false)} />
-      )}
-    </div>
-  );
+  return <></>;
 };
 
 export default PrototypeComponent;
