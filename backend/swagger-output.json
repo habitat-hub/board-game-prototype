@@ -73,45 +73,6 @@
         }
       }
     },
-    "/auth/user": {
-      "get": {
-        "summary": "ユーザー情報取得",
-        "description": "現在ログインしているユーザーの情報を取得します。",
-        "responses": {
-          "200": {
-            "description": "ユーザー情報を返します",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer"
-                    },
-                    "username": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "examples": {
-                  "authenticated": {
-                    "summary": "認証済みユーザー",
-                    "value": {
-                      "id": 1,
-                      "username": "exampleUser"
-                    }
-                  },
-                  "unauthenticated": {
-                    "summary": "未認証ユーザー",
-                    "value": {}
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/prototypes": {
       "get": {
         "summary": "プロトタイプ一覧取得",
@@ -124,21 +85,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "integer"
-                      },
-                      "name": {
-                        "type": "string"
-                      },
-                      "players": {
-                        "type": "array",
-                        "items": {
-                          "type": "PlayerModel"
-                        }
-                      }
-                    }
+                    "type": "PrototypeModel"
                   }
                 }
               }
@@ -175,16 +122,17 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "id": {
-                      "type": "integer"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
+                    "type": "PrototypeModel"
                   }
                 }
               }
             }
+          },
+          "400": {
+            "description": "リクエストが不正です"
+          },
+          "500": {
+            "description": "サーバーエラー"
           }
         }
       }
@@ -210,118 +158,164 @@
             "content": {
               "application/json": {
                 "schema": {
+                  "type": "PrototypeModel"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "プロトタイプが見つかりません"
+          }
+        }
+      },
+      "put": {
+        "summary": "プロトタイプ更新",
+        "description": "指定されたIDのプロトタイプを更新します。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプのID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "プロトタイプを更新しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "PrototypeModel"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "プロトタイプが見つかりません"
+          }
+        }
+      },
+      "delete": {
+        "summary": "プロトタイプ削除",
+        "description": "指定されたIDのプロトタイプを削除します。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプのID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "プロトタイプを削除しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "PrototypeModel"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "プロトタイプが見つかりません"
+          }
+        }
+      }
+    },
+    "/api/prototypes/{prototypeId}/versions": {
+      "get": {
+        "summary": "プロトタイプバージョン一覧取得",
+        "description": "指定されたプロトタイプのバージョン一覧を取得します。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "プロトタイプのバージョン一覧を返します",
+            "content": {
+              "application/json": {
+                "schema": {
                   "type": "object",
                   "properties": {
                     "prototype": {
-                      "type": "object"
+                      "type": "PrototypeModel"
                     },
-                    "accessibleUsers": {
+                    "versions": {
                       "type": "array",
                       "items": {
-                        "type": "object"
+                        "type": "PrototypeVersionModel"
                       }
                     }
                   }
                 }
               }
             }
-          }
-        }
-      },
-      "delete": {
-        "summary": "プロトタイプ削除",
-        "description": "指定されたプロトタイプを削除します。",
-        "parameters": [
-          {
-            "name": "prototypeId",
-            "in": "path",
-            "required": true,
-            "description": "プロトタイプのID",
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "プロトタイプを削除しました"
           },
-          "500": {
-            "description": "サーバーエラー"
+          "404": {
+            "description": "プロトタイプが見つかりません"
           }
         }
       }
     },
-    "/api/prototypes/{prototypeId}/preview": {
-      "post": {
-        "summary": "プレビュー版作成",
-        "description": "指定されたプロトタイプのプレビュー版を作成します。",
-        "parameters": [
-          {
-            "name": "prototypeId",
-            "in": "path",
-            "required": true,
-            "description": "プロトタイプのID",
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "プレビュー版を作成しました",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/prototypes/{prototypeId}/published": {
-      "post": {
-        "summary": "公開版作成",
-        "description": "指定されたプレビュー版の公開版を作成します。",
-        "parameters": [
-          {
-            "name": "prototypeId",
-            "in": "path",
-            "required": true,
-            "description": "プレビュー版のID",
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "公開版を作成しました",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/prototypes/{prototypeId}/invitedUsers": {
+    "/api/prototypes/groups/{groupId}": {
       "get": {
-        "summary": "プロトタイプへのアクセス権を取得",
-        "description": "指定されたプロトタイプにアクセス可能なユーザーを取得します。",
+        "summary": "グループのプロトタイプ一覧取得",
+        "description": "指定されたグループに属するプロトタイプの一覧を取得します。",
         "parameters": [
           {
-            "name": "prototypeId",
+            "name": "groupId",
             "in": "path",
             "required": true,
-            "description": "プロトタイプのID",
+            "description": "グループのID",
             "schema": {
-              "type": "integer"
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "グループに属するプロトタイプの一覧を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "PrototypeModel"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/prototypes/groups/{groupId}/accessUsers": {
+      "get": {
+        "summary": "グループへのアクセス権を取得",
+        "description": "指定されたグループにアクセス可能なユーザーを取得します。",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "description": "グループのID",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -333,7 +327,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "object"
+                    "type": "UserModel"
                   }
                 }
               }
@@ -342,18 +336,18 @@
         }
       }
     },
-    "/api/prototypes/{prototypeId}/invite": {
+    "/api/prototypes/groups/{groupId}/invite": {
       "post": {
         "summary": "ユーザーにプロトタイプへのアクセス権を付与",
-        "description": "指定されたプロトタイプにユーザーを招待します。",
+        "description": "指定されたグループにユーザーを招待します。",
         "parameters": [
           {
-            "name": "prototypeId",
+            "name": "groupId",
             "in": "path",
             "required": true,
-            "description": "プロトタイプのID",
+            "description": "グループのID",
             "schema": {
-              "type": "integer"
+              "type": "string"
             }
           }
         ],
@@ -367,7 +361,7 @@
                   "guestIds": {
                     "type": "array",
                     "items": {
-                      "type": "integer"
+                      "type": "string"
                     }
                   }
                 }
@@ -379,8 +373,11 @@
           "200": {
             "description": "ユーザーを招待しました"
           },
+          "400": {
+            "description": "リクエストが不正です"
+          },
           "404": {
-            "description": "プロトタイプまたはユーザーが見つかりません"
+            "description": "グループが見つかりません"
           },
           "500": {
             "description": "サーバーエラー"
@@ -388,18 +385,18 @@
         }
       }
     },
-    "/api/prototypes/{prototypeId}/invite/{guestId}": {
+    "/api/prototypes/groups/{groupId}/invite/{guestId}": {
       "delete": {
         "summary": "ユーザーのアクセス権を削除",
-        "description": "指定されたプロトタイプからユーザーのアクセス権を削除します。",
+        "description": "指定されたグループからユーザーのアクセス権を削除します。",
         "parameters": [
           {
-            "name": "prototypeId",
+            "name": "groupId",
             "in": "path",
             "required": true,
-            "description": "プロトタイプのID",
+            "description": "グループのID",
             "schema": {
-              "type": "integer"
+              "type": "string"
             }
           },
           {
@@ -408,7 +405,7 @@
             "required": true,
             "description": "ゲストユーザーのID",
             "schema": {
-              "type": "integer"
+              "type": "string"
             }
           }
         ],
@@ -416,11 +413,49 @@
           "200": {
             "description": "ユーザーのアクセス権を削除しました"
           },
+          "400": {
+            "description": "リクエストが不正です"
+          },
           "404": {
-            "description": "プロトタイプが見つかりません"
+            "description": "グループが見つかりません"
           },
           "500": {
             "description": "サーバーエラー"
+          }
+        }
+      }
+    },
+    "/user": {
+      "get": {
+        "summary": "ユーザー情報取得",
+        "description": "現在ログインしているユーザーの情報を取得します。",
+        "responses": {
+          "200": {
+            "description": "ユーザー情報を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "authenticated": {
+                    "summary": "認証済みユーザー",
+                    "value": {
+                      "id": 1,
+                      "username": "exampleUser"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }

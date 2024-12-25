@@ -4,3 +4,31 @@ export const PART_TYPE = {
   HAND: 'hand',
   DECK: 'deck',
 };
+
+export const PROTOTYPE_TYPE = {
+  EDIT: 'EDIT',
+  PREVIEW: 'PREVIEW',
+};
+
+export const PROTOTYPE_VERSION = {
+  INITIAL: '0',
+};
+
+export const UPDATABLE_PROTOTYPE_FIELDS = {
+  PROTOTYPE: ['name', 'minPlayers', 'maxPlayers'],
+  PART: [
+    'parentId',
+    'name',
+    'description',
+    'color',
+    'position',
+    'width',
+    'height',
+    'order',
+    'isReversible',
+    'isFlipped',
+    'ownerId',
+    'originalPartId',
+    'canReverseCardOnDeck',
+  ],
+};

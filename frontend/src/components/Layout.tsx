@@ -67,6 +67,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       .catch((error) => console.error('Logout error:', error));
   };
 
+  // 非表示にしたいURLパターン
+  const hideFooterPattern = /^\/prototypes\/[a-f0-9-]+\/versions\/[a-f0-9-]+\//;
+  // 現在のパスが非表示パターンにマッチするか確認
+  const shouldHideFooter = hideFooterPattern.test(pathname);
+
   return (
     <div className="h-screen">
       <header
@@ -103,15 +108,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         )}
       </header>
-      <main className="p-4" style={{ height: 'calc(100vh - 80px)' }}>
-        {children}
-      </main>
-      <footer
-        className="bg-blue-600 text-white p-2 text-center"
-        style={{ height: '32px' }}
-      >
-        &copy; 2024 Code-Son All rights reserved.
-      </footer>
+      <main style={{ height: 'calc(100vh - 80px)' }}>{children}</main>
+      {!shouldHideFooter && (
+        <footer
+          className="bg-blue-600 text-white p-2 text-center"
+          style={{ height: '32px' }}
+        >
+          &copy; 2024 Code-Son All rights reserved.
+        </footer>
+      )}
     </div>
   );
 };

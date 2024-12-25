@@ -10,6 +10,39 @@ router.use(ensureAuthenticated);
 
 /**
  * @swagger
+ * /user:
+ *   get:
+ *     summary: ユーザー情報取得
+ *     description: 現在ログインしているユーザーの情報を取得します。
+ *     responses:
+ *       '200':
+ *         description: ユーザー情報を返します
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 username:
+ *                   type: string
+ *             examples:
+ *               authenticated:
+ *                 summary: 認証済みユーザー
+ *                 value:
+ *                   id: 1
+ *                   username: "exampleUser"
+ */
+router.get('/info', (req, res) => {
+  const user = req.user as UserModel;
+  res.json({
+    id: user.id,
+    username: user.username,
+  });
+});
+
+/**
+ * @swagger
  * /user/search:
  *   get:
  *     summary: ユーザー検索

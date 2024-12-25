@@ -27,6 +27,7 @@ const modelsDir = path.join(__dirname, 'models');
       HasMany: ['crow', 'inv'],
       HasOne: ['dot', 'dot'],
     },
+    engine: 'dot',
     arrowSize: 1.2,
     lineWidth: 1,
     color: 'blue',

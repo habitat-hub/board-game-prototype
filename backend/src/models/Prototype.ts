@@ -1,56 +1,81 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
 import User from './User';
+import { PROTOTYPE_TYPE } from '../const';
+import PrototypeGroupModel from './PrototypeGroup';
 
 class PrototypeModel extends Model {
-  public id!: number;
-  public userId!: number;
-  public groupId!: number;
+  public id!: string;
+  public userId!: string;
   public name!: string;
-  public isEdit!: boolean;
-  public isPreview!: boolean;
-  public isPublic!: boolean;
+  public type!: typeof PROTOTYPE_TYPE.EDIT | typeof PROTOTYPE_TYPE.PREVIEW;
+  public masterPrototypeId!: string | null;
+  public groupId!: string;
+  public minPlayers!: number;
+  public maxPlayers!: number;
 }
 
 PrototypeModel.init(
   {
     id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
-    },
-    userId: {
-      type: DataTypes.INTEGER,
       allowNull: false,
     },
-    groupId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
+    userId: {
+      type: DataTypes.UUID,
+      allowNull: false,
     },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    isEdit: {
-      type: DataTypes.BOOLEAN,
+    type: {
+      type: DataTypes.ENUM(PROTOTYPE_TYPE.EDIT, PROTOTYPE_TYPE.PREVIEW),
       allowNull: false,
     },
-    isPreview: {
-      type: DataTypes.BOOLEAN,
+    masterPrototypeId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
+    groupId: {
+      type: DataTypes.UUID,
       allowNull: false,
     },
-    isPublic: {
-      type: DataTypes.BOOLEAN,
+    minPlayers: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    maxPlayers: {
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
   },
   {
     sequelize,
     modelName: 'Prototype',
+    indexes: [
+      {
+        unique: true,
+        fields: ['id'],
+      },
+      {
+        fields: ['userId'],
+      },
+      {
+        fields: ['masterPrototypeId'],
+      },
+    ],
   }
 );
 
-PrototypeModel.belongsTo(User, { foreignKey: 'userId' });
-User.hasMany(PrototypeModel, { foreignKey: 'userId' });
+PrototypeModel.belongsTo(User, { foreignKey: 'userId', onDelete: 'CASCADE' });
+User.hasMany(PrototypeModel, { foreignKey: 'userId', onDelete: 'CASCADE' });
+PrototypeModel.belongsTo(PrototypeModel, {
+  as: 'masterPrototype',
+  foreignKey: 'masterPrototypeId',
+  onDelete: 'CASCADE',
+});
 
 export default PrototypeModel;
