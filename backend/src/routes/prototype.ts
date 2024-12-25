@@ -16,7 +16,6 @@ import PrototypeVersionModel from '../models/PrototypeVersion';
 import AccessModel from '../models/Access';
 import { Op } from 'sequelize';
 import UserAccessModel from '../models/UserAccess';
-import PrototypeGroupModel from '../models/PrototypeGroup';
 
 const router = express.Router();
 

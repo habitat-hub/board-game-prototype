@@ -30,10 +30,16 @@ const Part = forwardRef<PartHandle, PartProps>(
      * @param isNextFlipped - 次に反転させるかどうか
      */
     const flip = (isNextFlipped: boolean) => {
-      if (isFlipped !== isNextFlipped) {
-        setNeedsTransition(true);
-        setIsFlipped(isNextFlipped);
-      }
+      // カードでない場合
+      if (part.type !== PART_TYPE.CARD) return;
+      // 反転不可の場合
+      if (!('isReversible' in part) || !part.isReversible) return;
+      // 反転が不要な場合
+      if (isFlipped === isNextFlipped) return;
+
+      // 反転させる
+      setNeedsTransition(true);
+      setIsFlipped(isNextFlipped);
     };
 
     // 外部から呼び出せる関数を定義

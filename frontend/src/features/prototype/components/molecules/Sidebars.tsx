@@ -39,7 +39,11 @@ export default function Sidebars({
   players: Player[];
   selectedPart: AllPart | null;
   onAddPart: (part: AllPart) => void;
-  updatePart: (partId: number, updatePart: Partial<AllPart>) => void;
+  updatePart: (
+    partId: number,
+    updatePart: Partial<AllPart>,
+    isFlipped?: boolean
+  ) => void;
   mainViewRef: React.RefObject<HTMLDivElement>;
 }) {
   const router = useRouter();
@@ -297,9 +301,13 @@ export default function Sidebars({
                           : 'いいえ'
                       }
                       onChange={(value) => {
-                        updatePart(selectedPart.id, {
-                          isReversible: value === 'はい',
-                        });
+                        updatePart(
+                          selectedPart.id,
+                          {
+                            isReversible: value === 'はい',
+                          },
+                          true
+                        );
                       }}
                       options={['はい', 'いいえ']}
                       className="w-full"

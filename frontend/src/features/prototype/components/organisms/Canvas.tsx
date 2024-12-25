@@ -89,8 +89,16 @@ export default function Canvas({
    * @param part - 更新するパーツ
    */
   const handleUpdatePart = useCallback(
-    (partId: number, updatePart: Partial<AllPart>) => {
+    (partId: number, updatePart: Partial<AllPart>, isFlipped?: boolean) => {
       socket.emit('UPDATE_PART', { prototypeVersionId, partId, updatePart });
+
+      if ('isReversible' in updatePart && isFlipped) {
+        socket.emit('FLIP_CARD', {
+          prototypeVersionId: prototypeVersionId,
+          cardId: partId,
+          isNextFlipped: false,
+        });
+      }
     },
     [prototypeVersionId, socket]
   );
