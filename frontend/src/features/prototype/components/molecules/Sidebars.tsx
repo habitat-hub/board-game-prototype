@@ -104,7 +104,7 @@ export default function Sidebars({
 
     const newPart: Omit<AllPart, 'id' | 'prototypeVersionId' | 'order'> = {
       type: selectedPart.type,
-      parentId: null,
+      parentId: selectedPart.parentId,
       name: selectedPart.name,
       description: selectedPart.description,
       color: selectedPart.color,
@@ -394,6 +394,40 @@ export default function Sidebars({
                         }
                       }}
                       options={players.map((player) => player.playerName)}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+          {selectedPart.type === PART_TYPE.DECK && (
+            <>
+              <div className="border-b border-gray-200"></div>
+              <div className="flex flex-col gap-2 p-4">
+                <span className="mb-2 text-[11px] font-medium">山札</span>
+                <div className="flex flex-col gap-1">
+                  <p className="text-[9px] font-medium text-gray-500">
+                    カードを裏向きにするか？
+                  </p>
+                  <div className="flex w-full mb-2">
+                    <Dropdown
+                      value={
+                        'canReverseCardOnDeck' in selectedPart &&
+                        selectedPart.canReverseCardOnDeck
+                          ? 'はい'
+                          : 'いいえ'
+                      }
+                      onChange={(value) => {
+                        updatePart(
+                          selectedPart.id,
+                          {
+                            canReverseCardOnDeck: value === 'はい',
+                          },
+                          true
+                        );
+                      }}
+                      options={['はい', 'いいえ']}
                       className="w-full"
                     />
                   </div>

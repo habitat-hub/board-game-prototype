@@ -18,8 +18,8 @@ export interface PrototypeVersion {
   description: string;
 }
 
-export type AllPart = Part | Card | Hand;
-export type AllPartKey = keyof Part | keyof Card | keyof Hand;
+export type AllPart = Part | Card | Hand | Deck;
+export type AllPartKey = keyof Part | keyof Card | keyof Hand | keyof Deck;
 
 export interface Part {
   id: number;
@@ -44,6 +44,10 @@ export interface Card extends Part {
 
 export interface Hand extends Part {
   ownerId: number;
+}
+
+export interface Deck extends Part {
+  canReverseCardOnDeck: boolean;
 }
 
 export interface Player {

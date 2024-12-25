@@ -10,13 +10,16 @@ import {
   Camera,
   CanvasMode,
   CanvasState,
+  Deck,
   Player,
 } from '@/features/prototype/type';
+import { needsParentUpdate } from '@/features/prototype/helpers/partHelper';
 
 import Sidebars from '../molecules/Sidebars';
 import RandomNumberTool from '../atoms/RandomNumberTool';
 import Part from '../atoms/Part';
 import { PartHandle } from '../atoms/Part';
+import { PART_TYPE } from '../../const';
 
 interface CanvasProps {
   prototypeName: string;
@@ -160,11 +163,69 @@ export default function Canvas({
   /**
    * マウスアップイベントのハンドラー
    */
-  const handleMouseUp = () => {
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (draggingPartId === null) {
+      setDraggingPartId(null);
+      setIsDraggingCanvas(false);
+      return;
+    }
+
+    const rect = mainViewRef.current?.getBoundingClientRect();
+    if (!rect) {
+      setDraggingPartId(null);
+      setIsDraggingCanvas(false);
+      return;
+    }
+
+    const part = parts.find((part) => part.id === draggingPartId);
+    if (!part || part.type !== PART_TYPE.CARD) {
+      setDraggingPartId(null);
+      setIsDraggingCanvas(false);
+      return;
+    }
+
+    const newPosition = {
+      x: (e.clientX - rect.left) / camera.zoom - offset.x,
+      y: (e.clientY - rect.top) / camera.zoom - offset.y,
+    };
+
+    const { needsUpdate, parentPart } = needsParentUpdate(
+      parts,
+      part,
+      newPosition
+    );
+    if (needsUpdate) {
+      handleUpdatePart(draggingPartId, { parentId: parentPart?.id || null });
+    }
+
+    // カードの反転処理
+
+    // 前の親は裏向き必須か
+    const previousParentPart = parts.find((p) => p.id === part.parentId);
+    const isPreviousParentReverseRequired =
+      !!(previousParentPart?.type === PART_TYPE.DECK) &&
+      !!(previousParentPart as Deck).canReverseCardOnDeck;
+
+    // 新しい親は裏向き必須か
+    const isNextParentReverseRequired =
+      !!(parentPart?.type === PART_TYPE.DECK) &&
+      !!(parentPart as Deck).canReverseCardOnDeck;
+
+    if (isPreviousParentReverseRequired !== isNextParentReverseRequired) {
+      socket.emit('FLIP_CARD', {
+        prototypeVersionId,
+        cardId: draggingPartId,
+        isNextFlipped: !isPreviousParentReverseRequired,
+      });
+    }
+
     setDraggingPartId(null);
     setIsDraggingCanvas(false);
   };
 
+  /**
+   * パーツの削除
+   */
   const handleDeletePart = useCallback(() => {
     if (!selectedPart) return;
 
@@ -238,22 +299,23 @@ export default function Canvas({
                 transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom})`,
               }}
             >
-              {parts.map((part) => {
-                // パーツごとにrefを作成
-                if (!partRefs.current[part.id]) {
-                  partRefs.current[part.id] = React.createRef<PartHandle>();
-                }
+              {[...parts]
+                .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                .map((part) => {
+                  if (!partRefs.current[part.id]) {
+                    partRefs.current[part.id] = React.createRef<PartHandle>();
+                  }
 
-                return (
-                  <Part
-                    key={part.id}
-                    ref={partRefs.current[part.id]}
-                    part={part}
-                    onMouseDown={(e) => handleMouseDown(e, part.id)}
-                    socket={socket}
-                  />
-                );
-              })}
+                  return (
+                    <Part
+                      key={part.id}
+                      ref={partRefs.current[part.id]}
+                      part={part}
+                      onMouseDown={(e) => handleMouseDown(e, part.id)}
+                      socket={socket}
+                    />
+                  );
+                })}
             </g>
           </svg>
         </div>

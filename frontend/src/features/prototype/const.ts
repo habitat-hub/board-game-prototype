@@ -51,6 +51,7 @@ export const PART_DEFAULT_CONFIG = {
     description: '',
     color: '#FFFFFF',
     configurableTypeAsChild: ['card'],
+    canReverseCardOnDeck: false,
   },
 };
 

@@ -18,6 +18,7 @@ class PartModel extends Model {
   public isReversible: boolean | undefined;
   public isFlipped: boolean | undefined;
   public ownerId: number | undefined;
+  public canReverseCardOnDeck: boolean | undefined;
   public originalPartId: number | undefined;
 }
 
@@ -82,6 +83,10 @@ PartModel.init(
     },
     ownerId: {
       type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    canReverseCardOnDeck: {
+      type: DataTypes.BOOLEAN,
       allowNull: true,
     },
     originalPartId: {

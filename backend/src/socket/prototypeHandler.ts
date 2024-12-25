@@ -161,34 +161,6 @@ function handleFlipCard(socket: Socket, io: Server) {
 }
 
 /**
- * カードの親を更新
- * @param socket - Socket
- * @param io - Server
- */
-function handleUpdateCardParent(socket: Socket, io: Server) {
-  socket.on(
-    'UPDATE_CARD_PARENT',
-    async ({
-      prototypeId,
-      cardId,
-      nextParentId,
-    }: {
-      prototypeId: number;
-      cardId: number;
-      nextParentId?: number | null;
-    }) => {
-      await PartModel.update(
-        { parentId: nextParentId || null },
-        { where: { id: cardId, prototypeId } }
-      );
-      const parts = await PartModel.findAll({ where: { prototypeId } });
-
-      io.to(prototypeId.toString()).emit('UPDATE_PARTS', parts);
-    }
-  );
-}
-
-/**
  * カードをシャッフル
  * @param socket - Socket
  * @param io - Server
@@ -247,7 +219,6 @@ export default function handlePrototype(socket: Socket, io: Server) {
   handleUpdatePart(socket, io);
   handleDeletePart(socket, io);
   handleFlipCard(socket, io);
-  // handleUpdateCardParent(socket, io);
   // handleShuffleDeck(socket, io);
   // handleUpdatePlayerUser(socket, io);
 }

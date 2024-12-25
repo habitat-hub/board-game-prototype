@@ -1,6 +1,7 @@
 import React, { useState, forwardRef, useImperativeHandle } from 'react';
 import { VscSync, VscSyncIgnored } from 'react-icons/vsc';
 import { Socket } from 'socket.io-client';
+import { TbCards } from 'react-icons/tb';
 
 import { AllPart } from '@/features/prototype/type';
 import { PART_TYPE } from '@/features/prototype/const';
@@ -125,19 +126,30 @@ const Part = forwardRef<PartHandle, PartProps>(
             {part.name}
           </text>
         )}
-        {/* 反転可能アイコン��カードの場合のみ） */}
-        {'isReversible' in part && part.type === PART_TYPE.CARD && (
+        {/* 反転可能アイコン */}
+        {(part.type === PART_TYPE.CARD || part.type === PART_TYPE.DECK) && (
           <foreignObject
             x={part.position.x + part.width - 30}
             y={part.position.y + part.height - 30}
             width={20}
             height={20}
           >
-            {part.isReversible ? (
-              <VscSync className="text-gray-600" />
-            ) : (
-              <VscSyncIgnored className="text-gray-600" />
-            )}
+            <>
+              {part.type === PART_TYPE.CARD &&
+                // カードの場合
+                ('isReversible' in part && part.isReversible ? (
+                  <VscSync className="text-gray-600" />
+                ) : (
+                  <VscSyncIgnored className="text-gray-600" />
+                ))}
+              {part.type === PART_TYPE.DECK &&
+                // 山札の場合
+                ('canReverseCardOnDeck' in part && part.canReverseCardOnDeck ? (
+                  <TbCards className="text-gray-600" />
+                ) : (
+                  <></>
+                ))}
+            </>
           </foreignObject>
         )}
       </svg>
