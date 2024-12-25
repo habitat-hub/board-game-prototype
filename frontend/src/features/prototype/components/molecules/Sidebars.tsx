@@ -9,8 +9,8 @@ import {
   GiStoneBlock,
 } from 'react-icons/gi';
 import { useRouter } from 'next/navigation';
+import { FaRegCopy, FaRegTrashAlt } from 'react-icons/fa';
 
-import CreateButton from '@/components/atoms/CreateButton';
 import {
   COLORS,
   PART_DEFAULT_CONFIG,
@@ -20,6 +20,7 @@ import NumberInput from '@/components/atoms/NumberInput';
 import TextInput from '@/components/atoms/TextInput';
 import Dropdown from '@/components/atoms/Dropdown';
 import { AllPart, Card, Hand, Player } from '@/features/prototype/type';
+import TextIconButton from '@/components/atoms/TextIconButton';
 
 export default function Sidebars({
   prototypeName,
@@ -29,6 +30,7 @@ export default function Sidebars({
   players,
   selectedPart,
   onAddPart,
+  onDeletePart,
   updatePart,
   mainViewRef,
 }: {
@@ -39,6 +41,7 @@ export default function Sidebars({
   players: Player[];
   selectedPart: AllPart | null;
   onAddPart: (part: AllPart) => void;
+  onDeletePart: () => void;
   updatePart: (
     partId: number,
     updatePart: Partial<AllPart>,
@@ -82,18 +85,47 @@ export default function Sidebars({
         configurableTypeAsChild: partConfig.configurableTypeAsChild,
         originalPartId: null,
       };
-      if (partId === 'card') {
+      if (partId === PART_TYPE.CARD) {
         (newPart as Card).isReversible = (
           partConfig as typeof PART_DEFAULT_CONFIG.CARD
         ).isReversible;
         (newPart as Card).isFlipped = false;
       }
-      if (partId === 'hand') {
+      if (partId === PART_TYPE.HAND) {
         (newPart as Hand).ownerId = players[0].id;
       }
 
       onAddPart(newPart as AllPart);
     }
+  };
+
+  const handleCopyPart = () => {
+    if (!selectedPart) return;
+
+    const newPart: Omit<AllPart, 'id' | 'prototypeVersionId' | 'order'> = {
+      type: selectedPart.type,
+      parentId: null,
+      name: selectedPart.name,
+      description: selectedPart.description,
+      color: selectedPart.color,
+      position: {
+        x: selectedPart.position.x + 10,
+        y: selectedPart.position.y + 10,
+      },
+      width: selectedPart.width,
+      height: selectedPart.height,
+      configurableTypeAsChild: selectedPart.configurableTypeAsChild,
+      originalPartId: null,
+    };
+    if (selectedPart.type === PART_TYPE.CARD) {
+      (newPart as Card).isReversible = (selectedPart as Card).isReversible;
+      (newPart as Card).isFlipped = (selectedPart as Card).isFlipped;
+    }
+    if (selectedPart.type === PART_TYPE.HAND) {
+      (newPart as Hand).ownerId = (selectedPart as Hand).ownerId;
+    }
+
+    onAddPart(newPart as AllPart);
   };
 
   return (
@@ -135,7 +167,7 @@ export default function Sidebars({
                 ) : null;
 
               return (
-                <CreateButton
+                <TextIconButton
                   key={part.id}
                   text={part.name}
                   isSelected={false}
@@ -169,9 +201,7 @@ export default function Sidebars({
           className={`fixed h-full right-0 flex w-[240px] flex-col border-l border-gray-200 bg-white`}
         >
           {/* TODO: プレビューボタン */}
-          {/* TODO: 複製ボタン */}
-          {/* TODO: 削除ボタン */}
-          <div className="flex items-center justify-end p-2">
+          <div className="flex items-center justify-end gap-2 p-2">
             <button
               onClick={() =>
                 router.push(`/prototypes/groups/${groupId}/invite`)
@@ -184,6 +214,28 @@ export default function Sidebars({
           <div className="border-b border-gray-200"></div>
           <div className="flex flex-col gap-2 p-4">
             <span className="mb-2 text-[11px] font-medium">共通</span>
+            <div className="flex items-center px-2 pb-2">
+              <div className="w-1/2">
+                <TextIconButton
+                  text="複製"
+                  icon={<FaRegCopy className="h-3 w-3" />}
+                  isSelected={false}
+                  onClick={() => {
+                    handleCopyPart();
+                  }}
+                />
+              </div>
+              <div className="w-1/2">
+                <TextIconButton
+                  text="削除"
+                  icon={<FaRegTrashAlt className="h-3 w-3" />}
+                  isSelected={false}
+                  onClick={() => {
+                    onDeletePart();
+                  }}
+                />
+              </div>
+            </div>
             <div className="flex flex-col gap-1">
               <p className="text-[9px] font-medium text-gray-500">位置</p>
               <div className="flex w-full gap-2 mb-2">

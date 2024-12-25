@@ -165,6 +165,16 @@ export default function Canvas({
     setIsDraggingCanvas(false);
   };
 
+  const handleDeletePart = useCallback(() => {
+    if (!selectedPart) return;
+
+    socket.emit('DELETE_PART', {
+      prototypeVersionId,
+      partId: selectedPart.id,
+    });
+    setSelectedPart(null);
+  }, [prototypeVersionId, selectedPart, socket]);
+
   /**
    * キーボードイベントのハンドラー
    * @param e - キーボードイベント
@@ -172,14 +182,10 @@ export default function Canvas({
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === 'Backspace' && selectedPart) {
-        socket.emit('DELETE_PART', {
-          prototypeVersionId,
-          partId: selectedPart.id,
-        });
-        setSelectedPart(null);
+        handleDeletePart();
       }
     },
-    [prototypeVersionId, selectedPart, socket]
+    [handleDeletePart, selectedPart]
   );
 
   // キーボードイベントの登録
@@ -274,6 +280,7 @@ export default function Canvas({
         players={players}
         selectedPart={selectedPart}
         onAddPart={handleAddPart}
+        onDeletePart={handleDeletePart}
         updatePart={handleUpdatePart}
         mainViewRef={mainViewRef}
       />

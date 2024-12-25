@@ -2,7 +2,7 @@
 
 import { ReactNode } from 'react';
 
-const CreateButton = ({
+const TextIconButton = ({
   text,
   icon,
   isSelected,
@@ -15,7 +15,7 @@ const CreateButton = ({
 }) => {
   return (
     <button
-      className={`flex items-center gap-2 rounded px-1.5 py-1 text-left text-xs hover:bg-gray-100 ${
+      className={`flex items-center gap-2 rounded px-1.5 py-1 text-left text-xs hover:bg-gray-200 ${
         isSelected ? 'bg-[#bce3ff]' : ''
       }`}
       onClick={onClick}
@@ -26,4 +26,4 @@ const CreateButton = ({
   );
 };
 
-export default CreateButton;
+export default TextIconButton;
