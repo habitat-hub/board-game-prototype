@@ -1,7 +1,7 @@
 'use client';
 
 import React, { ReactNode, useState, useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 import axiosInstance from '@/utils/axiosInstance';
 
@@ -12,17 +12,16 @@ interface UserProviderProps {
 const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
-    if (storedUser || pathname === '/') {
+    if (storedUser) {
       setLoading(false);
       return;
     }
 
     axiosInstance
-      .get('/api/users/info')
+      .get('/auth/user')
       .then((response) => {
         const data = response.data;
         if (data.username) {
@@ -38,7 +37,7 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       .finally(() => {
         setLoading(false);
       });
-  }, [pathname, router]);
+  }, [router]);
 
   if (loading) {
     return null; // ローディング中は何も表示しない

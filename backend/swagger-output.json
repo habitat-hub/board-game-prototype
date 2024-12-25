@@ -73,6 +73,45 @@
         }
       }
     },
+    "/auth/user": {
+      "get": {
+        "summary": "ユーザー情報取得",
+        "description": "現在ログインしているユーザーの情報を取得します。",
+        "responses": {
+          "200": {
+            "description": "ユーザー情報を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "authenticated": {
+                    "summary": "認証済みユーザー",
+                    "value": {
+                      "id": 1,
+                      "username": "exampleUser"
+                    }
+                  },
+                  "unauthenticated": {
+                    "summary": "未認証ユーザー",
+                    "value": {}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/prototypes": {
       "get": {
         "summary": "プロトタイプ一覧取得",
@@ -421,41 +460,6 @@
           },
           "500": {
             "description": "サーバーエラー"
-          }
-        }
-      }
-    },
-    "/user": {
-      "get": {
-        "summary": "ユーザー情報取得",
-        "description": "現在ログインしているユーザーの情報を取得します。",
-        "responses": {
-          "200": {
-            "description": "ユーザー情報を返します",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer"
-                    },
-                    "username": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "examples": {
-                  "authenticated": {
-                    "summary": "認証済みユーザー",
-                    "value": {
-                      "id": 1,
-                      "username": "exampleUser"
-                    }
-                  }
-                }
-              }
-            }
           }
         }
       }
