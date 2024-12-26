@@ -11,7 +11,7 @@ export const PROTOTYPE_TYPE = {
 };
 
 export const PROTOTYPE_VERSION = {
-  INITIAL: '0',
+  INITIAL: '0.0.0',
 };
 
 export const UPDATABLE_PROTOTYPE_FIELDS = {

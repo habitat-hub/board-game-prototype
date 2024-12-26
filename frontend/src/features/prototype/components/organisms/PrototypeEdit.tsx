@@ -71,10 +71,11 @@ const PrototypeEdit: React.FC = () => {
 
   return (
     <Canvas
-      prototypeName={`${prototype.name} - version${versionNumber}`}
+      prototypeName={prototype.name}
       parts={parts}
       players={players}
       prototypeVersionId={versionId}
+      prototypeVersionNumber={versionNumber}
       socket={socket}
       groupId={prototype.groupId}
     />

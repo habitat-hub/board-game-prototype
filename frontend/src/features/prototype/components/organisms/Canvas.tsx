@@ -24,6 +24,7 @@ import { PART_TYPE } from '../../const';
 interface CanvasProps {
   prototypeName: string;
   prototypeVersionId: string;
+  prototypeVersionNumber?: string;
   groupId: number;
   parts: AllPart[];
   players: Player[];
@@ -33,6 +34,7 @@ interface CanvasProps {
 export default function Canvas({
   prototypeName,
   prototypeVersionId,
+  prototypeVersionNumber,
   groupId,
   parts,
   players,
@@ -362,6 +364,7 @@ export default function Canvas({
       {/* サイドバー */}
       <Sidebars
         prototypeName={prototypeName}
+        prototypeVersionNumber={prototypeVersionNumber}
         leftIsMinimized={leftIsMinimized}
         setLeftIsMinimized={setLeftIsMinimized}
         groupId={groupId}

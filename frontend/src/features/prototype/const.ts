@@ -11,7 +11,7 @@ export const PROTOTYPE_TYPE = {
 };
 
 export const VERSION_NUMBER = {
-  MASTER: '0',
+  MASTER: '0.0.0',
 };
 
 export const PART_DEFAULT_CONFIG = {

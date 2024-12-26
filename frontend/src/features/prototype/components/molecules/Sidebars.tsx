@@ -24,6 +24,7 @@ import TextIconButton from '@/components/atoms/TextIconButton';
 
 export default function Sidebars({
   prototypeName,
+  prototypeVersionNumber,
   leftIsMinimized,
   setLeftIsMinimized,
   groupId,
@@ -35,6 +36,7 @@ export default function Sidebars({
   mainViewRef,
 }: {
   prototypeName: string;
+  prototypeVersionNumber?: string;
   leftIsMinimized: boolean;
   setLeftIsMinimized: (value: boolean) => void;
   groupId: number;
@@ -142,9 +144,16 @@ export default function Sidebars({
               >
                 <IoArrowBack className="h-5 w-5 text-gray-600" />
               </button>
-              <h2 className="scroll-m-20 text-sm font-medium flex-grow ml-2">
-                {prototypeName}
-              </h2>
+              <div className="flex items-center gap-2 flex-grow ml-2">
+                <h2 className="scroll-m-20 text-sm font-medium truncate">
+                  {prototypeName}
+                </h2>
+                {prototypeVersionNumber && (
+                  <span className="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-600 rounded-md min-w-1 border border-blue-600">
+                    v{prototypeVersionNumber}
+                  </span>
+                )}
+              </div>
               <PiSidebarSimpleThin
                 onClick={() => setLeftIsMinimized(true)}
                 className="h-5 w-5 cursor-pointer"
@@ -187,7 +196,16 @@ export default function Sidebars({
           >
             <IoArrowBack className="h-5 w-5 text-gray-600" />
           </button>
-          <h2 className="scroll-m-20 text-sm font-medium">{prototypeName}</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="scroll-m-20 text-sm font-medium truncate">
+              {prototypeName}
+            </h2>
+            {prototypeVersionNumber && (
+              <span className="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-600 rounded-md min-w-1 border border-blue-600">
+                v{prototypeVersionNumber}
+              </span>
+            )}
+          </div>
           <PiSidebarSimpleThin
             onClick={() => setLeftIsMinimized(false)}
             className="h-5 w-5 cursor-pointer"
