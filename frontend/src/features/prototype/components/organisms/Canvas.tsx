@@ -83,6 +83,8 @@ export default function Canvas({
   const handleAddPart = useCallback(
     (part: Omit<AllPart, 'id' | 'prototypeVersionId' | 'order'>) => {
       socket.emit('ADD_PART', { prototypeVersionId, part });
+
+      setSelectedPart(null);
     },
     [prototypeVersionId, socket]
   );
@@ -242,6 +244,15 @@ export default function Canvas({
    */
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      // 入力要素にフォーカスがある場合は処理をスキップ
+      if (
+        document.activeElement?.tagName === 'INPUT' ||
+        document.activeElement?.tagName === 'TEXTAREA' ||
+        document.activeElement?.tagName === 'SELECT'
+      ) {
+        return;
+      }
+
       if (e.key === 'Backspace' && selectedPart) {
         handleDeletePart();
       }
