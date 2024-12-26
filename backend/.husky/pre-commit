@@ -3,10 +3,7 @@
 cd backend
 
 # ERDとRedocを生成
-if ! npm run generate-erd && npm run redoc; then
-  echo "❌ Failed to generate documentation"
-  exit 1
-fi
+npm run generate-erd && npm run redoc
 
 cd ..
 
