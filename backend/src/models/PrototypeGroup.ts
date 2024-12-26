@@ -17,6 +17,7 @@ PrototypeGroupModel.init(
     },
     prototypeId: {
       type: DataTypes.UUID,
+      primaryKey: true,
       allowNull: false,
     },
   },

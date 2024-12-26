@@ -19,7 +19,7 @@ import Sidebars from '../molecules/Sidebars';
 import RandomNumberTool from '../atoms/RandomNumberTool';
 import Part from '../atoms/Part';
 import { PartHandle } from '../atoms/Part';
-import { PART_TYPE } from '../../const';
+import { PART_TYPE, PROTOTYPE_TYPE, VERSION_NUMBER } from '../../const';
 
 interface CanvasProps {
   prototypeName: string;
@@ -29,6 +29,7 @@ interface CanvasProps {
   parts: AllPart[];
   players: Player[];
   socket: Socket;
+  prototypeType: typeof PROTOTYPE_TYPE.EDIT | typeof PROTOTYPE_TYPE.PREVIEW;
 }
 
 export default function Canvas({
@@ -39,6 +40,7 @@ export default function Canvas({
   parts,
   players,
   socket,
+  prototypeType,
 }: CanvasProps) {
   const [canvasState, setState] = useState<CanvasState>({
     mode: CanvasMode.None,
@@ -56,6 +58,11 @@ export default function Canvas({
   const [isDraggingCanvas, setIsDraggingCanvas] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const partRefs = useRef<{ [key: number]: React.RefObject<PartHandle> }>({});
+
+  // マスタープレビューかどうかを判定
+  const isMasterPreview =
+    prototypeType === PROTOTYPE_TYPE.PREVIEW &&
+    prototypeVersionNumber === VERSION_NUMBER.MASTER;
 
   // 選択したパーツが更新されたら、最新化
   useEffect(() => {
@@ -128,6 +135,8 @@ export default function Canvas({
    * @param partId - パーツID（パーツからの呼び出し時のみ）
    */
   const handleMouseDown = (e: React.MouseEvent, partId?: number) => {
+    if (isMasterPreview) return; // マスタープレビューの場合は操作を無効化
+
     if (partId !== undefined) {
       // パーツのドラッグ開始
       const part = parts.find((part) => part.id === partId) as AllPart;
@@ -305,7 +314,12 @@ export default function Canvas({
 
   return (
     <div className="flex h-full w-full">
-      <main className="h-full w-full" ref={mainViewRef}>
+      <main
+        className={`h-full w-full ${
+          isMasterPreview ? 'pointer-events-none' : ''
+        }`}
+        ref={mainViewRef}
+      >
         <div
           className="h-full w-full touch-none"
           onMouseMove={handleMouseMove}
@@ -317,7 +331,13 @@ export default function Canvas({
             className="h-full w-full"
             onContextMenu={(e) => e.preventDefault()}
             onMouseDown={(e) => handleMouseDown(e)}
-            style={{ cursor: isDraggingCanvas ? 'grabbing' : 'grab' }}
+            style={{
+              cursor: isDraggingCanvas
+                ? 'grabbing'
+                : isMasterPreview
+                ? 'not-allowed'
+                : 'grab',
+            }}
           >
             <g
               style={{
@@ -339,7 +359,9 @@ export default function Canvas({
                       onMouseDown={(e) => handleMouseDown(e, part.id)}
                       socket={socket}
                       onMoveOrder={({ partId, type }) => {
-                        handleChangeOrder(partId, type);
+                        if (!isMasterPreview) {
+                          handleChangeOrder(partId, type);
+                        }
                       }}
                     />
                   );
@@ -374,6 +396,7 @@ export default function Canvas({
         onDeletePart={handleDeletePart}
         updatePart={handleUpdatePart}
         mainViewRef={mainViewRef}
+        prototypeType={prototypeType}
       />
       {/* 乱数ツールボタン */}
       <button

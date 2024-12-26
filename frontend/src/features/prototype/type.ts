@@ -1,12 +1,12 @@
 import { PROTOTYPE_TYPE } from './const';
 
 export interface Prototype {
-  id: number;
-  userId: number;
+  id: string;
+  userId: string;
   name: string;
   type: typeof PROTOTYPE_TYPE.EDIT | typeof PROTOTYPE_TYPE.PREVIEW;
   groupId: number;
-  masterPrototypeId: number | null;
+  masterPrototypeId: string | null;
   minPlayers: number;
   maxPlayers: number;
 }
@@ -16,6 +16,7 @@ export interface PrototypeVersion {
   prototypeId: string;
   versionNumber: string;
   description: string;
+  createdAt: string;
 }
 
 export type AllPart = Part | Card | Hand | Deck;

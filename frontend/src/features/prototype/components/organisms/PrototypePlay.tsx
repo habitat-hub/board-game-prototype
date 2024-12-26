@@ -12,7 +12,7 @@ import { PROTOTYPE_TYPE } from '../../const';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
-const PrototypeEdit: React.FC = () => {
+const PrototypePlay: React.FC = () => {
   const router = useRouter();
   const { prototypeId, versionId } = useParams<{
     prototypeId: string;
@@ -52,7 +52,7 @@ const PrototypeEdit: React.FC = () => {
       .get(`/api/prototypes/${prototypeId}/versions`)
       .then((response) => {
         const { prototype, versions } = response.data;
-        if (prototype.type !== PROTOTYPE_TYPE.EDIT) {
+        if (prototype.type !== PROTOTYPE_TYPE.PREVIEW) {
           router.replace(`/prototypes/groups/${prototype.groupId}`);
           return;
         }
@@ -78,9 +78,9 @@ const PrototypeEdit: React.FC = () => {
       prototypeVersionNumber={versionNumber}
       socket={socket}
       groupId={prototype.groupId}
-      prototypeType={PROTOTYPE_TYPE.EDIT}
+      prototypeType={PROTOTYPE_TYPE.PREVIEW}
     />
   );
 };
 
-export default PrototypeEdit;
+export default PrototypePlay;

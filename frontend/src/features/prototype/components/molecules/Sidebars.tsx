@@ -15,6 +15,7 @@ import {
   COLORS,
   PART_DEFAULT_CONFIG,
   PART_TYPE,
+  PROTOTYPE_TYPE,
 } from '@/features/prototype/const';
 import NumberInput from '@/components/atoms/NumberInput';
 import TextInput from '@/components/atoms/TextInput';
@@ -34,6 +35,7 @@ export default function Sidebars({
   onDeletePart,
   updatePart,
   mainViewRef,
+  prototypeType,
 }: {
   prototypeName: string;
   prototypeVersionNumber?: string;
@@ -50,6 +52,7 @@ export default function Sidebars({
     isFlipped?: boolean
   ) => void;
   mainViewRef: React.RefObject<HTMLDivElement>;
+  prototypeType: typeof PROTOTYPE_TYPE.EDIT | typeof PROTOTYPE_TYPE.PREVIEW;
 }) {
   const router = useRouter();
 
@@ -133,7 +136,7 @@ export default function Sidebars({
   return (
     <>
       {/* Left Sidebar */}
-      {!leftIsMinimized ? (
+      {!leftIsMinimized && prototypeType === PROTOTYPE_TYPE.EDIT ? (
         <div className="fixed left-0 flex h-full w-[240px] flex-col border-r border-gray-200 bg-white">
           <div className="p-4">
             <div className="flex justify-between items-center">
@@ -144,19 +147,22 @@ export default function Sidebars({
               >
                 <IoArrowBack className="h-5 w-5 text-gray-600" />
               </button>
-              <div className="flex items-center gap-2 flex-grow ml-2">
-                <h2 className="scroll-m-20 text-sm font-medium truncate">
+              <div className="flex items-center gap-2 flex-grow ml-2 min-w-0">
+                <h2
+                  className="text-sm font-medium truncate"
+                  title={prototypeName}
+                >
                   {prototypeName}
                 </h2>
                 {prototypeVersionNumber && (
-                  <span className="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-600 rounded-md min-w-1 border border-blue-600">
+                  <span className="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-600 rounded-md min-w-1 border border-blue-600 flex-shrink-0">
                     v{prototypeVersionNumber}
                   </span>
                 )}
               </div>
               <PiSidebarSimpleThin
                 onClick={() => setLeftIsMinimized(true)}
-                className="h-5 w-5 cursor-pointer"
+                className="h-5 w-5 cursor-pointer flex-shrink-0"
               />
             </div>
           </div>
@@ -191,30 +197,30 @@ export default function Sidebars({
         <div className="fixed left-2 top-14 flex h-[48px] w-[250px] items-center justify-between rounded-xl border bg-white p-4">
           <button
             onClick={() => router.push(`/prototypes/groups/${groupId}`)}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-1 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
             title="戻る"
           >
             <IoArrowBack className="h-5 w-5 text-gray-600" />
           </button>
-          <div className="flex items-center gap-2">
-            <h2 className="scroll-m-20 text-sm font-medium truncate">
+          <div className="flex items-center gap-2 flex-grow ml-2 min-w-0">
+            <h2 className="text-sm font-medium truncate" title={prototypeName}>
               {prototypeName}
             </h2>
             {prototypeVersionNumber && (
-              <span className="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-600 rounded-md min-w-1 border border-blue-600">
+              <span className="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-600 rounded-md min-w-1 border border-blue-600 flex-shrink-0">
                 v{prototypeVersionNumber}
               </span>
             )}
           </div>
           <PiSidebarSimpleThin
             onClick={() => setLeftIsMinimized(false)}
-            className="h-5 w-5 cursor-pointer"
+            className="h-5 w-5 cursor-pointer flex-shrink-0"
           />
         </div>
       )}
 
       {/* Right Sidebar */}
-      {selectedPart ? (
+      {selectedPart && prototypeType === PROTOTYPE_TYPE.EDIT ? (
         <div
           className={`fixed h-full right-0 flex w-[240px] flex-col border-l border-gray-200 bg-white`}
         >
@@ -374,7 +380,7 @@ export default function Sidebars({
                         updatePart(
                           selectedPart.id,
                           {
-                            isReversible: value === 'はい',
+                            isReversible: value === 'は���',
                           },
                           true
                         );

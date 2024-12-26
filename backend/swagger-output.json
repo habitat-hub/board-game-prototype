@@ -464,6 +464,102 @@
         }
       }
     },
+    "/api/prototypes/{prototypeId}/preview": {
+      "post": {
+        "summary": "プレビュー版作成",
+        "description": "指定されたプロトタイプのプレビュー版を作成します。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "プレビュー版を作成しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": "PrototypeModel"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "プロトタイプが見つかりません"
+          },
+          "500": {
+            "description": "サーバーエラー"
+          }
+        }
+      }
+    },
+    "/api/prototypes/{prototypeId}/versions/{prototypeVersionId}": {
+      "post": {
+        "summary": "バージョン作成",
+        "description": "指定されたプロトタイプのバージョンを作成します。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプのID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prototypeVersionId",
+            "in": "path",
+            "required": true,
+            "description": "バージョンのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "newVersionNumber": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "新しいバージョンを作成しました"
+          },
+          "400": {
+            "description": "リクエストが不正です"
+          },
+          "404": {
+            "description": "バージョンが見つかりません"
+          },
+          "500": {
+            "description": "サーバーエラー"
+          }
+        }
+      }
+    },
     "/user/search": {
       "get": {
         "summary": "ユーザー検索",

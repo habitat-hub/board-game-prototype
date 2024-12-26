@@ -8,7 +8,10 @@ import {
   checkPrototypeOwner,
 } from '../middlewares/accessControl';
 import { getAccessiblePrototypes } from '../helpers/prototypeHelper';
-import { createPrototype } from '../factories/prototypeFactory';
+import {
+  createPrototype,
+  createPrototypeVersion,
+} from '../factories/prototypeFactory';
 import { PROTOTYPE_TYPE, UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import sequelize from '../models';
 import { getAccessibleUsers } from '../helpers/userHelper';
@@ -95,7 +98,7 @@ router.post('/', async (req: Request, res: Response) => {
       name,
       type: PROTOTYPE_TYPE.EDIT,
       groupId: null,
-      masterPrototypeId: null,
+      editPrototypeDefaultVersionId: null,
       minPlayers: playerCount,
       maxPlayers: playerCount,
       transaction,
@@ -496,104 +499,145 @@ router.delete(
   }
 );
 
-// /**
-//  * @swagger
-//  * /api/prototypes/{prototypeId}/preview:
-//  *   post:
-//  *     summary: プレビュー版作成
-//  *     description: 指定されたプロトタイプのプレビュー版を作成します。
-//  *     parameters:
-//  *       - name: prototypeId
-//  *         in: path
-//  *         required: true
-//  *         description: プロトタイプのID
-//  *         schema:
-//  *           type: integer
-//  *     responses:
-//  *       '200':
-//  *         description: プレビュー版を作成しました
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  */
-// router.post(
-//   '/:prototypeId/preview',
-//   checkPrototypeAccess,
-//   async (req: Request, res: Response) => {
-//     const editPrototypeId = parseInt(req.params.prototypeId, 10);
-//     const editPrototype = await PrototypeModel.findByPk(editPrototypeId);
-//     if (!editPrototype?.isEdit) {
-//       res.status(404).json({ error: 'プロトタイプが見つかりません' });
-//       return;
-//     }
+/**
+ * @swagger
+ * /api/prototypes/{prototypeId}/preview:
+ *   post:
+ *     summary: プレビュー版作成
+ *     description: 指定されたプロトタイプのプレビュー版を作成します。
+ *     parameters:
+ *       - name: prototypeId
+ *         in: path
+ *         required: true
+ *         description: プロトタイプのID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: プレビュー版を作成しました
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 type: PrototypeModel
+ *       '404':
+ *         description: プロトタイプが見つかりません
+ *       '500':
+ *         description: サーバーエラー
+ */
+router.post(
+  '/:prototypeId/preview',
+  checkPrototypeAccess,
+  async (req: Request, res: Response) => {
+    const editPrototypeId = req.params.prototypeId;
+    const editPrototype = await PrototypeModel.findByPk(editPrototypeId);
+    if (!editPrototype || editPrototype.type !== PROTOTYPE_TYPE.EDIT) {
+      res.status(404).json({ error: 'プロトタイプが見つかりません' });
+      return;
+    }
 
-//     const previewPrototype = await PrototypeModel.findOne({
-//       where: { groupId: editPrototype.groupId, isPreview: true },
-//     });
-//     const editPrototypeParts = await PartModel.findAll({
-//       where: { prototypeId: editPrototypeId },
-//     });
-//     const editPrototypePlayers = await PlayerModel.findAll({
-//       where: { prototypeId: editPrototypeId },
-//     });
-//     const editAccessRights = await AccessModel.findAll({
-//       where: { prototypeId: editPrototypeId },
-//     });
-//     if (!previewPrototype) {
-//       const newPrototype = await PrototypeModel.create({
-//         userId: editPrototype.userId,
-//         groupId: editPrototype.groupId,
-//         name: editPrototype.name,
-//         isEdit: false,
-//         isPreview: true,
-//         isPublic: false,
-//       });
-//       // プレビュー版にアクセス権を付与
-//       await AccessModel.bulkCreate(
-//         editAccessRights.map((access) => ({
-//           userId: access.userId,
-//           prototypeId: newPrototype.id,
-//         }))
-//       );
+    const editPrototypeDefaultVersion = await PrototypeVersionModel.findOne({
+      where: { prototypeId: editPrototype.id },
+    });
+    if (!editPrototypeDefaultVersion) {
+      res.status(404).json({ error: 'デフォルトバージョンが見つかりません' });
+      return;
+    }
 
-//       await clonePlayersAndParts(
-//         editPrototypePlayers,
-//         editPrototypeParts,
-//         newPrototype
-//       );
+    const transaction = await sequelize.transaction();
+    try {
+      const previewPrototype = await createPrototype({
+        userId: editPrototype.userId,
+        name: `${editPrototype.name} - プレビュー版`,
+        type: PROTOTYPE_TYPE.PREVIEW,
+        groupId: editPrototype.groupId,
+        editPrototypeDefaultVersionId: editPrototypeDefaultVersion.id,
+        minPlayers: editPrototype.minPlayers,
+        maxPlayers: editPrototype.maxPlayers,
+        transaction,
+      });
 
-//       res.json(newPrototype);
-//       return;
-//     }
+      await transaction.commit();
+      res.status(200).json(previewPrototype);
+    } catch (error) {
+      await transaction.rollback();
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+    }
+  }
+);
 
-//     const updatedPreviewPrototype = await PrototypeModel.update(
-//       { name: editPrototype.name },
-//       { returning: true, where: { id: previewPrototype.id } }
-//     );
-//     await AccessModel.destroy({
-//       where: {
-//         prototypeId: previewPrototype.id,
-//       },
-//     });
-//     // プレビュー版にアクセス権を付与
-//     await AccessModel.bulkCreate(
-//       editAccessRights.map((access) => ({
-//         userId: access.userId,
-//         prototypeId: previewPrototype.id,
-//       }))
-//     );
+/**
+ * @swagger
+ * /api/prototypes/{prototypeId}/versions/{prototypeVersionId}:
+ *   post:
+ *     summary: バージョン作成
+ *     description: 指定されたプロトタイプのバージョンを作成します。
+ *     parameters:
+ *       - name: prototypeId
+ *         in: path
+ *         required: true
+ *         description: プロトタイプのID
+ *         schema:
+ *           type: string
+ *       - name: prototypeVersionId
+ *         in: path
+ *         required: true
+ *         description: バージョンのID
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               newVersionNumber:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: 新しいバージョンを作成しました
+ *       '400':
+ *         description: リクエストが不正です
+ *       '404':
+ *         description: バージョンが見つかりません
+ *       '500':
+ *         description: サーバーエラー
+ */
+router.post(
+  '/:prototypeId/versions/:prototypeVersionId',
+  checkPrototypeAccess,
+  async (req: Request, res: Response) => {
+    const prototypeVersionId = req.params.prototypeVersionId;
+    const { newVersionNumber, description } = req.body;
+    const prototypeVersion =
+      await PrototypeVersionModel.findByPk(prototypeVersionId);
 
-//     // 既存のパーツとプレイヤーを削除した上で、新しいパーツとプレイヤーをコピー
-//     await PartModel.destroy({ where: { prototypeId: previewPrototype.id } });
-//     await PlayerModel.destroy({ where: { prototypeId: previewPrototype.id } });
-//     await clonePlayersAndParts(
-//       editPrototypePlayers,
-//       editPrototypeParts,
-//       previewPrototype
-//     );
-//     res.json(updatedPreviewPrototype[1][0]);
-//   }
-// );
+    if (!prototypeVersion || !newVersionNumber) {
+      res.status(400).json({ error: 'リクエストが不正です' });
+      return;
+    }
+
+    const transaction = await sequelize.transaction();
+    try {
+      await createPrototypeVersion(
+        prototypeVersion,
+        newVersionNumber,
+        description,
+        transaction
+      );
+      await transaction.commit();
+      res.status(200).json({ message: '新しいバージョンを作成しました' });
+    } catch (error) {
+      await transaction.rollback();
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+    }
+  }
+);
 
 export default router;
