@@ -8,18 +8,17 @@ if ! npm run generate-erd && npm run redoc; then
   exit 1
 fi
 
-# 変更のあるファイルをチェック
-CHANGED_FILES=$(git status --porcelain)
-ERD_CHANGES=$(echo "$CHANGED_FILES" | grep -c "erd.svg" || true)
-DOC_CHANGES=$(echo "$CHANGED_FILES" | grep -c "../docs/index.html" || true)
+cd ..
 
 # 変更されたファイルをステージングに追加
-if [ "$DOC_CHANGES" -gt 0 ]; then
-  git add ../docs/index.html
+if [ -f "docs/index.html" ]; then
+  git add docs/index.html
+  echo "✨ Added docs/index.html to staging"
 fi
 
-if [ "$ERD_CHANGES" -gt 0 ]; then
-  git add erd.svg
+if [ -f "backend/erd.svg" ]; then
+  git add backend/erd.svg
+  echo "✨ Added backend/erd.svg to staging"
 fi
 
 # 正常終了
