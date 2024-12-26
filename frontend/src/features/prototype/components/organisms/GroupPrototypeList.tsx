@@ -100,7 +100,7 @@ const GroupPrototypeList: React.FC = () => {
               href={`/prototypes/${editPrototype.prototype.id}/versions/${editPrototype.versions[0].id}/edit`}
             >
               <div className="hover:bg-gray-100 transition-colors duration-200 flex justify-between items-center p-4 border border-gray-200">
-                <span>編集版</span>
+                <span>Master版</span>
                 <button
                   onClick={(e) => {
                     e.preventDefault();
