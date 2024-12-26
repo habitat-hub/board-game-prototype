@@ -147,12 +147,12 @@ const GroupPrototypeList: React.FC = () => {
                         {version.versionNumber}
                       </span>
                       {version.versionNumber === VERSION_NUMBER.MASTER && (
-                        <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-full">
+                        <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-full border border-gray-600">
                           Master
                         </span>
                       )}
                       {version.versionNumber === VERSION_NUMBER.MASTER && (
-                        <span className="px-2 py-0.5 text-xs bg-yellow-100 text-yellow-600 rounded-full">
+                        <span className="px-2 py-0.5 text-xs bg-yellow-100 text-yellow-600 rounded-full border border-yellow-600">
                           編集不可
                         </span>
                       )}
