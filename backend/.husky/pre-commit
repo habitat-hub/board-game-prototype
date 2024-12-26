@@ -1,4 +1,26 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
+#!/usr/bin/env bash
 
-cd backend && npm run generate-erd && npm run redoc
+cd backend
+
+# ERDとRedocを生成
+if ! npm run generate-erd && npm run redoc; then
+  echo "❌ Failed to generate documentation"
+  exit 1
+fi
+
+# 変更のあるファイルをチェック
+CHANGED_FILES=$(git status --porcelain)
+ERD_CHANGES=$(echo "$CHANGED_FILES" | grep -c "erd.svg" || true)
+DOC_CHANGES=$(echo "$CHANGED_FILES" | grep -c "../docs/index.html" || true)
+
+# 変更されたファイルをステージングに追加
+if [ "$DOC_CHANGES" -gt 0 ]; then
+  git add ../docs/index.html
+fi
+
+if [ "$ERD_CHANGES" -gt 0 ]; then
+  git add erd.svg
+fi
+
+# 正常終了
+exit 0

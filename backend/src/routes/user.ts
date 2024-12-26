@@ -40,7 +40,6 @@ router.use(ensureAuthenticated);
  *                 summary: 検索結果
  *                 value:
  *                   - id: 1
- *                     googleId: "exampleGoogleId"
  *                     username: "exampleUser"
  */
 router.get('/search', async (req: Request, res: Response) => {

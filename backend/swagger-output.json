@@ -504,7 +504,6 @@
                     "value": [
                       {
                         "id": 1,
-                        "googleId": "exampleGoogleId",
                         "username": "exampleUser"
                       }
                     ]
