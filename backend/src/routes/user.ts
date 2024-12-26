@@ -39,7 +39,7 @@ router.use(ensureAuthenticated);
  *               search:
  *                 summary: 検索結果
  *                 value:
- *                   - id: 1
+ *                   - id: "123e4567-e89b-12d3-a456-426614174000"
  *                     username: "exampleUser"
  */
 router.get('/search', async (req: Request, res: Response) => {
