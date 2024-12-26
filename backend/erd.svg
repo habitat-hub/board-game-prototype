@@ -237,37 +237,37 @@
 <!-- Player -->
 <g id="node7" class="node">
 <title>Player</title>
-<polygon fill="#add8e6" stroke="transparent" points="21.5,-132 21.5,-154 139.5,-154 139.5,-132 21.5,-132"/>
-<polygon fill="none" stroke="#000000" points="21.5,-132 21.5,-154 139.5,-154 139.5,-132 21.5,-132"/>
-<text text-anchor="start" x="67.7275" y="-141" font-family="Times,serif" font-weight="bold" font-size="10.00" fill="#000000">Player</text>
-<polygon fill="none" stroke="#000000" points="21.5,-110 21.5,-132 139.5,-132 139.5,-110 21.5,-110"/>
-<text text-anchor="start" x="26.5" y="-119" font-family="Times,serif" text-decoration="underline" font-size="10.00" fill="#000000">id</text>
-<text text-anchor="start" x="34.279" y="-119" font-family="Times,serif" font-size="10.00" fill="#000000">: NUMBER</text>
-<polygon fill="none" stroke="#000000" points="21.5,-88 21.5,-110 139.5,-110 139.5,-88 21.5,-88"/>
-<text text-anchor="start" x="26.2125" y="-97" font-family="Times,serif" font-style="italic" text-decoration="underline" font-size="10.00" fill="#000000">prototypeVersionId</text>
-<text text-anchor="start" x="104.5225" y="-97" font-family="Times,serif" font-size="10.00" fill="#000000">: UUID</text>
-<polygon fill="none" stroke="#000000" points="21.5,-66 21.5,-88 139.5,-88 139.5,-66 21.5,-66"/>
-<text text-anchor="start" x="26.5" y="-74" font-family="Times,serif" font-size="10.00" fill="#000000">playerName: STRING</text>
-<polygon fill="none" stroke="#000000" points="21.5,-44 21.5,-66 139.5,-66 139.5,-44 21.5,-44"/>
-<text text-anchor="start" x="26.5" y="-52" font-family="Times,serif" font-size="10.00" fill="#000000">originalPlayerId: UUID</text>
-<polygon fill="none" stroke="#000000" points="21.5,-22 21.5,-44 139.5,-44 139.5,-22 21.5,-22"/>
-<text text-anchor="start" x="26.5" y="-30" font-family="Times,serif" font-size="10.00" fill="#000000">createdAt: DATE</text>
-<polygon fill="none" stroke="#000000" points="21.5,0 21.5,-22 139.5,-22 139.5,0 21.5,0"/>
-<text text-anchor="start" x="26.5" y="-8" font-family="Times,serif" font-size="10.00" fill="#000000">updatedAt: DATE</text>
+<polygon fill="#add8e6" stroke="transparent" points="19.5,-132 19.5,-154 142.5,-154 142.5,-132 19.5,-132"/>
+<polygon fill="none" stroke="#000000" points="19.5,-132 19.5,-154 142.5,-154 142.5,-132 19.5,-132"/>
+<text text-anchor="start" x="68.2275" y="-141" font-family="Times,serif" font-weight="bold" font-size="10.00" fill="#000000">Player</text>
+<polygon fill="none" stroke="#000000" points="19.5,-110 19.5,-132 142.5,-132 142.5,-110 19.5,-110"/>
+<text text-anchor="start" x="24.5" y="-119" font-family="Times,serif" text-decoration="underline" font-size="10.00" fill="#000000">id</text>
+<text text-anchor="start" x="32.279" y="-119" font-family="Times,serif" font-size="10.00" fill="#000000">: NUMBER</text>
+<polygon fill="none" stroke="#000000" points="19.5,-88 19.5,-110 142.5,-110 142.5,-88 19.5,-88"/>
+<text text-anchor="start" x="24.5" y="-97" font-family="Times,serif" font-style="italic" text-decoration="underline" font-size="10.00" fill="#000000">prototypeVersionId</text>
+<text text-anchor="start" x="102.81" y="-97" font-family="Times,serif" font-size="10.00" fill="#000000">: UUID</text>
+<polygon fill="none" stroke="#000000" points="19.5,-66 19.5,-88 142.5,-88 142.5,-66 19.5,-66"/>
+<text text-anchor="start" x="24.5" y="-74" font-family="Times,serif" font-size="10.00" fill="#000000">playerName: STRING</text>
+<polygon fill="none" stroke="#000000" points="19.5,-44 19.5,-66 142.5,-66 142.5,-44 19.5,-44"/>
+<text text-anchor="start" x="24.484" y="-52" font-family="Times,serif" font-size="10.00" fill="#000000">originalPlayerId: NUMBER</text>
+<polygon fill="none" stroke="#000000" points="19.5,-22 19.5,-44 142.5,-44 142.5,-22 19.5,-22"/>
+<text text-anchor="start" x="24.5" y="-30" font-family="Times,serif" font-size="10.00" fill="#000000">createdAt: DATE</text>
+<polygon fill="none" stroke="#000000" points="19.5,0 19.5,-22 142.5,-22 142.5,0 19.5,0"/>
+<text text-anchor="start" x="24.5" y="-8" font-family="Times,serif" font-size="10.00" fill="#000000">updatedAt: DATE</text>
 </g>
 <!-- Player&#45;&gt;PrototypeVersion -->
 <g id="edge10" class="edge">
 <title>Player&#45;&gt;PrototypeVersion</title>
-<path fill="none" stroke="#0000ff" d="M147.4121,-155.9295C152.0123,-161.3667 156.5757,-166.7635 161,-172 206.5064,-225.8601 257.7236,-286.6597 297.002,-333.3252"/>
-<polygon fill="#0000ff" stroke="#0000ff" points="142.8597,-144.049 147.406,-155.9222 136.4478,-149.4756 142.8597,-144.049"/>
+<path fill="none" stroke="#0000ff" d="M149.8391,-158.7984C153.6157,-163.263 157.3551,-167.6859 161,-172 206.5064,-225.8601 257.7236,-286.6597 297.002,-333.3252"/>
+<polygon fill="#0000ff" stroke="#0000ff" points="145.2596,-146.8841 149.8047,-158.7577 138.8472,-152.3101 145.2596,-146.8841"/>
 <polygon fill="#0000ff" stroke="#0000ff" points="297.2171,-333.5809 300.8128,-346.2392 301.0807,-338.1714 304.9443,-342.762 304.9443,-342.762 304.9443,-342.762 301.0807,-338.1714 309.0758,-339.2847 297.2171,-333.5809 297.2171,-333.5809"/>
 </g>
 <!-- Player&#45;&gt;UserPlayer -->
 <g id="edge4" class="edge">
 <title>Player&#45;&gt;UserPlayer</title>
-<path fill="none" stroke="#0000ff" d="M151.1742,-99.0076C342.2484,-158.5071 866.4379,-321.737 1041.0544,-376.1117"/>
-<polygon fill="#0000ff" stroke="#0000ff" points="151.0895,-98.9813 141.2377,-90.2576 145.3608,-97.1974 139.6321,-95.4134 139.6321,-95.4134 139.6321,-95.4134 145.3608,-97.1974 138.0266,-100.5693 151.0895,-98.9813 151.0895,-98.9813"/>
-<polygon fill="#0000ff" stroke="#0000ff" points="1041.3139,-376.1925 1051.1657,-384.9161 1047.0426,-377.9764 1052.7712,-379.7603 1052.7712,-379.7603 1052.7712,-379.7603 1047.0426,-377.9764 1054.3768,-374.6045 1041.3139,-376.1925 1041.3139,-376.1925"/>
+<path fill="none" stroke="#0000ff" d="M153.9627,-99.8759C347.346,-160.0945 867.5389,-322.0799 1041.184,-376.1521"/>
+<polygon fill="#0000ff" stroke="#0000ff" points="153.7248,-99.8019 143.873,-91.0783 147.9962,-98.018 142.2675,-96.2341 142.2675,-96.2341 142.2675,-96.2341 147.9962,-98.018 140.6619,-101.3899 153.7248,-99.8019 153.7248,-99.8019"/>
+<polygon fill="#0000ff" stroke="#0000ff" points="1041.3801,-376.2131 1051.232,-384.9367 1047.1088,-377.997 1052.8375,-379.7809 1052.8375,-379.7809 1052.8375,-379.7809 1047.1088,-377.997 1054.443,-374.6251 1041.3801,-376.2131 1041.3801,-376.2131"/>
 </g>
 </g>
 </svg>

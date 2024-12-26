@@ -6,7 +6,7 @@ class PlayerModel extends Model {
   public id!: number;
   public prototypeVersionId!: string;
   public playerName!: string;
-  public originalPlayerId!: string | null;
+  public originalPlayerId!: number | null;
 }
 
 PlayerModel.init(
@@ -26,7 +26,7 @@ PlayerModel.init(
       allowNull: false,
     },
     originalPlayerId: {
-      type: DataTypes.UUID,
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
   },
