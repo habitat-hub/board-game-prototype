@@ -2,8 +2,9 @@ import React, { useState, forwardRef, useImperativeHandle } from 'react';
 import { VscSync, VscSyncIgnored } from 'react-icons/vsc';
 import { Socket } from 'socket.io-client';
 import { TbCards } from 'react-icons/tb';
+import * as ContextMenu from '@radix-ui/react-context-menu';
 
-import { AllPart } from '@/features/prototype/type';
+import { AllPart, MoveOrderType } from '@/features/prototype/type';
 import { PART_TYPE } from '@/features/prototype/const';
 
 // 外部から呼び出せる関数のインターフェース
@@ -15,10 +16,11 @@ interface PartProps {
   part: AllPart;
   onMouseDown: (e: React.MouseEvent, partId: number) => void;
   socket: Socket;
+  onMoveOrder: ({ partId, type }: { partId: number; type: string }) => void;
 }
 
 const Part = forwardRef<PartHandle, PartProps>(
-  ({ part, onMouseDown, socket }, ref) => {
+  ({ part, onMouseDown, socket, onMoveOrder }, ref) => {
     // カードが反転しているかどうか
     const [isFlipped, setIsFlipped] = useState(
       'isFlipped' in part ? part.isFlipped : false
@@ -152,6 +154,65 @@ const Part = forwardRef<PartHandle, PartProps>(
             </>
           </foreignObject>
         )}
+
+        {/* コンテキストメニュー */}
+        <foreignObject
+          x={part.position.x}
+          y={part.position.y}
+          width={part.width}
+          height={part.height}
+        >
+          <ContextMenu.Root>
+            <ContextMenu.Trigger className="w-full h-full" asChild>
+              <div className="w-full h-full" />
+            </ContextMenu.Trigger>
+            <ContextMenu.Portal>
+              <ContextMenu.Content className="min-w-[80px] bg-[#1f1f1f] rounded-md p-1 shadow-lg border">
+                <ContextMenu.Item
+                  className="text-[10px] px-2 py-1.5 outline-none cursor-pointer hover:bg-gray-600 rounded text-white"
+                  onClick={() =>
+                    onMoveOrder({ partId: part.id, type: MoveOrderType.BACK })
+                  }
+                >
+                  背面へ移動
+                </ContextMenu.Item>
+                <ContextMenu.Item
+                  className="text-[10px] px-2 py-1.5 outline-none cursor-pointer hover:bg-gray-600 rounded text-white"
+                  onClick={() =>
+                    onMoveOrder({
+                      partId: part.id,
+                      type: MoveOrderType.BACKMOST,
+                    })
+                  }
+                >
+                  最背面へ移動
+                </ContextMenu.Item>
+                <ContextMenu.Item
+                  className="text-[10px] px-2 py-1.5 outline-none cursor-pointer hover:bg-gray-600 rounded text-white"
+                  onClick={() =>
+                    onMoveOrder({
+                      partId: part.id,
+                      type: MoveOrderType.FRONT,
+                    })
+                  }
+                >
+                  前面へ移動
+                </ContextMenu.Item>
+                <ContextMenu.Item
+                  className="text-[10px] px-2 py-1.5 outline-none cursor-pointer hover:bg-gray-600 rounded text-white"
+                  onClick={() =>
+                    onMoveOrder({
+                      partId: part.id,
+                      type: MoveOrderType.FRONTMOST,
+                    })
+                  }
+                >
+                  最前面へ移動
+                </ContextMenu.Item>
+              </ContextMenu.Content>
+            </ContextMenu.Portal>
+          </ContextMenu.Root>
+        </foreignObject>
       </svg>
     );
   }

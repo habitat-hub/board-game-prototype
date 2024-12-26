@@ -1,8 +1,12 @@
 import { Server, Socket } from 'socket.io';
 import PartModel from '../models/Part';
 import PlayerModel from '../models/Player';
-import { PART_TYPE, UPDATABLE_PROTOTYPE_FIELDS } from '../const';
+import { MoveOrderType, PART_TYPE, UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import PrototypeVersionModel from '../models/PrototypeVersion';
+import {
+  getOverLappingPart,
+  getUnderLappingPart,
+} from '../helpers/prototypeHelper';
 
 /**
  * プロトタイプ参加
@@ -54,7 +58,7 @@ function handleAddPart(socket: Socket, io: Server) {
       await PartModel.create({
         ...part,
         prototypeVersionId,
-        order: (maxOrder as number) + 0.1,
+        order: ((maxOrder as number) + 1) / 2,
       });
       const parts = await PartModel.findAll({
         where: { prototypeVersionId },
@@ -161,6 +165,134 @@ function handleFlipCard(socket: Socket, io: Server) {
 }
 
 /**
+ * パーツの順番を変更
+ * @param socket - Socket
+ * @param io - Server
+ */
+function handleChangeOrder(socket: Socket, io: Server) {
+  socket.on(
+    'CHANGE_ORDER',
+    async ({
+      prototypeVersionId,
+      partId,
+      type,
+    }: {
+      prototypeVersionId: string;
+      partId: number;
+      type: string;
+    }) => {
+      const sortedParts = await PartModel.findAll({
+        where: { prototypeVersionId },
+        order: [['order', 'ASC']],
+      });
+
+      const selfPartIndex = sortedParts.findIndex((part) => part.id === partId);
+      if (selfPartIndex === -1) return;
+
+      // 最背面、かつ背面に移動しようとした場合は何もしない
+      if (
+        selfPartIndex === 0 &&
+        (type === MoveOrderType.BACK || type === MoveOrderType.BACKMOST)
+      ) {
+        return;
+      }
+
+      // 最前面、かつ前面に移動しようとした場合は何もしない
+      if (
+        selfPartIndex === sortedParts.length - 1 &&
+        (type === MoveOrderType.FRONT || type === MoveOrderType.FRONTMOST)
+      ) {
+        return;
+      }
+
+      switch (type) {
+        case MoveOrderType.BACK: {
+          // 一つ後ろに移動
+          const underLappingPart = await getUnderLappingPart(
+            partId,
+            sortedParts
+          );
+          if (underLappingPart) {
+            const prevPartIndex = sortedParts.findIndex(
+              (part) => part.id === underLappingPart.id
+            );
+            const newOrder =
+              (underLappingPart.order +
+                (sortedParts[prevPartIndex - 1]?.order ?? 0)) /
+              2;
+            await PartModel.update(
+              { order: newOrder },
+              { where: { id: partId } }
+            );
+
+            const parts = await PartModel.findAll({
+              where: { prototypeVersionId },
+            });
+            io.to(prototypeVersionId).emit('UPDATE_PARTS', parts);
+          }
+          break;
+        }
+        case MoveOrderType.FRONT: {
+          // 一つ前に移動
+          const overLappingPart = await getOverLappingPart(partId, sortedParts);
+          if (overLappingPart) {
+            const nextPartIndex = sortedParts.findIndex(
+              (part) => part.id === overLappingPart.id
+            );
+            const newOrder =
+              (overLappingPart.order +
+                (sortedParts[nextPartIndex + 1]?.order ?? 1)) /
+              2;
+            await PartModel.update(
+              { order: newOrder },
+              { where: { id: partId } }
+            );
+
+            const parts = await PartModel.findAll({
+              where: { prototypeVersionId },
+            });
+            io.to(prototypeVersionId).emit('UPDATE_PARTS', parts);
+          }
+          break;
+        }
+        case MoveOrderType.BACKMOST: {
+          // 最背面に移動
+          const firstPart = sortedParts[0];
+          const newOrder = (firstPart.order + 0) / 2;
+          await PartModel.update(
+            { order: newOrder },
+            { where: { id: partId } }
+          );
+
+          const parts = await PartModel.findAll({
+            where: { prototypeVersionId },
+          });
+          io.to(prototypeVersionId).emit('UPDATE_PARTS', parts);
+          break;
+        }
+        case MoveOrderType.FRONTMOST: {
+          // 最前面に移動
+          const lastPart = sortedParts[sortedParts.length - 1];
+          const newOrder = (lastPart.order + 1) / 2;
+          await PartModel.update(
+            { order: newOrder },
+            { where: { id: partId } }
+          );
+
+          const parts = await PartModel.findAll({
+            where: { prototypeVersionId },
+          });
+          io.to(prototypeVersionId).emit('UPDATE_PARTS', parts);
+          break;
+        }
+        default:
+          return;
+      }
+    }
+  );
+}
+
+/**
  * カードをシャッフル
  * @param socket - Socket
  * @param io - Server
@@ -219,6 +351,7 @@ export default function handlePrototype(socket: Socket, io: Server) {
   handleUpdatePart(socket, io);
   handleDeletePart(socket, io);
   handleFlipCard(socket, io);
+  handleChangeOrder(socket, io);
   // handleShuffleDeck(socket, io);
   // handleUpdatePlayerUser(socket, io);
 }

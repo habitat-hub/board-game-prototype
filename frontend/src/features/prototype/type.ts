@@ -61,6 +61,13 @@ export interface User {
   username: string;
 }
 
+export enum MoveOrderType {
+  BACK = 'back',
+  FRONT = 'front',
+  BACKMOST = 'backmost',
+  FRONTMOST = 'frontmost',
+}
+
 export type Camera = {
   x: number;
   y: number;

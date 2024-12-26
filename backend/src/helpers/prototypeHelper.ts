@@ -30,6 +30,57 @@ export async function getAccessiblePrototypes({ userId }: { userId: string }) {
   });
 }
 
+/**
+ * パーツが重なっているかどうかを判定する
+ * @param selfPart - 自分のパーツ
+ * @param part - パーツ
+ * @returns 重なっているかどうか
+ */
+export function isOverlapping(selfPart: PartModel, part: PartModel) {
+  return (
+    selfPart.position.x < part.position.x + part.width &&
+    selfPart.position.x + selfPart.width > part.position.x &&
+    selfPart.position.y < part.position.y + part.height &&
+    selfPart.position.y + selfPart.height > part.position.y
+  );
+}
+
+/**
+ * 自分の上にあるパーツを取得する
+ * @param partId - パーツID
+ * @param sortedParts - ソート済みのパーツ(order: 昇順)
+ * @returns 自分の上にあるパーツ
+ */
+export async function getOverLappingPart(
+  partId: number,
+  sortedParts: PartModel[]
+) {
+  const selfPart = sortedParts.find((part) => part.id === partId);
+  if (!selfPart) return;
+
+  return sortedParts.find(
+    (part) => part.order > selfPart.order && isOverlapping(selfPart, part)
+  );
+}
+
+/**
+ * 自分の下にあるパーツを取得する
+ * @param partId - パーツID
+ * @param sortedParts - ソート済みのパーツ(order: 昇順)
+ * @returns 自分の下にあるパーツ
+ */
+export async function getUnderLappingPart(
+  partId: number,
+  sortedParts: PartModel[]
+) {
+  const selfPart = sortedParts.find((part) => part.id === partId);
+  if (!selfPart) return;
+
+  return sortedParts.find(
+    (part) => part.order < selfPart.order && isOverlapping(selfPart, part)
+  );
+}
+
 // /**
 //  * デッキをシャッフルする
 //  * @param cards - シャッフルするパーツ

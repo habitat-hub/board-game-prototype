@@ -109,6 +109,18 @@ export default function Canvas({
   );
 
   /**
+   * パーツの順番を変更
+   * @param partId - パーツID
+   * @param type - 移動方向
+   */
+  const handleChangeOrder = useCallback(
+    (partId: number, type: string) => {
+      socket.emit('CHANGE_ORDER', { prototypeVersionId, partId, type });
+    },
+    [prototypeVersionId, socket]
+  );
+
+  /**
    * マウスダウンイベントのハンドラー
    * @param e - マウスイベント
    * @param partId - パーツID（パーツからの呼び出し時のみ）
@@ -324,6 +336,9 @@ export default function Canvas({
                       part={part}
                       onMouseDown={(e) => handleMouseDown(e, part.id)}
                       socket={socket}
+                      onMoveOrder={({ partId, type }) => {
+                        handleChangeOrder(partId, type);
+                      }}
                     />
                   );
                 })}

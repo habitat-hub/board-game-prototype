@@ -24,7 +24,6 @@ export const UPDATABLE_PROTOTYPE_FIELDS = {
     'position',
     'width',
     'height',
-    'order',
     'isReversible',
     'isFlipped',
     'ownerId',
@@ -32,3 +31,10 @@ export const UPDATABLE_PROTOTYPE_FIELDS = {
     'canReverseCardOnDeck',
   ],
 };
+
+export enum MoveOrderType {
+  BACK = 'back',
+  FRONT = 'front',
+  BACKMOST = 'backmost',
+  FRONTMOST = 'frontmost',
+}

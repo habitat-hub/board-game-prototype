@@ -11,7 +11,7 @@ import { getAccessiblePrototypes } from '../helpers/prototypeHelper';
 import { createPrototype } from '../factories/prototypeFactory';
 import { PROTOTYPE_TYPE, UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import sequelize from '../models';
-import { getAccessibleUsers } from '../helpers/useHelper';
+import { getAccessibleUsers } from '../helpers/userHelper';
 import PrototypeVersionModel from '../models/PrototypeVersion';
 import AccessModel from '../models/Access';
 import { Op } from 'sequelize';
