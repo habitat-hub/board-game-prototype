@@ -1,0 +1,12 @@
+# ブランチ命名規則の設定
+branch_name_rules:
+  patterns:
+    - pattern: "^feature/.+"
+      description: "機能追加用のブランチ"
+      example: "feature/add-google-login"
+    - pattern: "^fix/.+"
+      description: "バグ修正用のブランチ"
+      example: "fix/auth-session-error"
+    - pattern: "^refactor/.+"
+      description: "リファクタリング用のブランチ"
+      example: "refactor/clean-prototype-controller"

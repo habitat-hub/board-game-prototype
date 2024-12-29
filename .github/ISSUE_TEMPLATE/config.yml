@@ -4,6 +4,12 @@ contact_links:
     url: https://github.com/habitat-lab/board-game-prototype/discussions
     about: バグ報告や機能リクエスト以外の質問・相談はDiscussionsをご利用ください。
 
+# ブランチ作成時のテンプレート
+branch_template:
+  feature: "feature/{description}"
+  fix: "fix/{description}"
+  refactor: "refactor/{description}"
+
 # テフォルトテンプレート
 default_template: "feature_request.yml"
 
