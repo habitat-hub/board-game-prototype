@@ -46,6 +46,15 @@ if (process.env.NODE_ENV === 'development') {
       info: {
         title: 'Board Game Prototype API',
         version: '1.0.0',
+        description: `
+## 概要
+このAPIは、ボードゲームプロトタイプの作成と管理を行うためのものです。
+
+## 認証
+- すべてのAPIエンドポイントは認証が必要です
+- アプリケーションを起動し、Google OAuth2.0を使用した認証を行なってください（Swagger UIでは認証ができません）
+- 認証後、Cookieにセッション情報が保存されます
+`,
       },
       ...swaggerSchemas,
     },

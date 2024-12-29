@@ -2,7 +2,8 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Board Game Prototype API",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "description": "\n## 概要\nこのAPIは、ボードゲームプロトタイプの作成と管理を行うためのものです。\n\n## 認証\n- すべてのAPIエンドポイントは認証が必要です\n- アプリケーションを起動し、Google OAuth2.0を使用した認証を行なってください（Swagger UIでは認証ができません）\n- 認証後、Cookieにセッション情報が保存されます\n"
   },
   "components": {
     "schemas": {
@@ -1026,7 +1027,7 @@
         }
       }
     },
-    "/user/search": {
+    "/api/users/search": {
       "get": {
         "summary": "ユーザー検索",
         "description": "ユーザー名でユーザーを検索します。",

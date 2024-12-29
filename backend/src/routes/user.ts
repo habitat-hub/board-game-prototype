@@ -10,7 +10,7 @@ router.use(ensureAuthenticated);
 
 /**
  * @swagger
- * /user/search:
+ * /api/users/search:
  *   get:
  *     summary: ユーザー検索
  *     description: ユーザー名でユーザーを検索します。
