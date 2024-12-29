@@ -10,6 +10,9 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import fs from 'fs';
 import pgSession from 'connect-pg-simple';
+import { swaggerSchemas } from './swagger-schemas';
+import { execSync } from 'child_process';
+import path from 'path';
 
 dotenv.config();
 
@@ -26,15 +29,36 @@ const PORT = 8080;
 
 // 開発環境でのみSwagger UIを有効にする
 if (process.env.NODE_ENV === 'development') {
+  // Swagger定義を生成
+  try {
+    console.log('Generating Swagger schemas...');
+    execSync('npm run generate-swagger', {
+      stdio: 'inherit',
+      cwd: path.join(__dirname, '..'),
+    });
+  } catch (error) {
+    console.error('Failed to generate Swagger schemas:', error);
+  }
+
   const options = {
     definition: {
       openapi: '3.0.0',
       info: {
         title: 'Board Game Prototype API',
         version: '1.0.0',
+        description: `
+## 概要
+このAPIは、ボードゲームプロトタイプの作成と管理を行うためのものです。
+
+## 認証
+- すべてのAPIエンドポイントは認証が必要です
+- アプリケーションを起動し、Google OAuth2.0を使用した認証を行なってください（Swagger UIでは認証ができません）
+- 認証後、Cookieにセッション情報が保存されます
+`,
       },
+      ...swaggerSchemas,
     },
-    apis: ['./src/routes/*.ts'], // JSDocコメントを含むファイルのパス
+    apis: ['./src/routes/*.ts'],
   };
   const swaggerSpec = swaggerJsdoc(options);
   fs.writeFileSync(

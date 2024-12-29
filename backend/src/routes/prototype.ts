@@ -39,7 +39,7 @@ router.use(ensureAuthenticated);
  *             schema:
  *               type: array
  *               items:
- *                 type: PrototypeModel
+ *                 $ref: '#/components/schemas/Prototype'
  */
 router.get('/', async (req: Request, res: Response) => {
   const user = req.user as UserModel;
@@ -70,13 +70,19 @@ router.get('/', async (req: Request, res: Response) => {
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 type: PrototypeModel
+ *               $ref: '#/components/schemas/Prototype'
  *       '400':
  *         description: リクエストが不正です
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error400Response'
  *       '500':
  *         description: サーバーエラー
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
  */
 router.post('/', async (req: Request, res: Response) => {
   const user = req.user as UserModel;
@@ -125,16 +131,20 @@ router.post('/', async (req: Request, res: Response) => {
  *         required: true
  *         description: プロトタイプのID
  *         schema:
- *           type: integer
+ *           type: string
  *     responses:
  *       '200':
  *         description: プロトタイプの詳細を返します
  *         content:
  *           application/json:
  *             schema:
- *               type: PrototypeModel
+ *               $ref: '#/components/schemas/Prototype'
  *       '404':
  *         description: プロトタイプが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
  */
 router.get(
   '/:prototypeId',
@@ -163,16 +173,20 @@ router.get(
  *         required: true
  *         description: プロトタイプのID
  *         schema:
- *           type: integer
+ *           type: string
  *     responses:
  *       '200':
  *         description: プロトタイプを更新しました
  *         content:
  *           application/json:
  *             schema:
- *               type: PrototypeModel
+ *               $ref: '#/components/schemas/Prototype'
  *       '404':
  *         description: プロトタイプが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
  */
 router.put(
   '/:prototypeId',
@@ -212,16 +226,20 @@ router.put(
  *         required: true
  *         description: プロトタイプのID
  *         schema:
- *           type: integer
+ *           type: string
  *     responses:
  *       '200':
  *         description: プロトタイプを削除しました
  *         content:
  *           application/json:
  *             schema:
- *               type: PrototypeModel
+ *               $ref: '#/components/schemas/SuccessResponse'
  *       '404':
  *         description: プロトタイプが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
  */
 router.delete(
   '/:prototypeId',
@@ -236,7 +254,7 @@ router.delete(
 
     await PrototypeModel.destroy({ where: { id: prototypeId } });
 
-    res.json(prototype);
+    res.json({ message: 'プロトタイプを削除しました' });
   }
 );
 
@@ -262,13 +280,17 @@ router.delete(
  *               type: object
  *               properties:
  *                 prototype:
- *                   type: PrototypeModel
+ *                   $ref: '#/components/schemas/Prototype'
  *                 versions:
  *                   type: array
  *                   items:
- *                     type: PrototypeVersionModel
+ *                     $ref: '#/components/schemas/PrototypeVersion'
  *       '404':
  *         description: プロトタイプが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
  */
 router.get('/:prototypeId/versions', checkPrototypeAccess, async (req, res) => {
   const prototypeId = req.params.prototypeId;
@@ -307,7 +329,7 @@ router.get('/:prototypeId/versions', checkPrototypeAccess, async (req, res) => {
  *             schema:
  *               type: array
  *               items:
- *                 type: PrototypeModel
+ *                 $ref: '#/components/schemas/Prototype'
  */
 router.get('/groups/:groupId', checkGroupAccess, async (req, res) => {
   const groupId = req.params.groupId;
@@ -348,7 +370,7 @@ router.get('/groups/:groupId', checkGroupAccess, async (req, res) => {
  *             schema:
  *               type: array
  *               items:
- *                 type: UserModel
+ *                 $ref: '#/components/schemas/User'
  */
 router.get(
   '/groups/:groupId/accessUsers',
@@ -386,12 +408,28 @@ router.get(
  *     responses:
  *       '200':
  *         description: ユーザーを招待しました
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
  *       '400':
  *         description: リクエストが不正です
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error400Response'
  *       '404':
  *         description: グループが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
  *       '500':
  *         description: サーバーエラー
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
  */
 router.post('/groups/:groupId/invite', checkGroupAccess, async (req, res) => {
   const groupId = req.params.groupId;
@@ -452,12 +490,28 @@ router.post('/groups/:groupId/invite', checkGroupAccess, async (req, res) => {
  *     responses:
  *       '200':
  *         description: ユーザーのアクセス権を削除しました
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
  *       '400':
  *         description: リクエストが不正です
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error400Response'
  *       '404':
  *         description: グループが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
  *       '500':
  *         description: サーバーエラー
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
  */
 router.delete(
   '/groups/:groupId/invite/:guestId',
@@ -518,13 +572,19 @@ router.delete(
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 type: PrototypeModel
+ *               $ref: '#/components/schemas/Prototype'
  *       '404':
  *         description: プロトタイプが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
  *       '500':
  *         description: サーバーエラー
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
  */
 router.post(
   '/:prototypeId/preview',
@@ -601,12 +661,28 @@ router.post(
  *     responses:
  *       '200':
  *         description: 新しいバージョンを作成しました
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
  *       '400':
  *         description: リクエストが不正です
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error400Response'
  *       '404':
  *         description: バージョンが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
  *       '500':
  *         description: サーバーエラー
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
  */
 router.post(
   '/:prototypeId/versions/:prototypeVersionId',
