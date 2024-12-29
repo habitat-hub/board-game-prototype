@@ -15,11 +15,20 @@ class PartModel extends Model {
   public height!: number;
   public order!: number;
   public configurableTypeAsChild!: string[];
+  public originalPartId: number | undefined;
+  /**
+   * カード
+   */
   public isReversible: boolean | undefined;
   public isFlipped: boolean | undefined;
+  /**
+   * 手札
+   */
   public ownerId: number | undefined;
+  /**
+   * 山札
+   */
   public canReverseCardOnDeck: boolean | undefined;
-  public originalPartId: number | undefined;
 }
 
 PartModel.init(
@@ -73,6 +82,10 @@ PartModel.init(
       type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: false,
     },
+    originalPartId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
     isReversible: {
       type: DataTypes.BOOLEAN,
       allowNull: true,
@@ -87,10 +100,6 @@ PartModel.init(
     },
     canReverseCardOnDeck: {
       type: DataTypes.BOOLEAN,
-      allowNull: true,
-    },
-    originalPartId: {
-      type: DataTypes.INTEGER,
       allowNull: true,
     },
   },

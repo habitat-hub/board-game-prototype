@@ -1,10 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 import sequelizeErd from 'sequelize-erd';
-import sequelize from './models'; // Sequelizeインスタンスをインポート
+import sequelize from '../models'; // Sequelizeインスタンスをインポート
 import { writeFileSync } from 'fs';
 
-const modelsDir = path.join(__dirname, 'models');
+const modelsDir = path.join(__dirname, '../models');
 
 (async function () {
   fs.readdirSync(modelsDir)
@@ -12,6 +12,7 @@ const modelsDir = path.join(__dirname, 'models');
       return file.endsWith('.ts') && file !== 'index.ts';
     })
     .forEach((file) => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const modelModule = require(path.join(modelsDir, file));
       const model = modelModule.default;
       if (model && typeof model.initModel === 'function') {

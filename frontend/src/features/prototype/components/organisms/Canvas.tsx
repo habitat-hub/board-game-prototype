@@ -5,28 +5,25 @@ import { Socket } from 'socket.io-client';
 import { AiOutlineTool } from 'react-icons/ai';
 
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
-import {
-  AllPart,
-  Camera,
-  CanvasMode,
-  CanvasState,
-  Deck,
-  Player,
-} from '@/features/prototype/type';
+import { Camera, CanvasMode, CanvasState } from '@/features/prototype/type';
 import { needsParentUpdate } from '@/features/prototype/helpers/partHelper';
-
-import Sidebars from '../molecules/Sidebars';
-import RandomNumberTool from '../atoms/RandomNumberTool';
-import Part from '../atoms/Part';
-import { PartHandle } from '../atoms/Part';
-import { PART_TYPE, PROTOTYPE_TYPE, VERSION_NUMBER } from '../../const';
+import Sidebars from '@/features/prototype/components/molecules/Sidebars';
+import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumberTool';
+import Part from '@/features/prototype/components/atoms/Part';
+import { PartHandle } from '@/features/prototype/components/atoms/Part';
+import {
+  PART_TYPE,
+  PROTOTYPE_TYPE,
+  VERSION_NUMBER,
+} from '@/features/prototype/const';
+import { Part as PartType, Player } from '@/types/models';
 
 interface CanvasProps {
   prototypeName: string;
   prototypeVersionId: string;
   prototypeVersionNumber?: string;
   groupId: number;
-  parts: AllPart[];
+  parts: PartType[];
   players: Player[];
   socket: Socket;
   prototypeType: typeof PROTOTYPE_TYPE.EDIT | typeof PROTOTYPE_TYPE.PREVIEW;
@@ -48,7 +45,7 @@ export default function Canvas({
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, zoom: 1 });
   const [leftIsMinimized, setLeftIsMinimized] = useState(false);
   const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
-  const [selectedPart, setSelectedPart] = useState<AllPart | null>(null);
+  const [selectedPart, setSelectedPart] = useState<PartType | null>(null);
   const [draggingPartId, setDraggingPartId] = useState<number | null>(null);
   const [offset, setOffset] = useState<{ x: number; y: number }>({
     x: 0,
@@ -90,7 +87,7 @@ export default function Canvas({
    * @param part - 追加するパーツ
    */
   const handleAddPart = useCallback(
-    (part: Omit<AllPart, 'id' | 'prototypeVersionId' | 'order'>) => {
+    (part: Omit<PartType, 'id' | 'prototypeVersionId' | 'order'>) => {
       socket.emit('ADD_PART', { prototypeVersionId, part });
 
       setSelectedPart(null);
@@ -103,7 +100,7 @@ export default function Canvas({
    * @param part - 更新するパーツ
    */
   const handleUpdatePart = useCallback(
-    (partId: number, updatePart: Partial<AllPart>, isFlipped?: boolean) => {
+    (partId: number, updatePart: Partial<PartType>, isFlipped?: boolean) => {
       socket.emit('UPDATE_PART', { prototypeVersionId, partId, updatePart });
 
       if ('isReversible' in updatePart && isFlipped) {
@@ -139,15 +136,17 @@ export default function Canvas({
 
     if (partId !== undefined) {
       // パーツのドラッグ開始
-      const part = parts.find((part) => part.id === partId) as AllPart;
+      const part = parts.find((part) => part.id === partId) as PartType;
       const rect = mainViewRef.current?.getBoundingClientRect();
       if (!rect) return;
 
       setSelectedPart(part);
       setDraggingPartId(partId);
 
-      const x = (e.clientX - rect.left) / camera.zoom - part.position.x;
-      const y = (e.clientY - rect.top) / camera.zoom - part.position.y;
+      const x =
+        (e.clientX - rect.left) / camera.zoom - (part.position.x as number);
+      const y =
+        (e.clientY - rect.top) / camera.zoom - (part.position.y as number);
       setOffset({ x, y });
     } else if (e.target === e.currentTarget || e.target instanceof SVGElement) {
       // キャンバスの移動開始
@@ -229,12 +228,12 @@ export default function Canvas({
     const previousParentPart = parts.find((p) => p.id === part.parentId);
     const isPreviousParentReverseRequired =
       !!(previousParentPart?.type === PART_TYPE.DECK) &&
-      !!(previousParentPart as Deck).canReverseCardOnDeck;
+      !!previousParentPart.canReverseCardOnDeck;
 
     // 新しい親は裏向き必須か
     const isNextParentReverseRequired =
       !!(parentPart?.type === PART_TYPE.DECK) &&
-      !!(parentPart as Deck).canReverseCardOnDeck;
+      !!parentPart.canReverseCardOnDeck;
 
     if (isPreviousParentReverseRequired !== isNextParentReverseRequired) {
       socket.emit('FLIP_CARD', {

@@ -20,8 +20,8 @@ import {
 import NumberInput from '@/components/atoms/NumberInput';
 import TextInput from '@/components/atoms/TextInput';
 import Dropdown from '@/components/atoms/Dropdown';
-import { AllPart, Card, Hand, Player } from '@/features/prototype/type';
 import TextIconButton from '@/components/atoms/TextIconButton';
+import { Part, Player } from '@/types/models';
 
 export default function Sidebars({
   prototypeName,
@@ -43,12 +43,12 @@ export default function Sidebars({
   setLeftIsMinimized: (value: boolean) => void;
   groupId: number;
   players: Player[];
-  selectedPart: AllPart | null;
-  onAddPart: (part: AllPart) => void;
+  selectedPart: Part | null;
+  onAddPart: (part: Part) => void;
   onDeletePart: () => void;
   updatePart: (
     partId: number,
-    updatePart: Partial<AllPart>,
+    updatePart: Partial<Part>,
     isFlipped?: boolean
   ) => void;
   mainViewRef: React.RefObject<HTMLDivElement>;
@@ -78,9 +78,12 @@ export default function Sidebars({
         return;
       }
 
-      const newPart: Omit<AllPart, 'id' | 'prototypeVersionId' | 'order'> = {
+      const newPart: Omit<
+        Part,
+        'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'
+      > = {
         type: partId,
-        parentId: null,
+        parentId: undefined,
         name: partConfig.name,
         description: partConfig.description,
         color: partConfig.color,
@@ -88,49 +91,52 @@ export default function Sidebars({
         width: partConfig.width,
         height: partConfig.height,
         configurableTypeAsChild: partConfig.configurableTypeAsChild,
-        originalPartId: null,
+        originalPartId: undefined,
       };
       if (partId === PART_TYPE.CARD) {
-        (newPart as Card).isReversible = (
+        newPart.isReversible = (
           partConfig as typeof PART_DEFAULT_CONFIG.CARD
         ).isReversible;
-        (newPart as Card).isFlipped = false;
+        newPart.isFlipped = false;
       }
       if (partId === PART_TYPE.HAND) {
-        (newPart as Hand).ownerId = players[0].id;
+        newPart.ownerId = players[0].id;
       }
 
-      onAddPart(newPart as AllPart);
+      onAddPart(newPart as Part);
     }
   };
 
   const handleCopyPart = () => {
     if (!selectedPart) return;
 
-    const newPart: Omit<AllPart, 'id' | 'prototypeVersionId' | 'order'> = {
+    const newPart: Omit<
+      Part,
+      'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'
+    > = {
       type: selectedPart.type,
       parentId: selectedPart.parentId,
       name: selectedPart.name,
       description: selectedPart.description,
       color: selectedPart.color,
       position: {
-        x: selectedPart.position.x + 10,
-        y: selectedPart.position.y + 10,
+        x: (selectedPart.position.x as number) + 10,
+        y: (selectedPart.position.y as number) + 10,
       },
       width: selectedPart.width,
       height: selectedPart.height,
       configurableTypeAsChild: selectedPart.configurableTypeAsChild,
-      originalPartId: null,
+      originalPartId: undefined,
     };
     if (selectedPart.type === PART_TYPE.CARD) {
-      (newPart as Card).isReversible = (selectedPart as Card).isReversible;
-      (newPart as Card).isFlipped = (selectedPart as Card).isFlipped;
+      newPart.isReversible = selectedPart.isReversible;
+      newPart.isFlipped = selectedPart.isFlipped;
     }
     if (selectedPart.type === PART_TYPE.HAND) {
-      (newPart as Hand).ownerId = (selectedPart as Hand).ownerId;
+      newPart.ownerId = selectedPart.ownerId;
     }
 
-    onAddPart(newPart as AllPart);
+    onAddPart(newPart as Part);
   };
 
   return (
@@ -264,7 +270,7 @@ export default function Sidebars({
               <p className="text-[9px] font-medium text-gray-500">位置</p>
               <div className="flex w-full gap-2 mb-2">
                 <NumberInput
-                  value={selectedPart.position.x}
+                  value={selectedPart.position.x as number}
                   onChange={(number) => {
                     updatePart(selectedPart.id, {
                       position: { ...selectedPart.position, x: number },
@@ -274,7 +280,7 @@ export default function Sidebars({
                   icon={<p>X</p>}
                 />
                 <NumberInput
-                  value={selectedPart.position.y}
+                  value={selectedPart.position.y as number}
                   onChange={(number) => {
                     updatePart(selectedPart.id, {
                       position: { ...selectedPart.position, y: number },
