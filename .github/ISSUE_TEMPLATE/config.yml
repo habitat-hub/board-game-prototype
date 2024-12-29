@@ -1,19 +1,10 @@
 blank_issues_enabled: false
 contact_links:
   - name: 質問・相談
-    url: https://github.com/habitat-lab/board-game-prototype/discussions
+    url: https://github.com/habitat-hub/board-game-prototype/discussions
     about: バグ報告や機能リクエスト以外の質問・相談はDiscussionsをご利用ください。
 
-# ブランチ作成時のテンプレート
-branch_template:
-  feature: "feature/{description}"
-  fix: "fix/{description}"
-  refactor: "refactor/{description}"
-
-# テフォルトテンプレート
-default_template: "feature_request.yml"
-
-# テンプレートの並び順や表示設定
+# Issue作成時のテンプレート設定
 defaults:
   - template: "bug_report.yml"
     name: "🐛 バグ報告"
