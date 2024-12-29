@@ -27,7 +27,9 @@ router.use(ensureAuthenticated);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/User'
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
  */
 router.get('/search', async (req: Request, res: Response) => {
   const { username } = req.query;
