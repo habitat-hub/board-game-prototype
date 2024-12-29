@@ -12,6 +12,8 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
+      localStorage.removeItem('user');
+
       // 401 エラーの場合はトップページにリダイレクト
       window.location.replace('/');
     }
