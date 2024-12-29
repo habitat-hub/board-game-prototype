@@ -27,8 +27,16 @@ router.use(ensureAuthenticated);
 
 /**
  * @swagger
+ * tags:
+ *   name: Prototypes
+ *   description: プロトタイプ管理API
+ */
+
+/**
+ * @swagger
  * /api/prototypes:
  *   get:
+ *     tags: [Prototypes]
  *     summary: プロトタイプ一覧取得
  *     description: ユーザーがアクセス可能なプロトタイプの一覧を取得します。
  *     responses:
@@ -51,6 +59,7 @@ router.get('/', async (req: Request, res: Response) => {
  * @swagger
  * /api/prototypes:
  *   post:
+ *     tags: [Prototypes]
  *     summary: プロトタイプ作成
  *     description: 新しいプロトタイプを作成します。
  *     requestBody:
@@ -123,6 +132,7 @@ router.post('/', async (req: Request, res: Response) => {
  * @swagger
  * /api/prototypes/{prototypeId}:
  *   get:
+ *     tags: [Prototypes]
  *     summary: プロトタイプ取得
  *     description: 指定されたIDのプロトタイプを取得します。
  *     parameters:
@@ -165,6 +175,7 @@ router.get(
  * @swagger
  * /api/prototypes/{prototypeId}:
  *   put:
+ *     tags: [Prototypes]
  *     summary: プロトタイプ更新
  *     description: 指定されたIDのプロトタイプを更新します。
  *     parameters:
@@ -218,6 +229,7 @@ router.put(
  * @swagger
  * /api/prototypes/{prototypeId}:
  *   delete:
+ *     tags: [Prototypes]
  *     summary: プロトタイプ削除
  *     description: 指定されたIDのプロトタイプを削除します。
  *     parameters:
@@ -262,6 +274,7 @@ router.delete(
  * @swagger
  * /api/prototypes/{prototypeId}/versions:
  *   get:
+ *     tags: [Prototypes]
  *     summary: プロトタイプバージョン一覧取得
  *     description: 指定されたプロトタイプのバージョン一覧を取得します。
  *     parameters:
@@ -312,6 +325,7 @@ router.get('/:prototypeId/versions', checkPrototypeAccess, async (req, res) => {
  * @swagger
  * /api/prototypes/groups/{groupId}:
  *   get:
+ *     tags: [Prototypes]
  *     summary: グループのプロトタイプ一覧取得
  *     description: 指定されたグループに属するプロトタイプの一覧を取得します。
  *     parameters:
@@ -353,6 +367,7 @@ router.get('/groups/:groupId', checkGroupAccess, async (req, res) => {
  * @swagger
  * /api/prototypes/groups/{groupId}/accessUsers:
  *   get:
+ *     tags: [Prototypes]
  *     summary: グループへのアクセス権を取得
  *     description: 指定されたグループにアクセス可能なユーザーを取得します。
  *     parameters:
@@ -385,6 +400,7 @@ router.get(
  * @swagger
  * /api/prototypes/groups/{groupId}/invite:
  *   post:
+ *     tags: [Prototypes]
  *     summary: ユーザーにプロトタイプへのアクセス権を付与
  *     description: 指定されたグループにユーザーを招待します。
  *     parameters:
@@ -472,6 +488,7 @@ router.post('/groups/:groupId/invite', checkGroupAccess, async (req, res) => {
  * @swagger
  * /api/prototypes/groups/{groupId}/invite/{guestId}:
  *   delete:
+ *     tags: [Prototypes]
  *     summary: ユーザーのアクセス権を削除
  *     description: 指定されたグループからユーザーのアクセス権を削除します。
  *     parameters:
@@ -557,6 +574,7 @@ router.delete(
  * @swagger
  * /api/prototypes/{prototypeId}/preview:
  *   post:
+ *     tags: [Prototypes]
  *     summary: プレビュー版作成
  *     description: 指定されたプロトタイプのプレビュー版を作成します。
  *     parameters:
@@ -632,6 +650,7 @@ router.post(
  * @swagger
  * /api/prototypes/{prototypeId}/versions/{prototypeVersionId}:
  *   post:
+ *     tags: [Prototypes]
  *     summary: バージョン作成
  *     description: 指定されたプロトタイプのバージョンを作成します。
  *     parameters:

@@ -3,7 +3,7 @@
   "info": {
     "title": "Board Game Prototype API",
     "version": "1.0.0",
-    "description": "\n## 概要\nこのAPIは、ボードゲームプロトタイプの作成と管理を行うためのものです。\n\n## 認証\n- すべてのAPIエンドポイントは認証が必要です\n- アプリケーションを起動し、Google OAuth2.0を使用した認証を行なってください（Swagger UIでは認証ができません）\n- 認証後、Cookieにセッション情報が保存されます\n"
+    "description": "\n## 概要\nこのAPIは、ボードゲームプロトタイプの作成と管理を行うためのものです。\n\n## 認証\n- 基本的にAPIエンドポイントは認証が必要です\n- アプリケーションを起動し、Google OAuth2.0を使用した認証を行なってください（Swagger UIでは認証ができません）\n- 認証後、Cookieにセッション情報が保存されます\n"
   },
   "components": {
     "schemas": {
@@ -361,6 +361,9 @@
   "paths": {
     "/auth/google": {
       "get": {
+        "tags": [
+          "Auth"
+        ],
         "summary": "Googleログイン",
         "description": "Googleアカウントを使用してログインします。",
         "responses": {
@@ -381,6 +384,9 @@
     },
     "/auth/google/callback": {
       "get": {
+        "tags": [
+          "Auth"
+        ],
         "summary": "Googleログインコールバック",
         "description": "GoogleログインのコールバックURL。",
         "responses": {
@@ -401,6 +407,9 @@
     },
     "/auth/logout": {
       "post": {
+        "tags": [
+          "Auth"
+        ],
         "summary": "ログアウト",
         "description": "現在のセッションを終了し、ユーザーをログアウトします。",
         "responses": {
@@ -429,6 +438,9 @@
     },
     "/auth/user": {
       "get": {
+        "tags": [
+          "Auth"
+        ],
         "summary": "ユーザー情報取得",
         "description": "現在ログインしているユーザーの情報を取得します。",
         "responses": {
@@ -447,6 +459,9 @@
     },
     "/api/prototypes": {
       "get": {
+        "tags": [
+          "Prototypes"
+        ],
         "summary": "プロトタイプ一覧取得",
         "description": "ユーザーがアクセス可能なプロトタイプの一覧を取得します。",
         "responses": {
@@ -466,6 +481,9 @@
         }
       },
       "post": {
+        "tags": [
+          "Prototypes"
+        ],
         "summary": "プロトタイプ作成",
         "description": "新しいプロトタイプを作成します。",
         "requestBody": {
@@ -522,6 +540,9 @@
     },
     "/api/prototypes/{prototypeId}": {
       "get": {
+        "tags": [
+          "Prototypes"
+        ],
         "summary": "プロトタイプ取得",
         "description": "指定されたIDのプロトタイプを取得します。",
         "parameters": [
@@ -559,6 +580,9 @@
         }
       },
       "put": {
+        "tags": [
+          "Prototypes"
+        ],
         "summary": "プロトタイプ更新",
         "description": "指定されたIDのプロトタイプを更新します。",
         "parameters": [
@@ -596,6 +620,9 @@
         }
       },
       "delete": {
+        "tags": [
+          "Prototypes"
+        ],
         "summary": "プロトタイプ削除",
         "description": "指定されたIDのプロトタイプを削除します。",
         "parameters": [
@@ -635,6 +662,9 @@
     },
     "/api/prototypes/{prototypeId}/versions": {
       "get": {
+        "tags": [
+          "Prototypes"
+        ],
         "summary": "プロトタイプバージョン一覧取得",
         "description": "指定されたプロトタイプのバージョン一覧を取得します。",
         "parameters": [
@@ -685,6 +715,9 @@
     },
     "/api/prototypes/groups/{groupId}": {
       "get": {
+        "tags": [
+          "Prototypes"
+        ],
         "summary": "グループのプロトタイプ一覧取得",
         "description": "指定されたグループに属するプロトタイプの一覧を取得します。",
         "parameters": [
@@ -717,6 +750,9 @@
     },
     "/api/prototypes/groups/{groupId}/accessUsers": {
       "get": {
+        "tags": [
+          "Prototypes"
+        ],
         "summary": "グループへのアクセス権を取得",
         "description": "指定されたグループにアクセス可能なユーザーを取得します。",
         "parameters": [
@@ -749,6 +785,9 @@
     },
     "/api/prototypes/groups/{groupId}/invite": {
       "post": {
+        "tags": [
+          "Prototypes"
+        ],
         "summary": "ユーザーにプロトタイプへのアクセス権を付与",
         "description": "指定されたグループにユーザーを招待します。",
         "parameters": [
@@ -826,6 +865,9 @@
     },
     "/api/prototypes/groups/{groupId}/invite/{guestId}": {
       "delete": {
+        "tags": [
+          "Prototypes"
+        ],
         "summary": "ユーザーのアクセス権を削除",
         "description": "指定されたグループからユーザーのアクセス権を削除します。",
         "parameters": [
@@ -894,6 +936,9 @@
     },
     "/api/prototypes/{prototypeId}/preview": {
       "post": {
+        "tags": [
+          "Prototypes"
+        ],
         "summary": "プレビュー版作成",
         "description": "指定されたプロトタイプのプレビュー版を作成します。",
         "parameters": [
@@ -943,6 +988,9 @@
     },
     "/api/prototypes/{prototypeId}/versions/{prototypeVersionId}": {
       "post": {
+        "tags": [
+          "Prototypes"
+        ],
         "summary": "バージョン作成",
         "description": "指定されたプロトタイプのバージョンを作成します。",
         "parameters": [
@@ -1029,6 +1077,9 @@
     },
     "/api/users/search": {
       "get": {
+        "tags": [
+          "Users"
+        ],
         "summary": "ユーザー検索",
         "description": "ユーザー名でユーザーを検索します。",
         "parameters": [
@@ -1060,5 +1111,18 @@
       }
     }
   },
-  "tags": []
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "認証関連のAPI"
+    },
+    {
+      "name": "Prototypes",
+      "description": "プロトタイプ管理API"
+    },
+    {
+      "name": "Users",
+      "description": "ユーザー管理API"
+    }
+  ]
 }

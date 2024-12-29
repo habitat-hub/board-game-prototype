@@ -10,8 +10,16 @@ router.use(ensureAuthenticated);
 
 /**
  * @swagger
+ * tags:
+ *   name: Users
+ *   description: ユーザー管理API
+ */
+
+/**
+ * @swagger
  * /api/users/search:
  *   get:
+ *     tags: [Users]
  *     summary: ユーザー検索
  *     description: ユーザー名でユーザーを検索します。
  *     parameters:

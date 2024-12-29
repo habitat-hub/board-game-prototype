@@ -6,8 +6,16 @@ const router = Router();
 
 /**
  * @swagger
+ * tags:
+ *   name: Auth
+ *   description: 認証関連のAPI
+ */
+
+/**
+ * @swagger
  * /auth/google:
  *   get:
+ *     tags: [Auth]
  *     summary: Googleログイン
  *     description: Googleアカウントを使用してログインします。
  *     responses:
@@ -31,6 +39,7 @@ router.get(
  * @swagger
  * /auth/google/callback:
  *   get:
+ *     tags: [Auth]
  *     summary: Googleログインコールバック
  *     description: GoogleログインのコールバックURL。
  *     responses:
@@ -57,6 +66,7 @@ router.get(
  * @swagger
  * /auth/logout:
  *   post:
+ *     tags: [Auth]
  *     summary: ログアウト
  *     description: 現在のセッションを終了し、ユーザーをログアウトします。
  *     responses:
@@ -94,6 +104,7 @@ router.post('/logout', (req, res) => {
  * @swagger
  * /auth/user:
  *   get:
+ *     tags: [Auth]
  *     summary: ユーザー情報取得
  *     description: 現在ログインしているユーザーの情報を取得します。
  *     responses:
