@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
-import { User } from '@/features/prototype/type';
 import axiosInstance from '@/utils/axiosInstance';
+import { User } from '@/types/models';
 
 const PlayerInvite: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');

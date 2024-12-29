@@ -4,8 +4,9 @@ import { Socket } from 'socket.io-client';
 import { TbCards } from 'react-icons/tb';
 import * as ContextMenu from '@radix-ui/react-context-menu';
 
-import { AllPart, MoveOrderType } from '@/features/prototype/type';
+import { MoveOrderType } from '@/features/prototype/type';
 import { PART_TYPE } from '@/features/prototype/const';
+import { Part as PartType } from '@/types/models';
 
 // 外部から呼び出せる関数のインターフェース
 export interface PartHandle {
@@ -13,7 +14,7 @@ export interface PartHandle {
 }
 
 interface PartProps {
-  part: AllPart;
+  part: PartType;
   onMouseDown: (e: React.MouseEvent, partId: number) => void;
   socket: Socket;
   onMoveOrder: ({ partId, type }: { partId: number; type: string }) => void;
@@ -117,8 +118,8 @@ const Part = forwardRef<PartHandle, PartProps>(
         {/* タイトル */}
         {!isFlipped && (
           <text
-            x={part.position.x + 10}
-            y={part.position.y + 20}
+            x={(part.position.x as number) + 10}
+            y={(part.position.y as number) + 20}
             style={{
               fill: 'black',
               fontSize: '14px',
@@ -131,8 +132,8 @@ const Part = forwardRef<PartHandle, PartProps>(
         {/* 反転可能アイコン */}
         {(part.type === PART_TYPE.CARD || part.type === PART_TYPE.DECK) && (
           <foreignObject
-            x={part.position.x + part.width - 30}
-            y={part.position.y + part.height - 30}
+            x={(part.position.x as number) + part.width - 30}
+            y={(part.position.y as number) + part.height - 30}
             width={20}
             height={20}
           >
@@ -157,8 +158,8 @@ const Part = forwardRef<PartHandle, PartProps>(
 
         {/* コンテキストメニュー */}
         <foreignObject
-          x={part.position.x}
-          y={part.position.y}
+          x={part.position.x as number}
+          y={part.position.y as number}
           width={part.width}
           height={part.height}
         >

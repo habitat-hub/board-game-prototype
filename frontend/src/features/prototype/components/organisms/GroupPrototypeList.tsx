@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { IoAdd, IoArrowBack } from 'react-icons/io5';
 
-import { Prototype, PrototypeVersion } from '@/features/prototype/type';
 import axiosInstance from '@/utils/axiosInstance';
 import { PROTOTYPE_TYPE, VERSION_NUMBER } from '@/features/prototype/const';
+import { Prototype, PrototypeVersion } from '@/types/models';
 
 const GroupPrototypeList: React.FC = () => {
   const router = useRouter();

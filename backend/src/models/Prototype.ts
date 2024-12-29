@@ -2,7 +2,6 @@ import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
 import User from './User';
 import { PROTOTYPE_TYPE } from '../const';
-import PrototypeGroupModel from './PrototypeGroup';
 
 class PrototypeModel extends Model {
   public id!: string;
