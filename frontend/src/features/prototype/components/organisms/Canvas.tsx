@@ -87,7 +87,12 @@ export default function Canvas({
    * @param part - 追加するパーツ
    */
   const handleAddPart = useCallback(
-    (part: Omit<PartType, 'id' | 'prototypeVersionId' | 'order'>) => {
+    (
+      part: Omit<
+        PartType,
+        'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'
+      >
+    ) => {
       socket.emit('ADD_PART', { prototypeVersionId, part });
 
       setSelectedPart(null);

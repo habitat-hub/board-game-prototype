@@ -386,7 +386,7 @@ export default function Sidebars({
                         updatePart(
                           selectedPart.id,
                           {
-                            isReversible: value === 'は���',
+                            isReversible: value === 'はい',
                           },
                           true
                         );
