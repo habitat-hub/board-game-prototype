@@ -64,14 +64,14 @@ router.get(
  *         description: ログアウト成功
  *         content:
  *           application/json:
- *             example:
- *               message: "Logged out successfully"
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
  *       '500':
  *         description: ログアウト失敗
  *         content:
  *           application/json:
- *             example:
- *               error: "Failed to logout"
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
  */
 router.post('/logout', (req, res) => {
   req.logout((err) => {
@@ -102,21 +102,7 @@ router.post('/logout', (req, res) => {
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: integer
- *                 username:
- *                   type: string
- *             examples:
- *               authenticated:
- *                 summary: 認証済みユーザー
- *                 value:
- *                   id: 1
- *                   username: "exampleUser"
- *               unauthenticated:
- *                 summary: 未認証ユーザー
- *                 value: {}
+ *               $ref: '#/components/schemas/User'
  */
 router.get('/user', (req, res) => {
   if (req.isAuthenticated()) {

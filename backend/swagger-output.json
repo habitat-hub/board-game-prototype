@@ -4,6 +4,359 @@
     "title": "Board Game Prototype API",
     "version": "1.0.0"
   },
+  "components": {
+    "schemas": {
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "処理成功時のメッセージ"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "example": {
+          "message": "正常に処理が完了しました"
+        }
+      },
+      "Error400Response": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "エラーメッセージ"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "example": {
+          "error": "リクエストが不正です"
+        }
+      },
+      "Error404Response": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "エラーメッセージ"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "example": {
+          "error": "リソースが見つかりません"
+        }
+      },
+      "Error500Response": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "エラーメッセージ"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "example": {
+          "error": "予期せぬエラーが発生しました"
+        }
+      },
+      "Access": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "prototypeGroupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "prototypeGroupId",
+          "name"
+        ]
+      },
+      "Part": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "type": {
+            "type": "string"
+          },
+          "prototypeVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "parentId": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "position": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "width": {
+            "type": "integer"
+          },
+          "height": {
+            "type": "integer"
+          },
+          "order": {
+            "type": "integer"
+          },
+          "configurableTypeAsChild": {
+            "type": "string"
+          },
+          "originalPartId": {
+            "type": "integer"
+          },
+          "isReversible": {
+            "type": "boolean"
+          },
+          "isFlipped": {
+            "type": "boolean"
+          },
+          "ownerId": {
+            "type": "integer"
+          },
+          "canReverseCardOnDeck": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "prototypeVersionId",
+          "name",
+          "description",
+          "color",
+          "position",
+          "width",
+          "height",
+          "order",
+          "configurableTypeAsChild",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "Player": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "prototypeVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "playerName": {
+            "type": "string"
+          },
+          "originalPlayerId": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "prototypeVersionId",
+          "playerName",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "Prototype": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "EDIT",
+              "PREVIEW"
+            ]
+          },
+          "masterPrototypeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "groupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minPlayers": {
+            "type": "integer"
+          },
+          "maxPlayers": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "name",
+          "type",
+          "groupId",
+          "minPlayers",
+          "maxPlayers",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "PrototypeGroup": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "prototypeId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "id",
+          "prototypeId"
+        ]
+      },
+      "PrototypeVersion": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "prototypeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionNumber": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "prototypeId",
+          "versionNumber",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UserAccess": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "accessId": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "userId",
+          "accessId"
+        ]
+      },
+      "UserPlayer": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "playerId": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "userId",
+          "playerId"
+        ]
+      }
+    }
+  },
   "paths": {
     "/auth/google": {
       "get": {
@@ -54,8 +407,8 @@
             "description": "ログアウト成功",
             "content": {
               "application/json": {
-                "example": {
-                  "message": "Logged out successfully"
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
                 }
               }
             }
@@ -64,8 +417,8 @@
             "description": "ログアウト失敗",
             "content": {
               "application/json": {
-                "example": {
-                  "error": "Failed to logout"
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
                 }
               }
             }
@@ -83,28 +436,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer"
-                    },
-                    "username": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "examples": {
-                  "authenticated": {
-                    "summary": "認証済みユーザー",
-                    "value": {
-                      "id": 1,
-                      "username": "exampleUser"
-                    }
-                  },
-                  "unauthenticated": {
-                    "summary": "未認証ユーザー",
-                    "value": {}
-                  }
+                  "$ref": "#/components/schemas/User"
                 }
               }
             }
@@ -124,7 +456,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "PrototypeModel"
+                    "$ref": "#/components/schemas/Prototype"
                   }
                 }
               }
@@ -159,19 +491,30 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "type": "PrototypeModel"
-                  }
+                  "$ref": "#/components/schemas/Prototype"
                 }
               }
             }
           },
           "400": {
-            "description": "リクエストが不正です"
+            "description": "リクエストが不正です",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
           },
           "500": {
-            "description": "サーバーエラー"
+            "description": "サーバーエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
           }
         }
       }
@@ -187,7 +530,7 @@
             "required": true,
             "description": "プロトタイプのID",
             "schema": {
-              "type": "integer"
+              "type": "string"
             }
           }
         ],
@@ -197,13 +540,20 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "PrototypeModel"
+                  "$ref": "#/components/schemas/Prototype"
                 }
               }
             }
           },
           "404": {
-            "description": "プロトタイプが見つかりません"
+            "description": "プロトタイプが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
           }
         }
       },
@@ -217,7 +567,7 @@
             "required": true,
             "description": "プロトタイプのID",
             "schema": {
-              "type": "integer"
+              "type": "string"
             }
           }
         ],
@@ -227,13 +577,20 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "PrototypeModel"
+                  "$ref": "#/components/schemas/Prototype"
                 }
               }
             }
           },
           "404": {
-            "description": "プロトタイプが見つかりません"
+            "description": "プロトタイプが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
           }
         }
       },
@@ -247,7 +604,7 @@
             "required": true,
             "description": "プロトタイプのID",
             "schema": {
-              "type": "integer"
+              "type": "string"
             }
           }
         ],
@@ -257,13 +614,20 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "PrototypeModel"
+                  "$ref": "#/components/schemas/SuccessResponse"
                 }
               }
             }
           },
           "404": {
-            "description": "プロトタイプが見つかりません"
+            "description": "プロトタイプが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
           }
         }
       }
@@ -292,12 +656,12 @@
                   "type": "object",
                   "properties": {
                     "prototype": {
-                      "type": "PrototypeModel"
+                      "$ref": "#/components/schemas/Prototype"
                     },
                     "versions": {
                       "type": "array",
                       "items": {
-                        "type": "PrototypeVersionModel"
+                        "$ref": "#/components/schemas/PrototypeVersion"
                       }
                     }
                   }
@@ -306,7 +670,14 @@
             }
           },
           "404": {
-            "description": "プロトタイプが見つかりません"
+            "description": "プロトタイプが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
           }
         }
       }
@@ -334,7 +705,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "PrototypeModel"
+                    "$ref": "#/components/schemas/Prototype"
                   }
                 }
               }
@@ -366,7 +737,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "UserModel"
+                    "$ref": "#/components/schemas/User"
                   }
                 }
               }
@@ -410,16 +781,44 @@
         },
         "responses": {
           "200": {
-            "description": "ユーザーを招待しました"
+            "description": "ユーザーを招待しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
           },
           "400": {
-            "description": "リクエストが不正です"
+            "description": "リクエストが不正です",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
           },
           "404": {
-            "description": "グループが見つかりません"
+            "description": "グループが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
           },
           "500": {
-            "description": "サーバーエラー"
+            "description": "サーバーエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
           }
         }
       }
@@ -450,16 +849,44 @@
         ],
         "responses": {
           "200": {
-            "description": "ユーザーのアクセス権を削除しました"
+            "description": "ユーザーのアクセス権を削除しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
           },
           "400": {
-            "description": "リクエストが不正です"
+            "description": "リクエストが不正です",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
           },
           "404": {
-            "description": "グループが見つかりません"
+            "description": "グループが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
           },
           "500": {
-            "description": "サーバーエラー"
+            "description": "サーバーエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
           }
         }
       }
@@ -485,19 +912,30 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "type": "PrototypeModel"
-                  }
+                  "$ref": "#/components/schemas/Prototype"
                 }
               }
             }
           },
           "404": {
-            "description": "プロトタイプが見つかりません"
+            "description": "プロトタイプが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
           },
           "500": {
-            "description": "サーバーエラー"
+            "description": "サーバーエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
           }
         }
       }
@@ -546,16 +984,44 @@
         },
         "responses": {
           "200": {
-            "description": "新しいバージョンを作成しました"
+            "description": "新しいバージョンを作成しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
           },
           "400": {
-            "description": "リクエストが不正です"
+            "description": "リクエストが不正です",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
           },
           "404": {
-            "description": "バージョンが見つかりません"
+            "description": "バージョンが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
           },
           "500": {
-            "description": "サーバーエラー"
+            "description": "サーバーエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
           }
         }
       }
@@ -581,29 +1047,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "integer"
-                      },
-                      "username": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                },
-                "examples": {
-                  "search": {
-                    "summary": "検索結果",
-                    "value": [
-                      {
-                        "id": "123e4567-e89b-12d3-a456-426614174000",
-                        "username": "exampleUser"
-                      }
-                    ]
-                  }
+                  "$ref": "#/components/schemas/User"
                 }
               }
             }
@@ -612,6 +1056,5 @@
       }
     }
   },
-  "components": {},
   "tags": []
 }

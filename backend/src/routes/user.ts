@@ -27,20 +27,7 @@ router.use(ensureAuthenticated);
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                   username:
- *                     type: string
- *             examples:
- *               search:
- *                 summary: 検索結果
- *                 value:
- *                   - id: "123e4567-e89b-12d3-a456-426614174000"
- *                     username: "exampleUser"
+ *               $ref: '#/components/schemas/User'
  */
 router.get('/search', async (req: Request, res: Response) => {
   const { username } = req.query;
