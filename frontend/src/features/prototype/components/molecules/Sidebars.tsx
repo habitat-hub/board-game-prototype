@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { PiSidebarSimpleThin } from 'react-icons/pi';
 import { IoArrowBack } from 'react-icons/io5';
 import {
@@ -26,8 +27,6 @@ import { Part, Player } from '@/types/models';
 export default function Sidebars({
   prototypeName,
   prototypeVersionNumber,
-  leftIsMinimized,
-  setLeftIsMinimized,
   groupId,
   players,
   selectedPart,
@@ -39,9 +38,7 @@ export default function Sidebars({
 }: {
   prototypeName: string;
   prototypeVersionNumber?: string;
-  leftIsMinimized: boolean;
-  setLeftIsMinimized: (value: boolean) => void;
-  groupId: number;
+  groupId: string;
   players: Player[];
   selectedPart: Part | null;
   onAddPart: (part: Part) => void;
@@ -55,6 +52,7 @@ export default function Sidebars({
   prototypeType: typeof PROTOTYPE_TYPE.EDIT | typeof PROTOTYPE_TYPE.PREVIEW;
 }) {
   const router = useRouter();
+  const [leftIsMinimized, setLeftIsMinimized] = useState(false);
 
   /**
    * パーツを作成する
@@ -469,9 +467,7 @@ export default function Sidebars({
       ) : (
         <div className="fixed right-2 top-16 flex items-center">
           <button
-            onClick={() =>
-              router.push(`/prototypes/groups/${groupId.toString()}/invite`)
-            }
+            onClick={() => router.push(`/prototypes/groups/${groupId}/invite`)}
             className="h-fit w-fit rounded-md bg-[#0c8ce9] px-4 py-2 text-[11px] text-white"
           >
             アクセス権付与

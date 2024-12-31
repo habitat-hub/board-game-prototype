@@ -4,6 +4,7 @@ import { Socket } from 'socket.io-client';
 import { Part } from '@/types/models';
 import { PART_TYPE } from '@/features/prototype/const';
 import { PartHandle } from '@/features/prototype/type';
+import { usePartOperations } from '@/features/prototype/hooks/canvas/usePartOperations';
 
 /**
  * カードの状態を管理するフック
@@ -22,11 +23,16 @@ export const useCard = (
   // カードが反転中かどうか
   const [isReversing, setIsReversing] = useState(false);
 
+  const { reverseCard } = usePartOperations(part.prototypeVersionId, socket);
+
   /**
    * カードを反転させる
    * @param isNextFlipped - 次に裏返しにするかどうか
    */
-  const reverseCard = (isNextFlipped: boolean, needsSocketEmit: boolean) => {
+  const handleReverseCard = (
+    isNextFlipped: boolean,
+    needsSocketEmit: boolean
+  ) => {
     // カードでない場合
     if (part.type !== PART_TYPE.CARD) return;
     // 反転不可の場合
@@ -40,18 +46,14 @@ export const useCard = (
 
     // ソケットをemitする場合
     if (needsSocketEmit) {
-      socket.emit('FLIP_CARD', {
-        prototypeVersionId: part.prototypeVersionId,
-        cardId: part.id,
-        isNextFlipped: isNextFlipped,
-      });
+      reverseCard(part.id, isNextFlipped);
     }
   };
 
   // 外部から呼び出せる関数を定義    // 外部から呼び出せる関数を定義
   useImperativeHandle(ref, () => ({
     reverseCard: (isNextFlipped: boolean, needsSocketEmit = false) => {
-      reverseCard(isNextFlipped, needsSocketEmit);
+      handleReverseCard(isNextFlipped, needsSocketEmit);
     },
   }));
 
@@ -59,6 +61,6 @@ export const useCard = (
     isFlipped,
     isReversing,
     setIsReversing,
-    reverseCard,
+    reverseCard: handleReverseCard,
   };
 };

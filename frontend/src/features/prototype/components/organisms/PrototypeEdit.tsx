@@ -6,9 +6,8 @@ import { io } from 'socket.io-client';
 
 import Canvas from '@/features/prototype/components/organisms/Canvas';
 import axiosInstance from '@/utils/axiosInstance';
-
-import { AllPart, Player, Prototype, PrototypeVersion } from '../../type';
-import { PROTOTYPE_TYPE } from '../../const';
+import { PROTOTYPE_TYPE } from '@/features/prototype/const';
+import { Part, Player, Prototype, PrototypeVersion } from '@/types/models';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
@@ -24,7 +23,7 @@ const PrototypeEdit: React.FC = () => {
       })
     | null
   >(null);
-  const [parts, setParts] = useState<AllPart[]>([]);
+  const [parts, setParts] = useState<Part[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
 
   // socket通信の設定
