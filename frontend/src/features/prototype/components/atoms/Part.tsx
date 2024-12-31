@@ -6,6 +6,7 @@ import { Socket } from 'socket.io-client';
 
 import { PART_TYPE } from '@/features/prototype/const';
 import { useCard } from '@/features/prototype/hooks/useCard';
+import { useDeck } from '@/features/prototype/hooks/useDeck';
 import { MoveOrderType, PartHandle } from '@/features/prototype/type';
 import { Part as PartType } from '@/types/models';
 
@@ -23,6 +24,7 @@ const Part = forwardRef<PartHandle, PartProps>(
       ref,
       socket
     );
+    const { shuffleDeck } = useDeck(part, socket);
 
     const isCard = part.type === PART_TYPE.CARD;
     const isDeck = part.type === PART_TYPE.DECK;
@@ -35,6 +37,9 @@ const Part = forwardRef<PartHandle, PartProps>(
         onDoubleClick={() => {
           if (isCard) {
             reverseCard(!isFlipped, true);
+          }
+          if (isDeck) {
+            shuffleDeck();
           }
         }}
         onMouseDown={(e) => onMouseDown(e, part.id)}
@@ -99,6 +104,17 @@ const Part = forwardRef<PartHandle, PartProps>(
             {part.name}
           </text>
         )}
+        {/* シャッフルアイコン */}
+        {isDeck && (
+          <foreignObject
+            x={(part.position.x as number) + part.width - 30}
+            y={(part.position.y as number) + part.height - 50}
+            width={20}
+            height={20}
+          >
+            <TbCards className="text-gray-600" />
+          </foreignObject>
+        )}
         {/* カードの反転可能アイコン */}
         {(isCard || isDeck) && (
           <foreignObject
@@ -118,9 +134,9 @@ const Part = forwardRef<PartHandle, PartProps>(
               {isDeck &&
                 // 山札の場合
                 ('canReverseCardOnDeck' in part && part.canReverseCardOnDeck ? (
-                  <TbCards className="text-gray-600" />
+                  <VscSync className="text-gray-600" />
                 ) : (
-                  <></>
+                  <VscSyncIgnored className="text-gray-600" />
                 ))}
             </>
           </foreignObject>

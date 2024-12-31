@@ -79,11 +79,19 @@ export const usePartOperations = (
     [prototypeVersionId, socket]
   );
 
+  const shuffleDeck = useCallback(
+    (deckId: number) => {
+      socket.emit('SHUFFLE_DECK', { prototypeVersionId, deckId });
+    },
+    [prototypeVersionId, socket]
+  );
+
   return {
     addPart,
     reverseCard,
     updatePart,
     deletePart,
     changeOrder,
+    shuffleDeck,
   };
 };
