@@ -1,13 +1,13 @@
+import * as ContextMenu from '@radix-ui/react-context-menu';
 import React, { forwardRef } from 'react';
+import { TbCards } from 'react-icons/tb';
 import { VscSync, VscSyncIgnored } from 'react-icons/vsc';
 import { Socket } from 'socket.io-client';
-import { TbCards } from 'react-icons/tb';
-import * as ContextMenu from '@radix-ui/react-context-menu';
 
-import { MoveOrderType, PartHandle } from '@/features/prototype/type';
 import { PART_TYPE } from '@/features/prototype/const';
-import { Part as PartType } from '@/types/models';
 import { useCard } from '@/features/prototype/hooks/useCard';
+import { MoveOrderType, PartHandle } from '@/features/prototype/type';
+import { Part as PartType } from '@/types/models';
 
 interface PartProps {
   part: PartType;

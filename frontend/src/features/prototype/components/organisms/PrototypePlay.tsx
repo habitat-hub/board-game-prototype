@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import React, { useEffect, useMemo, useState } from 'react';
 import { io } from 'socket.io-client';
 
 import Canvas from '@/features/prototype/components/organisms/Canvas';
-import axiosInstance from '@/utils/axiosInstance';
 import { PROTOTYPE_TYPE } from '@/features/prototype/const';
 import { Part, Player, Prototype, PrototypeVersion } from '@/types/models';
+import axiosInstance from '@/utils/axiosInstance';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 

@@ -1,10 +1,10 @@
 import { useImperativeHandle, useState } from 'react';
 import { Socket } from 'socket.io-client';
 
-import { Part } from '@/types/models';
 import { PART_TYPE } from '@/features/prototype/const';
-import { PartHandle } from '@/features/prototype/type';
 import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
+import { PartHandle } from '@/features/prototype/type';
+import { Part } from '@/types/models';
 
 /**
  * カードの状態を管理するフック

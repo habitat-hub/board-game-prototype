@@ -1,27 +1,27 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { PiSidebarSimpleThin } from 'react-icons/pi';
-import { IoArrowBack } from 'react-icons/io5';
+import { FaRegCopy, FaRegTrashAlt } from 'react-icons/fa';
 import {
   Gi3dMeeple,
   GiCard10Clubs,
   GiPokerHand,
   GiStoneBlock,
 } from 'react-icons/gi';
-import { useRouter } from 'next/navigation';
-import { FaRegCopy, FaRegTrashAlt } from 'react-icons/fa';
+import { IoArrowBack } from 'react-icons/io5';
+import { PiSidebarSimpleThin } from 'react-icons/pi';
 
+import Dropdown from '@/components/atoms/Dropdown';
+import NumberInput from '@/components/atoms/NumberInput';
+import TextIconButton from '@/components/atoms/TextIconButton';
+import TextInput from '@/components/atoms/TextInput';
 import {
   COLORS,
   PART_DEFAULT_CONFIG,
   PART_TYPE,
   PROTOTYPE_TYPE,
 } from '@/features/prototype/const';
-import NumberInput from '@/components/atoms/NumberInput';
-import TextInput from '@/components/atoms/TextInput';
-import Dropdown from '@/components/atoms/Dropdown';
-import TextIconButton from '@/components/atoms/TextIconButton';
 import { Part, Player } from '@/types/models';
 
 export default function Sidebars({

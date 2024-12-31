@@ -1,23 +1,23 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Socket } from 'socket.io-client';
 import { AiOutlineTool } from 'react-icons/ai';
+import { Socket } from 'socket.io-client';
 
+import Part from '@/features/prototype/components/atoms/Part';
+import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumberTool';
+import Sidebars from '@/features/prototype/components/molecules/Sidebars';
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
+import { PROTOTYPE_TYPE, VERSION_NUMBER } from '@/features/prototype/const';
+import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
+import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
 import {
   Camera,
   CanvasMode,
   CanvasState,
   PartHandle,
 } from '@/features/prototype/type';
-import Sidebars from '@/features/prototype/components/molecules/Sidebars';
-import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumberTool';
-import Part from '@/features/prototype/components/atoms/Part';
-import { PROTOTYPE_TYPE, VERSION_NUMBER } from '@/features/prototype/const';
 import { Part as PartType, Player } from '@/types/models';
-import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
-import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
 
 interface CanvasProps {
   prototypeName: string;
@@ -172,8 +172,8 @@ export default function Canvas({
               cursor: isDraggingCanvas
                 ? 'grabbing'
                 : isMasterPreview
-                ? 'not-allowed'
-                : 'grab',
+                  ? 'not-allowed'
+                  : 'grab',
             }}
           >
             <g

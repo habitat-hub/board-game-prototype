@@ -1,7 +1,22 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript"],
-  "plugins": ["import"],
+  "extends": [
+    "next/core-web-vitals",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react/recommended",
+    "prettier"
+  ],
+  "plugins": ["import", "@typescript-eslint", "react"],
   "rules": {
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_" }
+    ],
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
     "import/order": [
       "error",
       {
@@ -21,7 +36,11 @@
           }
         ],
         "pathGroupsExcludedImportTypes": ["builtin"],
-        "newlines-between": "always"
+        "newlines-between": "always",
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        }
       }
     ]
   },
@@ -31,6 +50,17 @@
         "paths": ["src"],
         "extensions": [".js", ".jsx", ".ts", ".tsx"]
       }
+    },
+    "react": {
+      "version": "detect"
+    }
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
     }
   }
 }
