@@ -86,6 +86,19 @@ export const usePartOperations = (
     [prototypeVersionId, socket]
   );
 
+  /**
+   * プレイヤーの割り当て
+   * @param playerId - プレイヤーID
+   * @param userId - ユーザーID
+   */
+  const assignPlayer = (playerId: number, userId: string | null) => {
+    socket.emit('UPDATE_PLAYER_USER', {
+      prototypeVersionId,
+      playerId,
+      userId,
+    });
+  };
+
   return {
     addPart,
     reverseCard,
@@ -93,5 +106,6 @@ export const usePartOperations = (
     deletePart,
     changeOrder,
     shuffleDeck,
+    assignPlayer,
   };
 };

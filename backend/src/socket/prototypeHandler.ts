@@ -330,20 +330,20 @@ function handleUpdatePlayerUser(socket: Socket, io: Server) {
   socket.on(
     'UPDATE_PLAYER_USER',
     async ({
-      prototypeId,
+      prototypeVersionId,
       playerId,
       userId,
     }: {
-      prototypeId: number;
+      prototypeVersionId: string;
       playerId: number;
-      userId: number | null;
+      userId: string | null;
     }) => {
       await PlayerModel.update({ userId }, { where: { id: playerId } });
       const players = await PlayerModel.findAll({
-        where: { prototypeId },
+        where: { prototypeVersionId },
       });
 
-      io.to(prototypeId.toString()).emit('UPDATE_PLAYERS', players);
+      io.to(prototypeVersionId).emit('UPDATE_PLAYERS', players);
     }
   );
 }
@@ -356,5 +356,5 @@ export default function handlePrototype(socket: Socket, io: Server) {
   handleFlipCard(socket, io);
   handleChangeOrder(socket, io);
   handleShuffleDeck(socket, io);
-  // handleUpdatePlayerUser(socket, io);
+  handleUpdatePlayerUser(socket, io);
 }

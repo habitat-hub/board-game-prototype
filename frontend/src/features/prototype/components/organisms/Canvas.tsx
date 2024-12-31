@@ -6,7 +6,8 @@ import { Socket } from 'socket.io-client';
 
 import Part from '@/features/prototype/components/atoms/Part';
 import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumberTool';
-import Sidebars from '@/features/prototype/components/molecules/Sidebars';
+import EditSidebars from '@/features/prototype/components/molecules/EditSidebars';
+import PreviewSidebars from '@/features/prototype/components/molecules/PreviewSidebars';
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
 import { PROTOTYPE_TYPE, VERSION_NUMBER } from '@/features/prototype/const';
 import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
@@ -66,10 +67,12 @@ export default function Canvas({
     setSelectedPart(null);
   }, [deletePart, selectedPart]);
 
+  const isEdit = prototypeType === PROTOTYPE_TYPE.EDIT;
+  const isPreview = prototypeType === PROTOTYPE_TYPE.PREVIEW;
+
   // マスタープレビューかどうかを判定
   const isMasterPreview =
-    prototypeType === PROTOTYPE_TYPE.PREVIEW &&
-    prototypeVersionNumber === VERSION_NUMBER.MASTER;
+    isPreview && prototypeVersionNumber === VERSION_NUMBER.MASTER;
 
   const { isDraggingCanvas, onWheel, onMouseDown, onMouseMove, onMouseUp } =
     useCanvasEvents({
@@ -221,18 +224,29 @@ export default function Canvas({
         canZoomOut={camera.zoom > 0.5}
       />
       {/* サイドバー */}
-      <Sidebars
-        prototypeName={prototypeName}
-        prototypeVersionNumber={prototypeVersionNumber}
-        groupId={groupId}
-        players={players}
-        selectedPart={selectedPart}
-        onAddPart={handleAddPart}
-        onDeletePart={handleDeletePart}
-        updatePart={updatePart}
-        mainViewRef={mainViewRef}
-        prototypeType={prototypeType}
-      />
+      {isEdit && (
+        <EditSidebars
+          prototypeName={prototypeName}
+          prototypeVersionNumber={prototypeVersionNumber}
+          groupId={groupId}
+          players={players}
+          selectedPart={selectedPart}
+          onAddPart={handleAddPart}
+          onDeletePart={handleDeletePart}
+          updatePart={updatePart}
+          mainViewRef={mainViewRef}
+        />
+      )}
+      {isPreview && (
+        <PreviewSidebars
+          prototypeVersionId={prototypeVersionId}
+          prototypeName={prototypeName}
+          prototypeVersionNumber={prototypeVersionNumber}
+          groupId={groupId}
+          players={players}
+          socket={socket}
+        />
+      )}
       {/* 乱数ツールボタン */}
       <button
         onClick={() => setIsRandomToolOpen(!isRandomToolOpen)}

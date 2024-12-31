@@ -31,6 +31,7 @@ export interface Part {
 export interface Player {
   id: number;
   prototypeVersionId: string;
+  userId?: string;
   playerName: string;
   originalPlayerId?: number;
   createdAt: string;
@@ -74,10 +75,5 @@ export interface User {
 export interface UserAccess {
   userId: string;
   accessId: number;
-}
-
-export interface UserPlayer {
-  userId: string;
-  playerId: number;
 }
 

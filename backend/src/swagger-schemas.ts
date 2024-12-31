@@ -174,6 +174,10 @@ export const swaggerSchemas = {
                   "type": "string",
                   "format": "uuid"
             },
+            "userId": {
+                  "type": "string",
+                  "format": "uuid"
+            },
             "playerName": {
                   "type": "string"
             },
@@ -336,22 +340,6 @@ export const swaggerSchemas = {
       "required": [
             "userId",
             "accessId"
-      ]
-},
-      UserPlayer: {
-      "type": "object",
-      "properties": {
-            "userId": {
-                  "type": "string",
-                  "format": "uuid"
-            },
-            "playerId": {
-                  "type": "integer"
-            }
-      },
-      "required": [
-            "userId",
-            "playerId"
       ]
 },
     }

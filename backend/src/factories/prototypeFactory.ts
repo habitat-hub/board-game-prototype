@@ -72,6 +72,7 @@ export async function createPrototype({
   await PlayerModel.bulkCreate(
     Array.from({ length: maxPlayers }).map((_, i) => ({
       prototypeVersionId: prototypeVersion.id,
+      userId: null,
       playerName: `プレイヤー${i + 1}`,
     })),
     { transaction }
@@ -184,6 +185,7 @@ export const createPrototypeVersion = async (
   await PlayerModel.bulkCreate(
     Array.from({ length: prototype.maxPlayers }).map((_, i) => ({
       prototypeVersionId: newPrototypeVersion.id,
+      userId: null,
       playerName: `プレイヤー${i + 1}`,
     })),
     { transaction }
