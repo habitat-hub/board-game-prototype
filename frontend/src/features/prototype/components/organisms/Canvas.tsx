@@ -16,8 +16,8 @@ import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumber
 import Part from '@/features/prototype/components/atoms/Part';
 import { PROTOTYPE_TYPE, VERSION_NUMBER } from '@/features/prototype/const';
 import { Part as PartType, Player } from '@/types/models';
-import { usePartOperations } from '@/features/prototype/hooks/canvas/usePartOperations';
-import { useCanvasEvents } from '@/features/prototype/hooks/canvas/useCanvasEvents';
+import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
+import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
 
 interface CanvasProps {
   prototypeName: string;

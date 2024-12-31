@@ -4,7 +4,7 @@ import { Socket } from 'socket.io-client';
 import { Part } from '@/types/models';
 import { PART_TYPE } from '@/features/prototype/const';
 import { PartHandle } from '@/features/prototype/type';
-import { usePartOperations } from '@/features/prototype/hooks/canvas/usePartOperations';
+import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
 
 /**
  * カードの状態を管理するフック
