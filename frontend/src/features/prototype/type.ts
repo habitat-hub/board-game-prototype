@@ -1,3 +1,9 @@
+// Partコンポーネントの外部から呼び出せる関数のインターフェース
+export interface PartHandle {
+  reverseCard: (isNextFlipped: boolean, needsSocketEmit: boolean) => void;
+}
+
+// パーツの移動順序
 export enum MoveOrderType {
   BACK = 'back',
   FRONT = 'front',
@@ -5,11 +11,14 @@ export enum MoveOrderType {
   FRONTMOST = 'frontmost',
 }
 
+// キャンバスのカメラ
 export type Camera = {
   x: number;
   y: number;
   zoom: number;
 };
+
+// キャンバスのモード
 export enum CanvasMode {
   None,
   Dragging,
@@ -22,11 +31,13 @@ export enum CanvasMode {
   RightClick,
 }
 
+// 座標
 export type Point = {
   x: number;
   y: number;
 };
 
+// 矩形
 export type XYWH = {
   x: number;
   y: number;
@@ -34,6 +45,7 @@ export type XYWH = {
   height: number;
 };
 
+// 辺
 export enum Side {
   Top = 1,
   Bottom = 2,
@@ -41,6 +53,7 @@ export enum Side {
   Right = 8,
 }
 
+// キャンバスの状態
 export type CanvasState =
   | {
       mode: CanvasMode.None;

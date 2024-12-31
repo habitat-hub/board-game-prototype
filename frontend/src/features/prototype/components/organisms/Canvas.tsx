@@ -5,12 +5,16 @@ import { Socket } from 'socket.io-client';
 import { AiOutlineTool } from 'react-icons/ai';
 
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
-import { Camera, CanvasMode, CanvasState } from '@/features/prototype/type';
+import {
+  Camera,
+  CanvasMode,
+  CanvasState,
+  PartHandle,
+} from '@/features/prototype/type';
 import { needsParentUpdate } from '@/features/prototype/helpers/partHelper';
 import Sidebars from '@/features/prototype/components/molecules/Sidebars';
 import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumberTool';
 import Part from '@/features/prototype/components/atoms/Part';
-import { PartHandle } from '@/features/prototype/components/atoms/Part';
 import {
   PART_TYPE,
   PROTOTYPE_TYPE,
@@ -295,7 +299,7 @@ export default function Canvas({
     };
   }, [handleKeyDown]);
 
-  // ソケットイベントの購読
+  // ソケットイベントの定義
   useEffect(() => {
     socket.on(
       'FLIP_CARD',
@@ -306,8 +310,8 @@ export default function Canvas({
         cardId: number;
         isNextFlipped: boolean;
       }) => {
-        // 該当するパーツのflip関数を呼び出し
-        partRefs.current[cardId]?.current?.flip(isNextFlipped);
+        // 該当するパーツのreverseCard関数を呼び出し
+        partRefs.current[cardId]?.current?.reverseCard(isNextFlipped, false);
       }
     );
 

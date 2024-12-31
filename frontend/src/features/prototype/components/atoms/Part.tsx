@@ -1,17 +1,13 @@
-import React, { useState, forwardRef, useImperativeHandle } from 'react';
+import React, { forwardRef } from 'react';
 import { VscSync, VscSyncIgnored } from 'react-icons/vsc';
 import { Socket } from 'socket.io-client';
 import { TbCards } from 'react-icons/tb';
 import * as ContextMenu from '@radix-ui/react-context-menu';
 
-import { MoveOrderType } from '@/features/prototype/type';
+import { MoveOrderType, PartHandle } from '@/features/prototype/type';
 import { PART_TYPE } from '@/features/prototype/const';
 import { Part as PartType } from '@/types/models';
-
-// 外部から呼び出せる関数のインターフェース
-export interface PartHandle {
-  flip: (isNextFlipped: boolean) => void;
-}
+import { useCard } from '@/features/prototype/hooks/useCard';
 
 interface PartProps {
   part: PartType;
@@ -22,36 +18,14 @@ interface PartProps {
 
 const Part = forwardRef<PartHandle, PartProps>(
   ({ part, onMouseDown, socket, onMoveOrder }, ref) => {
-    // カードが反転しているかどうか
-    const [isFlipped, setIsFlipped] = useState(
-      'isFlipped' in part ? part.isFlipped : false
+    const { isFlipped, isReversing, setIsReversing, reverseCard } = useCard(
+      part,
+      ref,
+      socket
     );
-    // transition設定をしているか
-    const [needsTransition, setNeedsTransition] = useState(false);
 
-    /**
-     * カードを反転させる
-     * @param isNextFlipped - 次に反転させるかどうか
-     */
-    const flip = (isNextFlipped: boolean) => {
-      // カードでない場合
-      if (part.type !== PART_TYPE.CARD) return;
-      // 反転不可の場合
-      if (!('isReversible' in part) || !part.isReversible) return;
-      // 反転が不要な場合
-      if (isFlipped === isNextFlipped) return;
-
-      // 反転させる
-      setNeedsTransition(true);
-      setIsFlipped(isNextFlipped);
-    };
-
-    // 外部から呼び出せる関数を定義
-    useImperativeHandle(ref, () => ({
-      flip: (isNextFlipped: boolean) => {
-        flip(isNextFlipped);
-      },
-    }));
+    const isCard = part.type === PART_TYPE.CARD;
+    const isDeck = part.type === PART_TYPE.DECK;
 
     // TODO: オーナー設定のあるパーツは、オーナーのみが見れるようにする
 
@@ -59,13 +33,8 @@ const Part = forwardRef<PartHandle, PartProps>(
       <svg
         key={part.id}
         onDoubleClick={() => {
-          if (part.type === PART_TYPE.CARD) {
-            flip(!isFlipped);
-            socket.emit('FLIP_CARD', {
-              prototypeVersionId: part.prototypeVersionId,
-              cardId: part.id,
-              isNextFlipped: !isFlipped,
-            });
+          if (isCard) {
+            reverseCard(!isFlipped, true);
           }
         }}
         onMouseDown={(e) => onMouseDown(e, part.id)}
@@ -95,9 +64,10 @@ const Part = forwardRef<PartHandle, PartProps>(
             />
           </pattern>
         </defs> */}
+        {/* パーツの枠 */}
         <rect
           id={part.id.toString()}
-          onTransitionEnd={() => setNeedsTransition(false)}
+          onTransitionEnd={() => setIsReversing(false)}
           style={{
             stroke: 'gray',
             fill: part.color || 'white',
@@ -108,7 +78,7 @@ const Part = forwardRef<PartHandle, PartProps>(
             rotateY(${isFlipped ? 180 : 0}deg)
             translate(${-part.width / 2}px, ${-part.height / 2}px)
           `,
-            transition: needsTransition ? 'transform 0.6s' : 'none',
+            transition: isReversing ? 'transform 0.6s' : 'none',
             transformStyle: 'preserve-3d',
           }}
           width={part.width}
@@ -129,8 +99,8 @@ const Part = forwardRef<PartHandle, PartProps>(
             {part.name}
           </text>
         )}
-        {/* 反転可能アイコン */}
-        {(part.type === PART_TYPE.CARD || part.type === PART_TYPE.DECK) && (
+        {/* カードの反転可能アイコン */}
+        {(isCard || isDeck) && (
           <foreignObject
             x={(part.position.x as number) + part.width - 30}
             y={(part.position.y as number) + part.height - 30}
@@ -138,14 +108,14 @@ const Part = forwardRef<PartHandle, PartProps>(
             height={20}
           >
             <>
-              {part.type === PART_TYPE.CARD &&
+              {isCard &&
                 // カードの場合
                 ('isReversible' in part && part.isReversible ? (
                   <VscSync className="text-gray-600" />
                 ) : (
                   <VscSyncIgnored className="text-gray-600" />
                 ))}
-              {part.type === PART_TYPE.DECK &&
+              {isDeck &&
                 // 山札の場合
                 ('canReverseCardOnDeck' in part && part.canReverseCardOnDeck ? (
                   <TbCards className="text-gray-600" />
@@ -155,8 +125,7 @@ const Part = forwardRef<PartHandle, PartProps>(
             </>
           </foreignObject>
         )}
-
-        {/* コンテキストメニュー */}
+        {/* 右クリックで表示するコンテキストメニュー */}
         <foreignObject
           x={part.position.x as number}
           y={part.position.y as number}

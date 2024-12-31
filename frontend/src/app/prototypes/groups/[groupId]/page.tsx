@@ -9,11 +9,7 @@ export const metadata: Metadata = {
 
 export const runtime = 'edge';
 const PrototypesPage: React.FC = () => {
-  return (
-    <div>
-      <GroupPrototypeList />
-    </div>
-  );
+  return <GroupPrototypeList />;
 };
 
 export default PrototypesPage;

@@ -8,11 +8,7 @@ export const metadata: Metadata = {
 };
 
 const CreatePrototypePage: React.FC = () => {
-  return (
-    <div>
-      <CreatePrototypeForm />
-    </div>
-  );
+  return <CreatePrototypeForm />;
 };
 
 export default CreatePrototypePage;
