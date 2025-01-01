@@ -35,8 +35,8 @@ const PrototypeEdit: React.FC = () => {
       setParts(parts);
     });
 
-    socket.on('UPDATE_PLAYERS', (players) => {
-      setPlayers(players);
+    socket.on('UPDATE_PLAYERS', (players: Player[]) => {
+      setPlayers(players.sort((a, b) => a.id - b.id));
     });
 
     return () => {

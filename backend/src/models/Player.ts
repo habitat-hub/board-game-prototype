@@ -14,10 +14,9 @@ class PlayerModel extends Model {
 PlayerModel.init(
   {
     id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
-      allowNull: false,
     },
     prototypeVersionId: {
       type: DataTypes.UUID,

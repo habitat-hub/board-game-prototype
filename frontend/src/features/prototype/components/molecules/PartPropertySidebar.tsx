@@ -217,12 +217,7 @@ export default function PartPropertySidebar({
                   </p>
                   <div className="flex w-full mb-2">
                     <Dropdown
-                      value={
-                        'isReversible' in selectedPart &&
-                        selectedPart.isReversible
-                          ? 'はい'
-                          : 'いいえ'
-                      }
+                      value={selectedPart.isReversible ? 'はい' : 'いいえ'}
                       onChange={(value) => {
                         updatePart(
                           selectedPart.id,
@@ -251,9 +246,7 @@ export default function PartPropertySidebar({
                     <Dropdown
                       value={
                         players.find(
-                          (player) =>
-                            'ownerId' in selectedPart &&
-                            player.id === selectedPart.ownerId
+                          (player) => player.id === selectedPart.ownerId
                         )?.playerName ?? '未設定'
                       }
                       onChange={(value) => {
@@ -264,7 +257,10 @@ export default function PartPropertySidebar({
                           updatePart(selectedPart.id, { ownerId: player.id });
                         }
                       }}
-                      options={players.map((player) => player.playerName)}
+                      options={[
+                        '未設定',
+                        ...players.map((player) => player.playerName),
+                      ]}
                       className="w-full"
                     />
                   </div>
@@ -284,10 +280,7 @@ export default function PartPropertySidebar({
                   <div className="flex w-full mb-2">
                     <Dropdown
                       value={
-                        'canReverseCardOnDeck' in selectedPart &&
-                        selectedPart.canReverseCardOnDeck
-                          ? 'はい'
-                          : 'いいえ'
+                        selectedPart.canReverseCardOnDeck ? 'はい' : 'いいえ'
                       }
                       onChange={(value) => {
                         updatePart(
