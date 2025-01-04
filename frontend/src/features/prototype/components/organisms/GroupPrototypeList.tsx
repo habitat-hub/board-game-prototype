@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import React, { useState, useEffect, useCallback } from 'react';
 import { IoAdd, IoArrowBack } from 'react-icons/io5';
 
-import { Prototype, PrototypeVersion } from '@/features/prototype/type';
-import axiosInstance from '@/utils/axiosInstance';
 import { PROTOTYPE_TYPE, VERSION_NUMBER } from '@/features/prototype/const';
+import { Prototype, PrototypeVersion } from '@/types/models';
+import axiosInstance from '@/utils/axiosInstance';
 
 const GroupPrototypeList: React.FC = () => {
   const router = useRouter();

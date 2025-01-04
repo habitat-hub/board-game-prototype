@@ -16,7 +16,7 @@ UserAccessModel.init(
       allowNull: false,
     },
     accessId: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       primaryKey: true,
       allowNull: false,
     },

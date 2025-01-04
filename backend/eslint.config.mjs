@@ -24,6 +24,6 @@ export default [
     },
   },
   {
-    ignores: ['dist/**/*', 'src/generate-erd.ts'],
+    ignores: ['dist/**/*'],
   },
 ];

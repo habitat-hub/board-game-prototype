@@ -1,5 +1,5 @@
-import React from 'react';
 import { Metadata } from 'next';
+import React from 'react';
 
 import CreatePrototypeForm from '@/features/prototype/components/organisms/CreatePrototypeFrom';
 
@@ -8,11 +8,7 @@ export const metadata: Metadata = {
 };
 
 const CreatePrototypePage: React.FC = () => {
-  return (
-    <div>
-      <CreatePrototypeForm />
-    </div>
-  );
+  return <CreatePrototypeForm />;
 };
 
 export default CreatePrototypePage;

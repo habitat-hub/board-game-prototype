@@ -1,12 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
 
-import { Prototype } from '@/features/prototype/type';
+import { PROTOTYPE_TYPE } from '@/features/prototype/const';
+import { Prototype } from '@/types/models';
 import axiosInstance from '@/utils/axiosInstance';
-
-import { PROTOTYPE_TYPE } from '../../const';
 
 const PrototypeList: React.FC = () => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;

@@ -6,6 +6,7 @@ import PrototypeVersionModel from '../models/PrototypeVersion';
 import {
   getOverLappingPart,
   getUnderLappingPart,
+  shuffleDeck,
 } from '../helpers/prototypeHelper';
 
 /**
@@ -58,7 +59,7 @@ function handleAddPart(socket: Socket, io: Server) {
       await PartModel.create({
         ...part,
         prototypeVersionId,
-        order: ((maxOrder as number) + 1) / 2,
+        order: ((maxOrder as number) + 1) / 2, // NOTE: 新しいパーツは一番上に配置する
       });
       const parts = await PartModel.findAll({
         where: { prototypeVersionId },
@@ -134,6 +135,7 @@ function handleDeletePart(socket: Socket, io: Server) {
   );
 }
 
+// TODO: ReverseCardという名前に変える
 /**
  * カードを反転させる
  * @param socket - Socket
@@ -301,19 +303,20 @@ function handleShuffleDeck(socket: Socket, io: Server) {
   socket.on(
     'SHUFFLE_DECK',
     async ({
-      prototypeId,
+      prototypeVersionId,
       deckId,
     }: {
-      prototypeId: number;
+      prototypeVersionId: string;
       deckId: number;
     }) => {
       const cardsOnDeck = await PartModel.findAll({
-        where: { prototypeId, type: PART_TYPE.CARD, parentId: deckId },
+        where: { prototypeVersionId, type: PART_TYPE.CARD, parentId: deckId },
       });
-      // await shuffleDeck(cardsOnDeck);
-      const parts = await PartModel.findAll({ where: { prototypeId } });
-
-      io.to(prototypeId.toString()).emit('UPDATE_PARTS', parts);
+      await shuffleDeck(cardsOnDeck);
+      const parts = await PartModel.findAll({
+        where: { prototypeVersionId },
+      });
+      io.to(prototypeVersionId).emit('UPDATE_PARTS', parts);
     }
   );
 }
@@ -327,20 +330,20 @@ function handleUpdatePlayerUser(socket: Socket, io: Server) {
   socket.on(
     'UPDATE_PLAYER_USER',
     async ({
-      prototypeId,
+      prototypeVersionId,
       playerId,
       userId,
     }: {
-      prototypeId: number;
+      prototypeVersionId: string;
       playerId: number;
-      userId: number | null;
+      userId: string | null;
     }) => {
       await PlayerModel.update({ userId }, { where: { id: playerId } });
       const players = await PlayerModel.findAll({
-        where: { prototypeId },
+        where: { prototypeVersionId },
       });
 
-      io.to(prototypeId.toString()).emit('UPDATE_PLAYERS', players);
+      io.to(prototypeVersionId).emit('UPDATE_PLAYERS', players);
     }
   );
 }
@@ -352,6 +355,6 @@ export default function handlePrototype(socket: Socket, io: Server) {
   handleDeletePart(socket, io);
   handleFlipCard(socket, io);
   handleChangeOrder(socket, io);
-  // handleShuffleDeck(socket, io);
-  // handleUpdatePlayerUser(socket, io);
+  handleShuffleDeck(socket, io);
+  handleUpdatePlayerUser(socket, io);
 }

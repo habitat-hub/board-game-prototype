@@ -11,10 +11,9 @@ class AccessModel extends Model {
 AccessModel.init(
   {
     id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
-      allowNull: false,
     },
     prototypeGroupId: {
       type: DataTypes.UUID,

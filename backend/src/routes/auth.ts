@@ -6,8 +6,16 @@ const router = Router();
 
 /**
  * @swagger
+ * tags:
+ *   name: Auth
+ *   description: 認証関連のAPI
+ */
+
+/**
+ * @swagger
  * /auth/google:
  *   get:
+ *     tags: [Auth]
  *     summary: Googleログイン
  *     description: Googleアカウントを使用してログインします。
  *     responses:
@@ -31,6 +39,7 @@ router.get(
  * @swagger
  * /auth/google/callback:
  *   get:
+ *     tags: [Auth]
  *     summary: Googleログインコールバック
  *     description: GoogleログインのコールバックURL。
  *     responses:
@@ -57,6 +66,7 @@ router.get(
  * @swagger
  * /auth/logout:
  *   post:
+ *     tags: [Auth]
  *     summary: ログアウト
  *     description: 現在のセッションを終了し、ユーザーをログアウトします。
  *     responses:
@@ -64,14 +74,14 @@ router.get(
  *         description: ログアウト成功
  *         content:
  *           application/json:
- *             example:
- *               message: "Logged out successfully"
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
  *       '500':
  *         description: ログアウト失敗
  *         content:
  *           application/json:
- *             example:
- *               error: "Failed to logout"
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
  */
 router.post('/logout', (req, res) => {
   req.logout((err) => {
@@ -94,6 +104,7 @@ router.post('/logout', (req, res) => {
  * @swagger
  * /auth/user:
  *   get:
+ *     tags: [Auth]
  *     summary: ユーザー情報取得
  *     description: 現在ログインしているユーザーの情報を取得します。
  *     responses:
@@ -102,21 +113,7 @@ router.post('/logout', (req, res) => {
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: integer
- *                 username:
- *                   type: string
- *             examples:
- *               authenticated:
- *                 summary: 認証済みユーザー
- *                 value:
- *                   id: 1
- *                   username: "exampleUser"
- *               unauthenticated:
- *                 summary: 未認証ユーザー
- *                 value: {}
+ *               $ref: '#/components/schemas/User'
  */
 router.get('/user', (req, res) => {
   if (req.isAuthenticated()) {

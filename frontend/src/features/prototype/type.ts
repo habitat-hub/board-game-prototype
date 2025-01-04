@@ -1,67 +1,9 @@
-import { PROTOTYPE_TYPE } from './const';
-
-export interface Prototype {
-  id: string;
-  userId: string;
-  name: string;
-  type: typeof PROTOTYPE_TYPE.EDIT | typeof PROTOTYPE_TYPE.PREVIEW;
-  groupId: number;
-  masterPrototypeId: string | null;
-  minPlayers: number;
-  maxPlayers: number;
+// Partコンポーネントの外部から呼び出せる関数のインターフェース
+export interface PartHandle {
+  reverseCard: (isNextFlipped: boolean, needsSocketEmit: boolean) => void;
 }
 
-export interface PrototypeVersion {
-  id: string;
-  prototypeId: string;
-  versionNumber: string;
-  description: string;
-  createdAt: string;
-}
-
-export type AllPart = Part | Card | Hand | Deck;
-export type AllPartKey = keyof Part | keyof Card | keyof Hand | keyof Deck;
-
-export interface Part {
-  id: number;
-  type: string;
-  prototypeVersionId: string;
-  parentId: number | null;
-  name: string;
-  description: string;
-  color: string;
-  position: { x: number; y: number };
-  width: number;
-  height: number;
-  order: number; // @see https://www.figma.com/blog/realtime-editing-of-ordered-sequences/ , https://www.wantedly.com/companies/wantedly/post_articles/386188
-  configurableTypeAsChild: string[];
-  originalPartId: number | null;
-}
-
-export interface Card extends Part {
-  isReversible: boolean;
-  isFlipped: boolean;
-}
-
-export interface Hand extends Part {
-  ownerId: number;
-}
-
-export interface Deck extends Part {
-  canReverseCardOnDeck: boolean;
-}
-
-export interface Player {
-  id: number;
-  prototypeVersionId: string;
-  playerName: string;
-}
-
-export interface User {
-  id: string;
-  username: string;
-}
-
+// パーツの移動順序
 export enum MoveOrderType {
   BACK = 'back',
   FRONT = 'front',
@@ -69,11 +11,14 @@ export enum MoveOrderType {
   FRONTMOST = 'frontmost',
 }
 
+// キャンバスのカメラ
 export type Camera = {
   x: number;
   y: number;
   zoom: number;
 };
+
+// キャンバスのモード
 export enum CanvasMode {
   None,
   Dragging,
@@ -86,11 +31,13 @@ export enum CanvasMode {
   RightClick,
 }
 
+// 座標
 export type Point = {
   x: number;
   y: number;
 };
 
+// 矩形
 export type XYWH = {
   x: number;
   y: number;
@@ -98,6 +45,7 @@ export type XYWH = {
   height: number;
 };
 
+// 辺
 export enum Side {
   Top = 1,
   Bottom = 2,
@@ -105,6 +53,7 @@ export enum Side {
   Right = 8,
 }
 
+// キャンバスの状態
 export type CanvasState =
   | {
       mode: CanvasMode.None;

@@ -6,7 +6,8 @@
 
 ## ドキュメント
 
-https://habitat-hub.github.io/board-game-prototype/
+- [API 仕様書](https://habitat-hub.github.io/board-game-prototype/)
+- [開発ガイド](https://github.com/habitat-hub/board-game-prototype/wiki)
 
 ## ディレクトリ構成
 

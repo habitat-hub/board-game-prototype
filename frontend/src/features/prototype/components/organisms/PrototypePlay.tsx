@@ -1,14 +1,13 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import React, { useEffect, useMemo, useState } from 'react';
 import { io } from 'socket.io-client';
 
 import Canvas from '@/features/prototype/components/organisms/Canvas';
+import { PROTOTYPE_TYPE } from '@/features/prototype/const';
+import { Part, Player, Prototype, PrototypeVersion } from '@/types/models';
 import axiosInstance from '@/utils/axiosInstance';
-
-import { AllPart, Player, Prototype, PrototypeVersion } from '../../type';
-import { PROTOTYPE_TYPE } from '../../const';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
@@ -24,7 +23,7 @@ const PrototypePlay: React.FC = () => {
       })
     | null
   >(null);
-  const [parts, setParts] = useState<AllPart[]>([]);
+  const [parts, setParts] = useState<Part[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
 
   // socket通信の設定
@@ -36,8 +35,8 @@ const PrototypePlay: React.FC = () => {
       setParts(parts);
     });
 
-    socket.on('UPDATE_PLAYERS', (players) => {
-      setPlayers(players);
+    socket.on('UPDATE_PLAYERS', (players: Player[]) => {
+      setPlayers(players.sort((a, b) => a.id - b.id));
     });
 
     return () => {

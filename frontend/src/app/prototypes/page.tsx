@@ -1,5 +1,5 @@
-import React from 'react';
 import { Metadata } from 'next';
+import React from 'react';
 
 import PrototypeList from '@/features/prototype/components/organisms/PrototypeList';
 
@@ -8,11 +8,7 @@ export const metadata: Metadata = {
 };
 
 const PrototypesPage: React.FC = () => {
-  return (
-    <div>
-      <PrototypeList />
-    </div>
-  );
+  return <PrototypeList />;
 };
 
 export default PrototypesPage;

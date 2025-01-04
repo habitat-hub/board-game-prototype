@@ -45,7 +45,7 @@ export async function createPrototype({
   const prototypeGroupId = groupId ?? uuidv4();
 
   // プロトタイプ作成
-  const prototype = await PrototypeModel.create(
+  const newPrototype = await PrototypeModel.create(
     {
       userId,
       name,
@@ -59,9 +59,9 @@ export async function createPrototype({
   );
 
   // 初期バージョン作成
-  const prototypeVersion = await PrototypeVersionModel.create(
+  const newPrototypeVersion = await PrototypeVersionModel.create(
     {
-      prototypeId: prototype.id,
+      prototypeId: newPrototype.id,
       versionNumber: PROTOTYPE_VERSION.INITIAL,
       description: '初期バージョン',
     },
@@ -69,19 +69,40 @@ export async function createPrototype({
   );
 
   // 初期バージョンのプレイヤー作成
-  await PlayerModel.bulkCreate(
-    Array.from({ length: maxPlayers }).map((_, i) => ({
-      prototypeVersionId: prototypeVersion.id,
-      playerName: `プレイヤー${i + 1}`,
-    })),
-    { transaction }
-  );
+  const players = await PlayerModel.findAll({
+    where: {
+      prototypeVersionId: editPrototypeDefaultVersionId,
+    },
+  });
+  let newPlayers = null;
+  if (players.length === 0) {
+    // 編集版の場合は、プレイヤーを新規作成
+    newPlayers = await PlayerModel.bulkCreate(
+      Array.from({ length: maxPlayers }).map((_, i) => ({
+        prototypeVersionId: newPrototypeVersion.id,
+        userId: null,
+        playerName: `プレイヤー${i + 1}`,
+      })),
+      { transaction, returning: true }
+    );
+  } else {
+    // プレビュー版の場合は、プレイヤーを複製
+    newPlayers = await PlayerModel.bulkCreate(
+      players.map((player) => ({
+        prototypeVersionId: newPrototypeVersion.id,
+        userId: null,
+        playerName: player.playerName,
+        originalPlayerId: player.id,
+      })),
+      { transaction, returning: true }
+    );
+  }
 
   // プロトタイプグループの追加
   PrototypeGroupModel.create(
     {
       id: prototypeGroupId,
-      prototypeId: prototype.id,
+      prototypeId: newPrototype.id,
     },
     { transaction }
   );
@@ -106,16 +127,16 @@ export async function createPrototype({
 
   if (type === PROTOTYPE_TYPE.PREVIEW) {
     // パーツの複製
-    const parts = await PartModel.findAll({
+    const editParts = await PartModel.findAll({
       where: {
         prototypeVersionId: editPrototypeDefaultVersionId,
       },
     });
 
-    await PartModel.bulkCreate(
-      parts.map((part) => ({
+    const newParts = await PartModel.bulkCreate(
+      editParts.map((part) => ({
         type: part.type,
-        prototypeVersionId: prototypeVersion.id,
+        prototypeVersionId: newPrototypeVersion.id,
         parentId: null,
         name: part.name,
         description: part.description,
@@ -131,33 +152,47 @@ export async function createPrototype({
         canReverseCardOnDeck: part.canReverseCardOnDeck,
         originalPartId: part.id,
       })),
-      { transaction }
+      { transaction, returning: true }
     );
 
-    // FIXME: ownerIdを最新ものにする
-
     // 親パーツがあるパーツを更新する
-    const partsWithParent = parts.filter((part) => part.parentId !== null);
-    Promise.all(
-      partsWithParent.map(async (part) => {
-        const newParentPart = await PartModel.findOne({
-          where: {
-            originalPartId: part.parentId,
-          },
-        });
+    const editPartsWithParent = editParts.filter(
+      (part) => part.parentId !== null
+    );
+    await Promise.all(
+      editPartsWithParent.map(async (part) => {
+        const newParentPart = newParts.find(
+          (newPart) => newPart.originalPartId === part.parentId
+        );
 
-        if (newParentPart) {
-          return PartModel.update(
-            { ownerId: newParentPart.id },
-            { where: { originalPartId: part.id }, transaction }
-          );
-        }
-        return null;
+        if (!newParentPart) return null;
+        return PartModel.update(
+          { parentId: newParentPart.id },
+          { where: { originalPartId: part.id }, transaction }
+        );
+      })
+    );
+
+    // オーナーを設定する
+    const editPartsWithOwner = editParts.filter(
+      (part) => part.ownerId !== null
+    );
+    await Promise.all(
+      editPartsWithOwner.map(async (part) => {
+        const newOwner = newPlayers.find(
+          (player) => player.originalPlayerId === part.ownerId
+        );
+
+        if (!newOwner) return null;
+        return PartModel.update(
+          { ownerId: newOwner.id },
+          { where: { originalPartId: part.id }, transaction }
+        );
       })
     );
   }
 
-  return prototype;
+  return newPrototype;
 }
 
 export const createPrototypeVersion = async (
@@ -181,22 +216,31 @@ export const createPrototypeVersion = async (
   if (!prototype) {
     throw new Error('プロトタイプが見つかりません');
   }
-  await PlayerModel.bulkCreate(
-    Array.from({ length: prototype.maxPlayers }).map((_, i) => ({
-      prototypeVersionId: newPrototypeVersion.id,
-      playerName: `プレイヤー${i + 1}`,
-    })),
-    { transaction }
-  );
 
-  // パーツの複製
-  const parts = await PartModel.findAll({
+  // プレイヤー作成
+  const players = await PlayerModel.findAll({
     where: {
       prototypeVersionId: originalPrototypeVersion.id,
     },
   });
-  await PartModel.bulkCreate(
-    parts.map((part) => ({
+  const newPlayers = await PlayerModel.bulkCreate(
+    players.map((player) => ({
+      prototypeVersionId: newPrototypeVersion.id,
+      userId: null,
+      playerName: player.playerName,
+      originalPlayerId: player.id,
+    })),
+    { transaction, returning: true }
+  );
+
+  // パーツの複製
+  const originalParts = await PartModel.findAll({
+    where: {
+      prototypeVersionId: originalPrototypeVersion.id,
+    },
+  });
+  const newParts = await PartModel.bulkCreate(
+    originalParts.map((part) => ({
       type: part.type,
       prototypeVersionId: newPrototypeVersion.id,
       parentId: null,
@@ -214,28 +258,42 @@ export const createPrototypeVersion = async (
       canReverseCardOnDeck: part.canReverseCardOnDeck,
       originalPartId: part.id,
     })),
-    { transaction }
+    { transaction, returning: true }
   );
 
-  // FIXME: ownerIdを最新ものにする
-
   // 親パーツがあるパーツを更新する
-  const partsWithParent = parts.filter((part) => part.parentId !== null);
-  Promise.all(
-    partsWithParent.map(async (part) => {
-      const newParentPart = await PartModel.findOne({
-        where: {
-          originalPartId: part.parentId,
-        },
-      });
+  const originalPartsWithParent = originalParts.filter(
+    (part) => part.parentId !== null
+  );
+  await Promise.all(
+    originalPartsWithParent.map(async (part) => {
+      const newParentPart = newParts.find(
+        (newPart) => newPart.originalPartId === part.parentId
+      );
 
-      if (newParentPart) {
-        return PartModel.update(
-          { ownerId: newParentPart.id },
-          { where: { originalPartId: part.id }, transaction }
-        );
-      }
-      return null;
+      if (!newParentPart) return null;
+      return PartModel.update(
+        { parentId: newParentPart.id },
+        { where: { originalPartId: part.id }, transaction }
+      );
+    })
+  );
+
+  // オーナーを設定する
+  const originalPartsWithOwner = originalParts.filter(
+    (part) => part.ownerId !== null
+  );
+  await Promise.all(
+    originalPartsWithOwner.map(async (part) => {
+      const newOwner = newPlayers.find(
+        (player) => player.originalPlayerId === part.ownerId
+      );
+
+      if (!newOwner) return null;
+      return PartModel.update(
+        { ownerId: newOwner.id },
+        { where: { originalPartId: part.id }, transaction }
+      );
     })
   );
 };

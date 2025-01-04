@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import React, { useState, useEffect, useCallback } from 'react';
 
-import { User } from '@/features/prototype/type';
+import { User } from '@/types/models';
 import axiosInstance from '@/utils/axiosInstance';
 
 const PlayerInvite: React.FC = () => {

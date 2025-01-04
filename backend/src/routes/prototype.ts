@@ -27,8 +27,16 @@ router.use(ensureAuthenticated);
 
 /**
  * @swagger
+ * tags:
+ *   name: Prototypes
+ *   description: プロトタイプ管理API
+ */
+
+/**
+ * @swagger
  * /api/prototypes:
  *   get:
+ *     tags: [Prototypes]
  *     summary: プロトタイプ一覧取得
  *     description: ユーザーがアクセス可能なプロトタイプの一覧を取得します。
  *     responses:
@@ -39,7 +47,7 @@ router.use(ensureAuthenticated);
  *             schema:
  *               type: array
  *               items:
- *                 type: PrototypeModel
+ *                 $ref: '#/components/schemas/Prototype'
  */
 router.get('/', async (req: Request, res: Response) => {
   const user = req.user as UserModel;
@@ -51,6 +59,7 @@ router.get('/', async (req: Request, res: Response) => {
  * @swagger
  * /api/prototypes:
  *   post:
+ *     tags: [Prototypes]
  *     summary: プロトタイプ作成
  *     description: 新しいプロトタイプを作成します。
  *     requestBody:
@@ -70,13 +79,19 @@ router.get('/', async (req: Request, res: Response) => {
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 type: PrototypeModel
+ *               $ref: '#/components/schemas/Prototype'
  *       '400':
  *         description: リクエストが不正です
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error400Response'
  *       '500':
  *         description: サーバーエラー
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
  */
 router.post('/', async (req: Request, res: Response) => {
   const user = req.user as UserModel;
@@ -117,6 +132,7 @@ router.post('/', async (req: Request, res: Response) => {
  * @swagger
  * /api/prototypes/{prototypeId}:
  *   get:
+ *     tags: [Prototypes]
  *     summary: プロトタイプ取得
  *     description: 指定されたIDのプロトタイプを取得します。
  *     parameters:
@@ -125,16 +141,20 @@ router.post('/', async (req: Request, res: Response) => {
  *         required: true
  *         description: プロトタイプのID
  *         schema:
- *           type: integer
+ *           type: string
  *     responses:
  *       '200':
  *         description: プロトタイプの詳細を返します
  *         content:
  *           application/json:
  *             schema:
- *               type: PrototypeModel
+ *               $ref: '#/components/schemas/Prototype'
  *       '404':
  *         description: プロトタイプが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
  */
 router.get(
   '/:prototypeId',
@@ -155,6 +175,7 @@ router.get(
  * @swagger
  * /api/prototypes/{prototypeId}:
  *   put:
+ *     tags: [Prototypes]
  *     summary: プロトタイプ更新
  *     description: 指定されたIDのプロトタイプを更新します。
  *     parameters:
@@ -163,16 +184,20 @@ router.get(
  *         required: true
  *         description: プロトタイプのID
  *         schema:
- *           type: integer
+ *           type: string
  *     responses:
  *       '200':
  *         description: プロトタイプを更新しました
  *         content:
  *           application/json:
  *             schema:
- *               type: PrototypeModel
+ *               $ref: '#/components/schemas/Prototype'
  *       '404':
  *         description: プロトタイプが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
  */
 router.put(
   '/:prototypeId',
@@ -204,6 +229,7 @@ router.put(
  * @swagger
  * /api/prototypes/{prototypeId}:
  *   delete:
+ *     tags: [Prototypes]
  *     summary: プロトタイプ削除
  *     description: 指定されたIDのプロトタイプを削除します。
  *     parameters:
@@ -212,16 +238,20 @@ router.put(
  *         required: true
  *         description: プロトタイプのID
  *         schema:
- *           type: integer
+ *           type: string
  *     responses:
  *       '200':
  *         description: プロトタイプを削除しました
  *         content:
  *           application/json:
  *             schema:
- *               type: PrototypeModel
+ *               $ref: '#/components/schemas/SuccessResponse'
  *       '404':
  *         description: プロトタイプが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
  */
 router.delete(
   '/:prototypeId',
@@ -236,7 +266,7 @@ router.delete(
 
     await PrototypeModel.destroy({ where: { id: prototypeId } });
 
-    res.json(prototype);
+    res.json({ message: 'プロトタイプを削除しました' });
   }
 );
 
@@ -244,6 +274,7 @@ router.delete(
  * @swagger
  * /api/prototypes/{prototypeId}/versions:
  *   get:
+ *     tags: [Prototypes]
  *     summary: プロトタイプバージョン一覧取得
  *     description: 指定されたプロトタイプのバージョン一覧を取得します。
  *     parameters:
@@ -262,13 +293,17 @@ router.delete(
  *               type: object
  *               properties:
  *                 prototype:
- *                   type: PrototypeModel
+ *                   $ref: '#/components/schemas/Prototype'
  *                 versions:
  *                   type: array
  *                   items:
- *                     type: PrototypeVersionModel
+ *                     $ref: '#/components/schemas/PrototypeVersion'
  *       '404':
  *         description: プロトタイプが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
  */
 router.get('/:prototypeId/versions', checkPrototypeAccess, async (req, res) => {
   const prototypeId = req.params.prototypeId;
@@ -290,6 +325,7 @@ router.get('/:prototypeId/versions', checkPrototypeAccess, async (req, res) => {
  * @swagger
  * /api/prototypes/groups/{groupId}:
  *   get:
+ *     tags: [Prototypes]
  *     summary: グループのプロトタイプ一覧取得
  *     description: 指定されたグループに属するプロトタイプの一覧を取得します。
  *     parameters:
@@ -307,7 +343,7 @@ router.get('/:prototypeId/versions', checkPrototypeAccess, async (req, res) => {
  *             schema:
  *               type: array
  *               items:
- *                 type: PrototypeModel
+ *                 $ref: '#/components/schemas/Prototype'
  */
 router.get('/groups/:groupId', checkGroupAccess, async (req, res) => {
   const groupId = req.params.groupId;
@@ -331,6 +367,7 @@ router.get('/groups/:groupId', checkGroupAccess, async (req, res) => {
  * @swagger
  * /api/prototypes/groups/{groupId}/accessUsers:
  *   get:
+ *     tags: [Prototypes]
  *     summary: グループへのアクセス権を取得
  *     description: 指定されたグループにアクセス可能なユーザーを取得します。
  *     parameters:
@@ -348,7 +385,7 @@ router.get('/groups/:groupId', checkGroupAccess, async (req, res) => {
  *             schema:
  *               type: array
  *               items:
- *                 type: UserModel
+ *                 $ref: '#/components/schemas/User'
  */
 router.get(
   '/groups/:groupId/accessUsers',
@@ -363,6 +400,7 @@ router.get(
  * @swagger
  * /api/prototypes/groups/{groupId}/invite:
  *   post:
+ *     tags: [Prototypes]
  *     summary: ユーザーにプロトタイプへのアクセス権を付与
  *     description: 指定されたグループにユーザーを招待します。
  *     parameters:
@@ -386,12 +424,28 @@ router.get(
  *     responses:
  *       '200':
  *         description: ユーザーを招待しました
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
  *       '400':
  *         description: リクエストが不正です
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error400Response'
  *       '404':
  *         description: グループが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
  *       '500':
  *         description: サーバーエラー
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
  */
 router.post('/groups/:groupId/invite', checkGroupAccess, async (req, res) => {
   const groupId = req.params.groupId;
@@ -434,6 +488,7 @@ router.post('/groups/:groupId/invite', checkGroupAccess, async (req, res) => {
  * @swagger
  * /api/prototypes/groups/{groupId}/invite/{guestId}:
  *   delete:
+ *     tags: [Prototypes]
  *     summary: ユーザーのアクセス権を削除
  *     description: 指定されたグループからユーザーのアクセス権を削除します。
  *     parameters:
@@ -452,12 +507,28 @@ router.post('/groups/:groupId/invite', checkGroupAccess, async (req, res) => {
  *     responses:
  *       '200':
  *         description: ユーザーのアクセス権を削除しました
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
  *       '400':
  *         description: リクエストが不正です
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error400Response'
  *       '404':
  *         description: グループが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
  *       '500':
  *         description: サーバーエラー
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
  */
 router.delete(
   '/groups/:groupId/invite/:guestId',
@@ -503,6 +574,7 @@ router.delete(
  * @swagger
  * /api/prototypes/{prototypeId}/preview:
  *   post:
+ *     tags: [Prototypes]
  *     summary: プレビュー版作成
  *     description: 指定されたプロトタイプのプレビュー版を作成します。
  *     parameters:
@@ -518,13 +590,19 @@ router.delete(
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 type: PrototypeModel
+ *               $ref: '#/components/schemas/Prototype'
  *       '404':
  *         description: プロトタイプが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
  *       '500':
  *         description: サーバーエラー
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
  */
 router.post(
   '/:prototypeId/preview',
@@ -572,6 +650,7 @@ router.post(
  * @swagger
  * /api/prototypes/{prototypeId}/versions/{prototypeVersionId}:
  *   post:
+ *     tags: [Prototypes]
  *     summary: バージョン作成
  *     description: 指定されたプロトタイプのバージョンを作成します。
  *     parameters:
@@ -601,12 +680,28 @@ router.post(
  *     responses:
  *       '200':
  *         description: 新しいバージョンを作成しました
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
  *       '400':
  *         description: リクエストが不正です
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error400Response'
  *       '404':
  *         description: バージョンが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
  *       '500':
  *         description: サーバーエラー
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
  */
 router.post(
   '/:prototypeId/versions/:prototypeVersionId',

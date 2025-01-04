@@ -1,5 +1,5 @@
-import React from 'react';
 import { Metadata } from 'next';
+import React from 'react';
 
 import GroupPrototypeList from '@/features/prototype/components/organisms/GroupPrototypeList';
 
@@ -9,11 +9,7 @@ export const metadata: Metadata = {
 
 export const runtime = 'edge';
 const PrototypesPage: React.FC = () => {
-  return (
-    <div>
-      <GroupPrototypeList />
-    </div>
-  );
+  return <GroupPrototypeList />;
 };
 
 export default PrototypesPage;
