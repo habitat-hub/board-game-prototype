@@ -144,7 +144,7 @@ export const useCanvasEvents = ({
       newPosition
     );
     if (needsUpdate) {
-      updatePart(draggingPartId, { parentId: parentPart?.id || null });
+      updatePart(draggingPartId, { parentId: parentPart?.id || undefined });
     }
 
     // カードの反転処理

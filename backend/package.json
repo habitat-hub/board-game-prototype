@@ -9,7 +9,7 @@
     "start": "npm run build && node dist/server.js",
     "dev": "ts-node-dev --env-file=.env --respawn --transpile-only --ignore-watch src/swagger-schemas.ts src/server.ts",
     "generate-erd": "ts-node src/scripts/generateErd.ts",
-    "lint": "eslint .",
+    "lint": "tsc --noEmit && eslint .",
     "redoc": "redocly build-docs swagger-output.json --output ../docs/index.html",
     "prepare": "cd ../ && husky backend/.husky",
     "generate-types": "ts-node src/scripts/generateTypes.ts",
