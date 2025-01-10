@@ -1,4 +1,11 @@
-import React, { ChangeEvent, ReactNode, useEffect, useState } from 'react';
+import React, {
+  ChangeEvent,
+  ReactNode,
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+} from 'react';
 
 const TextInput = ({
   value,
@@ -14,10 +21,30 @@ const TextInput = ({
   multiline?: boolean;
 }) => {
   const [inputValue, setInputValue] = useState(value);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const clearDebounceTimer = () => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+  };
+
+  const setDebounceTimer = useCallback(() => {
+    clearDebounceTimer();
+    debounceTimerRef.current = setTimeout(() => {
+      onChange(inputValue);
+    }, 500);
+  }, [inputValue, onChange]);
 
   useEffect(() => {
     setInputValue(value);
   }, [value]);
+
+  useEffect(() => {
+    setDebounceTimer();
+    return clearDebounceTimer;
+  }, [setDebounceTimer]);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -25,15 +52,12 @@ const TextInput = ({
     setInputValue(e.target.value);
   };
 
-  const handleCommit = () => {
-    onChange(inputValue);
-  };
-
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     if (e.key === 'Enter' && !multiline) {
-      handleCommit();
+      clearDebounceTimer();
+      onChange(inputValue);
       (e.currentTarget as HTMLElement).blur();
     }
   };
@@ -45,7 +69,6 @@ const TextInput = ({
       <InputComponent
         value={inputValue}
         onChange={handleChange}
-        onBlur={handleCommit}
         onKeyDown={handleKeyDown}
         rows={multiline ? 3 : undefined}
         className={`h-fit w-full rounded-lg border border-[#f5f5f5] bg-[#f5f5f5] px-2 py-1 pl-6 text-xs hover:border-[#e8e8e8] ${
