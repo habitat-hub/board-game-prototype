@@ -23,6 +23,7 @@ const TextInput = ({
   debounceMs?: number;
 }) => {
   const [inputValue, setInputValue] = useState(value);
+  const [isComposing, setIsComposing] = useState(false);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearDebounceTimer = useCallback(() => {
@@ -35,9 +36,11 @@ const TextInput = ({
   const setDebounceTimer = useCallback(() => {
     clearDebounceTimer();
     debounceTimerRef.current = setTimeout(() => {
-      onChange(inputValue);
+      if (!isComposing) {
+        onChange(inputValue);
+      }
     }, debounceMs);
-  }, [inputValue, onChange, debounceMs, clearDebounceTimer]);
+  }, [inputValue, onChange, debounceMs, clearDebounceTimer, isComposing]);
 
   useEffect(() => {
     setInputValue(value);
@@ -64,6 +67,15 @@ const TextInput = ({
     }
   };
 
+  const handleCompositionStart = () => {
+    setIsComposing(true);
+  };
+
+  const handleCompositionEnd = () => {
+    setIsComposing(false);
+    onChange(inputValue);
+  };
+
   const InputComponent = multiline ? 'textarea' : 'input';
 
   return (
@@ -72,6 +84,8 @@ const TextInput = ({
         value={inputValue}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
+        onCompositionStart={handleCompositionStart}
+        onCompositionEnd={handleCompositionEnd}
         rows={multiline ? 3 : undefined}
         className={`h-fit w-full rounded-lg border border-[#f5f5f5] bg-[#f5f5f5] px-2 py-1 pl-6 text-xs hover:border-[#e8e8e8] ${
           multiline ? 'resize-none' : ''
