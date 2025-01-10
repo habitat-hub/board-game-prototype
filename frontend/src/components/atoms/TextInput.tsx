@@ -13,12 +13,14 @@ const TextInput = ({
   icon,
   classNames,
   multiline = false,
+  debounceMs = 500,
 }: {
   value: string;
   onChange: (value: string) => void;
   icon: ReactNode;
   classNames?: string;
   multiline?: boolean;
+  debounceMs?: number;
 }) => {
   const [inputValue, setInputValue] = useState(value);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -34,8 +36,8 @@ const TextInput = ({
     clearDebounceTimer();
     debounceTimerRef.current = setTimeout(() => {
       onChange(inputValue);
-    }, 500);
-  }, [inputValue, onChange]);
+    }, debounceMs);
+  }, [inputValue, onChange, debounceMs]);
 
   useEffect(() => {
     setInputValue(value);
