@@ -25,19 +25,19 @@ const TextInput = ({
   const [inputValue, setInputValue] = useState(value);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const clearDebounceTimer = () => {
+  const clearDebounceTimer = useCallback(() => {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
       debounceTimerRef.current = null;
     }
-  };
+  }, []);
 
   const setDebounceTimer = useCallback(() => {
     clearDebounceTimer();
     debounceTimerRef.current = setTimeout(() => {
       onChange(inputValue);
     }, debounceMs);
-  }, [inputValue, onChange, debounceMs]);
+  }, [inputValue, onChange, debounceMs, clearDebounceTimer]);
 
   useEffect(() => {
     setInputValue(value);
@@ -46,7 +46,7 @@ const TextInput = ({
   useEffect(() => {
     setDebounceTimer();
     return clearDebounceTimer;
-  }, [setDebounceTimer]);
+  }, [setDebounceTimer, clearDebounceTimer]);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
