@@ -76,22 +76,24 @@ npm run dev
 
 #### データベース
 
-データベースをセットアップするには、Docker と Docker Compose が必要です。
-PostgreSQL サーバーを起動するには、以下のコマンドを実行します。
+PostgreSQL サーバーを起動
 
 ```bash
+cd backend
 make start-db
 ```
 
-データベースを停止するには、以下のコマンドを実行します。
+PostgreSQL サーバーを停止
 
 ```bash
+cd backend
 make stop-db
 ```
 
-データベースのデータを削除するには、以下のコマンドを実行します。
+PostgreSQL サーバーを停止&データ削除
 
 ```bash
+cd backend
 make clean-db
 ```
 
