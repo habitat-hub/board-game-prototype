@@ -20,6 +20,7 @@
 
 - Node.js
 - npm または yarn
+- Docker, Docker Compose
 - その他必要なツールやライブラリ
 
 ### インストール
@@ -33,6 +34,12 @@ cd board-game-prototype
 
 ### フロントエンドのセットアップ
 
+#### 環境設定
+
+```bash
+cp .env_example .env.local
+```
+
 #### パッケージのインストール
 
 ```bash
@@ -40,13 +47,16 @@ cd frontend
 npm ci
 ```
 
+### バックエンドのセットアップ
+
 #### 環境設定
 
 ```bash
-cp .env_example .env.local
+cp .env_example .env
 ```
 
-### バックエンドのセットアップ
+- Google Cloud の API キーを取得して、`.env`ファイルに設定する
+- postgres の接続情報が異なる場合は、`.env`ファイルの DATABASE_URL を変更する
 
 #### パッケージのインストール
 
@@ -55,21 +65,7 @@ cd ../backend
 npm ci
 ```
 
-#### データベースのセットアップ
-
-postgres のデータベースを作成する
-
-#### 環境設定
-
-```bash
-cp .env_example .env
-```
-
-Google Cloud の API キーを取得して、`.env`ファイルに設定する
-
-postgres の接続情報が異なる場合は、`.env`ファイルの DATABASE_URL を変更する
-
-## 実行方法
+## 開発サーバー起動方法
 
 ### フロントエンド
 
@@ -78,7 +74,30 @@ cd frontend
 npm run dev
 ```
 
+#### データベース
+
+データベースをセットアップするには、Docker と Docker Compose が必要です。
+PostgreSQL サーバーを起動するには、以下のコマンドを実行します。
+
+```bash
+make start-db
+```
+
+データベースを停止するには、以下のコマンドを実行します。
+
+```bash
+make stop-db
+```
+
+データベースのデータを削除するには、以下のコマンドを実行します。
+
+```bash
+make clean-db
+```
+
 ### バックエンド
+
+データベースサーバー起動後に起動してください。
 
 ```bash
 cd backend
