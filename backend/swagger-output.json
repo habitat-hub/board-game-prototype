@@ -112,6 +112,12 @@
           "color": {
             "type": "string"
           },
+          "titleColor": {
+            "type": "string"
+          },
+          "playerNameColor": {
+            "type": "string"
+          },
           "position": {
             "type": "object",
             "additionalProperties": true
@@ -157,6 +163,8 @@
           "name",
           "description",
           "color",
+          "titleColor",
+          "playerNameColor",
           "position",
           "width",
           "height",

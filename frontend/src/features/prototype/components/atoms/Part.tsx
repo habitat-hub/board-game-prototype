@@ -118,7 +118,7 @@ const Part = forwardRef<PartHandle, PartProps>(
             x={(part.position.x as number) + 10}
             y={(part.position.y as number) + 20}
             style={{
-              fill: 'black',
+              fill: part.titleColor || 'black',
               fontSize: '14px',
               userSelect: 'none',
             }}
@@ -132,7 +132,7 @@ const Part = forwardRef<PartHandle, PartProps>(
             x={(part.position.x as number) + 10}
             y={(part.position.y as number) + part.height - 20}
             style={{
-              fill: 'black',
+              fill: part.playerNameColor || 'black',
               fontSize: '12px',
               userSelect: 'none',
             }}

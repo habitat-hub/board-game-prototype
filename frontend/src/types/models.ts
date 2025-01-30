@@ -14,6 +14,8 @@ export interface Part {
   name: string;
   description: string;
   color: string;
+  titleColor: string;
+  playerNameColor: string;
   position: Record<string, unknown>;
   width: number;
   height: number;

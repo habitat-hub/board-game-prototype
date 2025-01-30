@@ -22,6 +22,8 @@ export const PART_DEFAULT_CONFIG = {
     height: 150,
     description: '',
     color: '#FFFFFF',
+    titleColor: '#000000',
+    playerNameColor: '#000000',
     isReversible: false,
     configurableTypeAsChild: [],
   },
@@ -32,6 +34,8 @@ export const PART_DEFAULT_CONFIG = {
     height: 50,
     description: '',
     color: '#FFFFFF',
+    titleColor: '#000000',
+    playerNameColor: '#000000',
     configurableTypeAsChild: [],
   },
   HAND: {
@@ -41,6 +45,8 @@ export const PART_DEFAULT_CONFIG = {
     height: 150,
     description: '',
     color: '#FFFFFF',
+    titleColor: '#000000',
+    playerNameColor: '#000000',
     configurableTypeAsChild: ['card'],
   },
   DECK: {
@@ -50,6 +56,8 @@ export const PART_DEFAULT_CONFIG = {
     height: 150,
     description: '',
     color: '#FFFFFF',
+    titleColor: '#000000',
+    playerNameColor: '#000000',
     configurableTypeAsChild: ['card'],
     canReverseCardOnDeck: false,
   },
@@ -60,12 +68,11 @@ export const COLORS = [
   '#00FF00', // Green
   '#0000FF', // Blue
   '#FFFF00', // Yellow
-  '#FF00FF', // Magenta
-  '#00FFFF', // Cyan
-  '#FFA500', // Orange
-  '#800080', // Purple
-  '#008000', // Dark Green
-  '#FFC0CB', // Pink
+];
+
+export const TITLE_COLORS = [
   '#FFFFFF', // White
-  '#808080', // Gray
+  '#9932CC', // Purple
+  '#00FFFF', // Sky Blue
+  '#000000', // Black
 ];
