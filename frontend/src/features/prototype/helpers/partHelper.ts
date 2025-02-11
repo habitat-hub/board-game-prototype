@@ -45,8 +45,8 @@ export const needsParentUpdate = (
   newPosition: { x: number; y: number }
 ) => {
   // ドロップ位置の真下にある親になりえるパーツを探す
-  const parentParts = parts.filter((part) =>
-    part.configurableTypeAsChild.includes(PART_TYPE.CARD)
+  const parentParts = parts.filter((part) => 
+    part.configurableTypeAsChild.includes(draggingPart.type)
   );
   const targetParentPart = parentParts.find((parentPart) => {
     const parentPartPosition = {
