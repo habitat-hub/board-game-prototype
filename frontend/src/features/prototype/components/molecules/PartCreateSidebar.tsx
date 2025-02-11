@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { BiArea } from 'react-icons/bi';
 import {
   Gi3dMeeple,
   GiCard10Clubs,
@@ -10,7 +11,6 @@ import {
 } from 'react-icons/gi';
 import { IoArrowBack } from 'react-icons/io5';
 import { PiSidebarSimpleThin } from 'react-icons/pi';
-import { BiArea } from 'react-icons/bi';
 
 import TextIconButton from '@/components/atoms/TextIconButton';
 import { PART_DEFAULT_CONFIG, PART_TYPE } from '@/features/prototype/const';

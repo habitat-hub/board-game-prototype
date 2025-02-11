@@ -1,7 +1,5 @@
 import { Part } from '@/types/models';
 
-import { PART_TYPE } from '../const';
-
 /**
  * パーツが他のパーツの上にあるかどうかを判定
  * @param partPosition - パーツの位置
