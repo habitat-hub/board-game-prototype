@@ -10,6 +10,7 @@ import {
 } from 'react-icons/gi';
 import { IoArrowBack } from 'react-icons/io5';
 import { PiSidebarSimpleThin } from 'react-icons/pi';
+import { BiArea } from 'react-icons/bi';
 
 import TextIconButton from '@/components/atoms/TextIconButton';
 import { PART_DEFAULT_CONFIG, PART_TYPE } from '@/features/prototype/const';
@@ -129,6 +130,8 @@ export default function PartCreateSidebar({
                   <GiPokerHand className="h-4 w-4 text-gray-500" />
                 ) : part.id === 'deck' ? (
                   <GiStoneBlock className="h-4 w-4 text-gray-500" />
+                ) : part.id === 'area' ? (
+                  <BiArea className="h-4 w-4 text-gray-500" />
                 ) : null;
 
               return (
