@@ -76,3 +76,10 @@ export const TITLE_COLORS = [
   '#00FFFF', // Sky Blue
   '#000000', // Black
 ];
+
+export const PLAYER_NAME_COLORS = [
+  '#FFFFFF', // White
+  '#9932CC', // Purple
+  '#00FFFF', // Sky Blue
+  '#000000', // Black
+];

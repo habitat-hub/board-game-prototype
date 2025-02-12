@@ -22,7 +22,7 @@ export const UPDATABLE_PROTOTYPE_FIELDS = {
     'description',
     'color',
     'titleColor',
-    'playerColor',
+    'playerNameColor',
     'position',
     'width',
     'height',
