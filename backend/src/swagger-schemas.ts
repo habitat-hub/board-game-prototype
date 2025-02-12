@@ -110,6 +110,12 @@ export const swaggerSchemas = {
             "color": {
                   "type": "string"
             },
+            "titleColor": {
+                  "type": "string"
+            },
+            "playerNameColor": {
+                  "type": "string"
+            },
             "position": {
                   "type": "object",
                   "additionalProperties": true
@@ -155,6 +161,8 @@ export const swaggerSchemas = {
             "name",
             "description",
             "color",
+            "titleColor",
+            "playerNameColor",
             "position",
             "width",
             "height",

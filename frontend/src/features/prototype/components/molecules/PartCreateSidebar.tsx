@@ -64,6 +64,8 @@ export default function PartCreateSidebar({
         name: partConfig.name,
         description: partConfig.description,
         color: partConfig.color,
+        titleColor: partConfig.titleColor,
+        playerNameColor: partConfig.playerNameColor,
         position: { x: centerX, y: centerY },
         width: partConfig.width,
         height: partConfig.height,
