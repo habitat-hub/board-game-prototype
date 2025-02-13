@@ -3,6 +3,7 @@ export const PART_TYPE = {
   CARD: 'card',
   HAND: 'hand',
   DECK: 'deck',
+  AREA: 'area',
 };
 
 export const PROTOTYPE_TYPE = {
@@ -52,6 +53,15 @@ export const PART_DEFAULT_CONFIG = {
     color: '#FFFFFF',
     configurableTypeAsChild: ['card'],
     canReverseCardOnDeck: false,
+  },
+  AREA: {
+    id: 'area',
+    name: 'エリア',
+    width: 300,
+    height: 200,
+    description: '',
+    color: '#FFFFFF',
+    configurableTypeAsChild: ['card', 'token', 'hand', 'deck'],
   },
 };
 

@@ -3,6 +3,7 @@ export const PART_TYPE = {
   CARD: 'card',
   HAND: 'hand',
   DECK: 'deck',
+  AREA: 'area',
 };
 
 export const PROTOTYPE_TYPE = {

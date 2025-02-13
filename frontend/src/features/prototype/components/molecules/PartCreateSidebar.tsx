@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { BiArea } from 'react-icons/bi';
 import {
   Gi3dMeeple,
   GiCard10Clubs,
@@ -129,6 +130,8 @@ export default function PartCreateSidebar({
                   <GiPokerHand className="h-4 w-4 text-gray-500" />
                 ) : part.id === 'deck' ? (
                   <GiStoneBlock className="h-4 w-4 text-gray-500" />
+                ) : part.id === 'area' ? (
+                  <BiArea className="h-4 w-4 text-gray-500" />
                 ) : null;
 
               return (

@@ -97,8 +97,10 @@ const Part = forwardRef<PartHandle, PartProps>(
           onTransitionEnd={() => setIsReversing(false)}
           style={{
             stroke: 'gray',
+            strokeDasharray: part.type === PART_TYPE.AREA ? '4' : 'none',
             fill: part.color || 'white',
             // fill: `url(#bgPattern)`, // 画像設定その2
+            opacity: part.type === PART_TYPE.AREA ? 0.6 : 1,
             transform: `
             translate(${part.position.x}px, ${part.position.y}px)
             translate(${part.width / 2}px, ${part.height / 2}px)
