@@ -1,5 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import PartModel from '../models/Part';
+import PartPropertyModel from '../models/PartProperty';
 import PlayerModel from '../models/Player';
 import { MoveOrderType, PART_TYPE, UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import PrototypeVersionModel from '../models/PrototypeVersion';
@@ -8,6 +9,7 @@ import {
   getUnderLappingPart,
   shuffleDeck,
 } from '../helpers/prototypeHelper';
+import { Op } from 'sequelize';
 
 /**
  * プロトタイプ参加
@@ -17,21 +19,24 @@ function handleJoinPrototype(socket: Socket) {
   socket.on(
     'JOIN_PROTOTYPE',
     async ({ prototypeVersionId }: { prototypeVersionId: string }) => {
-      const prototypeVersion =
-        await PrototypeVersionModel.findByPk(prototypeVersionId);
-      if (!prototypeVersion) {
-        return;
-      }
-
-      const parts = await PartModel.findAll({
-        where: { prototypeVersionId: prototypeVersionId },
-      });
-      const players = await PlayerModel.findAll({
-        where: { prototypeVersionId: prototypeVersionId },
-      });
+      const prototypeVersion = await PrototypeVersionModel.findByPk(prototypeVersionId);
+      if (!prototypeVersion) return;
 
       socket.join(prototypeVersionId);
+
+      // 依存関係のないデータを並列で取得
+      const [parts, players] = await Promise.all([
+        PartModel.findAll({ where: { prototypeVersionId } }),
+        PlayerModel.findAll({ where: { prototypeVersionId } })
+      ]);
+
+      // 正規化: 別々のイベントでデータを送信
+      const properties = await PartPropertyModel.findAll({
+        where: { partId: { [Op.in]: parts.map(p => p.id) } }
+      });
+
       socket.emit('UPDATE_PARTS', parts);
+      socket.emit('UPDATE_PART_PROPERTIES', properties);
       socket.emit('UPDATE_PLAYERS', players);
     }
   );
@@ -48,24 +53,44 @@ function handleAddPart(socket: Socket, io: Server) {
     async ({
       prototypeVersionId,
       part,
+      properties,
     }: {
       prototypeVersionId: string;
-      part: PartModel;
+      part: Omit<PartModel, 'id'>;
+      properties: {
+        front: Omit<PartPropertyModel, 'id' | 'partId'>;
+        back?: Omit<PartPropertyModel, 'id' | 'partId'>;
+      };
     }) => {
       const maxOrder = await PartModel.max('order', {
         where: { prototypeVersionId },
       });
 
-      await PartModel.create({
+      const newPart = await PartModel.create({
         ...part,
         prototypeVersionId,
-        order: ((maxOrder as number) + 1) / 2, // NOTE: 新しいパーツは一番上に配置する
-      });
-      const parts = await PartModel.findAll({
-        where: { prototypeVersionId },
+        order: ((maxOrder as number) + 1) / 2,
       });
 
-      io.to(prototypeVersionId).emit('UPDATE_PARTS', parts);
+      // 正規化: プロパティを別々に作成
+      const newProperties = [];
+      newProperties.push(await PartPropertyModel.create({
+        ...properties.front,
+        partId: newPart.id,
+        side: 'front',
+      }));
+
+      if (properties.back) {
+        newProperties.push(await PartPropertyModel.create({
+          ...properties.back,
+          partId: newPart.id,
+          side: 'back',
+        }));
+      }
+
+      // 別々のイベントで通知
+      io.to(prototypeVersionId).emit('ADD_PART', newPart);
+      io.to(prototypeVersionId).emit('ADD_PART_PROPERTIES', newProperties);
     }
   );
 }
@@ -82,31 +107,57 @@ function handleUpdatePart(socket: Socket, io: Server) {
       prototypeVersionId,
       partId,
       updatePart,
+      updateProperties,
     }: {
       prototypeVersionId: string;
       partId: number;
-      updatePart: PartModel;
+      updatePart: Partial<PartModel>;
+      updateProperties?: {
+        front?: Partial<PartPropertyModel>;
+        back?: Partial<PartPropertyModel>;
+      };
     }) => {
-      const updateData = Object.entries(updatePart).reduce(
-        (acc, [key, value]) => {
-          if (
-            value !== undefined &&
-            UPDATABLE_PROTOTYPE_FIELDS.PART.includes(key)
-          ) {
-            return { ...acc, [key]: value };
-          }
-          return acc;
-        },
-        {} as Partial<PartModel>
-      );
-      await PartModel.update(updateData, {
-        where: { id: partId },
-      });
+      // Partの更新
+      if (Object.keys(updatePart).length > 0) {
+        const updateData = Object.entries(updatePart).reduce(
+          (acc, [key, value]) => {
+            if (value !== undefined && UPDATABLE_PROTOTYPE_FIELDS.PART.includes(key)) {
+              return { ...acc, [key]: value };
+            }
+            return acc;
+          },
+          {} as Partial<PartModel>
+        );
+        await PartModel.update(updateData, { where: { id: partId } });
+        const updatedPart = await PartModel.findByPk(partId);
+        io.to(prototypeVersionId).emit('UPDATE_PART', updatedPart);
+      }
 
-      const parts = await PartModel.findAll({
-        where: { prototypeVersionId },
-      });
-      io.to(prototypeVersionId).emit('UPDATE_PARTS', parts);
+      // PartPropertiesの更新
+      if (updateProperties) {
+        const updatedProperties = [];
+        if (updateProperties.front) {
+          await PartPropertyModel.update(
+            updateProperties.front,
+            { where: { partId, side: 'front' } }
+          );
+          updatedProperties.push(await PartPropertyModel.findOne({
+            where: { partId, side: 'front' }
+          }));
+        }
+        if (updateProperties.back) {
+          await PartPropertyModel.update(
+            updateProperties.back,
+            { where: { partId, side: 'back' } }
+          );
+          updatedProperties.push(await PartPropertyModel.findOne({
+            where: { partId, side: 'back' }
+          }));
+        }
+        if (updatedProperties.length > 0) {
+          io.to(prototypeVersionId).emit('UPDATE_PART_PROPERTIES', updatedProperties);
+        }
+      }
     }
   );
 }
@@ -126,11 +177,11 @@ function handleDeletePart(socket: Socket, io: Server) {
       prototypeVersionId: string;
       partId: number;
     }) => {
+      // PartPropertyは CASCADE で自動的に削除される
       await PartModel.destroy({ where: { id: partId } });
-      const parts = await PartModel.findAll({
-        where: { prototypeVersionId },
-      });
-      io.to(prototypeVersionId).emit('UPDATE_PARTS', parts);
+      
+      // 削除イベントを送信
+      io.to(prototypeVersionId).emit('DELETE_PART', { partId });
     }
   );
 }
