@@ -12,6 +12,8 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [showLogout, setShowLogout] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
+  const [isContentShort, setIsContentShort] = useState(true);
+  const contentRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const logoutRef = useRef(null);
@@ -52,6 +54,30 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     };
   }, [logoutRef]);
 
+  // コンテンツの高さをチェック
+  useEffect(() => {
+    const checkContentHeight = () => {
+      if (contentRef.current) {
+        const windowHeight = window.innerHeight;
+        const contentHeight = contentRef.current.scrollHeight;
+        const headerHeight = 48; // ヘッダーの高さ
+        const footerHeight = 32; // フッターの高さ
+
+        // コンテンツ + ヘッダー + フッター が画面高さより小さい場合
+        setIsContentShort(
+          contentHeight + headerHeight + footerHeight <= windowHeight
+        );
+      }
+    };
+
+    checkContentHeight();
+    window.addEventListener('resize', checkContentHeight);
+
+    return () => {
+      window.removeEventListener('resize', checkContentHeight);
+    };
+  }, [children]);
+
   /**
    * ログアウトする
    */
@@ -73,11 +99,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const shouldHideFooter = hideFooterPattern.test(pathname);
 
   return (
-    <div className="h-screen">
-      <header
-        className="bg-blue-600 text-white p-4 flex justify-between items-center"
-        style={{ height: '48px' }}
-      >
+    <div className="min-h-screen flex flex-col">
+      <header className="bg-blue-600 text-white p-4 flex justify-between items-center h-[48px]">
         <button
           onClick={() => {
             if (pathname !== '/prototypes' && pathname !== '/') {
@@ -108,11 +131,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         )}
       </header>
-      <main style={{ height: 'calc(100vh - 80px)' }}>{children}</main>
+
+      <main ref={contentRef} className="flex-1">
+        {children}
+      </main>
+
       {!shouldHideFooter && (
         <footer
-          className="bg-blue-600 text-white p-2 text-center"
-          style={{ height: '32px' }}
+          className={`bg-blue-600 text-white p-2 text-center h-[32px] ${
+            isContentShort ? 'mt-auto' : ''
+          }`}
         >
           &copy; 2024 Code-Son All rights reserved.
         </footer>

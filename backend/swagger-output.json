@@ -922,6 +922,26 @@
         }
       }
     },
+    "/api/prototypes/{prototypeId}/duplicate": {
+      "post": {
+        "tags": [
+          "Prototypes"
+        ],
+        "summary": "プロトタイプの複製",
+        "description": "指定されたプロトタイプを複製します。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/prototypes/{prototypeId}/preview": {
       "post": {
         "tags": [
