@@ -111,7 +111,7 @@ router.post('/', async (req: Request, res: Response) => {
     const newPrototype = await createPrototype({
       userId: user.id,
       name,
-      type: PROTOTYPE_TYPE.EDIT,
+      type: 'EDIT',
       groupId: null,
       editPrototypeDefaultVersionId: null,
       minPlayers: playerCount,
@@ -572,6 +572,56 @@ router.delete(
 
 /**
  * @swagger
+ * /api/prototypes/{prototypeId}/duplicate:
+ *   post:
+ *     tags: [Prototypes]
+ *     summary: プロトタイプの複製
+ *     description: 指定されたプロトタイプを複製します。
+ *     parameters:
+ *       - name: prototypeId
+ *         in: path
+ *         required: true
+ *         description: プロトタイプのID
+ *         schema:
+ *           type: string
+ */
+router.post(
+  '/:prototypeId/duplicate',
+  checkPrototypeAccess,
+  async (req, res) => {
+    const prototypeId = req.params.prototypeId;
+    const prototype = await PrototypeModel.findByPk(prototypeId);
+    if (!prototype) {
+      res.status(404).json({ error: 'プロトタイプが見つかりません' });
+      return;
+    }
+
+    const transaction = await sequelize.transaction();
+    try {
+      await createPrototype({
+        userId: prototype.userId,
+        name: `${prototype.name} - 複製版`,
+        type: 'EDIT',
+        groupId: null,
+        editPrototypeDefaultVersionId: null,
+        minPlayers: prototype.minPlayers,
+        maxPlayers: prototype.maxPlayers,
+        transaction,
+        needsPartDuplicate: true,
+      });
+
+      await transaction.commit();
+      res.status(200).json({ message: 'プロトタイプを複製しました' });
+    } catch (error) {
+      await transaction.rollback();
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+    }
+  }
+);
+
+/**
+ * @swagger
  * /api/prototypes/{prototypeId}/preview:
  *   post:
  *     tags: [Prototypes]
@@ -628,12 +678,13 @@ router.post(
       const previewPrototype = await createPrototype({
         userId: editPrototype.userId,
         name: `${editPrototype.name} - プレビュー版`,
-        type: PROTOTYPE_TYPE.PREVIEW,
+        type: 'PREVIEW',
         groupId: editPrototype.groupId,
         editPrototypeDefaultVersionId: editPrototypeDefaultVersion.id,
         minPlayers: editPrototype.minPlayers,
         maxPlayers: editPrototype.maxPlayers,
         transaction,
+        needsPartDuplicate: true,
       });
 
       await transaction.commit();

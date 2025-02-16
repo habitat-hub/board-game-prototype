@@ -3,11 +3,16 @@
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
+import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { IoAdd, IoArrowBack } from 'react-icons/io5';
 
 import { PROTOTYPE_TYPE, VERSION_NUMBER } from '@/features/prototype/const';
 import { Prototype, PrototypeVersion } from '@/types/models';
 import axiosInstance from '@/utils/axiosInstance';
+import formatDate from '@/utils/dateFormat';
+
+type SortKey = 'versionNumber' | 'createdAt';
+type SortOrder = 'asc' | 'desc';
 
 const GroupPrototypeList: React.FC = () => {
   const router = useRouter();
@@ -23,6 +28,8 @@ const GroupPrototypeList: React.FC = () => {
       versions: PrototypeVersion[];
     }[]
   >([]);
+  const [sortKey, setSortKey] = useState<SortKey>('createdAt');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
   const getPrototypeGroups = useCallback(async () => {
     const response = await axiosInstance.get(
@@ -66,6 +73,36 @@ const GroupPrototypeList: React.FC = () => {
       }
     );
     await getPrototypeGroups();
+  };
+
+  // ソート関数
+  const sortVersions = useCallback(
+    (versions: PrototypeVersion[]) => {
+      return [...versions].sort((a, b) => {
+        const compareValue =
+          sortKey === 'createdAt'
+            ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            : b.versionNumber.localeCompare(a.versionNumber);
+        return sortOrder === 'asc' ? -compareValue : compareValue;
+      });
+    },
+    [sortKey, sortOrder]
+  );
+
+  const handleSort = (key: SortKey) => {
+    setSortOrder((currentOrder) =>
+      sortKey === key ? (currentOrder === 'asc' ? 'desc' : 'asc') : 'desc'
+    );
+    setSortKey(key);
+  };
+
+  const getSortIcon = (key: SortKey) => {
+    if (sortKey !== key) return <FaSort className="w-4 h-4" />;
+    return sortOrder === 'asc' ? (
+      <FaSortUp className="w-4 h-4" />
+    ) : (
+      <FaSortDown className="w-4 h-4" />
+    );
   };
 
   // プロトタイプを取得する
@@ -121,25 +158,36 @@ const GroupPrototypeList: React.FC = () => {
       {previewPrototypes.map(({ prototype, versions }, index) => (
         <div key={prototype.id} className="mb-8">
           <h2 className="text-lg font-semibold mb-4">
-            プレビュー版 {index + 1} （作成日：
-            {new Date(versions[0].createdAt).toLocaleDateString('ja-JP', {
-              year: 'numeric',
-              month: '2-digit',
-              day: '2-digit',
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-            ）
+            プレビュー版 {index + 1}
           </h2>
           <div className="shadow-lg rounded-lg overflow-hidden">
+            <div className="bg-gray-50 border-b border-gray-200">
+              <div className="flex items-center p-4 text-sm font-medium text-gray-500">
+                <button
+                  onClick={() => handleSort('versionNumber')}
+                  className="flex-1 flex items-center gap-1 hover:text-gray-700"
+                >
+                  バージョン
+                  {getSortIcon('versionNumber')}
+                </button>
+                <button
+                  onClick={() => handleSort('createdAt')}
+                  className="w-32 flex items-center gap-1 hover:text-gray-700"
+                >
+                  作成日
+                  {getSortIcon('createdAt')}
+                </button>
+                <div className="w-32" /> {/* ボタン用のスペース */}
+              </div>
+            </div>
             <ul className="divide-y divide-gray-200">
-              {versions.map((version) => (
+              {sortVersions(versions).map((version) => (
                 <Link
                   key={version.id}
                   href={`/prototypes/${version.prototypeId}/versions/${version.id}/play`}
                 >
                   <li className="hover:bg-gray-100 transition-colors duration-200 flex justify-between items-center p-4 border border-gray-200">
-                    <div className="flex items-center gap-2">
+                    <div className="flex-1 flex items-center gap-2">
                       <span>
                         {version.versionNumber === VERSION_NUMBER.MASTER
                           ? 'Version'
@@ -157,22 +205,27 @@ const GroupPrototypeList: React.FC = () => {
                         </span>
                       )}
                     </div>
-                    {version.versionNumber === VERSION_NUMBER.MASTER && (
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleCreateRoom(
-                            version.prototypeId,
-                            version.id,
-                            versions
-                          );
-                        }}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm text-white bg-blue-500 rounded-md hover:bg-blue-600"
-                      >
-                        <IoAdd className="h-4 w-4" />
-                        ルームを作成
-                      </button>
-                    )}
+                    <span className="w-32 text-sm text-gray-500">
+                      {formatDate(version.createdAt, true)}
+                    </span>
+                    <div className="w-32">
+                      {version.versionNumber === VERSION_NUMBER.MASTER && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleCreateRoom(
+                              version.prototypeId,
+                              version.id,
+                              versions
+                            );
+                          }}
+                          className="w-full flex items-center gap-1 px-3 py-1.5 text-sm text-white bg-blue-500 rounded-md hover:bg-blue-600"
+                        >
+                          <IoAdd className="h-4 w-4" />
+                          ルームを作成
+                        </button>
+                      )}
+                    </div>
                   </li>
                 </Link>
               ))}

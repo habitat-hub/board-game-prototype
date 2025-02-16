@@ -2,7 +2,7 @@ import { Transaction } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 import PrototypeModel from '../models/Prototype';
-import { PROTOTYPE_TYPE, PROTOTYPE_VERSION } from '../const';
+import { PROTOTYPE_VERSION } from '../const';
 import PrototypeVersionModel from '../models/PrototypeVersion';
 import PlayerModel from '../models/Player';
 import PrototypeGroupModel from '../models/PrototypeGroup';
@@ -32,15 +32,17 @@ export async function createPrototype({
   minPlayers,
   maxPlayers,
   transaction,
+  needsPartDuplicate = false,
 }: {
   userId: string;
   name: string;
-  type: typeof PROTOTYPE_TYPE.EDIT | typeof PROTOTYPE_TYPE.PREVIEW;
+  type: 'EDIT' | 'PREVIEW';
   editPrototypeDefaultVersionId: string | null;
   groupId: string | null;
   minPlayers: number;
   maxPlayers: number;
   transaction: Transaction;
+  needsPartDuplicate?: boolean;
 }) {
   const prototypeGroupId = groupId ?? uuidv4();
 
@@ -108,7 +110,7 @@ export async function createPrototype({
   );
 
   // 編集用の場合は、アクセス権を作成する
-  if (type === PROTOTYPE_TYPE.EDIT) {
+  if (type === 'EDIT') {
     const access = await AccessModel.create(
       {
         prototypeGroupId: prototypeGroupId,
@@ -125,7 +127,7 @@ export async function createPrototype({
     );
   }
 
-  if (type === PROTOTYPE_TYPE.PREVIEW) {
+  if (needsPartDuplicate) {
     // パーツの複製
     const editParts = await PartModel.findAll({
       where: {
