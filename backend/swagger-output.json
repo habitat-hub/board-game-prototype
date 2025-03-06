@@ -112,10 +112,7 @@
           "color": {
             "type": "string"
           },
-          "titleColor": {
-            "type": "string"
-          },
-          "playerNameColor": {
+          "textColor": {
             "type": "string"
           },
           "position": {
@@ -163,8 +160,7 @@
           "name",
           "description",
           "color",
-          "titleColor",
-          "playerNameColor",
+          "textColor",
           "position",
           "width",
           "height",

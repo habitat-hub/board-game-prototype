@@ -10,8 +10,7 @@ class PartModel extends Model {
   public name!: string;
   public description!: string;
   public color!: string;
-  public titleColor!: string;
-  public playerNameColor!: string;
+  public textColor!: string;
   public position!: { x: number; y: number };
   public width!: number;
   public height!: number;
@@ -64,11 +63,7 @@ PartModel.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    titleColor: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    playerNameColor: {
+    textColor: {
       type: DataTypes.STRING,
       allowNull: false,
     },

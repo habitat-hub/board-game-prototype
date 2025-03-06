@@ -7,12 +7,7 @@ import Dropdown from '@/components/atoms/Dropdown';
 import NumberInput from '@/components/atoms/NumberInput';
 import TextIconButton from '@/components/atoms/TextIconButton';
 import TextInput from '@/components/atoms/TextInput';
-import {
-  COLORS,
-  PART_TYPE,
-  PLAYER_NAME_COLORS,
-  TITLE_COLORS,
-} from '@/features/prototype/const';
+import { COLORS, PART_TYPE, TEXT_COLORS } from '@/features/prototype/const';
 import { Part, Player } from '@/types/models';
 
 export default function PartPropertySidebar({
@@ -51,8 +46,7 @@ export default function PartPropertySidebar({
       name: selectedPart.name,
       description: selectedPart.description,
       color: selectedPart.color,
-      titleColor: selectedPart.titleColor,
-      playerNameColor: selectedPart.playerNameColor,
+      textColor: selectedPart.textColor,
       position: {
         x: (selectedPart.position.x as number) + 10,
         y: (selectedPart.position.y as number) + 10,
@@ -181,40 +175,23 @@ export default function PartPropertySidebar({
                 />
               </div>
               <p className="text-[9px] font-medium text-gray-500">
-                タイトルカラー
+                テキストカラー
               </p>
               <div className="w-full mb-2 px-4">
                 <div className="grid grid-cols-4 gap-2">
-                  {TITLE_COLORS.map((titleColor) => (
+                  {TEXT_COLORS.map((textColor) => (
                     <button
-                      key={titleColor}
-                      onClick={() =>
-                        updatePart(selectedPart.id, { titleColor })
-                      }
+                      key={textColor}
+                      onClick={() => updatePart(selectedPart.id, { textColor })}
                       className={`w-5 h-5 rounded-full border-2 ${
-                        selectedPart.titleColor === titleColor
+                        selectedPart.textColor === textColor
                           ? 'border-blue-500'
                           : 'border-gray-300'
                       }`}
-                      style={{ backgroundColor: titleColor }}
-                      title={titleColor}
+                      style={{ backgroundColor: textColor }}
+                      title={textColor}
                     />
                   ))}
-                </div>
-                <div className="mt-3 flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={selectedPart.titleColor || '#000000'}
-                    onChange={(e) =>
-                      updatePart(selectedPart.id, {
-                        titleColor: e.target.value,
-                      })
-                    }
-                    className="w-5 h-5"
-                  />
-                  <span className="text-sm text-gray-600">
-                    カスタムカラーを選択
-                  </span>
                 </div>
               </div>
               <p className="text-[9px] font-medium text-gray-500">背景色</p>
@@ -248,47 +225,6 @@ export default function PartPropertySidebar({
                   </span>
                 </div>
               </div>
-              {selectedPart.type === PART_TYPE.HAND && (
-                <>
-                  <p className="text-[9px] font-medium text-gray-500">
-                    プレイヤーカラー
-                  </p>
-                  <div className="w-full mb-2 px-4">
-                    <div className="grid grid-cols-4 gap-2">
-                      {PLAYER_NAME_COLORS.map((playerNameColor) => (
-                        <button
-                          key={playerNameColor}
-                          onClick={() =>
-                            updatePart(selectedPart.id, { playerNameColor })
-                          }
-                          className={`w-5 h-5 rounded-full border-2 ${
-                            selectedPart.playerNameColor === playerNameColor
-                              ? 'border-blue-500'
-                              : 'border-gray-300'
-                          }`}
-                          style={{ backgroundColor: playerNameColor }}
-                          title={playerNameColor}
-                        />
-                      ))}
-                    </div>
-                    <div className="mt-3 flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={selectedPart.color || '#FFFFFF'}
-                        onChange={(e) =>
-                          updatePart(selectedPart.id, {
-                            playerNameColor: e.target.value,
-                          })
-                        }
-                        className="w-5 h-5"
-                      />
-                      <span className="text-sm text-gray-600">
-                        カスタムカラーを選択
-                      </span>
-                    </div>
-                  </div>
-                </>
-              )}
             </div>
           </div>
           {selectedPart.type === PART_TYPE.CARD && (
