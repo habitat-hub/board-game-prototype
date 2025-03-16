@@ -14,7 +14,7 @@ import { PiSidebarSimpleThin } from 'react-icons/pi';
 
 import TextIconButton from '@/components/atoms/TextIconButton';
 import { PART_DEFAULT_CONFIG, PART_TYPE } from '@/features/prototype/const';
-import { Part, Player } from '@/types/models';
+import { Part, PartProperty, Player } from '@/types/models';
 
 export default function PartCreateSidebar({
   prototypeName,
@@ -28,7 +28,7 @@ export default function PartCreateSidebar({
   prototypeVersionNumber?: string;
   groupId: string;
   players: Player[];
-  onAddPart: (part: Part) => void;
+  onAddPart: (part: Part, properties: PartProperty[]) => void;
   mainViewRef: React.RefObject<HTMLDivElement>;
 }) {
   const router = useRouter();
@@ -62,16 +62,15 @@ export default function PartCreateSidebar({
       > = {
         type: partId,
         parentId: undefined,
-        name: partConfig.name,
-        description: partConfig.description,
-        color: partConfig.color,
         position: { x: centerX, y: centerY },
         width: partConfig.width,
         height: partConfig.height,
         configurableTypeAsChild: partConfig.configurableTypeAsChild,
         originalPartId: undefined,
       };
+      let canHaveBackProperty = false;
       if (partId === PART_TYPE.CARD) {
+        canHaveBackProperty = true;
         newPart.isReversible = (
           partConfig as typeof PART_DEFAULT_CONFIG.CARD
         ).isReversible;
@@ -81,7 +80,22 @@ export default function PartCreateSidebar({
         newPart.ownerId = players[0].id;
       }
 
-      onAddPart(newPart as Part);
+      const commonProperties = {
+        name: partConfig.name,
+        description: partConfig.description,
+        color: partConfig.color,
+        image: '',
+      };
+
+      const newPartProperties: Omit<
+        PartProperty,
+        'id' | 'partId' | 'createdAt' | 'updatedAt'
+      >[] = [{ side: 'front', ...commonProperties }];
+
+      if (canHaveBackProperty) {
+        newPartProperties.push({ side: 'back', ...commonProperties });
+      }
+      onAddPart(newPart as Part, newPartProperties as PartProperty[]);
     }
   };
 

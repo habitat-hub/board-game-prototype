@@ -6,7 +6,13 @@ import { io } from 'socket.io-client';
 
 import Canvas from '@/features/prototype/components/organisms/Canvas';
 import { PROTOTYPE_TYPE } from '@/features/prototype/const';
-import { Part, Player, Prototype, PrototypeVersion } from '@/types/models';
+import {
+  Part,
+  PartProperty,
+  Player,
+  Prototype,
+  PrototypeVersion,
+} from '@/types/models';
 import axiosInstance from '@/utils/axiosInstance';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
@@ -24,6 +30,7 @@ const PrototypeEdit: React.FC = () => {
     | null
   >(null);
   const [parts, setParts] = useState<Part[]>([]);
+  const [properties, setProperties] = useState<PartProperty[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
 
   // socket通信の設定
@@ -31,8 +38,9 @@ const PrototypeEdit: React.FC = () => {
     // サーバーに接続した後、特定のプロトタイプに参加
     socket.emit('JOIN_PROTOTYPE', { prototypeVersionId: versionId });
 
-    socket.on('UPDATE_PARTS', (parts) => {
+    socket.on('UPDATE_PARTS', ({ parts, properties }) => {
       setParts(parts);
+      setProperties(properties);
     });
 
     socket.on('UPDATE_PLAYERS', (players: Player[]) => {
@@ -72,6 +80,7 @@ const PrototypeEdit: React.FC = () => {
     <Canvas
       prototypeName={prototype.name}
       parts={parts}
+      properties={properties}
       players={players}
       prototypeVersionId={versionId}
       prototypeVersionNumber={versionNumber}

@@ -9,10 +9,15 @@ import { PART_TYPE, PROTOTYPE_TYPE } from '@/features/prototype/const';
 import { useCard } from '@/features/prototype/hooks/useCard';
 import { useDeck } from '@/features/prototype/hooks/useDeck';
 import { MoveOrderType, PartHandle } from '@/features/prototype/type';
-import { Part as PartType, Player } from '@/types/models';
+import {
+  Part as PartType,
+  PartProperty as PropertyType,
+  Player,
+} from '@/types/models';
 
 interface PartProps {
   part: PartType;
+  properties: PropertyType[];
   players: Player[];
   isOtherPlayerCard: boolean;
   prototypeType: typeof PROTOTYPE_TYPE.EDIT | typeof PROTOTYPE_TYPE.PREVIEW;
@@ -25,6 +30,7 @@ const Part = forwardRef<PartHandle, PartProps>(
   (
     {
       part,
+      properties,
       players,
       isOtherPlayerCard,
       prototypeType,
@@ -51,6 +57,12 @@ const Part = forwardRef<PartHandle, PartProps>(
       [prototypeType, isOtherPlayerCard]
     );
 
+    // 対象面（表or裏）のプロパティを取得
+    const targetProperty = useMemo(() => {
+      const side = part.isFlipped ? 'back' : 'front';
+      return properties.find((p) => p.side === side);
+    }, [part, properties]);
+
     return (
       <svg
         key={part.id}
@@ -72,7 +84,7 @@ const Part = forwardRef<PartHandle, PartProps>(
         }}
       >
         {/* ツールチップ */}
-        <title>{part.description}</title>
+        <title>{targetProperty?.description}</title>
 
         {/* 画像設定その1 */}
         {/* <defs>
@@ -98,7 +110,7 @@ const Part = forwardRef<PartHandle, PartProps>(
           style={{
             stroke: 'gray',
             strokeDasharray: part.type === PART_TYPE.AREA ? '4' : 'none',
-            fill: part.color || 'white',
+            fill: targetProperty?.color || 'white',
             // fill: `url(#bgPattern)`, // 画像設定その2
             opacity: part.type === PART_TYPE.AREA ? 0.6 : 1,
             transform: `
@@ -115,7 +127,7 @@ const Part = forwardRef<PartHandle, PartProps>(
           rx={10}
         />
         {/* タイトル */}
-        {!isFlippedNeeded && !isFlipped && (
+        {!isFlippedNeeded && (
           <text
             x={(part.position.x as number) + 10}
             y={(part.position.y as number) + 20}
@@ -125,7 +137,7 @@ const Part = forwardRef<PartHandle, PartProps>(
               userSelect: 'none',
             }}
           >
-            {part.name}
+            {targetProperty?.name}
           </text>
         )}
         {/* 割り当てられているユーザー */}

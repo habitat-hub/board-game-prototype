@@ -2,18 +2,20 @@
 
 import { useRouter } from 'next/navigation';
 import { FaRegCopy, FaRegTrashAlt } from 'react-icons/fa';
+import React, { useEffect, useMemo } from 'react';
 
 import Dropdown from '@/components/atoms/Dropdown';
 import NumberInput from '@/components/atoms/NumberInput';
 import TextIconButton from '@/components/atoms/TextIconButton';
 import TextInput from '@/components/atoms/TextInput';
 import { COLORS, PART_TYPE } from '@/features/prototype/const';
-import { Part, Player } from '@/types/models';
+import { Part, PartProperty, Player } from '@/types/models';
 
 export default function PartPropertySidebar({
   groupId,
   players,
   selectedPart,
+  selectedPartProperties,
   onAddPart,
   onDeletePart,
   updatePart,
@@ -21,15 +23,25 @@ export default function PartPropertySidebar({
   groupId: string;
   players: Player[];
   selectedPart: Part | null;
-  onAddPart: (part: Part) => void;
+  selectedPartProperties: PartProperty[] | null;
+  onAddPart: (part: Part, properties: PartProperty[]) => void;
   onDeletePart: () => void;
   updatePart: (
     partId: number,
-    updatePart: Partial<Part>,
+    updatePart?: Partial<Part>,
+    updateProperties?: Partial<PartProperty>[],
     isFlipped?: boolean
   ) => void;
 }) {
   const router = useRouter();
+
+  // currentPropertyを取得
+  const currentProperty = useMemo(() => {
+    if (!selectedPart || !selectedPartProperties) return null;
+    return selectedPartProperties.find(
+      (p) => p.side === (selectedPart.isFlipped ? 'back' : 'front')
+    );
+  }, [selectedPart, selectedPartProperties]);
 
   /**
    * パーツを複製する
@@ -43,9 +55,6 @@ export default function PartPropertySidebar({
     > = {
       type: selectedPart.type,
       parentId: selectedPart.parentId,
-      name: selectedPart.name,
-      description: selectedPart.description,
-      color: selectedPart.color,
       position: {
         x: (selectedPart.position.x as number) + 10,
         y: (selectedPart.position.y as number) + 10,
@@ -63,7 +72,32 @@ export default function PartPropertySidebar({
       newPart.ownerId = selectedPart.ownerId;
     }
 
-    onAddPart(newPart as Part);
+    if (!selectedPartProperties) return;
+
+    const newPartProperties: Omit<
+      PartProperty,
+      'id' | 'partId' | 'createdAt' | 'updatedAt'
+    >[] = selectedPartProperties.map((property) => {
+      return {
+        side: property.side,
+        name: property.name,
+        description: property.description,
+        color: property.color,
+        image: property.image,
+      };
+    });
+    onAddPart(newPart as Part, newPartProperties as PartProperty[]);
+  };
+
+  // propertyの値が変化している場合のみ更新処理を呼ぶ
+  const handleUpdateProperty = (property: Partial<PartProperty>) => {
+    if (currentProperty && selectedPart) {
+      const updatedProperty = { ...currentProperty, ...property };
+      // 現在の値と新しい値を比較
+      if (JSON.stringify(currentProperty) !== JSON.stringify(updatedProperty)) {
+        updatePart(selectedPart.id, undefined, [updatedProperty]);
+      }
+    }
   };
 
   return (
@@ -153,10 +187,8 @@ export default function PartPropertySidebar({
               <p className="text-[9px] font-medium text-gray-500">名前</p>
               <div className="flex w-full mb-2">
                 <TextInput
-                  value={selectedPart.name}
-                  onChange={(name) => {
-                    updatePart(selectedPart.id, { name });
-                  }}
+                  value={currentProperty?.name ?? ''}
+                  onChange={(name) => handleUpdateProperty({ name })}
                   classNames="w-full"
                   icon={<p>T</p>}
                 />
@@ -164,10 +196,10 @@ export default function PartPropertySidebar({
               <p className="text-[9px] font-medium text-gray-500">説明</p>
               <div className="flex w-full mb-2">
                 <TextInput
-                  value={selectedPart.description}
-                  onChange={(description) => {
-                    updatePart(selectedPart.id, { description });
-                  }}
+                  value={currentProperty?.description ?? ''}
+                  onChange={(description) =>
+                    handleUpdateProperty({ description })
+                  }
                   classNames="w-full"
                   icon={<p>T</p>}
                   multiline={true}
@@ -179,9 +211,9 @@ export default function PartPropertySidebar({
                   {COLORS.map((color) => (
                     <button
                       key={color}
-                      onClick={() => updatePart(selectedPart.id, { color })}
+                      onClick={() => handleUpdateProperty({ color })}
                       className={`w-5 h-5 rounded-full border-2 ${
-                        selectedPart.color === color
+                        currentProperty?.color === color
                           ? 'border-blue-500'
                           : 'border-gray-300'
                       }`}
@@ -193,9 +225,9 @@ export default function PartPropertySidebar({
                 <div className="mt-3 flex items-center gap-2">
                   <input
                     type="color"
-                    value={selectedPart.color || '#FFFFFF'}
+                    value={currentProperty?.color || '#FFFFFF'}
                     onChange={(e) =>
-                      updatePart(selectedPart.id, { color: e.target.value })
+                      handleUpdateProperty({ color: e.target.value })
                     }
                     className="w-5 h-5"
                   />
@@ -224,6 +256,7 @@ export default function PartPropertySidebar({
                           {
                             isReversible: value === 'はい',
                           },
+                          undefined,
                           true
                         );
                       }}
@@ -288,6 +321,7 @@ export default function PartPropertySidebar({
                           {
                             canReverseCardOnDeck: value === 'はい',
                           },
+                          undefined,
                           true
                         );
                       }}
