@@ -101,15 +101,6 @@ export const swaggerSchemas = {
             "parentId": {
                   "type": "integer"
             },
-            "name": {
-                  "type": "string"
-            },
-            "description": {
-                  "type": "string"
-            },
-            "color": {
-                  "type": "string"
-            },
             "position": {
                   "type": "object",
                   "additionalProperties": true
@@ -152,14 +143,54 @@ export const swaggerSchemas = {
             "id",
             "type",
             "prototypeVersionId",
-            "name",
-            "description",
-            "color",
             "position",
             "width",
             "height",
             "order",
             "configurableTypeAsChild",
+            "createdAt",
+            "updatedAt"
+      ]
+},
+      PartProperty: {
+      "type": "object",
+      "properties": {
+            "partId": {
+                  "type": "integer"
+            },
+            "side": {
+                  "type": "string",
+                  "enum": [
+                        "front",
+                        "back"
+                  ]
+            },
+            "name": {
+                  "type": "string"
+            },
+            "description": {
+                  "type": "string"
+            },
+            "color": {
+                  "type": "string"
+            },
+            "image": {
+                  "type": "string"
+            },
+            "createdAt": {
+                  "type": "string"
+            },
+            "updatedAt": {
+                  "type": "string"
+            }
+      },
+      "required": [
+            "partId",
+            "side",
+            "name",
+            "description",
+            "color",
+            "image",
             "createdAt",
             "updatedAt"
       ]
