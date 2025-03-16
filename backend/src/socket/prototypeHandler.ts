@@ -70,7 +70,7 @@ function handleAddPart(socket: Socket, io: Server) {
         });
       });
 
-      if (propertyCreationPromises) await Promise.all(propertyCreationPromises);
+      await Promise.all(propertyCreationPromises);
       await emitUpdatedPartsAndProperties(io, prototypeVersionId);
     }
   );
