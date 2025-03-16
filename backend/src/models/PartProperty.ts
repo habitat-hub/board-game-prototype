@@ -13,40 +13,43 @@ class PartPropertyModel extends Model {
   public image?: string;
 }
 
-PartPropertyModel.init({
-  partId: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    allowNull: false,
-    references: {
-      model: 'Parts',
-      key: 'id',
+PartPropertyModel.init(
+  {
+    partId: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      allowNull: false,
+      references: {
+        model: 'Parts',
+        key: 'id',
+      },
+    },
+    side: {
+      type: DataTypes.ENUM('front', 'back'),
+      primaryKey: true,
+      allowNull: false,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    description: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    color: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    image: {
+      type: DataTypes.STRING,
     },
   },
-  side: {
-    type: DataTypes.ENUM('front', 'back'),
-    primaryKey: true,
-    allowNull: false,
-  },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  description: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  color: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  image: {
-    type: DataTypes.STRING,
-  },
-}, {
-  sequelize,
-  modelName: 'PartProperty',
-});
+  {
+    sequelize,
+    modelName: 'PartProperty',
+  }
+);
 
 // リレーションの定義
 PartPropertyModel.belongsTo(PartModel, {
@@ -56,7 +59,7 @@ PartPropertyModel.belongsTo(PartModel, {
 
 PartModel.hasMany(PartPropertyModel, {
   foreignKey: 'partId',
-  as: 'partProperties'
+  as: 'partProperties',
 });
 
-export default PartPropertyModel; 
+export default PartPropertyModel;

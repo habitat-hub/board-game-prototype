@@ -15,9 +15,7 @@
             "description": "処理成功時のメッセージ"
           }
         },
-        "required": [
-          "message"
-        ],
+        "required": ["message"],
         "example": {
           "message": "正常に処理が完了しました"
         }
@@ -30,9 +28,7 @@
             "description": "エラーメッセージ"
           }
         },
-        "required": [
-          "error"
-        ],
+        "required": ["error"],
         "example": {
           "error": "リクエストが不正です"
         }
@@ -45,9 +41,7 @@
             "description": "エラーメッセージ"
           }
         },
-        "required": [
-          "error"
-        ],
+        "required": ["error"],
         "example": {
           "error": "リソースが見つかりません"
         }
@@ -60,9 +54,7 @@
             "description": "エラーメッセージ"
           }
         },
-        "required": [
-          "error"
-        ],
+        "required": ["error"],
         "example": {
           "error": "予期せぬエラーが発生しました"
         }
@@ -81,11 +73,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "prototypeGroupId",
-          "name"
-        ]
+        "required": ["id", "prototypeGroupId", "name"]
       },
       "Part": {
         "type": "object",
@@ -162,10 +150,7 @@
           },
           "side": {
             "type": "string",
-            "enum": [
-              "front",
-              "back"
-            ]
+            "enum": ["front", "back"]
           },
           "name": {
             "type": "string"
@@ -248,10 +233,7 @@
           },
           "type": {
             "type": "string",
-            "enum": [
-              "EDIT",
-              "PREVIEW"
-            ]
+            "enum": ["EDIT", "PREVIEW"]
           },
           "masterPrototypeId": {
             "type": "string",
@@ -298,10 +280,7 @@
             "format": "uuid"
           }
         },
-        "required": [
-          "id",
-          "prototypeId"
-        ]
+        "required": ["id", "prototypeId"]
       },
       "PrototypeVersion": {
         "type": "object",
@@ -352,12 +331,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "username",
-          "createdAt",
-          "updatedAt"
-        ]
+        "required": ["id", "username", "createdAt", "updatedAt"]
       },
       "UserAccess": {
         "type": "object",
@@ -370,19 +344,14 @@
             "type": "integer"
           }
         },
-        "required": [
-          "userId",
-          "accessId"
-        ]
+        "required": ["userId", "accessId"]
       }
     }
   },
   "paths": {
     "/auth/google": {
       "get": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Googleログイン",
         "description": "Googleアカウントを使用してログインします。",
         "responses": {
@@ -403,9 +372,7 @@
     },
     "/auth/google/callback": {
       "get": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Googleログインコールバック",
         "description": "GoogleログインのコールバックURL。",
         "responses": {
@@ -426,9 +393,7 @@
     },
     "/auth/logout": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "ログアウト",
         "description": "現在のセッションを終了し、ユーザーをログアウトします。",
         "responses": {
@@ -457,9 +422,7 @@
     },
     "/auth/user": {
       "get": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "ユーザー情報取得",
         "description": "現在ログインしているユーザーの情報を取得します。",
         "responses": {
@@ -478,9 +441,7 @@
     },
     "/api/prototypes": {
       "get": {
-        "tags": [
-          "Prototypes"
-        ],
+        "tags": ["Prototypes"],
         "summary": "プロトタイプ一覧取得",
         "description": "ユーザーがアクセス可能なプロトタイプの一覧を取得します。",
         "responses": {
@@ -500,9 +461,7 @@
         }
       },
       "post": {
-        "tags": [
-          "Prototypes"
-        ],
+        "tags": ["Prototypes"],
         "summary": "プロトタイプ作成",
         "description": "新しいプロトタイプを作成します。",
         "requestBody": {
@@ -559,9 +518,7 @@
     },
     "/api/prototypes/{prototypeId}": {
       "get": {
-        "tags": [
-          "Prototypes"
-        ],
+        "tags": ["Prototypes"],
         "summary": "プロトタイプ取得",
         "description": "指定されたIDのプロトタイプを取得します。",
         "parameters": [
@@ -599,9 +556,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Prototypes"
-        ],
+        "tags": ["Prototypes"],
         "summary": "プロトタイプ更新",
         "description": "指定されたIDのプロトタイプを更新します。",
         "parameters": [
@@ -639,9 +594,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Prototypes"
-        ],
+        "tags": ["Prototypes"],
         "summary": "プロトタイプ削除",
         "description": "指定されたIDのプロトタイプを削除します。",
         "parameters": [
@@ -681,9 +634,7 @@
     },
     "/api/prototypes/{prototypeId}/versions": {
       "get": {
-        "tags": [
-          "Prototypes"
-        ],
+        "tags": ["Prototypes"],
         "summary": "プロトタイプバージョン一覧取得",
         "description": "指定されたプロトタイプのバージョン一覧を取得します。",
         "parameters": [
@@ -734,9 +685,7 @@
     },
     "/api/prototypes/groups/{groupId}": {
       "get": {
-        "tags": [
-          "Prototypes"
-        ],
+        "tags": ["Prototypes"],
         "summary": "グループのプロトタイプ一覧取得",
         "description": "指定されたグループに属するプロトタイプの一覧を取得します。",
         "parameters": [
@@ -769,9 +718,7 @@
     },
     "/api/prototypes/groups/{groupId}/accessUsers": {
       "get": {
-        "tags": [
-          "Prototypes"
-        ],
+        "tags": ["Prototypes"],
         "summary": "グループへのアクセス権を取得",
         "description": "指定されたグループにアクセス可能なユーザーを取得します。",
         "parameters": [
@@ -804,9 +751,7 @@
     },
     "/api/prototypes/groups/{groupId}/invite": {
       "post": {
-        "tags": [
-          "Prototypes"
-        ],
+        "tags": ["Prototypes"],
         "summary": "ユーザーにプロトタイプへのアクセス権を付与",
         "description": "指定されたグループにユーザーを招待します。",
         "parameters": [
@@ -884,9 +829,7 @@
     },
     "/api/prototypes/groups/{groupId}/invite/{guestId}": {
       "delete": {
-        "tags": [
-          "Prototypes"
-        ],
+        "tags": ["Prototypes"],
         "summary": "ユーザーのアクセス権を削除",
         "description": "指定されたグループからユーザーのアクセス権を削除します。",
         "parameters": [
@@ -955,9 +898,7 @@
     },
     "/api/prototypes/{prototypeId}/duplicate": {
       "post": {
-        "tags": [
-          "Prototypes"
-        ],
+        "tags": ["Prototypes"],
         "summary": "プロトタイプの複製",
         "description": "指定されたプロトタイプを複製します。",
         "parameters": [
@@ -975,9 +916,7 @@
     },
     "/api/prototypes/{prototypeId}/preview": {
       "post": {
-        "tags": [
-          "Prototypes"
-        ],
+        "tags": ["Prototypes"],
         "summary": "プレビュー版作成",
         "description": "指定されたプロトタイプのプレビュー版を作成します。",
         "parameters": [
@@ -1027,9 +966,7 @@
     },
     "/api/prototypes/{prototypeId}/versions/{prototypeVersionId}": {
       "post": {
-        "tags": [
-          "Prototypes"
-        ],
+        "tags": ["Prototypes"],
         "summary": "バージョン作成",
         "description": "指定されたプロトタイプのバージョンを作成します。",
         "parameters": [
@@ -1116,9 +1053,7 @@
     },
     "/api/users/search": {
       "get": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "ユーザー検索",
         "description": "ユーザー名でユーザーを検索します。",
         "parameters": [
