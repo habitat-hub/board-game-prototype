@@ -5,16 +5,6 @@ import { Part, PartProperty } from '@/types/models';
 
 type PartPropertiesWithoutMetadata = Omit<PartProperty, 'partId' | 'createdAt' | 'updatedAt'>;
 
-type AddPartPropertiesForServer = {
-  front: PartPropertiesWithoutMetadata;
-  back?: PartPropertiesWithoutMetadata;
-}
-
-type UpdatePartPropertiesForServer = {
-  front?: Partial<PartProperty>;
-  back?: Partial<PartProperty>;
-}
-
 export const usePartOperations = (
   prototypeVersionId: string,
   socket: Socket
@@ -29,13 +19,7 @@ export const usePartOperations = (
       part: Omit<Part, 'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'>,
       properties: PartPropertiesWithoutMetadata[]
     ) => {
-      // プロパティ配列をサーバー用のオブジェクト形式に変換
-      const convertedProperties: AddPartPropertiesForServer = {
-        front: properties.find(p => p.side === 'front') || properties[0],
-        back: properties.find(p => p.side === 'back'),
-      };
-
-      socket.emit('ADD_PART', { prototypeVersionId, part, properties: convertedProperties });
+      socket.emit('ADD_PART', { prototypeVersionId, part, properties });
     },
     [prototypeVersionId, socket]
   );
@@ -70,17 +54,11 @@ export const usePartOperations = (
       updateProperties?: Partial<PartProperty>[],
       isFlipped?: boolean
     ) => {
-      // プロパティ配列をサーバー用のオブジェクト形式に変換
-      const convertedProperties: UpdatePartPropertiesForServer = 
-      {
-        front: updateProperties?.find(p => p?.side === 'front'),
-        back: updateProperties?.find(p => p?.side === 'back'),
-      };
       socket.emit('UPDATE_PART', {
         prototypeVersionId,
         partId,
         updatePart,
-        updateProperties: convertedProperties,
+        updateProperties,
       });
 
       if (updatePart && ('isReversible' in updatePart) && isFlipped) {

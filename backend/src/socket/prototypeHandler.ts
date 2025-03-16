@@ -50,10 +50,7 @@ function handleAddPart(socket: Socket, io: Server) {
     }: {
       prototypeVersionId: string;
       part: Omit<PartModel, 'id'>;
-      properties: {
-        front: Omit<PartPropertyModel, 'id' | 'partId'>;
-        back?: Omit<PartPropertyModel, 'id' | 'partId'>;
-      };
+      properties: Omit<PartPropertyModel, 'id' | 'partId'>[];
     }) => {
         const maxOrder = await PartModel.max('order', {
           where: { prototypeVersionId },
@@ -65,19 +62,15 @@ function handleAddPart(socket: Socket, io: Server) {
           order: ((maxOrder as number) + 1) / 2,
         });
 
-        const propertyCreationPromises = [
-          PartPropertyModel.create({
-            ...properties.front,
+        const propertyCreationPromises = properties.map((property) => {
+          return (
+            PartPropertyModel.create({
+            ...property,
             partId: newPart.id,
-            side: 'front',
-          }),
-          properties.back ? PartPropertyModel.create({
-            ...properties.back,
-            partId: newPart.id,
-            side: 'back',
-          }) : null,
-        ].filter(Boolean); // nullを除外
-        
+            })
+          )
+        })
+
         if (propertyCreationPromises) await Promise.all(propertyCreationPromises);
         await emitUpdatedPartsAndProperties(io, prototypeVersionId);
     }
@@ -101,10 +94,7 @@ function handleUpdatePart(socket: Socket, io: Server) {
       prototypeVersionId: string;
       partId: number;
       updatePart: Partial<PartModel>;
-      updateProperties?: {
-        front?: Partial<PartPropertyModel>;
-        back?: Partial<PartPropertyModel>;
-      };
+      updateProperties?: Omit<PartPropertyModel, 'id' | 'partId'>[];
     }) => {
       // Partの更新
       if (updatePart && Object.keys(updatePart).length > 0) {
@@ -122,24 +112,15 @@ function handleUpdatePart(socket: Socket, io: Server) {
 
       // PartPropertiesの更新
       if (updateProperties) {
-        const updatePromises = []; // 更新処理を格納する配列
+        const updatePromises = updateProperties.map((property) => {
+          return (
+            PartPropertyModel.update(
+              property,
+              { where: { partId, side: property.side } }
+            )
+          )
+        });
 
-        if (updateProperties.front) {
-          updatePromises.push(
-            PartPropertyModel.update(
-              updateProperties.front,
-              { where: { partId, side: 'front' } }
-            )
-          );
-        }
-        if (updateProperties.back) {
-          updatePromises.push(
-            PartPropertyModel.update(
-              updateProperties.back,
-              { where: { partId, side: 'back' } }
-            )
-          );
-        }
         // 更新処理の実行
         await Promise.all(updatePromises);
       }
