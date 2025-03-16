@@ -18,17 +18,18 @@ function handleJoinPrototype(socket: Socket) {
   socket.on(
     'JOIN_PROTOTYPE',
     async ({ prototypeVersionId }: { prototypeVersionId: string }) => {
-      const prototypeVersion = await PrototypeVersionModel.findByPk(prototypeVersionId);
+      const prototypeVersion =
+        await PrototypeVersionModel.findByPk(prototypeVersionId);
       if (!prototypeVersion) return;
 
       socket.join(prototypeVersionId);
 
       const promises = [
         PartModel.findAll({ where: { prototypeVersionId } }),
-        fetchPartsAndProperties(prototypeVersionId)
+        fetchPartsAndProperties(prototypeVersionId),
       ];
 
-      const [players, partsAndProperties] = await Promise.all(promises);      
+      const [players, partsAndProperties] = await Promise.all(promises);
       socket.emit('UPDATE_PLAYERS', players);
       socket.emit('UPDATE_PARTS', partsAndProperties);
     }
@@ -52,27 +53,25 @@ function handleAddPart(socket: Socket, io: Server) {
       part: Omit<PartModel, 'id'>;
       properties: Omit<PartPropertyModel, 'id' | 'partId'>[];
     }) => {
-        const maxOrder = await PartModel.max('order', {
-          where: { prototypeVersionId },
+      const maxOrder = await PartModel.max('order', {
+        where: { prototypeVersionId },
+      });
+
+      const newPart = await PartModel.create({
+        ...part,
+        prototypeVersionId,
+        order: ((maxOrder as number) + 1) / 2,
+      });
+
+      const propertyCreationPromises = properties.map((property) => {
+        return PartPropertyModel.create({
+          ...property,
+          partId: newPart.id,
         });
+      });
 
-        const newPart = await PartModel.create({
-          ...part,
-          prototypeVersionId,
-          order: ((maxOrder as number) + 1) / 2,
-        });
-
-        const propertyCreationPromises = properties.map((property) => {
-          return (
-            PartPropertyModel.create({
-            ...property,
-            partId: newPart.id,
-            })
-          )
-        })
-
-        if (propertyCreationPromises) await Promise.all(propertyCreationPromises);
-        await emitUpdatedPartsAndProperties(io, prototypeVersionId);
+      if (propertyCreationPromises) await Promise.all(propertyCreationPromises);
+      await emitUpdatedPartsAndProperties(io, prototypeVersionId);
     }
   );
 }
@@ -100,7 +99,10 @@ function handleUpdatePart(socket: Socket, io: Server) {
       if (updatePart && Object.keys(updatePart).length > 0) {
         const updateData = Object.entries(updatePart).reduce(
           (acc, [key, value]) => {
-            if (value !== undefined && UPDATABLE_PROTOTYPE_FIELDS.PART.includes(key)) {
+            if (
+              value !== undefined &&
+              UPDATABLE_PROTOTYPE_FIELDS.PART.includes(key)
+            ) {
               return { ...acc, [key]: value };
             }
             return acc;
@@ -113,12 +115,9 @@ function handleUpdatePart(socket: Socket, io: Server) {
       // PartPropertiesの更新
       if (updateProperties) {
         const updatePromises = updateProperties.map((property) => {
-          return (
-            PartPropertyModel.update(
-              property,
-              { where: { partId, side: property.side } }
-            )
-          )
+          return PartPropertyModel.update(property, {
+            where: { partId, side: property.side },
+          });
         });
 
         // 更新処理の実行
@@ -145,7 +144,7 @@ function handleDeletePart(socket: Socket, io: Server) {
       partId: number;
     }) => {
       // PartPropertyは CASCADE で自動的に削除される
-      await PartModel.destroy({ where: { id: partId } });      
+      await PartModel.destroy({ where: { id: partId } });
       await emitUpdatedPartsAndProperties(io, prototypeVersionId);
     }
   );
@@ -353,16 +352,20 @@ function handleUpdatePlayerUser(socket: Socket, io: Server) {
  * @param io - Server
  * @param {string} prototypeVersionId - プロトタイプバージョンID
  */
-async function emitUpdatedPartsAndProperties(io: Server, prototypeVersionId: string){
-  const { parts, properties } = await fetchPartsAndProperties(prototypeVersionId);
-  io.to(prototypeVersionId).emit('UPDATE_PARTS',  {parts, properties});
+async function emitUpdatedPartsAndProperties(
+  io: Server,
+  prototypeVersionId: string
+) {
+  const { parts, properties } =
+    await fetchPartsAndProperties(prototypeVersionId);
+  io.to(prototypeVersionId).emit('UPDATE_PARTS', { parts, properties });
 }
 
 /**
  * 指定されたプロトタイプバージョンIDに関連する全てのパーツとプロパティを取得する。
  *
  * @param {string} prototypeVersionId - プロトタイプバージョンID
- * @returns {Promise<{ parts: PartModel[], properties: PartPropertyModel[] }>} - 
+ * @returns {Promise<{ parts: PartModel[], properties: PartPropertyModel[] }>} -
  *          プロトタイプバージョンに関連するパーツとプロパティの配列を含むオブジェクトを返すPromise
  */
 async function fetchPartsAndProperties(prototypeVersionId: string) {
