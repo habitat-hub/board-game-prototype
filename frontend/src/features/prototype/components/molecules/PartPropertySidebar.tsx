@@ -1,8 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import React, { useMemo } from 'react';
 import { FaRegCopy, FaRegTrashAlt } from 'react-icons/fa';
-import React, { useEffect, useMemo } from 'react';
 
 import Dropdown from '@/components/atoms/Dropdown';
 import NumberInput from '@/components/atoms/NumberInput';
