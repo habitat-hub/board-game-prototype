@@ -9,6 +9,7 @@ import PrototypeGroupModel from '../models/PrototypeGroup';
 import AccessModel from '../models/Access';
 import UserAccessModel from '../models/UserAccess';
 import PartModel from '../models/Part';
+import PartPropertyModel from '../models/PartProperty';
 
 /**
  * プロトタイプを作成する(プロトタイプバージョン、プレイヤーも作成する)
@@ -140,9 +141,6 @@ export async function createPrototype({
         type: part.type,
         prototypeVersionId: newPrototypeVersion.id,
         parentId: null,
-        name: part.name,
-        description: part.description,
-        color: part.color,
         position: part.position,
         width: part.width,
         height: part.height,
@@ -156,6 +154,46 @@ export async function createPrototype({
       })),
       { transaction, returning: true }
     );
+
+    // パーツのプロパティを複製
+    const editPartProperties = await PartPropertyModel.findAll({
+      where: {
+        partId: editParts.map((part) => part.id),
+      },
+    });
+
+    // partIdごとにプロパティをグループ化
+    const groupedProperties = editPartProperties.reduce(
+      (acc, property) => {
+        if (!acc[property.partId]) {
+          acc[property.partId] = [];
+        }
+        acc[property.partId].push(property);
+        return acc;
+      },
+      {} as { [key: number]: PartPropertyModel[] }
+    );
+
+    // 各パーツの全プロパティ（front/back）を複製
+    const newPartProperties = Object.entries(groupedProperties).flatMap(
+      ([oldPartId, properties]) => {
+        const newPart = newParts.find(
+          (part) => part.originalPartId === Number(oldPartId)
+        );
+        if (!newPart) return [];
+
+        return properties.map((property) => ({
+          partId: newPart.id,
+          side: property.side,
+          name: property.name,
+          description: property.description,
+          color: property.color,
+          image: property.image,
+        }));
+      }
+    );
+
+    await PartPropertyModel.bulkCreate(newPartProperties, { transaction });
 
     // 親パーツがあるパーツを更新する
     const editPartsWithParent = editParts.filter(
@@ -246,9 +284,6 @@ export const createPrototypeVersion = async (
       type: part.type,
       prototypeVersionId: newPrototypeVersion.id,
       parentId: null,
-      name: part.name,
-      description: part.description,
-      color: part.color,
       position: part.position,
       width: part.width,
       height: part.height,
@@ -262,6 +297,46 @@ export const createPrototypeVersion = async (
     })),
     { transaction, returning: true }
   );
+
+  // パーツのプロパティを複製
+  const originalPartProperties = await PartPropertyModel.findAll({
+    where: {
+      partId: originalParts.map((part) => part.id),
+    },
+  });
+
+  // partIdごとにプロパティをグループ化
+  const groupedProperties = originalPartProperties.reduce(
+    (acc, property) => {
+      if (!acc[property.partId]) {
+        acc[property.partId] = [];
+      }
+      acc[property.partId].push(property);
+      return acc;
+    },
+    {} as { [key: number]: PartPropertyModel[] }
+  );
+
+  // 各パーツの全プロパティ（front/back）を複製
+  const newPartProperties = Object.entries(groupedProperties).flatMap(
+    ([oldPartId, properties]) => {
+      const newPart = newParts.find(
+        (part) => part.originalPartId === Number(oldPartId)
+      );
+      if (!newPart) return [];
+
+      return properties.map((property) => ({
+        partId: newPart.id,
+        side: property.side,
+        name: property.name,
+        description: property.description,
+        color: property.color,
+        image: property.image,
+      }));
+    }
+  );
+
+  await PartPropertyModel.bulkCreate(newPartProperties, { transaction });
 
   // 親パーツがあるパーツを更新する
   const originalPartsWithParent = originalParts.filter(

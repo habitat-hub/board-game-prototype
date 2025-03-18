@@ -11,9 +11,6 @@ export interface Part {
   type: string;
   prototypeVersionId: string;
   parentId?: number;
-  name: string;
-  description: string;
-  color: string;
   position: Record<string, unknown>;
   width: number;
   height: number;
@@ -24,6 +21,17 @@ export interface Part {
   isFlipped?: boolean;
   ownerId?: number;
   canReverseCardOnDeck?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PartProperty {
+  partId: number;
+  side: 'front' | 'back';
+  name: string;
+  description: string;
+  color: string;
+  image: string;
   createdAt: string;
   updatedAt: string;
 }

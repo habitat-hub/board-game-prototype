@@ -1,7 +1,10 @@
 import { useCallback } from 'react';
 import { Socket } from 'socket.io-client';
 
-import { Part } from '@/types/models';
+import { Part, PartProperty } from '@/types/models';
+
+
+type PartPropertiesWithoutMetadata = Omit<PartProperty, 'partId' | 'createdAt' | 'updatedAt'>;
 
 export const usePartOperations = (
   prototypeVersionId: string,
@@ -9,16 +12,15 @@ export const usePartOperations = (
 ) => {
   /**
    * パーツの追加
-   * @param part - 追加するパーツ
+   * @param newPart - 追加するパーツ
+   * @param newProperties - パーツのプロパティ
    */
   const addPart = useCallback(
     (
-      part: Omit<
-        Part,
-        'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'
-      >
+      part: Omit<Part, 'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'>,
+      properties: PartPropertiesWithoutMetadata[]
     ) => {
-      socket.emit('ADD_PART', { prototypeVersionId, part });
+      socket.emit('ADD_PART', { prototypeVersionId, part, properties });
     },
     [prototypeVersionId, socket]
   );
@@ -43,13 +45,24 @@ export const usePartOperations = (
    * パーツの更新
    * @param partId - 更新するパーツID
    * @param updatePart - 更新するパーツ
+   * @param updateProperties - 更新するプロパティ
    * @param isFlipped - 現在、裏向きか
    */
   const updatePart = useCallback(
-    (partId: number, updatePart: Partial<Part>, isFlipped?: boolean) => {
-      socket.emit('UPDATE_PART', { prototypeVersionId, partId, updatePart });
+    (
+      partId: number,
+      updatePart?: Partial<Part>,
+      updateProperties?: Partial<PartProperty>[],
+      isFlipped?: boolean
+    ) => {
+      socket.emit('UPDATE_PART', {
+        prototypeVersionId,
+        partId,
+        updatePart,
+        updateProperties,
+      });
 
-      if ('isReversible' in updatePart && isFlipped) {
+      if (updatePart && ('isReversible' in updatePart) && isFlipped) {
         reverseCard(partId, false);
       }
     },
