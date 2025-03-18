@@ -25,7 +25,7 @@ function handleJoinPrototype(socket: Socket) {
       socket.join(prototypeVersionId);
 
       const promises = [
-        PartModel.findAll({ where: { prototypeVersionId } }),
+        PlayerModel.findAll({ where: { prototypeVersionId } }),
         fetchPartsAndProperties(prototypeVersionId),
       ];
 
