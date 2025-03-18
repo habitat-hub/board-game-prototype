@@ -68,9 +68,8 @@ export default function PartCreateSidebar({
         configurableTypeAsChild: partConfig.configurableTypeAsChild,
         originalPartId: undefined,
       };
-      let canHaveBackProperty = false;
-      if (partId === PART_TYPE.CARD) {
-        canHaveBackProperty = true;
+      const isCard = partId === PART_TYPE.CARD;
+      if (isCard) {
         newPart.isReversible = (
           partConfig as typeof PART_DEFAULT_CONFIG.CARD
         ).isReversible;
@@ -90,11 +89,13 @@ export default function PartCreateSidebar({
       const newPartProperties: Omit<
         PartProperty,
         'id' | 'partId' | 'createdAt' | 'updatedAt'
-      >[] = [{ side: 'front', ...commonProperties }];
+      >[] = isCard
+        ? [
+            { side: 'front', ...commonProperties },
+            { side: 'back', ...commonProperties },
+          ]
+        : [{ side: 'front', ...commonProperties }];
 
-      if (canHaveBackProperty) {
-        newPartProperties.push({ side: 'back', ...commonProperties });
-      }
       onAddPart(newPart as Part, newPartProperties as PartProperty[]);
     }
   };

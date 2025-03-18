@@ -77,15 +77,17 @@ export default function PartPropertySidebar({
     const newPartProperties: Omit<
       PartProperty,
       'id' | 'partId' | 'createdAt' | 'updatedAt'
-    >[] = selectedPartProperties.map((property) => {
-      return {
-        side: property.side,
-        name: property.name,
-        description: property.description,
-        color: property.color,
-        image: property.image,
-      };
-    });
+    >[] = selectedPartProperties.map(
+      ({ side, name, description, color, image }) => {
+        return {
+          side,
+          name,
+          description,
+          color,
+          image,
+        };
+      }
+    );
     onAddPart(newPart as Part, newPartProperties as PartProperty[]);
   };
 
