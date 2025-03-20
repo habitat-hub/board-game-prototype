@@ -24,6 +24,7 @@ interface PartProps {
   onMouseDown: (e: React.MouseEvent, partId: number) => void;
   socket: Socket;
   onMoveOrder: ({ partId, type }: { partId: number; type: string }) => void;
+  isActive: boolean;
 }
 
 const Part = forwardRef<PartHandle, PartProps>(
@@ -37,6 +38,7 @@ const Part = forwardRef<PartHandle, PartProps>(
       onMouseDown,
       socket,
       onMoveOrder,
+      isActive = false,
     },
     ref
   ) => {
@@ -126,6 +128,27 @@ const Part = forwardRef<PartHandle, PartProps>(
           height={part.height}
           rx={10}
         />
+        {/* パーツの枠（アクティブ時） */}
+        {isActive && (
+          <rect
+            id={`${part.id}-border`}
+            style={{
+              stroke: '#47f5bb',
+              fill: 'none',
+              strokeWidth: 2,
+              transform: `
+            translate(${Number(part.position.x) - 4}px, ${Number(part.position.y) - 4}px)
+            translate(${part.width / 2}px, ${part.height / 2}px)
+            rotateY(${!isFlippedNeeded && isFlipped ? 180 : 0}deg)
+            translate(${-part.width / 2}px, ${-part.height / 2}px)
+          `,
+              transformStyle: 'preserve-3d',
+            }}
+            width={part.width + 8}
+            height={part.height + 8}
+            rx={12}
+          />
+        )}
         {/* タイトル */}
         {!isFlippedNeeded && (
           <text
