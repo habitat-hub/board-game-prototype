@@ -3,12 +3,9 @@
 import Image from 'next/image';
 import React from 'react';
 
-import { WoodenCrateBackground } from '@/features/prototype/components/atoms/WoodenCrateBackground';
-
 function Login() {
   return (
     <div className="flex items-center justify-center h-full relative overflow-hidden">
-      <WoodenCrateBackground />
       <div className="p-10 rounded border border-gray-300 shadow-md w-1/3 min-w-[450px] text-center min-h-[450px] flex flex-col bg-white relative z-10">
         <h1 className="text-3xl font-bold mb-8 mt-10">KIBAKO</h1>
         <p className="text-gray-600 mb-12">

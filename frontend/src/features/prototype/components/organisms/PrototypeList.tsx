@@ -4,6 +4,7 @@ import Link from 'next/link';
 import React, { useState, useEffect, useCallback } from 'react';
 import { FaCopy } from 'react-icons/fa';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
+import { FaPlus } from 'react-icons/fa6';
 
 import { PROTOTYPE_TYPE } from '@/features/prototype/const';
 import { Prototype } from '@/types/models';
@@ -84,62 +85,57 @@ const PrototypeList: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto mt-10">
-      <h1 className="text-2xl font-bold mb-8 text-center">
+    <div className="max-w-4xl mx-auto mt-16 relative pb-24">
+      <h1 className="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
         ボードゲームプロトタイプ一覧
       </h1>
-      <div className="mb-8 text-center">
-        <Link
-          href="/prototypes/create"
-          className="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
-        >
-          新規作成
-        </Link>
-      </div>
-      <div className="shadow-lg rounded-lg overflow-hidden">
-        <div className="bg-gray-50 border-b border-gray-200">
-          <div className="flex items-center p-4 text-sm font-medium text-gray-500">
+      <div className="shadow-2xl rounded-2xl overflow-hidden bg-content border border-wood-lightest/20">
+        <div className="bg-content-secondary border-b border-wood-lightest/30">
+          <div className="flex items-center p-4 text-sm font-medium text-wood-dark">
             <button
               onClick={() => handleSort('name')}
-              className="flex-1 flex items-center gap-1 hover:text-gray-700"
+              className="flex-1 flex items-center gap-1 hover:text-header transition-colors duration-200"
             >
               プロトタイプ名
               {getSortIcon('name')}
             </button>
             <button
               onClick={() => handleSort('createdAt')}
-              className="w-32 flex items-center gap-1 hover:text-gray-700"
+              className="w-32 flex items-center gap-1 hover:text-header transition-colors duration-200"
             >
               作成日
               {getSortIcon('createdAt')}
             </button>
-            <div className="w-24" /> {/* 複製ボタン用のスペース */}
+            <div className="w-24" />
           </div>
         </div>
-        <ul className="divide-y divide-gray-200">
+        <ul className="divide-y divide-wood-lightest/20">
           {sortPrototypes(editPrototypes).map(
             ({ id, groupId, name, minPlayers, maxPlayers, createdAt }) => (
               <li
                 key={id}
-                className="hover:bg-gray-50 transition-colors duration-200 flex items-center p-4"
+                className="hover:bg-content-secondary/50 transition-colors duration-200 flex items-center p-4"
               >
                 <Link
                   href={`prototypes/groups/${groupId}`}
                   className="flex-1 flex items-center"
                 >
-                  <span className="flex-1">
-                    {name} -{' '}
-                    {minPlayers !== maxPlayers
-                      ? `${minPlayers} 〜 ${maxPlayers} 人用ゲーム`
-                      : `${minPlayers} 人用ゲーム`}
+                  <span className="flex-1 text-wood-darkest">
+                    <span className="font-medium">{name}</span>
+                    <span className="mx-2 text-wood-light">|</span>
+                    <span className="text-wood-dark">
+                      {minPlayers !== maxPlayers
+                        ? `${minPlayers} 〜 ${maxPlayers} 人用ゲーム`
+                        : `${minPlayers} 人用ゲーム`}
+                    </span>
                   </span>
-                  <span className="w-32 text-sm text-gray-500">
+                  <span className="w-32 text-sm text-wood">
                     {formatDate(createdAt)}
                   </span>
                 </Link>
                 <button
                   onClick={(e) => handleDuplicate(id, e)}
-                  className="w-24 flex items-center gap-1 ml-4 px-3 py-1.5 text-sm text-gray-600 hover:text-blue-500 rounded-md hover:bg-blue-50 transition-colors border border-gray-200"
+                  className="w-24 flex items-center gap-1 ml-4 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
                   title="プロトタイプを複製"
                 >
                   <FaCopy className="w-4 h-4" />
@@ -150,6 +146,13 @@ const PrototypeList: React.FC = () => {
           )}
         </ul>
       </div>
+      <Link
+        href="/prototypes/create"
+        className="fixed bottom-10 right-10 w-14 h-14 flex items-center justify-center bg-gradient-to-r from-header via-header-light to-header text-content rounded-full hover:from-header-light hover:via-header hover:to-header-light transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 group"
+        title="新規プロトタイプを作成"
+      >
+        <FaPlus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
+      </Link>
     </div>
   );
 };

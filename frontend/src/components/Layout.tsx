@@ -3,6 +3,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { GiWoodenCrate } from 'react-icons/gi';
 
+import { WoodenCrateBackground } from '@/features/prototype/components/atoms/WoodenCrateBackground';
 import axiosInstance from '@/utils/axiosInstance';
 
 // フッターを非表示にしたいURLパターン
@@ -19,8 +20,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const pathname = usePathname();
   // ログアウトメニューのRef
   const logoutRef = useRef(null);
-  // フッターを非表示にするか
-  const shouldHideFooter = hideFooterPattern.test(pathname);
+  // フッターと背景画像を表示するか
+  const showsFooterAndBackgroundImage = !hideFooterPattern.test(pathname);
 
   /**
    * ユーザー名を更新する
@@ -129,11 +130,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </header>
       <main
         className="bg-content px-6 md:px-12 lg:px-24 overflow-auto"
-        style={{ height: 'calc(100vh - 80px)' }}
+        style={{
+          height: `calc(100vh - ${showsFooterAndBackgroundImage ? '80px' : '48px'})`,
+        }}
       >
-        <div className="max-w-7xl mx-auto py-6 h-full">{children}</div>
+        <div className="max-w-7xl mx-auto h-full">
+          {showsFooterAndBackgroundImage && <WoodenCrateBackground />}
+          {children}
+        </div>
       </main>
-      {!shouldHideFooter && (
+      {showsFooterAndBackgroundImage && (
         <footer
           className="bg-header text-wood-lightest p-2 text-center text-sm"
           style={{ height: '32px' }}
