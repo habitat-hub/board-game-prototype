@@ -25,7 +25,10 @@ function handleJoinPrototype(socket: Socket) {
       socket.join(prototypeVersionId);
 
       const promises = [
-        PlayerModel.findAll({ where: { prototypeVersionId } }),
+        PlayerModel.findAll({
+          where: { prototypeVersionId },
+          order: [['id', 'ASC']],
+        }),
         fetchPartsAndProperties(prototypeVersionId),
       ];
 
@@ -339,6 +342,7 @@ function handleUpdatePlayerUser(socket: Socket, io: Server) {
       await PlayerModel.update({ userId }, { where: { id: playerId } });
       const players = await PlayerModel.findAll({
         where: { prototypeVersionId },
+        order: [['id', 'ASC']],
       });
 
       io.to(prototypeVersionId).emit('UPDATE_PLAYERS', players);
