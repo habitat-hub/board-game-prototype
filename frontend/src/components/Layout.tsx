@@ -83,6 +83,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   /**
    * プロトタイプ一覧画面へ遷移する
+   * 現在すでにプロトタイプ一覧画面またはログイン画面にいる場合は何もしない
    */
   const goToPrototypes = () => {
     // プロトタイプ一覧画面、またはログイン画面の場合
