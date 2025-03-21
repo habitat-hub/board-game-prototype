@@ -76,6 +76,7 @@ export async function createPrototype({
     where: {
       prototypeVersionId: editPrototypeDefaultVersionId,
     },
+    order: [['id', 'ASC']],
   });
   let newPlayers = null;
   if (players.length === 0) {
@@ -262,6 +263,7 @@ export const createPrototypeVersion = async (
     where: {
       prototypeVersionId: originalPrototypeVersion.id,
     },
+    order: [['id', 'ASC']],
   });
   const newPlayers = await PlayerModel.bulkCreate(
     players.map((player) => ({
