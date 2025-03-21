@@ -28,7 +28,13 @@ import {
   CanvasState,
   PartHandle,
 } from '@/features/prototype/type';
-import { Part as PartType, Player, User } from '@/types/models';
+import {
+  Part as PartType,
+  PartProperty as PropertyType,
+  Player,
+  User,
+  PartProperty,
+} from '@/types/models';
 import axiosInstance from '@/utils/axiosInstance';
 
 interface CanvasProps {
@@ -37,6 +43,7 @@ interface CanvasProps {
   prototypeVersionNumber?: string;
   groupId: string;
   parts: PartType[];
+  properties: PropertyType[];
   players: Player[];
   socket: Socket;
   prototypeType: typeof PROTOTYPE_TYPE.EDIT | typeof PROTOTYPE_TYPE.PREVIEW;
@@ -48,6 +55,7 @@ export default function Canvas({
   prototypeVersionNumber,
   groupId,
   parts,
+  properties,
   players,
   socket,
   prototypeType,
@@ -58,6 +66,9 @@ export default function Canvas({
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, zoom: 1 });
   const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
   const [selectedPart, setSelectedPart] = useState<PartType | null>(null);
+  const [selectedPartProperties, setSelectedPartProperties] = useState<
+    PartProperty[] | null
+  >(null);
 
   const mainViewRef = useRef<HTMLDivElement>(null);
   const partRefs = useRef<{ [key: number]: React.RefObject<PartHandle> }>({});
@@ -74,9 +85,10 @@ export default function Canvas({
   const { addPart, updatePart, deletePart, changeOrder, reverseCard } =
     usePartOperations(prototypeVersionId, socket);
   const handleAddPart = useCallback(
-    (part: PartType) => {
-      addPart(part);
+    (part: PartType, properties: PropertyType[]) => {
+      addPart(part, properties);
       setSelectedPart(null);
+      setSelectedPartProperties(null);
     },
     [addPart]
   );
@@ -85,6 +97,7 @@ export default function Canvas({
 
     deletePart(selectedPart.id);
     setSelectedPart(null);
+    setSelectedPartProperties(null);
   }, [deletePart, selectedPart]);
 
   const isEdit = prototypeType === PROTOTYPE_TYPE.EDIT;
@@ -118,8 +131,12 @@ export default function Canvas({
     const part = parts.find((part) => part.id === selectedPart?.id);
     if (part) {
       setSelectedPart(part);
+      const partProperties = properties.filter(
+        (property) => property.partId === part.id
+      );
+      setSelectedPartProperties(partProperties);
     }
-  }, [parts, selectedPart?.id]);
+  }, [parts, properties, selectedPart?.id]);
 
   /**
    * キーボードイベントのハンドラー
@@ -244,6 +261,9 @@ export default function Canvas({
                       key={part.id}
                       ref={partRefs.current[part.id]}
                       part={part}
+                      properties={properties.filter(
+                        (property) => property.partId === part.id
+                      )}
                       players={players}
                       prototypeType={prototypeType}
                       isOtherPlayerCard={otherPlayerCards.includes(part.id)}
@@ -282,6 +302,7 @@ export default function Canvas({
           groupId={groupId}
           players={players}
           selectedPart={selectedPart}
+          selectedPartProperties={selectedPartProperties}
           onAddPart={handleAddPart}
           onDeletePart={handleDeletePart}
           updatePart={updatePart}

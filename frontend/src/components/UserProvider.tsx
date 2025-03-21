@@ -10,11 +10,14 @@ interface UserProviderProps {
 }
 
 const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
+  // ローディング中か
+  const [loading, setLoading] = useState(true);
 
+  // ユーザー情報チェック、存在しない場合はユーザー情報取得
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
+    // ローカルストレージにユーザーが存在する場合
     if (storedUser) {
       setLoading(false);
       return;
@@ -24,23 +27,24 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       .get('/auth/user')
       .then((response) => {
         const data = response.data;
-        if (data.username) {
-          localStorage.setItem('user', JSON.stringify(data));
-          window.dispatchEvent(new Event('userUpdated'));
-        } else {
+        // ユーザーが存在しない場合
+        if (!data) {
           router.replace('/');
+          return;
         }
+
+        localStorage.setItem('user', JSON.stringify(data));
+        window.dispatchEvent(new Event('userUpdated'));
+        setLoading(false);
       })
       .catch(() => {
         router.replace('/');
-      })
-      .finally(() => {
-        setLoading(false);
       });
   }, [router]);
 
+  // ローディング中の場合
   if (loading) {
-    return null; // ローディング中は何も表示しない
+    return null;
   }
 
   return <>{children}</>;

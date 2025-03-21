@@ -5,12 +5,16 @@ import { ReactNode } from 'react';
 const TextIconButton = ({
   text,
   icon,
-  isSelected,
+  isSelected = false,
   onClick,
 }: {
+  // ボタンのテキスト
   text: string;
+  // ボタンのアイコン
   icon: ReactNode;
-  isSelected: boolean;
+  // ボタンが選択されているか
+  isSelected?: boolean;
+  // ボタンをクリックしたときの処理
   onClick: () => void;
 }) => {
   return (

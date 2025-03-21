@@ -2,7 +2,7 @@
 
 import PartCreateSidebar from '@/features/prototype/components/molecules/PartCreateSidebar';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
-import { Part, Player } from '@/types/models';
+import { Part, PartProperty, Player } from '@/types/models';
 
 export default function EditSidebars({
   prototypeName,
@@ -10,6 +10,7 @@ export default function EditSidebars({
   groupId,
   players,
   selectedPart,
+  selectedPartProperties,
   onAddPart,
   onDeletePart,
   updatePart,
@@ -20,11 +21,13 @@ export default function EditSidebars({
   groupId: string;
   players: Player[];
   selectedPart: Part | null;
-  onAddPart: (part: Part) => void;
+  selectedPartProperties: PartProperty[] | null;
+  onAddPart: (part: Part, properties: PartProperty[]) => void;
   onDeletePart: () => void;
   updatePart: (
     partId: number,
-    updatePart: Partial<Part>,
+    updatePart?: Partial<Part>,
+    updateProperties?: Partial<PartProperty>[],
     isFlipped?: boolean
   ) => void;
   mainViewRef: React.RefObject<HTMLDivElement>;
@@ -46,6 +49,7 @@ export default function EditSidebars({
         groupId={groupId}
         players={players}
         selectedPart={selectedPart}
+        selectedPartProperties={selectedPartProperties}
         onAddPart={onAddPart}
         onDeletePart={onDeletePart}
         updatePart={updatePart}

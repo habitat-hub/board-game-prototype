@@ -7,9 +7,6 @@ class PartModel extends Model {
   public type!: string;
   public prototypeVersionId!: string;
   public parentId!: number | null;
-  public name!: string;
-  public description!: string;
-  public color!: string;
   public position!: { x: number; y: number };
   public width!: number;
   public height!: number;
@@ -49,18 +46,6 @@ PartModel.init(
     parentId: {
       type: DataTypes.INTEGER,
       allowNull: true,
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    color: {
-      type: DataTypes.STRING,
-      allowNull: false,
     },
     position: {
       type: DataTypes.JSON,

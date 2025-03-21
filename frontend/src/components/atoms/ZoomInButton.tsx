@@ -4,14 +4,22 @@ import IconButton from './IconButton';
 
 export default function ZoomInButton({
   onClick,
-  disabled,
+  size = 22,
+  color = '#888888',
+  disabled = false,
 }: {
+  // ボタンをクリックしたときの処理
   onClick: () => void;
-  disabled: boolean;
+  // ボタンのサイズ
+  size?: number;
+  // ボタンの色
+  color?: string;
+  // ボタンを無効化するか
+  disabled?: boolean;
 }) {
   return (
     <IconButton onClick={onClick} disabled={disabled}>
-      <AiOutlineZoomIn size={22} color="#888888" />
+      <AiOutlineZoomIn size={size} color={color} />
     </IconButton>
   );
 }

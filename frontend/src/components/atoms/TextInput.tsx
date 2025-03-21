@@ -1,4 +1,11 @@
-import React, { ChangeEvent, ReactNode, useEffect, useState } from 'react';
+import React, {
+  ChangeEvent,
+  ReactNode,
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+} from 'react';
 
 const TextInput = ({
   value,
@@ -6,18 +13,43 @@ const TextInput = ({
   icon,
   classNames,
   multiline = false,
+  debounceMs = 500,
 }: {
   value: string;
   onChange: (value: string) => void;
   icon: ReactNode;
   classNames?: string;
   multiline?: boolean;
+  debounceMs?: number;
 }) => {
   const [inputValue, setInputValue] = useState(value);
+  const [isComposing, setIsComposing] = useState(false);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearDebounceTimer = useCallback(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+  }, []);
+
+  const setDebounceTimer = useCallback(() => {
+    clearDebounceTimer();
+    debounceTimerRef.current = setTimeout(() => {
+      if (!isComposing) {
+        onChange(inputValue);
+      }
+    }, debounceMs);
+  }, [inputValue, onChange, debounceMs, clearDebounceTimer, isComposing]);
 
   useEffect(() => {
     setInputValue(value);
   }, [value]);
+
+  useEffect(() => {
+    setDebounceTimer();
+    return clearDebounceTimer;
+  }, [setDebounceTimer, clearDebounceTimer]);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -25,17 +57,23 @@ const TextInput = ({
     setInputValue(e.target.value);
   };
 
-  const handleCommit = () => {
-    onChange(inputValue);
-  };
-
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     if (e.key === 'Enter' && !multiline) {
-      handleCommit();
+      clearDebounceTimer();
+      onChange(inputValue);
       (e.currentTarget as HTMLElement).blur();
     }
+  };
+
+  const handleCompositionStart = () => {
+    setIsComposing(true);
+  };
+
+  const handleCompositionEnd = () => {
+    setIsComposing(false);
+    onChange(inputValue);
   };
 
   const InputComponent = multiline ? 'textarea' : 'input';
@@ -45,8 +83,9 @@ const TextInput = ({
       <InputComponent
         value={inputValue}
         onChange={handleChange}
-        onBlur={handleCommit}
         onKeyDown={handleKeyDown}
+        onCompositionStart={handleCompositionStart}
+        onCompositionEnd={handleCompositionEnd}
         rows={multiline ? 3 : undefined}
         className={`h-fit w-full rounded-lg border border-[#f5f5f5] bg-[#f5f5f5] px-2 py-1 pl-6 text-xs hover:border-[#e8e8e8] ${
           multiline ? 'resize-none' : ''

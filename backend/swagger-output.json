@@ -103,15 +103,6 @@
           "parentId": {
             "type": "integer"
           },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "color": {
-            "type": "string"
-          },
           "position": {
             "type": "object",
             "additionalProperties": true
@@ -154,14 +145,54 @@
           "id",
           "type",
           "prototypeVersionId",
-          "name",
-          "description",
-          "color",
           "position",
           "width",
           "height",
           "order",
           "configurableTypeAsChild",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "PartProperty": {
+        "type": "object",
+        "properties": {
+          "partId": {
+            "type": "integer"
+          },
+          "side": {
+            "type": "string",
+            "enum": [
+              "front",
+              "back"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "partId",
+          "side",
+          "name",
+          "description",
+          "color",
+          "image",
           "createdAt",
           "updatedAt"
         ]
@@ -920,6 +951,26 @@
             }
           }
         }
+      }
+    },
+    "/api/prototypes/{prototypeId}/duplicate": {
+      "post": {
+        "tags": [
+          "Prototypes"
+        ],
+        "summary": "プロトタイプの複製",
+        "description": "指定されたプロトタイプを複製します。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/api/prototypes/{prototypeId}/preview": {
