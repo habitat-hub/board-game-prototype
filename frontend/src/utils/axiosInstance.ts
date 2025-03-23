@@ -11,16 +11,19 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
+    // 権限エラーの場合
     if (error.response && error.response.status === 401) {
+      // ローカルストレージからユーザー情報を削除
       localStorage.removeItem('user');
-
-      // 401 エラーの場合はトップページにリダイレクト
+      // トップページにリダイレクト
       window.location.replace('/');
     }
+    // 403 エラーの場合
     if (error.response && error.response.status === 403) {
-      // 403 エラーの場合はプロトタイプ一覧ページにリダイレクト
+      // プロトタイプ一覧ページにリダイレクト
       window.location.replace('/prototypes');
     }
+    // その他のエラーの場合
     return Promise.reject(error);
   }
 );

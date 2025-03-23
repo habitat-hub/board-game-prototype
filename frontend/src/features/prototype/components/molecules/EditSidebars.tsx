@@ -1,3 +1,7 @@
+/**
+ * @page 編集ページのサイドバーをまとめたコンポーネント
+ */
+
 'use client';
 
 import PartCreateSidebar from '@/features/prototype/components/molecules/PartCreateSidebar';
@@ -16,20 +20,34 @@ export default function EditSidebars({
   updatePart,
   mainViewRef,
 }: {
+  // プロトタイプ名
   prototypeName: string;
+  // プロトタイプバージョン番号
   prototypeVersionNumber?: string;
+  // グループID
   groupId: string;
+  // プレイヤー
   players: Player[];
+  // 選択中のパーツ
   selectedPart: Part | null;
+  // 選択中のパーツのプロパティ
   selectedPartProperties: PartProperty[] | null;
+  // パーツを追加時の処理
   onAddPart: (part: Part, properties: PartProperty[]) => void;
+  // パーツを削除時の処理
   onDeletePart: () => void;
+  // パーツを更新時の処理
   updatePart: (
+    // パーツID
     partId: number,
+    // 更新するパーツ情報
     updatePart?: Partial<Part>,
+    // 更新するパーツのプロパティ情報
     updateProperties?: Partial<PartProperty>[],
+    // パーツを反転させるかどうか
     isFlipped?: boolean
   ) => void;
+  // メインビューのref
   mainViewRef: React.RefObject<HTMLDivElement>;
 }) {
   return (

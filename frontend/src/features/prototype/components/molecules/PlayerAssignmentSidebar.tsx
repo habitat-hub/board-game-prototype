@@ -1,3 +1,6 @@
+/**
+ * @page プレビューページに表示するプレイヤー割り当てサイドバー
+ */
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -16,13 +19,19 @@ export default function PlayerAssignmentSidebar({
   players,
   socket,
 }: {
+  // プロトタイプバージョンID
   prototypeVersionId: string;
+  // グループID
   groupId: string;
+  // プレイヤー
   players: Player[];
+  // ソケット
   socket: Socket;
 }) {
   const router = useRouter();
+  // サイドバーが最小化されているか
   const [isMinimized, setIsMinimized] = useState(false);
+  // グループにアクセス可能なユーザー
   const [accessibleUsers, setAccessibleUsers] = useState<User[]>([]);
   const { assignPlayer } = usePartOperations(prototypeVersionId, socket);
 

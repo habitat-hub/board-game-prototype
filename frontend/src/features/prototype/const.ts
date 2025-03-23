@@ -1,3 +1,4 @@
+// パーツタイプ
 export const PART_TYPE = {
   TOKEN: 'token',
   CARD: 'card',
@@ -6,16 +7,23 @@ export const PART_TYPE = {
   AREA: 'area',
 };
 
+// プロトタイプタイプ
 export const PROTOTYPE_TYPE = {
+  // 編集
   EDIT: 'EDIT',
+  // プレビュー
   PREVIEW: 'PREVIEW',
 };
 
+// バージョン番号
 export const VERSION_NUMBER = {
+  // マスター
   MASTER: '0.0.0',
 };
 
+// パーツのデフォルト設定
 export const PART_DEFAULT_CONFIG = {
+  // カード
   CARD: {
     id: 'card',
     name: 'カード',
@@ -26,6 +34,7 @@ export const PART_DEFAULT_CONFIG = {
     isReversible: false,
     configurableTypeAsChild: [],
   },
+  // トークン
   TOKEN: {
     id: 'token',
     name: 'token',
@@ -35,6 +44,7 @@ export const PART_DEFAULT_CONFIG = {
     color: '#FFFFFF',
     configurableTypeAsChild: [],
   },
+  // 手札
   HAND: {
     id: 'hand',
     name: '手札',
@@ -44,6 +54,7 @@ export const PART_DEFAULT_CONFIG = {
     color: '#FFFFFF',
     configurableTypeAsChild: ['card'],
   },
+  // 山札
   DECK: {
     id: 'deck',
     name: '山札',
@@ -54,6 +65,7 @@ export const PART_DEFAULT_CONFIG = {
     configurableTypeAsChild: ['card'],
     canReverseCardOnDeck: false,
   },
+  // エリア
   AREA: {
     id: 'area',
     name: 'エリア',
@@ -65,6 +77,7 @@ export const PART_DEFAULT_CONFIG = {
   },
 };
 
+// カラー
 export const COLORS = [
   '#FF0000', // Red
   '#00FF00', // Green

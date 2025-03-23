@@ -1,3 +1,7 @@
+/**
+ * @page プレビューページのサイドバーをまとめたコンポーネント
+ */
+
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -15,11 +19,17 @@ export default function PreviewSidebars({
   players,
   socket,
 }: {
+  // プロトタイプバージョンID
   prototypeVersionId: string;
+  // プロトタイプ名
   prototypeName: string;
+  // プロトタイプバージョン番号
   prototypeVersionNumber?: string;
+  // グループID
   groupId: string;
+  // プレイヤー
   players: Player[];
+  // ソケット
   socket: Socket;
 }) {
   const router = useRouter();

@@ -1,19 +1,20 @@
 import ZoomInButton from '@/components/atoms/ZoomInButton';
 import ZoomOutButton from '@/components/atoms/ZoomOutButton';
-import { CanvasState } from '@/features/prototype/type';
 
 export default function ToolsBar({
   zoomIn,
   zoomOut,
-  canZoomIn,
-  canZoomOut,
+  canZoomIn = true,
+  canZoomOut = true,
 }: {
-  canvasState: CanvasState;
-  setCanvasState: (newState: CanvasState) => void;
+  // ズームイン時の処理
   zoomIn: () => void;
+  // ズームアウト時の処理
   zoomOut: () => void;
-  canZoomIn: boolean;
-  canZoomOut: boolean;
+  // ズームイン可能か
+  canZoomIn?: boolean;
+  // ズームアウト可能か
+  canZoomOut?: boolean;
 }) {
   return (
     <div className="fixed bottom-4 left-1/2 z-[10000] flex -translate-x-1/2 items-center justify-center rounded-lg bg-gray-300 p-1">
