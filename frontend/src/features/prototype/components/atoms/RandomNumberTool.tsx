@@ -1,43 +1,60 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 interface RandomNumberToolProps {
+  // モーダルを閉じる時の処理
   onClose: () => void;
 }
 
 const RandomNumberTool: React.FC<RandomNumberToolProps> = ({ onClose }) => {
+  // 最小値
   const [minValue, setMinValue] = useState(1);
+  // 最大値
   const [maxValue, setMaxValue] = useState(10);
+  // 乱数の結果
   const [randomResult, setRandomResult] = useState<number | null>(null);
+  // モーダルのref
   const modalRef = useRef<HTMLDivElement>(null);
 
   /**
    * 乱数を生成する
    */
   const generateRandomNumber = () => {
+    // 最小値が最大値より大きい場合
     if (minValue > maxValue) {
       alert('最小値は最大値以下でなければなりません。');
       return;
     }
+
     const result =
       Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
     setRandomResult(result);
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+  /**
+   * モーダルの外側をクリックした時の処理
+   */
+  const handleClickOutside = useCallback(
+    (event: MouseEvent) => {
+      // Refが存在しない、またはRefが存在してもクリックされた要素がRefの要素の場合（この場合モーダルを閉じる処理が走る）
       if (
-        modalRef.current &&
-        !modalRef.current.contains(event.target as Node)
+        !modalRef.current ||
+        modalRef.current.contains(event.target as Node)
       ) {
-        onClose();
+        return;
       }
-    };
 
+      onClose();
+    },
+    [onClose]
+  );
+
+  // モーダルの外側をクリックした時の処理を追加
+  useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [onClose]);
+  }, [handleClickOutside]);
 
   return (
     <div

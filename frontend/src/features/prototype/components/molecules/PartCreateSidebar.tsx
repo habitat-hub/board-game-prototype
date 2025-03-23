@@ -1,3 +1,7 @@
+/**
+ * @page パーツ編集ページに表示するパーツ作成用のサイドバー
+ */
+
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -24,85 +28,102 @@ export default function PartCreateSidebar({
   onAddPart,
   mainViewRef,
 }: {
+  // プロトタイプ名
   prototypeName: string;
+  // プロトタイプバージョン番号
   prototypeVersionNumber?: string;
+  // グループID
   groupId: string;
+  // プレイヤー
   players: Player[];
+  // パーツを追加時の処理
   onAddPart: (part: Part, properties: PartProperty[]) => void;
+  // メインビューのref
   mainViewRef: React.RefObject<HTMLDivElement>;
 }) {
   const router = useRouter();
-  const [leftIsMinimized, setLeftIsMinimized] = useState(false);
+  // 左サイドバーが最小化されているか
+  const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
 
   /**
    * パーツを作成する
    * @param partId - パーツのID
    */
   const handleCreatePart = (partId: string) => {
-    if (mainViewRef.current) {
-      // メインビューの幅と高さを取得
-      const mainViewWidth = mainViewRef.current.offsetWidth;
-      const mainViewHeight = mainViewRef.current.offsetHeight;
+    // FIXME: partIdではなく、partTypeとかにして、ユニオン型にしたい
 
-      // 中央の座標を計算
-      const centerX = mainViewWidth / 2;
-      const centerY = mainViewHeight / 2;
+    // メインビューのrefが存在しない場合
+    if (!mainViewRef.current) return;
 
-      const partConfig = Object.values(PART_DEFAULT_CONFIG).find(
-        (part) => part.id === partId
-      );
-
-      if (!partConfig) {
-        return;
-      }
-
-      const newPart: Omit<
-        Part,
-        'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'
-      > = {
-        type: partId,
-        parentId: undefined,
-        position: { x: centerX, y: centerY },
-        width: partConfig.width,
-        height: partConfig.height,
-        configurableTypeAsChild: partConfig.configurableTypeAsChild,
-        originalPartId: undefined,
-      };
-      const isCard = partId === PART_TYPE.CARD;
-      if (isCard) {
-        newPart.isReversible = (
-          partConfig as typeof PART_DEFAULT_CONFIG.CARD
-        ).isReversible;
-        newPart.isFlipped = false;
-      }
-      if (partId === PART_TYPE.HAND) {
-        newPart.ownerId = players[0].id;
-      }
-
-      const commonProperties = {
-        name: partConfig.name,
-        description: partConfig.description,
-        color: partConfig.color,
-        image: '',
-      };
-
-      const newPartProperties: Omit<
-        PartProperty,
-        'id' | 'partId' | 'createdAt' | 'updatedAt'
-      >[] = isCard
-        ? [
-            { side: 'front', ...commonProperties },
-            { side: 'back', ...commonProperties },
-          ]
-        : [{ side: 'front', ...commonProperties }];
-
-      onAddPart(newPart as Part, newPartProperties as PartProperty[]);
+    // パーツの初期設定情報
+    const partConfig = Object.values(PART_DEFAULT_CONFIG).find(
+      (part) => part.id === partId
+    );
+    // パーツの初期設定情報が存在しない場合
+    if (!partConfig) {
+      return;
     }
+
+    // メインビューの幅と高さを取得
+    const mainViewWidth = mainViewRef.current.offsetWidth;
+    const mainViewHeight = mainViewRef.current.offsetHeight;
+
+    // 新しいパーツを配置する中央の座標を計算
+    const centerX = mainViewWidth / 2;
+    const centerY = mainViewHeight / 2;
+
+    // 新しいパーツ
+    const newPart: Omit<
+      Part,
+      'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'
+    > = {
+      type: partId,
+      parentId: undefined,
+      position: { x: centerX, y: centerY },
+      width: partConfig.width,
+      height: partConfig.height,
+      configurableTypeAsChild: partConfig.configurableTypeAsChild,
+      originalPartId: undefined,
+    };
+
+    // カードパーツか
+    const isCard = partId === PART_TYPE.CARD;
+    // カードパーツの場合
+    if (isCard) {
+      newPart.isReversible = (
+        partConfig as typeof PART_DEFAULT_CONFIG.CARD
+      ).isReversible;
+      newPart.isFlipped = false;
+    }
+    // 手札パーツの場合
+    if (partId === PART_TYPE.HAND) {
+      newPart.ownerId = players[0].id;
+    }
+
+    // パーツの共通プロパティ
+    const commonProperties = {
+      name: partConfig.name,
+      description: partConfig.description,
+      color: partConfig.color,
+      image: '',
+    };
+    // パーツのプロパティ
+    const newPartProperties: Omit<
+      PartProperty,
+      'id' | 'partId' | 'createdAt' | 'updatedAt'
+    >[] = isCard
+      ? [
+          { side: 'front', ...commonProperties },
+          { side: 'back', ...commonProperties },
+        ]
+      : [{ side: 'front', ...commonProperties }];
+
+    onAddPart(newPart as Part, newPartProperties as PartProperty[]);
   };
 
   return (
     <>
-      {!leftIsMinimized ? (
+      {!isLeftSidebarMinimized ? (
         <div className="fixed left-0 flex h-full w-[240px] flex-col border-r border-gray-200 bg-white">
           <div className="p-4">
             <div className="flex justify-between items-center">
@@ -127,7 +148,7 @@ export default function PartCreateSidebar({
                 )}
               </div>
               <PiSidebarSimpleThin
-                onClick={() => setLeftIsMinimized(true)}
+                onClick={() => setIsLeftSidebarMinimized(true)}
                 className="h-5 w-5 cursor-pointer flex-shrink-0"
               />
             </div>
@@ -181,7 +202,7 @@ export default function PartCreateSidebar({
             )}
           </div>
           <PiSidebarSimpleThin
-            onClick={() => setLeftIsMinimized(false)}
+            onClick={() => setIsLeftSidebarMinimized(false)}
             className="h-5 w-5 cursor-pointer flex-shrink-0"
           />
         </div>

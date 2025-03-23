@@ -22,12 +22,7 @@ import {
 } from '@/features/prototype/const';
 import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
 import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
-import {
-  Camera,
-  CanvasMode,
-  CanvasState,
-  PartHandle,
-} from '@/features/prototype/type';
+import { Camera, PartHandle } from '@/features/prototype/type';
 import {
   Part as PartType,
   PartProperty as PropertyType,
@@ -60,9 +55,10 @@ export default function Canvas({
   socket,
   prototypeType,
 }: CanvasProps) {
-  const [canvasState, setState] = useState<CanvasState>({
-    mode: CanvasMode.None,
-  });
+  // TODO: キャンバスの状態(パーツ選択中とか、パーツ作成中とか)を管理できるようにしたい（あった方が便利そう）
+  // const [canvasState, setState] = useState<CanvasState>({
+  //   mode: CanvasMode.None,
+  // });
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, zoom: 1 });
   const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
   const [selectedPart, setSelectedPart] = useState<PartType | null>(null);
@@ -283,8 +279,6 @@ export default function Canvas({
       </main>
       {/* ツールバー */}
       <ToolsBar
-        canvasState={canvasState}
-        setCanvasState={(newState) => setState(newState)}
         zoomIn={() => {
           setCamera((camera) => ({ ...camera, zoom: camera.zoom + 0.1 }));
         }}
