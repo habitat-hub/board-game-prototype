@@ -27,8 +27,9 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       .get('/auth/user')
       .then((response) => {
         const data = response.data;
-        // ユーザーが存在しない場合
-        if (!data) {
+        // ユーザーが存在しない、またはidが存在しない場合
+        if (!data || !data.id) {
+          setLoading(false);
           router.replace('/');
           return;
         }
@@ -38,6 +39,7 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         setLoading(false);
       })
       .catch(() => {
+        setLoading(false);
         router.replace('/');
       });
   }, [router]);

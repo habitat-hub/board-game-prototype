@@ -1,3 +1,7 @@
+/**
+ * @page パーツ編集ページに表示するパーツのプロパティを編集するサイドバー
+ */
+
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -20,24 +24,37 @@ export default function PartPropertySidebar({
   onDeletePart,
   updatePart,
 }: {
+  // グループID
   groupId: string;
+  // プレイヤー
   players: Player[];
+  // 選択中のパーツ
   selectedPart: Part | null;
+  // 選択中のパーツのプロパティ
   selectedPartProperties: PartProperty[] | null;
+  // パーツを追加時の処理
   onAddPart: (part: Part, properties: PartProperty[]) => void;
+  // パーツを削除時の処理
   onDeletePart: () => void;
+  // パーツを更新時の処理
   updatePart: (
+    // パーツID
     partId: number,
+    // 更新するパーツ情報
     updatePart?: Partial<Part>,
+    // 更新するパーツのプロパティ情報
     updateProperties?: Partial<PartProperty>[],
+    // パーツを反転させるかどうか
     isFlipped?: boolean
   ) => void;
 }) {
   const router = useRouter();
 
-  // currentPropertyを取得
+  // 現在のプロパティ
   const currentProperty = useMemo(() => {
-    if (!selectedPart || !selectedPartProperties) return null;
+    // 選択中のパーツが存在しない、またはプロパティが存在しない場合
+    if (!selectedPart || !selectedPartProperties) return;
+
     return selectedPartProperties.find(
       (p) => p.side === (selectedPart.isFlipped ? 'back' : 'front')
     );
@@ -47,14 +64,17 @@ export default function PartPropertySidebar({
    * パーツを複製する
    */
   const handleCopyPart = () => {
-    if (!selectedPart) return;
+    // 選択中のパーツが存在しない、またはプロパティが存在しない場合
+    if (!selectedPart || !selectedPartProperties) return;
 
+    // 新しいパーツ
     const newPart: Omit<
       Part,
       'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'
     > = {
       type: selectedPart.type,
       parentId: selectedPart.parentId,
+      // NOTE： 少し複製元からずらす
       position: {
         x: (selectedPart.position.x as number) + 10,
         y: (selectedPart.position.y as number) + 10,
@@ -62,18 +82,22 @@ export default function PartPropertySidebar({
       width: selectedPart.width,
       height: selectedPart.height,
       configurableTypeAsChild: selectedPart.configurableTypeAsChild,
+      // NOTE: これは複製用の属性ではないので、undefinedにする
       originalPartId: undefined,
     };
+
+    // カードパーツの場合
     if (selectedPart.type === PART_TYPE.CARD) {
       newPart.isReversible = selectedPart.isReversible;
       newPart.isFlipped = selectedPart.isFlipped;
     }
+
+    // 手札パーツの場合
     if (selectedPart.type === PART_TYPE.HAND) {
       newPart.ownerId = selectedPart.ownerId;
     }
 
-    if (!selectedPartProperties) return;
-
+    // 新しいパーツのプロパティ
     const newPartProperties: Omit<
       PartProperty,
       'id' | 'partId' | 'createdAt' | 'updatedAt'
@@ -91,15 +115,22 @@ export default function PartPropertySidebar({
     onAddPart(newPart as Part, newPartProperties as PartProperty[]);
   };
 
-  // propertyの値が変化している場合のみ更新処理を呼ぶ
+  /**
+   * プロパティの値が変化している場合のみ更新処理を呼ぶ
+   * @param property - 更新するプロパティ
+   */
   const handleUpdateProperty = (property: Partial<PartProperty>) => {
-    if (currentProperty && selectedPart) {
-      const updatedProperty = { ...currentProperty, ...property };
-      // 現在の値と新しい値を比較
-      if (JSON.stringify(currentProperty) !== JSON.stringify(updatedProperty)) {
-        updatePart(selectedPart.id, undefined, [updatedProperty]);
-      }
-    }
+    // 選択中のパーツが存在しない、またはプロパティが存在しない場合
+    if (!selectedPart || !currentProperty) return;
+
+    // 新しいプロパティ
+    const updatedProperty = { ...currentProperty, ...property };
+    // 現在の値と新しい値が同じ場合
+    if (JSON.stringify(currentProperty) === JSON.stringify(updatedProperty))
+      return;
+
+    // プロパティの最新化
+    updatePart(selectedPart.id, undefined, [updatedProperty]);
   };
 
   return (

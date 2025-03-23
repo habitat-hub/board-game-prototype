@@ -3,16 +3,12 @@
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { IoAdd, IoArrowBack } from 'react-icons/io5';
 
 import { PROTOTYPE_TYPE, VERSION_NUMBER } from '@/features/prototype/const';
 import { Prototype, PrototypeVersion } from '@/types/models';
 import axiosInstance from '@/utils/axiosInstance';
 import formatDate from '@/utils/dateFormat';
-
-type SortKey = 'versionNumber' | 'createdAt';
-type SortOrder = 'asc' | 'desc';
 
 const GroupPrototypeList: React.FC = () => {
   const router = useRouter();
@@ -28,8 +24,6 @@ const GroupPrototypeList: React.FC = () => {
       versions: PrototypeVersion[];
     }[]
   >([]);
-  const [sortKey, setSortKey] = useState<SortKey>('createdAt');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
   const getPrototypeGroups = useCallback(async () => {
     const response = await axiosInstance.get(
@@ -75,36 +69,6 @@ const GroupPrototypeList: React.FC = () => {
     await getPrototypeGroups();
   };
 
-  // ソート関数
-  const sortVersions = useCallback(
-    (versions: PrototypeVersion[]) => {
-      return [...versions].sort((a, b) => {
-        const compareValue =
-          sortKey === 'createdAt'
-            ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            : b.versionNumber.localeCompare(a.versionNumber);
-        return sortOrder === 'asc' ? -compareValue : compareValue;
-      });
-    },
-    [sortKey, sortOrder]
-  );
-
-  const handleSort = (key: SortKey) => {
-    setSortOrder((currentOrder) =>
-      sortKey === key ? (currentOrder === 'asc' ? 'desc' : 'asc') : 'desc'
-    );
-    setSortKey(key);
-  };
-
-  const getSortIcon = (key: SortKey) => {
-    if (sortKey !== key) return <FaSort className="w-4 h-4" />;
-    return sortOrder === 'asc' ? (
-      <FaSortUp className="w-4 h-4" />
-    ) : (
-      <FaSortDown className="w-4 h-4" />
-    );
-  };
-
   // プロトタイプを取得する
   useEffect(() => {
     getPrototypeGroups();
@@ -114,16 +78,16 @@ const GroupPrototypeList: React.FC = () => {
     return null;
 
   return (
-    <div className="max-w-4xl mx-auto mt-10">
+    <div className="max-w-4xl mx-auto mt-16 relative pb-24">
       <div className="flex items-center gap-4 mb-8">
         <button
           onClick={() => router.push('/prototypes')}
-          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          className="p-2 hover:bg-content-secondary rounded-full transition-colors"
           title="プロトタイプ一覧へ戻る"
         >
-          <IoArrowBack className="h-5 w-5 text-gray-600" />
+          <IoArrowBack className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
         </button>
-        <h1 className="text-2xl font-bold text-center flex-grow">
+        <h1 className="text-2xl font-bold text-center flex-grow bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
           {editPrototype?.prototype.name}
         </h1>
       </div>
@@ -131,22 +95,23 @@ const GroupPrototypeList: React.FC = () => {
       {/* 編集版 */}
       {editPrototype && (
         <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-4">編集版</h2>
-          <div className="shadow-lg rounded-lg overflow-hidden">
+          <h2 className="text-lg font-medium mb-4 text-wood-darkest">編集版</h2>
+          <div className="shadow-xl rounded-2xl overflow-hidden bg-content border border-wood-lightest/20">
             <Link
               href={`/prototypes/${editPrototype.prototype.id}/versions/${editPrototype.versions[0].id}/edit`}
             >
-              <div className="hover:bg-gray-100 transition-colors duration-200 flex justify-between items-center p-4 border border-gray-200">
-                <span>Master版</span>
+              <div className="hover:bg-content-secondary/50 transition-colors duration-200 flex justify-between items-center p-4">
+                <span className="text-wood-darkest">Master版</span>
                 <button
                   onClick={(e) => {
                     e.preventDefault();
                     handleCreatePreviewPrototype(editPrototype.prototype.id);
                   }}
-                  className="flex items-center gap-1 px-3 py-1.5 text-sm text-white bg-blue-500 rounded-md hover:bg-blue-600"
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm text-wood-dark hover:text-header rounded-lg hover:bg-wood-lightest/20 transition-all duration-200 border border-wood-light/20"
+                  title="プレビュー版を作成"
                 >
                   <IoAdd className="h-4 w-4" />
-                  プレビュー版を作成
+                  プレビュー
                 </button>
               </div>
             </Link>
@@ -157,55 +122,43 @@ const GroupPrototypeList: React.FC = () => {
       {/* プレビュー版 */}
       {previewPrototypes.map(({ prototype, versions }, index) => (
         <div key={prototype.id} className="mb-8">
-          <h2 className="text-lg font-semibold mb-4">
+          <h2 className="text-lg font-medium mb-4 text-wood-darkest">
             プレビュー版 {index + 1}
           </h2>
-          <div className="shadow-lg rounded-lg overflow-hidden">
-            <div className="bg-gray-50 border-b border-gray-200">
-              <div className="flex items-center p-4 text-sm font-medium text-gray-500">
-                <button
-                  onClick={() => handleSort('versionNumber')}
-                  className="flex-1 flex items-center gap-1 hover:text-gray-700"
-                >
-                  バージョン
-                  {getSortIcon('versionNumber')}
-                </button>
-                <button
-                  onClick={() => handleSort('createdAt')}
-                  className="w-32 flex items-center gap-1 hover:text-gray-700"
-                >
-                  作成日
-                  {getSortIcon('createdAt')}
-                </button>
-                <div className="w-32" /> {/* ボタン用のスペース */}
+          <div className="shadow-xl rounded-2xl overflow-hidden bg-content border border-wood-lightest/20">
+            <div className="bg-content-secondary border-b border-wood-lightest/30">
+              <div className="flex items-center p-4 text-sm font-medium text-wood-dark">
+                <span className="flex-1">バージョン</span>
+                <span className="w-32">作成日</span>
+                <div className="w-32" />
               </div>
             </div>
-            <ul className="divide-y divide-gray-200">
-              {sortVersions(versions).map((version) => (
+            <ul className="divide-y divide-wood-lightest/20">
+              {versions.map((version) => (
                 <Link
                   key={version.id}
                   href={`/prototypes/${version.prototypeId}/versions/${version.id}/play`}
                 >
-                  <li className="hover:bg-gray-100 transition-colors duration-200 flex justify-between items-center p-4 border border-gray-200">
-                    <div className="flex-1 flex items-center gap-2">
-                      <span>
+                  <li className="hover:bg-content-secondary/50 transition-colors duration-200 flex justify-between items-center p-4">
+                    <div className="flex-1 flex items-center gap-2 text-wood-darkest">
+                      <span className="font-medium">
                         {version.versionNumber === VERSION_NUMBER.MASTER
-                          ? 'Version'
+                          ? 'Ver.'
                           : 'Room'}{' '}
                         {version.versionNumber}
                       </span>
                       {version.versionNumber === VERSION_NUMBER.MASTER && (
-                        <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-full border border-gray-600">
+                        <span className="px-2 py-0.5 text-xs bg-content-secondary text-wood-dark rounded-full border border-wood-light/30">
                           Master
                         </span>
                       )}
                       {version.versionNumber === VERSION_NUMBER.MASTER && (
-                        <span className="px-2 py-0.5 text-xs bg-yellow-100 text-yellow-600 rounded-full border border-yellow-600">
+                        <span className="px-2 py-0.5 text-xs bg-wood-lightest/30 text-wood-dark rounded-full border border-wood-light/30">
                           編集不可
                         </span>
                       )}
                     </div>
-                    <span className="w-32 text-sm text-gray-500">
+                    <span className="w-32 text-sm text-wood">
                       {formatDate(version.createdAt, true)}
                     </span>
                     <div className="w-32">
@@ -219,10 +172,11 @@ const GroupPrototypeList: React.FC = () => {
                               versions
                             );
                           }}
-                          className="w-full flex items-center gap-1 px-3 py-1.5 text-sm text-white bg-blue-500 rounded-md hover:bg-blue-600"
+                          className="w-full flex items-center justify-center gap-2 px-3 py-1.5 text-sm text-wood-dark hover:text-header rounded-lg hover:bg-wood-lightest/20 transition-all duration-200 border border-wood-light/20"
+                          title="新しいルームを作成"
                         >
                           <IoAdd className="h-4 w-4" />
-                          ルームを作成
+                          ルーム
                         </button>
                       )}
                     </div>

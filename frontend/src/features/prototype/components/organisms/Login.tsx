@@ -5,15 +5,13 @@ import React from 'react';
 
 function Login() {
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="p-10 mt-20 rounded border border-gray-300 shadow-md w-1/3 min-w-[450px] text-center min-h-[450px] flex flex-col">
-        <h1 className="text-3xl font-bold mb-8 mt-10">
-          プロトタイプ作成アプリ
-        </h1>
+    <div className="flex items-center justify-center h-full relative overflow-hidden">
+      <div className="p-10 rounded border border-gray-300 shadow-md w-1/3 min-w-[450px] text-center min-h-[450px] flex flex-col bg-white relative z-10">
+        <h1 className="text-3xl font-bold mb-8 mt-10">KIBAKO</h1>
         <p className="text-gray-600 mb-12">
-          ボードゲームのプロトタイプを簡単に作成できるアプリ
+          ボードゲームプロトタイプの作成アプリ
         </p>
-        <h2 className="text-xl font-semibold mb-6">ソーシャルIDでログイン</h2>
+        <h3 className="text-xl font-semibold mb-6">ソーシャルIDでログイン</h3>
         <div className="flex justify-center">
           <button
             className="flex items-center justify-center bg-white border border-gray-300 rounded shadow-sm py-3 px-6 hover:bg-gray-50"
