@@ -1,3 +1,13 @@
+/**
+ * 日付をフォーマットする
+ * @param dateString - 日付文字列
+ * @param withTime - 時間を含めるかどうか
+ * @returns フォーマットされた日付文字列
+ *
+ * @example
+ * formatDate('2021-01-01') // '2021/01/01'
+ * formatDate('2021-01-01', true) // '2021/01/01 00:00'
+ */
 export default function formatDate(
   dateString: string,
   withTime = false
