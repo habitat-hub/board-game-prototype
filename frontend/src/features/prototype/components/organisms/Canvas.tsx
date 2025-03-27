@@ -270,6 +270,7 @@ export default function Canvas({
                           changeOrder(partId, type);
                         }
                       }}
+                      isActive={selectedPart?.id === part.id}
                     />
                   );
                 })}
