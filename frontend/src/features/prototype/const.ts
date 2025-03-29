@@ -1,19 +1,4 @@
-// パーツタイプ
-export const PART_TYPE = {
-  TOKEN: 'token',
-  CARD: 'card',
-  HAND: 'hand',
-  DECK: 'deck',
-  AREA: 'area',
-};
-
-// プロトタイプタイプ
-export const PROTOTYPE_TYPE = {
-  // 編集
-  EDIT: 'EDIT',
-  // プレビュー
-  PREVIEW: 'PREVIEW',
-};
+import { PartDefaultConfig } from './type';
 
 // バージョン番号
 export const VERSION_NUMBER = {
@@ -22,10 +7,10 @@ export const VERSION_NUMBER = {
 };
 
 // パーツのデフォルト設定
-export const PART_DEFAULT_CONFIG = {
+export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
   // カード
   CARD: {
-    id: 'card',
+    type: 'card',
     name: 'カード',
     width: 100,
     height: 150,
@@ -36,7 +21,7 @@ export const PART_DEFAULT_CONFIG = {
   },
   // トークン
   TOKEN: {
-    id: 'token',
+    type: 'token',
     name: 'token',
     width: 50,
     height: 50,
@@ -46,7 +31,7 @@ export const PART_DEFAULT_CONFIG = {
   },
   // 手札
   HAND: {
-    id: 'hand',
+    type: 'hand',
     name: '手札',
     width: 400,
     height: 150,
@@ -56,7 +41,7 @@ export const PART_DEFAULT_CONFIG = {
   },
   // 山札
   DECK: {
-    id: 'deck',
+    type: 'deck',
     name: '山札',
     width: 150,
     height: 150,
@@ -67,7 +52,7 @@ export const PART_DEFAULT_CONFIG = {
   },
   // エリア
   AREA: {
-    id: 'area',
+    type: 'area',
     name: 'エリア',
     width: 300,
     height: 200,

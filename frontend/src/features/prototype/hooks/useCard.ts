@@ -1,7 +1,6 @@
 import { useImperativeHandle, useState } from 'react';
 import { Socket } from 'socket.io-client';
 
-import { PART_TYPE } from '@/features/prototype/const';
 import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
 import { PartHandle } from '@/features/prototype/type';
 import { Part } from '@/types/models';
@@ -34,7 +33,7 @@ export const useCard = (
     needsSocketEmit: boolean
   ) => {
     // カードでない場合
-    if (part.type !== PART_TYPE.CARD) return;
+    if (part.type !== 'card') return;
     // 反転不可の場合
     if (!part.isReversible) return;
     // 反転が不要な場合

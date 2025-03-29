@@ -1,12 +1,12 @@
 'use client';
 
+import { AxiosResponse } from 'axios';
 import Link from 'next/link';
 import React, { useState, useEffect, useCallback } from 'react';
 import { FaCopy } from 'react-icons/fa';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { FaPlus } from 'react-icons/fa6';
 
-import { PROTOTYPE_TYPE } from '@/features/prototype/const';
 import { Prototype } from '@/types/models';
 import axiosInstance from '@/utils/axiosInstance';
 import formatDate from '@/utils/dateFormat';
@@ -55,11 +55,10 @@ const PrototypeList: React.FC = () => {
    */
   const fetchPrototypes = useCallback(async () => {
     try {
-      const response = await axiosInstance.get(`${apiUrl}/api/prototypes`);
+      const response: AxiosResponse<{ prototypes: Prototype[] }> =
+        await axiosInstance.get(`${apiUrl}/api/prototypes`);
       setEditPrototypes(
-        response.data.filter(
-          ({ type }: { type: string }) => type === PROTOTYPE_TYPE.EDIT
-        )
+        response.data.prototypes.filter(({ type }) => type === 'EDIT')
       );
     } catch (error) {
       console.error('Error fetching prototypes:', error);

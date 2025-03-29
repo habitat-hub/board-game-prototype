@@ -3,6 +3,18 @@ export interface PartHandle {
   reverseCard: (isNextFlipped: boolean, needsSocketEmit: boolean) => void;
 }
 
+export interface PartDefaultConfig {
+  type: 'card' | 'token' | 'hand' | 'deck' | 'area';
+  name: string;
+  width: number;
+  height: number;
+  description: string;
+  color: string;
+  isReversible?: boolean;
+  configurableTypeAsChild: string[];
+  canReverseCardOnDeck?: boolean;
+}
+
 // キャンバスのカメラ
 export type Camera = {
   x: number;

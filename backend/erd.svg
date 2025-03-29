@@ -170,7 +170,7 @@
 <text text-anchor="start" x="244.5" y="-551" font-family="Times,serif" text-decoration="underline" font-size="10.00" fill="#000000">id</text>
 <text text-anchor="start" x="252.279" y="-551" font-family="Times,serif" font-size="10.00" fill="#000000">: NUMBER</text>
 <polygon fill="none" stroke="#000000" points="239.5,-520 239.5,-542 400.5,-542 400.5,-520 239.5,-520"/>
-<text text-anchor="start" x="244.5" y="-528" font-family="Times,serif" font-size="10.00" fill="#000000">type: STRING</text>
+<text text-anchor="start" x="244.5" y="-528" font-family="Times,serif" font-size="10.00" fill="#000000">type: ENUM</text>
 <polygon fill="none" stroke="#000000" points="239.5,-498 239.5,-520 400.5,-520 400.5,-498 239.5,-498"/>
 <text text-anchor="start" x="244.5" y="-507" font-family="Times,serif" font-style="italic" text-decoration="underline" font-size="10.00" fill="#000000">prototypeVersionId</text>
 <text text-anchor="start" x="322.81" y="-507" font-family="Times,serif" font-size="10.00" fill="#000000">: UUID</text>

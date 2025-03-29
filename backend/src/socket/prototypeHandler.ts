@@ -2,7 +2,7 @@ import { Server, Socket } from 'socket.io';
 import PartModel from '../models/Part';
 import PartPropertyModel from '../models/PartProperty';
 import PlayerModel from '../models/Player';
-import { MoveOrderType, PART_TYPE, UPDATABLE_PROTOTYPE_FIELDS } from '../const';
+import { MoveOrderType, UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import PrototypeVersionModel from '../models/PrototypeVersion';
 import {
   getOverLappingPart,
@@ -314,7 +314,7 @@ function handleShuffleDeck(socket: Socket, io: Server) {
       deckId: number;
     }) => {
       const cardsOnDeck = await PartModel.findAll({
-        where: { prototypeVersionId, type: PART_TYPE.CARD, parentId: deckId },
+        where: { prototypeVersionId, type: 'card', parentId: deckId },
       });
       await shuffleDeck(cardsOnDeck);
       await emitUpdatedPartsAndProperties(io, prototypeVersionId);

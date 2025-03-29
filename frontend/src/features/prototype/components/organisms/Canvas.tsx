@@ -15,11 +15,7 @@ import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumber
 import EditSidebars from '@/features/prototype/components/molecules/EditSidebars';
 import PreviewSidebars from '@/features/prototype/components/molecules/PreviewSidebars';
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
-import {
-  PART_TYPE,
-  PROTOTYPE_TYPE,
-  VERSION_NUMBER,
-} from '@/features/prototype/const';
+import { VERSION_NUMBER } from '@/features/prototype/const';
 import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
 import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
 import { Camera, PartHandle } from '@/features/prototype/type';
@@ -41,7 +37,7 @@ interface CanvasProps {
   properties: PropertyType[];
   players: Player[];
   socket: Socket;
-  prototypeType: typeof PROTOTYPE_TYPE.EDIT | typeof PROTOTYPE_TYPE.PREVIEW;
+  prototypeType: 'EDIT' | 'PREVIEW';
 }
 
 export default function Canvas({
@@ -96,8 +92,8 @@ export default function Canvas({
     setSelectedPartProperties(null);
   }, [deletePart, selectedPart]);
 
-  const isEdit = prototypeType === PROTOTYPE_TYPE.EDIT;
-  const isPreview = prototypeType === PROTOTYPE_TYPE.PREVIEW;
+  const isEdit = prototypeType === 'EDIT';
+  const isPreview = prototypeType === 'PREVIEW';
 
   // マスタープレビューかどうかを判定
   const isMasterPreview =
@@ -197,7 +193,7 @@ export default function Canvas({
     const otherPlayerHandIds = parts
       .filter(
         (part) =>
-          part.type === PART_TYPE.HAND &&
+          part.type === 'hand' &&
           part.ownerId != null &&
           playerIds.includes(part.ownerId)
       )
@@ -206,7 +202,7 @@ export default function Canvas({
     return parts
       .filter(
         (part) =>
-          part.type === PART_TYPE.CARD &&
+          part.type === 'card' &&
           part.parentId != null &&
           otherPlayerHandIds.includes(part.parentId)
       )
