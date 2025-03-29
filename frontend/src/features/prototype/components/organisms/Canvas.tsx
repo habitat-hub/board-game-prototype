@@ -266,9 +266,12 @@ export default function Canvas({
                       onMouseDown={(e) => handleMouseDown(e, part.id)}
                       socket={socket}
                       onMoveOrder={({ partId, type }) => {
-                        if (!isMasterPreview) {
-                          changeOrder(partId, type);
-                        }
+                        if (isMasterPreview) return;
+
+                        changeOrder(
+                          partId,
+                          type as 'front' | 'back' | 'backmost' | 'frontmost'
+                        );
                       }}
                       isActive={selectedPart?.id === part.id}
                     />
