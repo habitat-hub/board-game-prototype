@@ -13,11 +13,13 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  // ログアウトメニューの表示状態
-  const [showLogout, setShowLogout] = useState(false);
-  const [userName, setUserName] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
+
+  // ログアウトメニューの表示状態
+  const [showLogout, setShowLogout] = useState(false);
+  // ユーザー名
+  const [userName, setUserName] = useState<string | null>(null);
   // ログアウトメニューのRef
   const logoutRef = useRef(null);
   // フッターと背景画像を表示するか

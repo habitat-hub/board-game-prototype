@@ -3,14 +3,6 @@ export interface PartHandle {
   reverseCard: (isNextFlipped: boolean, needsSocketEmit: boolean) => void;
 }
 
-// パーツの移動順序
-export enum MoveOrderType {
-  BACK = 'back',
-  FRONT = 'front',
-  BACKMOST = 'backmost',
-  FRONTMOST = 'frontmost',
-}
-
 // キャンバスのカメラ
 export type Camera = {
   x: number;

@@ -92,7 +92,6 @@ export default function PlayerAssignmentSidebar({
                         'プレイヤーを選択',
                         ...accessibleUsers.map((user) => user.username),
                       ]}
-                      className="w-full"
                     />
                   </div>
                 </div>

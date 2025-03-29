@@ -1,14 +1,14 @@
-import * as ContextMenu from '@radix-ui/react-context-menu';
 import React, { forwardRef, useMemo } from 'react';
-import { FaRegEyeSlash } from 'react-icons/fa';
+import { FaRegEye } from 'react-icons/fa';
 import { TbCards } from 'react-icons/tb';
 import { VscSync, VscSyncIgnored } from 'react-icons/vsc';
 import { Socket } from 'socket.io-client';
 
+import PartContextMenu from '@/features/prototype/components/atoms/PartContextMenu';
 import { PART_TYPE, PROTOTYPE_TYPE } from '@/features/prototype/const';
 import { useCard } from '@/features/prototype/hooks/useCard';
 import { useDeck } from '@/features/prototype/hooks/useDeck';
-import { MoveOrderType, PartHandle } from '@/features/prototype/type';
+import { PartHandle } from '@/features/prototype/type';
 import {
   Part as PartType,
   PartProperty as PropertyType,
@@ -16,14 +16,23 @@ import {
 } from '@/types/models';
 
 interface PartProps {
+  // パーツタイプ
   part: PartType;
+  // プロパティ
   properties: PropertyType[];
+  // プレイヤー
   players: Player[];
-  isOtherPlayerCard: boolean;
+  // 他のプレイヤーのカードか
+  isOtherPlayerCard?: boolean;
+  // プロトタイプタイプ
   prototypeType: typeof PROTOTYPE_TYPE.EDIT | typeof PROTOTYPE_TYPE.PREVIEW;
+  // マウスダウン時のコールバック
   onMouseDown: (e: React.MouseEvent, partId: number) => void;
+  // ソケット
   socket: Socket;
+  // 移動順序を変更するコールバック
   onMoveOrder: ({ partId, type }: { partId: number; type: string }) => void;
+  // アクティブか
   isActive: boolean;
 }
 
@@ -33,7 +42,7 @@ const Part = forwardRef<PartHandle, PartProps>(
       part,
       properties,
       players,
-      isOtherPlayerCard,
+      isOtherPlayerCard = false,
       prototypeType,
       onMouseDown,
       socket,
@@ -52,12 +61,16 @@ const Part = forwardRef<PartHandle, PartProps>(
     const isCard = part.type === PART_TYPE.CARD;
     const isDeck = part.type === PART_TYPE.DECK;
     const isHand = part.type === PART_TYPE.HAND;
+    const isToken = part.type === PART_TYPE.TOKEN;
+
+    // 所持プレイヤー名
+    const ownerName = useMemo(() => {
+      return players.find((player) => player.id === part.ownerId)?.playerName;
+    }, [players, part.ownerId]);
 
     // 裏向き表示にする必要があるか
-    const isFlippedNeeded = useMemo(
-      () => prototypeType === PROTOTYPE_TYPE.PREVIEW && isOtherPlayerCard,
-      [prototypeType, isOtherPlayerCard]
-    );
+    const isFlippedNeeded =
+      prototypeType === PROTOTYPE_TYPE.PREVIEW && isOtherPlayerCard;
 
     // 対象面（表or裏）のプロパティを取得
     const targetProperty = useMemo(() => {
@@ -65,19 +78,26 @@ const Part = forwardRef<PartHandle, PartProps>(
       return properties.find((p) => p.side === side);
     }, [part, properties]);
 
+    const handleDoubleClick = () => {
+      // カードやデッキでない場合
+      if (!isCard && !isDeck) return;
+
+      // デッキの場合
+      if (isDeck) {
+        shuffleDeck();
+        return;
+      }
+
+      // カードの場合
+      // 裏向き固定の場合
+      if (isFlippedNeeded) return;
+      reverseCard(!isFlipped, true);
+    };
+
     return (
       <svg
         key={part.id}
-        onDoubleClick={() => {
-          if (isCard) {
-            if (isFlippedNeeded) return;
-
-            reverseCard(!isFlipped, true);
-          }
-          if (isDeck) {
-            shuffleDeck();
-          }
-        }}
+        onDoubleClick={handleDoubleClick}
         onMouseDown={(e) => onMouseDown(e, part.id)}
         className="cursor-move border group relative"
         style={{
@@ -128,7 +148,53 @@ const Part = forwardRef<PartHandle, PartProps>(
           height={part.height}
           rx={10}
         />
-        {/* パーツの枠（アクティブ時） */}
+
+        {/* パーツの情報オーバーレイ */}
+        <foreignObject
+          x={part.position.x as number}
+          y={part.position.y as number}
+          width={part.width}
+          height={part.height}
+        >
+          <div className="h-full w-full p-2">
+            {/* ヘッダー部分 */}
+            {!isFlippedNeeded && (
+              <div className="flex items-center justify-between">
+                {/* パーツ名 */}
+                <p
+                  className={`flex-1 truncate ${isToken ? 'text-xs' : 'text-sm'} font-medium`}
+                >
+                  {targetProperty?.name}
+                </p>
+                {/* 所持プレイヤー名 */}
+                {isHand && (
+                  <div className="ml-2 flex items-center gap-1 rounded bg-gray-100 px-1.5 py-0.5">
+                    <FaRegEye className="h-3 w-3 text-gray-500" />
+                    <span className="text-[10px] text-gray-600">
+                      {ownerName}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* フッター部分（アイコン類） */}
+            <div className="absolute bottom-2 right-2 flex items-center gap-2 opacity-60 transition-opacity group-hover:opacity-100">
+              {/* シャッフル可能アイコン */}
+              {isDeck && <TbCards className="h-4 w-4 text-gray-600" />}
+
+              {/* カードの場合はシャッフル可能/不可アイコン */}
+              {isCard &&
+                (part.isReversible ? (
+                  <VscSync className="h-4 w-4 text-gray-600" />
+                ) : (
+                  <VscSyncIgnored className="h-4 w-4 text-gray-600" />
+                ))}
+            </div>
+          </div>
+        </foreignObject>
+
+        {/* アクティブ時の枠 */}
         {isActive && (
           <rect
             id={`${part.id}-border`}
@@ -149,129 +215,15 @@ const Part = forwardRef<PartHandle, PartProps>(
             rx={12}
           />
         )}
-        {/* タイトル */}
-        {!isFlippedNeeded && (
-          <text
-            x={(part.position.x as number) + 10}
-            y={(part.position.y as number) + 20}
-            style={{
-              fill: 'black',
-              fontSize: '14px',
-              userSelect: 'none',
-            }}
-          >
-            {targetProperty?.name}
-          </text>
-        )}
-        {/* 割り当てられているユーザー */}
-        {isHand && (
-          <text
-            x={(part.position.x as number) + 10}
-            y={(part.position.y as number) + part.height - 20}
-            style={{
-              fill: 'black',
-              fontSize: '12px',
-              userSelect: 'none',
-            }}
-          >
-            {players.find((player) => player.id === part.ownerId)?.playerName}
-          </text>
-        )}
-        {/* シャッフルアイコン */}
-        {isDeck && (
-          <foreignObject
-            x={(part.position.x as number) + part.width - 30}
-            y={(part.position.y as number) + part.height - 50}
-            width={20}
-            height={20}
-          >
-            <TbCards className="text-gray-600" />
-          </foreignObject>
-        )}
-        {/* カードの反転可能アイコン */}
-        {(isCard || isDeck || isHand) && (
-          <foreignObject
-            x={(part.position.x as number) + part.width - 30}
-            y={(part.position.y as number) + part.height - 30}
-            width={20}
-            height={20}
-          >
-            <>
-              {isCard &&
-                // カードの場合
-                (part.isReversible ? (
-                  <VscSync className="text-gray-600" />
-                ) : (
-                  <VscSyncIgnored className="text-gray-600" />
-                ))}
-              {isDeck &&
-                // 山札の場合
-                (part.canReverseCardOnDeck ? (
-                  <VscSync className="text-gray-600" />
-                ) : (
-                  <VscSyncIgnored className="text-gray-600" />
-                ))}
-              {isHand && <FaRegEyeSlash className="text-gray-600" />}
-            </>
-          </foreignObject>
-        )}
-        {/* 右クリックで表示するコンテキストメニュー */}
+
+        {/* コンテキストメニュー */}
         <foreignObject
           x={part.position.x as number}
           y={part.position.y as number}
           width={part.width}
           height={part.height}
         >
-          <ContextMenu.Root>
-            <ContextMenu.Trigger className="w-full h-full" asChild>
-              <div className="w-full h-full" />
-            </ContextMenu.Trigger>
-            <ContextMenu.Portal>
-              <ContextMenu.Content className="min-w-[80px] bg-[#1f1f1f] rounded-md p-1 shadow-lg border">
-                <ContextMenu.Item
-                  className="text-[10px] px-2 py-1.5 outline-none cursor-pointer hover:bg-gray-600 rounded text-white"
-                  onClick={() =>
-                    onMoveOrder({ partId: part.id, type: MoveOrderType.BACK })
-                  }
-                >
-                  背面へ移動
-                </ContextMenu.Item>
-                <ContextMenu.Item
-                  className="text-[10px] px-2 py-1.5 outline-none cursor-pointer hover:bg-gray-600 rounded text-white"
-                  onClick={() =>
-                    onMoveOrder({
-                      partId: part.id,
-                      type: MoveOrderType.BACKMOST,
-                    })
-                  }
-                >
-                  最背面へ移動
-                </ContextMenu.Item>
-                <ContextMenu.Item
-                  className="text-[10px] px-2 py-1.5 outline-none cursor-pointer hover:bg-gray-600 rounded text-white"
-                  onClick={() =>
-                    onMoveOrder({
-                      partId: part.id,
-                      type: MoveOrderType.FRONT,
-                    })
-                  }
-                >
-                  前面へ移動
-                </ContextMenu.Item>
-                <ContextMenu.Item
-                  className="text-[10px] px-2 py-1.5 outline-none cursor-pointer hover:bg-gray-600 rounded text-white"
-                  onClick={() =>
-                    onMoveOrder({
-                      partId: part.id,
-                      type: MoveOrderType.FRONTMOST,
-                    })
-                  }
-                >
-                  最前面へ移動
-                </ContextMenu.Item>
-              </ContextMenu.Content>
-            </ContextMenu.Portal>
-          </ContextMenu.Root>
+          <PartContextMenu onMoveOrder={onMoveOrder} partId={part.id} />
         </foreignObject>
       </svg>
     );
