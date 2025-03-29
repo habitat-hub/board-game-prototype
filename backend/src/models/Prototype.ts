@@ -1,13 +1,12 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
 import User from './User';
-import { PROTOTYPE_TYPE } from '../const';
 
 class PrototypeModel extends Model {
   public id!: string;
   public userId!: string;
   public name!: string;
-  public type!: typeof PROTOTYPE_TYPE.EDIT | typeof PROTOTYPE_TYPE.PREVIEW;
+  public type!: 'EDIT' | 'PREVIEW';
   public masterPrototypeId!: string | null;
   public groupId!: string;
   public minPlayers!: number;
@@ -31,7 +30,7 @@ PrototypeModel.init(
       allowNull: false,
     },
     type: {
-      type: DataTypes.ENUM(PROTOTYPE_TYPE.EDIT, PROTOTYPE_TYPE.PREVIEW),
+      type: DataTypes.ENUM('EDIT', 'PREVIEW'),
       allowNull: false,
     },
     masterPrototypeId: {

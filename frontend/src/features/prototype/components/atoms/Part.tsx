@@ -5,7 +5,7 @@ import { VscSync, VscSyncIgnored } from 'react-icons/vsc';
 import { Socket } from 'socket.io-client';
 
 import PartContextMenu from '@/features/prototype/components/atoms/PartContextMenu';
-import { PART_TYPE, PROTOTYPE_TYPE } from '@/features/prototype/const';
+import { PART_TYPE } from '@/features/prototype/const';
 import { useCard } from '@/features/prototype/hooks/useCard';
 import { useDeck } from '@/features/prototype/hooks/useDeck';
 import { PartHandle } from '@/features/prototype/type';
@@ -25,7 +25,7 @@ interface PartProps {
   // 他のプレイヤーのカードか
   isOtherPlayerCard?: boolean;
   // プロトタイプタイプ
-  prototypeType: typeof PROTOTYPE_TYPE.EDIT | typeof PROTOTYPE_TYPE.PREVIEW;
+  prototypeType: 'EDIT' | 'PREVIEW';
   // マウスダウン時のコールバック
   onMouseDown: (e: React.MouseEvent, partId: number) => void;
   // ソケット
@@ -69,8 +69,7 @@ const Part = forwardRef<PartHandle, PartProps>(
     }, [players, part.ownerId]);
 
     // 裏向き表示にする必要があるか
-    const isFlippedNeeded =
-      prototypeType === PROTOTYPE_TYPE.PREVIEW && isOtherPlayerCard;
+    const isFlippedNeeded = prototypeType === 'PREVIEW' && isOtherPlayerCard;
 
     // 対象面（表or裏）のプロパティを取得
     const targetProperty = useMemo(() => {

@@ -12,7 +12,7 @@ import {
   createPrototype,
   createPrototypeVersion,
 } from '../factories/prototypeFactory';
-import { PROTOTYPE_TYPE, UPDATABLE_PROTOTYPE_FIELDS } from '../const';
+import { UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import sequelize from '../models';
 import { getAccessibleUsers } from '../helpers/userHelper';
 import PrototypeVersionModel from '../models/PrototypeVersion';
@@ -539,7 +539,7 @@ router.delete(
 
     try {
       const prototype = await PrototypeModel.findOne({
-        where: { groupId, type: PROTOTYPE_TYPE.EDIT },
+        where: { groupId, type: 'EDIT' },
       });
       if (!prototype) {
         throw new Error('プロトタイプが見つかりません');
@@ -660,7 +660,7 @@ router.post(
   async (req: Request, res: Response) => {
     const editPrototypeId = req.params.prototypeId;
     const editPrototype = await PrototypeModel.findByPk(editPrototypeId);
-    if (!editPrototype || editPrototype.type !== PROTOTYPE_TYPE.EDIT) {
+    if (!editPrototype || editPrototype.type !== 'EDIT') {
       res.status(404).json({ error: 'プロトタイプが見つかりません' });
       return;
     }

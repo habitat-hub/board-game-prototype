@@ -7,14 +7,6 @@ export const PART_TYPE = {
   AREA: 'area',
 };
 
-// プロトタイプタイプ
-export const PROTOTYPE_TYPE = {
-  // 編集
-  EDIT: 'EDIT',
-  // プレビュー
-  PREVIEW: 'PREVIEW',
-};
-
 // バージョン番号
 export const VERSION_NUMBER = {
   // マスター

@@ -6,11 +6,6 @@ export const PART_TYPE = {
   AREA: 'area',
 };
 
-export const PROTOTYPE_TYPE = {
-  EDIT: 'EDIT',
-  PREVIEW: 'PREVIEW',
-};
-
 export const PROTOTYPE_VERSION = {
   INITIAL: '0.0.0',
 };

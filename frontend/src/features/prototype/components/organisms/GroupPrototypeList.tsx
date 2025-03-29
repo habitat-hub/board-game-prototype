@@ -1,11 +1,12 @@
 'use client';
 
+import { AxiosResponse } from 'axios';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
 import { IoAdd, IoArrowBack } from 'react-icons/io5';
 
-import { PROTOTYPE_TYPE, VERSION_NUMBER } from '@/features/prototype/const';
+import { VERSION_NUMBER } from '@/features/prototype/const';
 import { Prototype, PrototypeVersion } from '@/types/models';
 import axiosInstance from '@/utils/axiosInstance';
 import formatDate from '@/utils/dateFormat';
@@ -26,22 +27,17 @@ const GroupPrototypeList: React.FC = () => {
   >([]);
 
   const getPrototypeGroups = useCallback(async () => {
-    const response = await axiosInstance.get(
-      `${apiUrl}/api/prototypes/groups/${groupId}`
-    );
+    const response: AxiosResponse<
+      Array<{ prototype: Prototype; versions: PrototypeVersion[] }>
+    > = await axiosInstance.get(`${apiUrl}/api/prototypes/groups/${groupId}`);
     const prototypes = response.data;
 
     // 編集版
-    const edit = prototypes.find(
-      (p: { prototype: Prototype }) => p.prototype.type === PROTOTYPE_TYPE.EDIT
-    );
+    const edit = prototypes.find((p) => p.prototype.type === 'EDIT');
     setEditPrototype(edit || null);
 
     // プレビュー版
-    const previews = prototypes.filter(
-      (p: { prototype: Prototype }) =>
-        p.prototype.type === PROTOTYPE_TYPE.PREVIEW
-    );
+    const previews = prototypes.filter((p) => p.prototype.type === 'PREVIEW');
     setPreviewPrototypes(previews);
   }, [apiUrl, groupId]);
 

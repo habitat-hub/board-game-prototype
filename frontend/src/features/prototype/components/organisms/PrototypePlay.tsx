@@ -1,11 +1,11 @@
 'use client';
 
+import { AxiosResponse } from 'axios';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 import { io } from 'socket.io-client';
 
 import Canvas from '@/features/prototype/components/organisms/Canvas';
-import { PROTOTYPE_TYPE } from '@/features/prototype/const';
 import {
   Part,
   PartProperty,
@@ -57,15 +57,22 @@ const PrototypePlay: React.FC = () => {
   useEffect(() => {
     axiosInstance
       .get(`/api/prototypes/${prototypeId}/versions`)
-      .then((response) => {
-        const { prototype, versions } = response.data;
-        if (prototype.type !== PROTOTYPE_TYPE.PREVIEW) {
-          router.replace(`/prototypes/groups/${prototype.groupId}`);
-          return;
-        }
+      .then(
+        (
+          response: AxiosResponse<{
+            prototype: Prototype;
+            versions: PrototypeVersion[];
+          }>
+        ) => {
+          const { prototype, versions } = response.data;
+          if (prototype.type !== 'PREVIEW') {
+            router.replace(`/prototypes/groups/${prototype.groupId}`);
+            return;
+          }
 
-        setPrototype({ ...prototype, versions });
-      })
+          setPrototype({ ...prototype, versions });
+        }
+      )
       .catch((error) => console.error('Error fetching prototypes:', error));
   }, [prototypeId, router]);
 
@@ -86,7 +93,7 @@ const PrototypePlay: React.FC = () => {
       prototypeVersionNumber={versionNumber}
       socket={socket}
       groupId={prototype.groupId}
-      prototypeType={PROTOTYPE_TYPE.PREVIEW}
+      prototypeType="PREVIEW"
     />
   );
 };
