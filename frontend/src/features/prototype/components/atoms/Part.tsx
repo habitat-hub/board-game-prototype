@@ -108,6 +108,23 @@ const Part = forwardRef<PartHandle, PartProps>(
         {/* ツールチップ */}
         <title>{targetProperty?.description}</title>
 
+        {/* 画像設定その1 */}
+        {/* <defs>
+          <pattern
+            id="bgPattern"
+            patternUnits="userSpaceOnUse"
+            width="150"
+            height="150"
+          >
+            <image
+              href={'/boardgame_icon.png'}
+              x="0"
+              y="0"
+              width="150"
+              height="150"
+            />
+          </pattern>
+        </defs> */}
         {/* パーツの枠 */}
         <rect
           id={part.id.toString()}
@@ -116,6 +133,7 @@ const Part = forwardRef<PartHandle, PartProps>(
             stroke: 'gray',
             strokeDasharray: part.type === PART_TYPE.AREA ? '4' : 'none',
             fill: targetProperty?.color || 'white',
+            // fill: `url(#bgPattern)`, // 画像設定その2
             opacity: part.type === PART_TYPE.AREA ? 0.6 : 1,
             transform: `
             translate(${part.position.x}px, ${part.position.y}px)
