@@ -18,6 +18,7 @@ import { PiSidebarSimpleThin } from 'react-icons/pi';
 
 import TextIconButton from '@/components/atoms/TextIconButton';
 import { PART_DEFAULT_CONFIG } from '@/features/prototype/const';
+import { AddPartProps } from '@/features/prototype/type';
 import { Part, PartProperty, Player } from '@/types/models';
 
 export default function PartCreateSidebar({
@@ -37,7 +38,7 @@ export default function PartCreateSidebar({
   // プレイヤー
   players: Player[];
   // パーツを追加時の処理
-  onAddPart: (part: Part, properties: PartProperty[]) => void;
+  onAddPart: ({ part, properties }: AddPartProps) => void;
   // メインビューのref
   mainViewRef: React.RefObject<HTMLDivElement>;
 }) {
@@ -90,9 +91,8 @@ export default function PartCreateSidebar({
     const isCard = partType === 'card';
     // カードパーツの場合
     if (isCard) {
-      newPart.isReversible = (
-        partConfig as typeof PART_DEFAULT_CONFIG.CARD
-      ).isReversible;
+      newPart.isReversible =
+        'isReversible' in partConfig && partConfig.isReversible;
       newPart.isFlipped = false;
     }
     // 手札パーツの場合
@@ -118,7 +118,7 @@ export default function PartCreateSidebar({
         ]
       : [{ side: 'front', ...commonProperties }];
 
-    onAddPart(newPart as Part, newPartProperties as PartProperty[]);
+    onAddPart({ part: newPart, properties: newPartProperties });
   };
 
   return (

@@ -30,7 +30,13 @@ interface PartProps {
   // ソケット
   socket: Socket;
   // 移動順序を変更するコールバック
-  onMoveOrder: ({ partId, type }: { partId: number; type: string }) => void;
+  onMoveOrder: ({
+    partId,
+    type,
+  }: {
+    partId: number;
+    type: 'front' | 'back' | 'backmost' | 'frontmost';
+  }) => void;
   // アクティブか
   isActive: boolean;
 }

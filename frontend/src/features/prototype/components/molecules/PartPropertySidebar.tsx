@@ -13,6 +13,7 @@ import NumberInput from '@/components/atoms/NumberInput';
 import TextIconButton from '@/components/atoms/TextIconButton';
 import TextInput from '@/components/atoms/TextInput';
 import { COLORS } from '@/features/prototype/const';
+import { AddPartProps } from '@/features/prototype/type';
 import { Part, PartProperty, Player } from '@/types/models';
 
 export default function PartPropertySidebar({
@@ -33,7 +34,7 @@ export default function PartPropertySidebar({
   // 選択中のパーツのプロパティ
   selectedPartProperties: PartProperty[] | null;
   // パーツを追加時の処理
-  onAddPart: (part: Part, properties: PartProperty[]) => void;
+  onAddPart: ({ part, properties }: AddPartProps) => void;
   // パーツを削除時の処理
   onDeletePart: () => void;
   // パーツを更新時の処理
@@ -112,7 +113,7 @@ export default function PartPropertySidebar({
         };
       }
     );
-    onAddPart(newPart as Part, newPartProperties as PartProperty[]);
+    onAddPart({ part: newPart, properties: newPartProperties });
   };
 
   /**
