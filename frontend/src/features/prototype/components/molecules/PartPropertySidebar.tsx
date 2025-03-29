@@ -13,6 +13,7 @@ import NumberInput from '@/components/atoms/NumberInput';
 import TextIconButton from '@/components/atoms/TextIconButton';
 import TextInput from '@/components/atoms/TextInput';
 import { COLORS } from '@/features/prototype/const';
+import { AddPartProps } from '@/features/prototype/type';
 import { Part, PartProperty, Player } from '@/types/models';
 
 export default function PartPropertySidebar({
@@ -33,7 +34,7 @@ export default function PartPropertySidebar({
   // 選択中のパーツのプロパティ
   selectedPartProperties: PartProperty[] | null;
   // パーツを追加時の処理
-  onAddPart: (part: Part, properties: PartProperty[]) => void;
+  onAddPart: ({ part, properties }: AddPartProps) => void;
   // パーツを削除時の処理
   onDeletePart: () => void;
   // パーツを更新時の処理
@@ -76,8 +77,8 @@ export default function PartPropertySidebar({
       parentId: selectedPart.parentId,
       // NOTE： 少し複製元からずらす
       position: {
-        x: (selectedPart.position.x as number) + 10,
-        y: (selectedPart.position.y as number) + 10,
+        x: selectedPart.position.x + 10,
+        y: selectedPart.position.y + 10,
       },
       width: selectedPart.width,
       height: selectedPart.height,
@@ -112,7 +113,7 @@ export default function PartPropertySidebar({
         };
       }
     );
-    onAddPart(newPart as Part, newPartProperties as PartProperty[]);
+    onAddPart({ part: newPart, properties: newPartProperties });
   };
 
   /**
@@ -179,7 +180,7 @@ export default function PartPropertySidebar({
               <div className="flex w-full gap-2 mb-2">
                 <NumberInput
                   key={selectedPart.id}
-                  value={selectedPart.position.x as number}
+                  value={selectedPart.position.x}
                   onChange={(number) => {
                     updatePart(selectedPart.id, {
                       position: { ...selectedPart.position, x: number },
@@ -189,7 +190,7 @@ export default function PartPropertySidebar({
                 />
                 <NumberInput
                   key={selectedPart.id}
-                  value={selectedPart.position.y as number}
+                  value={selectedPart.position.y}
                   onChange={(number) => {
                     updatePart(selectedPart.id, {
                       position: { ...selectedPart.position, y: number },

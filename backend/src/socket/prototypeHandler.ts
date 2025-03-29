@@ -56,14 +56,14 @@ function handleAddPart(socket: Socket, io: Server) {
       part: Omit<PartModel, 'id'>;
       properties: Omit<PartPropertyModel, 'id' | 'partId'>[];
     }) => {
-      const maxOrder = await PartModel.max('order', {
+      const maxOrder: number = await PartModel.max('order', {
         where: { prototypeVersionId },
       });
 
       const newPart = await PartModel.create({
         ...part,
         prototypeVersionId,
-        order: ((maxOrder as number) + 1) / 2,
+        order: (maxOrder + 1) / 2,
       });
 
       const propertyCreationPromises = properties.map((property) => {

@@ -52,17 +52,15 @@ export const useCanvasEvents = ({
   const onMouseDown = (e: React.MouseEvent, partId?: number) => {
     if (partId !== undefined) {
       // パーツのドラッグ開始
-      const part = parts.find((part) => part.id === partId) as Part;
+      const part = parts.find((part) => part.id === partId);
       const rect = mainViewRef.current?.getBoundingClientRect();
-      if (!rect) return;
+      if (!rect || !part) return;
 
       setSelectedPart(part);
       setDraggingPartId(partId);
 
-      const x =
-        (e.clientX - rect.left) / camera.zoom - (part.position.x as number);
-      const y =
-        (e.clientY - rect.top) / camera.zoom - (part.position.y as number);
+      const x = (e.clientX - rect.left) / camera.zoom - part.position.x;
+      const y = (e.clientY - rect.top) / camera.zoom - part.position.y;
       setOffset({ x, y });
       return;
     }

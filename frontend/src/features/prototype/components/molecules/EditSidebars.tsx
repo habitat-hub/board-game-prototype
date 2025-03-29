@@ -6,6 +6,7 @@
 
 import PartCreateSidebar from '@/features/prototype/components/molecules/PartCreateSidebar';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
+import { AddPartProps } from '@/features/prototype/type';
 import { Part, PartProperty, Player } from '@/types/models';
 
 export default function EditSidebars({
@@ -33,7 +34,7 @@ export default function EditSidebars({
   // 選択中のパーツのプロパティ
   selectedPartProperties: PartProperty[] | null;
   // パーツを追加時の処理
-  onAddPart: (part: Part, properties: PartProperty[]) => void;
+  onAddPart: ({ part, properties }: AddPartProps) => void;
   // パーツを削除時の処理
   onDeletePart: () => void;
   // パーツを更新時の処理

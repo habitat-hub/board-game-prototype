@@ -1,8 +1,11 @@
+import { Part, PartProperty } from '@/types/models';
+
 // Partコンポーネントの外部から呼び出せる関数のインターフェース
 export interface PartHandle {
   reverseCard: (isNextFlipped: boolean, needsSocketEmit: boolean) => void;
 }
 
+// パーツのデフォルト設定
 export interface PartDefaultConfig {
   type: 'card' | 'token' | 'hand' | 'deck' | 'area';
   name: string;
@@ -90,3 +93,12 @@ export type CanvasState =
       mode: CanvasMode.Pressing;
       origin: Point;
     };
+
+// パーツを追加時のprops
+export interface AddPartProps {
+  part: Omit<
+    Part,
+    'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'
+  >;
+  properties: Omit<PartProperty, 'id' | 'createdAt' | 'updatedAt' | 'partId'>[];
+}

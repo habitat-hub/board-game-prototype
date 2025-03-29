@@ -8,7 +8,35 @@ const outputPath = path.join(
   '../../../frontend/src/types/models.ts'
 );
 
-function getTypeScriptType(sequelizeType: any): string {
+// カスタム型定義ファイルの内容を読み込む
+const customTypesPath = path.join(__dirname, '../types/custom.d.ts');
+const customTypes = fs.readFileSync(customTypesPath, 'utf8');
+
+// JSONTypeMapの定義を抽出
+const jsonTypeMapMatch = customTypes.match(
+  /export\s+interface\s+JSONTypeMap\s*{([\s\S]*)}/
+);
+const jsonTypeMapContent = jsonTypeMapMatch ? jsonTypeMapMatch[1] : '';
+
+// ユーティリティ型の定義
+const utilityTypes = `// This file is auto-generated. DO NOT EDIT.
+
+type JSONField<TableName extends string, ColumnName extends string> = 
+  TableName extends keyof JSONTypeMap 
+    ? ColumnName extends keyof JSONTypeMap[TableName]
+      ? JSONTypeMap[TableName][ColumnName]
+      : Record<string, unknown>
+    : Record<string, unknown>;
+
+interface JSONTypeMap {${jsonTypeMapContent}}
+
+`;
+
+function getTypeScriptType(
+  sequelizeType: any,
+  tableName: string,
+  fieldName: string
+): string {
   const type = sequelizeType.toString().toLowerCase();
 
   if (sequelizeType instanceof DataTypes.ENUM) {
@@ -20,22 +48,26 @@ function getTypeScriptType(sequelizeType: any): string {
     sequelizeType instanceof DataTypes.JSON ||
     sequelizeType instanceof DataTypes.JSONB
   ) {
-    const jsonType = sequelizeType as unknown as { options?: { type: string } };
-    if (jsonType.options?.type) {
-      return jsonType.options.type;
-    }
-    return 'Record<string, unknown>';
+    return `JSONField<'${tableName}', '${fieldName}'>`;
   }
 
   if (type.includes('[]')) {
     const arrayType = sequelizeType as unknown as { type: any };
     if (arrayType.type) {
-      const elementType = getTypeScriptType(arrayType.type);
+      const elementType = getTypeScriptType(
+        arrayType.type,
+        tableName,
+        fieldName
+      );
       return `${elementType}[]`;
     }
     const match = type.match(/array<(.*?)>/i);
     if (match) {
-      const elementType = getTypeScriptType({ toString: () => match[1] });
+      const elementType = getTypeScriptType(
+        { toString: () => match[1] },
+        tableName,
+        fieldName
+      );
       return `${elementType}[]`;
     }
     return 'any[]';
@@ -87,7 +119,11 @@ function generateTypeDefinition(model: ModelStatic<Model>) {
   for (const [key, attribute] of Object.entries(attributes)) {
     if (defaultScope.includes(key)) continue;
 
-    const tsType = getTypeScriptType(attribute.type);
+    const tsType = getTypeScriptType(
+      attribute.type,
+      model.name.toLowerCase(),
+      key
+    );
     typeDefinition += `  ${key}${attribute.allowNull ? '?' : ''}: ${tsType};\n`;
   }
 
@@ -96,7 +132,7 @@ function generateTypeDefinition(model: ModelStatic<Model>) {
 }
 
 (async function () {
-  let output = '// This file is auto-generated. DO NOT EDIT.\n\n';
+  let output = utilityTypes;
 
   fs.readdirSync(modelsDir)
     .filter((file) => file.endsWith('.ts') && file !== 'index.ts')

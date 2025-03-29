@@ -18,7 +18,7 @@ import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
 import { VERSION_NUMBER } from '@/features/prototype/const';
 import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
 import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
-import { Camera, PartHandle } from '@/features/prototype/type';
+import { AddPartProps, Camera, PartHandle } from '@/features/prototype/type';
 import {
   Part as PartType,
   PartProperty as PropertyType,
@@ -77,7 +77,7 @@ export default function Canvas({
   const { addPart, updatePart, deletePart, changeOrder, reverseCard } =
     usePartOperations(prototypeVersionId, socket);
   const handleAddPart = useCallback(
-    (part: PartType, properties: PropertyType[]) => {
+    ({ part, properties }: AddPartProps) => {
       addPart(part, properties);
       setSelectedPart(null);
       setSelectedPartProperties(null);
@@ -261,13 +261,16 @@ export default function Canvas({
                       isOtherPlayerCard={otherPlayerCards.includes(part.id)}
                       onMouseDown={(e) => handleMouseDown(e, part.id)}
                       socket={socket}
-                      onMoveOrder={({ partId, type }) => {
+                      onMoveOrder={({
+                        partId,
+                        type,
+                      }: {
+                        partId: number;
+                        type: 'front' | 'back' | 'backmost' | 'frontmost';
+                      }) => {
                         if (isMasterPreview) return;
 
-                        changeOrder(
-                          partId,
-                          type as 'front' | 'back' | 'backmost' | 'frontmost'
-                        );
+                        changeOrder(partId, type);
                       }}
                       isActive={selectedPart?.id === part.id}
                     />
