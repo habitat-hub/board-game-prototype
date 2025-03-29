@@ -77,8 +77,8 @@ export default function PartPropertySidebar({
       parentId: selectedPart.parentId,
       // NOTE： 少し複製元からずらす
       position: {
-        x: (selectedPart.position.x as number) + 10,
-        y: (selectedPart.position.y as number) + 10,
+        x: selectedPart.position.x + 10,
+        y: selectedPart.position.y + 10,
       },
       width: selectedPart.width,
       height: selectedPart.height,
@@ -180,7 +180,7 @@ export default function PartPropertySidebar({
               <div className="flex w-full gap-2 mb-2">
                 <NumberInput
                   key={selectedPart.id}
-                  value={selectedPart.position.x as number}
+                  value={selectedPart.position.x}
                   onChange={(number) => {
                     updatePart(selectedPart.id, {
                       position: { ...selectedPart.position, x: number },
@@ -190,7 +190,7 @@ export default function PartPropertySidebar({
                 />
                 <NumberInput
                   key={selectedPart.id}
-                  value={selectedPart.position.y as number}
+                  value={selectedPart.position.y}
                   onChange={(number) => {
                     updatePart(selectedPart.id, {
                       position: { ...selectedPart.position, y: number },

@@ -153,8 +153,8 @@ const Part = forwardRef<PartHandle, PartProps>(
 
         {/* パーツの情報オーバーレイ */}
         <foreignObject
-          x={part.position.x as number}
-          y={part.position.y as number}
+          x={part.position.x}
+          y={part.position.y}
           width={part.width}
           height={part.height}
         >
@@ -205,7 +205,7 @@ const Part = forwardRef<PartHandle, PartProps>(
               fill: 'none',
               strokeWidth: 2,
               transform: `
-            translate(${Number(part.position.x) - 4}px, ${Number(part.position.y) - 4}px)
+            translate(${part.position.x - 4}px, ${part.position.y - 4}px)
             translate(${part.width / 2}px, ${part.height / 2}px)
             rotateY(${!isFlippedNeeded && isFlipped ? 180 : 0}deg)
             translate(${-part.width / 2}px, ${-part.height / 2}px)
@@ -220,8 +220,8 @@ const Part = forwardRef<PartHandle, PartProps>(
 
         {/* コンテキストメニュー */}
         <foreignObject
-          x={part.position.x as number}
-          y={part.position.y as number}
+          x={part.position.x}
+          y={part.position.y}
           width={part.width}
           height={part.height}
         >
