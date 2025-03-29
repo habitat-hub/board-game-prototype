@@ -1,5 +1,21 @@
 // This file is auto-generated. DO NOT EDIT.
 
+type JSONField<TableName extends string, ColumnName extends string> = 
+  TableName extends keyof JSONTypeMap 
+    ? ColumnName extends keyof JSONTypeMap[TableName]
+      ? JSONTypeMap[TableName][ColumnName]
+      : Record<string, unknown>
+    : Record<string, unknown>;
+
+interface JSONTypeMap {
+  part: {
+    position: {
+      x: number;
+      y: number;
+    };
+  };
+}
+
 export interface Access {
   id: number;
   prototypeGroupId: string;
@@ -11,7 +27,7 @@ export interface Part {
   type: 'token' | 'card' | 'hand' | 'deck' | 'area';
   prototypeVersionId: string;
   parentId?: number;
-  position: Record<string, unknown>;
+  position: JSONField<'part', 'position'>;
   width: number;
   height: number;
   order: number;
