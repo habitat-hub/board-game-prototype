@@ -3,13 +3,21 @@ import sequelize from './index';
 import User from './User';
 
 class PrototypeModel extends Model {
+  // ID
   public id!: string;
+  // ユーザーID
   public userId!: string;
+  // 名前
   public name!: string;
+  // タイプ
   public type!: 'EDIT' | 'PREVIEW';
+  // マスタープロトタイプID
   public masterPrototypeId!: string | null;
+  // グループID
   public groupId!: string;
+  // 最小プレイヤー数
   public minPlayers!: number;
+  // 最大プレイヤー数
   public maxPlayers!: number;
 }
 

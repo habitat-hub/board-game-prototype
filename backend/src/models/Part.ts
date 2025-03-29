@@ -3,28 +3,42 @@ import sequelize from './index';
 import PrototypeVersionModel from './PrototypeVersion';
 
 class PartModel extends Model {
+  // ID
   public id!: number;
+  // タイプ
   public type!: 'token' | 'card' | 'hand' | 'deck' | 'area';
+  // プロトタイプバージョンID
   public prototypeVersionId!: string;
+  // 親パーツID
   public parentId!: number | null;
+  // 位置
   public position!: { x: number; y: number };
+  // 幅
   public width!: number;
+  // 高さ
   public height!: number;
+  // 表示順
   public order!: number;
+  // 子パーツとして設定可能なパーツタイプ
   public configurableTypeAsChild!: string[];
+  // 元のパーツID
   public originalPartId: number | undefined;
   /**
    * カード
    */
+  // 裏返し可能か
   public isReversible: boolean | undefined;
+  // 裏向きか
   public isFlipped: boolean | undefined;
   /**
    * 手札
    */
+  // 所有者ID
   public ownerId: number | undefined;
   /**
    * 山札
    */
+  // 山札の上でカードを裏返し可能か
   public canReverseCardOnDeck: boolean | undefined;
 }
 

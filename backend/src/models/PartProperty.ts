@@ -4,11 +4,17 @@ import PartModel from './Part';
 
 // パーツの設定値を管理
 class PartPropertyModel extends Model {
+  // ID
   public id!: number;
+  // パーツID
   public partId!: number;
+  // 面
   public side!: 'front' | 'back';
+  // 名前
   public name!: string;
+  // 説明
   public description!: string;
+  // 色
   public color!: string;
   public image?: string;
 }

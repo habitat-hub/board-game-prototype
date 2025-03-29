@@ -17,10 +17,15 @@ export async function checkPrototypeOwner(
   next: NextFunction
 ) {
   try {
-    // プロトタイプの作成者かどうかを確認
     const prototypeId = req.params.prototypeId;
-    const prototype = await PrototypeModel.findByPk(prototypeId);
-    if (prototype && prototype.userId === (req.user as UserModel).id) {
+    // 対象プロトタイプ
+    const targetPrototype = await PrototypeModel.findByPk(prototypeId);
+
+    // プロトタイプの作成者の場合
+    if (
+      targetPrototype &&
+      targetPrototype.userId === (req.user as UserModel).id
+    ) {
       return next();
     }
 
@@ -48,9 +53,10 @@ export async function checkPrototypeAccess(
   const userId = (req.user as UserModel).id;
 
   try {
-    // プロトタイプの作成者かどうかを確認
     const prototypeId = req.params.prototypeId;
+    // アクセス可能なプロトタイプ
     const accessiblePrototypes = await getAccessiblePrototypes({ userId });
+    // 対象のプロトタイプがアクセス可能な場合
     if (
       accessiblePrototypes.some((prototype) => prototype.id === prototypeId)
     ) {
@@ -82,7 +88,8 @@ export async function checkGroupAccess(
   const groupId = req.params.groupId;
 
   try {
-    const user = await UserModel.findOne({
+    // グループへのアクセス権を持つユーザー
+    const userWithAccess = await UserModel.findOne({
       include: {
         model: AccessModel,
         where: { prototypeGroupId: groupId },
@@ -90,7 +97,8 @@ export async function checkGroupAccess(
       where: { id: userId },
     });
 
-    if (!user) {
+    // グループへのアクセス権を持つユーザーが存在しない場合
+    if (!userWithAccess) {
       res.status(403).json({ message: 'グループへのアクセス権がありません' });
       return;
     }

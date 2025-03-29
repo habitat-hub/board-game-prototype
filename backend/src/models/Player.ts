@@ -4,10 +4,15 @@ import PrototypeVersionModel from './PrototypeVersion';
 import UserModel from './User';
 
 class PlayerModel extends Model {
+  // ID
   public id!: number;
+  // プロトタイプバージョンID
   public prototypeVersionId!: string;
+  // ユーザーID
   public userId!: number | null;
+  // プレイヤー名
   public playerName!: string;
+  // 元のプレイヤーID
   public originalPlayerId!: number | null;
 }
 

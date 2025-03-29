@@ -3,7 +3,9 @@ import sequelize from './index';
 import PrototypeModel from './Prototype';
 
 class PrototypeGroupModel extends Model {
+  // ID
   public id!: string;
+  // プロトタイプID
   public prototypeId!: string;
 }
 

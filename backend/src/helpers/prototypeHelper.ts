@@ -12,19 +12,26 @@ import UserModel from '../models/User';
  * @returns アクセス可能なプロトタイプ
  */
 export async function getAccessiblePrototypes({ userId }: { userId: string }) {
+  // アクセス権
   const accesses = await AccessModel.findAll({
     include: {
       model: UserModel,
       where: { id: userId },
     },
   });
-  const prototypeGroupIds = accesses.map((access) => access.prototypeGroupId);
-  const prototypeGroups = await PrototypeGroupModel.findAll({
-    where: { id: { [Op.in]: prototypeGroupIds } },
+  // アクセス可能なグループID
+  const accessibleGroupIds = accesses.map((access) => access.prototypeGroupId);
+  // アクセス可能なグループ
+  const accessibleGroups = await PrototypeGroupModel.findAll({
+    where: { id: { [Op.in]: accessibleGroupIds } },
   });
-  const prototypeIds = prototypeGroups.map((group) => group.prototypeId);
+  // アクセス可能なプロトタイプID
+  const accessiblePrototypeIds = accessibleGroups.map(
+    (group) => group.prototypeId
+  );
+  // アクセス可能なプロトタイプ
   return await PrototypeModel.findAll({
-    where: { id: { [Op.in]: prototypeIds } },
+    where: { id: { [Op.in]: accessiblePrototypeIds } },
   });
 }
 
@@ -53,9 +60,12 @@ export async function getOverLappingPart(
   partId: number,
   sortedParts: PartModel[]
 ) {
+  // 対象パーツ
   const selfPart = sortedParts.find((part) => part.id === partId);
+  // 対象パーツが存在しない場合
   if (!selfPart) return;
 
+  // 自分の上にあるパーツ
   return sortedParts.find(
     (part) => part.order > selfPart.order && isOverlapping(selfPart, part)
   );
@@ -71,9 +81,12 @@ export async function getUnderLappingPart(
   partId: number,
   sortedParts: PartModel[]
 ) {
+  // 対象パーツ
   const selfPart = sortedParts.find((part) => part.id === partId);
+  // 対象パーツが存在しない場合
   if (!selfPart) return;
 
+  // 自分の下にあるパーツ
   return sortedParts.find(
     (part) => part.order < selfPart.order && isOverlapping(selfPart, part)
   );
@@ -84,12 +97,15 @@ export async function getUnderLappingPart(
  * @param cards - シャッフルするパーツ
  */
 export async function shuffleDeck(cards: PartModel[]) {
+  // シャッフル前の順番
   const originalOrders = cards.map((card) => card.order);
+  // シャッフル
   for (let i = cards.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [cards[i], cards[j]] = [cards[j], cards[i]];
   }
 
+  // シャッフル後の順番に更新
   await Promise.all(
     cards.map(async (card, index) => {
       await PartModel.update(

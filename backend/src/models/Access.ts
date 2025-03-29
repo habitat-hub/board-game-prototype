@@ -3,8 +3,11 @@ import sequelize from './index';
 import PrototypeGroupModel from './PrototypeGroup';
 
 class AccessModel extends Model {
+  // ID
   public id!: number;
+  // プロトタイプグループID
   public prototypeGroupId!: string;
+  // アクセス権名
   public name!: string;
 }
 
