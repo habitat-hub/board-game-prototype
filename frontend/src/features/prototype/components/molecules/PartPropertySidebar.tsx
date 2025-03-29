@@ -294,7 +294,6 @@ export default function PartPropertySidebar({
                         );
                       }}
                       options={['はい', 'いいえ']}
-                      className="w-full"
                     />
                   </div>
                 </div>
@@ -327,7 +326,6 @@ export default function PartPropertySidebar({
                         '未設定',
                         ...players.map((player) => player.playerName),
                       ]}
-                      className="w-full"
                     />
                   </div>
                 </div>
@@ -359,7 +357,6 @@ export default function PartPropertySidebar({
                         );
                       }}
                       options={['はい', 'いいえ']}
-                      className="w-full"
                     />
                   </div>
                 </div>
