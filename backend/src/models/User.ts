@@ -2,8 +2,11 @@ import { DataTypes, Model } from 'sequelize';
 import sequelize from './index';
 
 class UserModel extends Model {
+  // ID
   public id!: string;
+  // Google ID
   public googleId!: string;
+  // ユーザー名
   public username!: string;
 }
 

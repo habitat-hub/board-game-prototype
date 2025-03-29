@@ -12,9 +12,11 @@ export function ensureAuthenticated(
   res: Response,
   next: NextFunction
 ) {
+  // ログイン済みの場合
   if (req.isAuthenticated()) {
     return next();
   }
+
   res.status(401).json({ message: '権限がありません' });
   return;
 }
