@@ -3,8 +3,10 @@ import { Socket } from 'socket.io-client';
 
 import { Part, PartProperty } from '@/types/models';
 
-
-type PartPropertiesWithoutMetadata = Omit<PartProperty, 'partId' | 'createdAt' | 'updatedAt'>;
+type PartPropertiesWithoutMetadata = Omit<
+  PartProperty,
+  'partId' | 'createdAt' | 'updatedAt'
+>;
 
 export const usePartOperations = (
   prototypeVersionId: string,
@@ -17,7 +19,10 @@ export const usePartOperations = (
    */
   const addPart = useCallback(
     (
-      part: Omit<Part, 'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'>,
+      part: Omit<
+        Part,
+        'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'
+      >,
       properties: PartPropertiesWithoutMetadata[]
     ) => {
       socket.emit('ADD_PART', { prototypeVersionId, part, properties });
@@ -62,7 +67,7 @@ export const usePartOperations = (
         updateProperties,
       });
 
-      if (updatePart && ('isReversible' in updatePart) && isFlipped) {
+      if (updatePart && 'isReversible' in updatePart && isFlipped) {
         reverseCard(partId, false);
       }
     },
@@ -86,7 +91,7 @@ export const usePartOperations = (
    * @param type - 変更方向
    */
   const changeOrder = useCallback(
-    (partId: number, type: string) => {
+    (partId: number, type: 'front' | 'back' | 'backmost' | 'frontmost') => {
       socket.emit('CHANGE_ORDER', { prototypeVersionId, partId, type });
     },
     [prototypeVersionId, socket]

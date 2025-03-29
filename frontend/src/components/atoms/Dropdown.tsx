@@ -16,8 +16,7 @@ const Dropdown = ({
    * 選択されている値が変更されたときの処理
    */
   const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const newValue = e.target.value;
-    onChange(newValue);
+    onChange(e.target.value);
   };
 
   return (

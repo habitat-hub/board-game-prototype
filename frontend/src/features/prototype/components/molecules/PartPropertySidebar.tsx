@@ -178,64 +178,64 @@ export default function PartPropertySidebar({
               <p className="text-[9px] font-medium text-gray-500">位置</p>
               <div className="flex w-full gap-2 mb-2">
                 <NumberInput
+                  key={selectedPart.position.x as number}
                   value={selectedPart.position.x as number}
                   onChange={(number) => {
                     updatePart(selectedPart.id, {
                       position: { ...selectedPart.position, x: number },
                     });
                   }}
-                  classNames="w-1/2"
                   icon={<p>X</p>}
                 />
                 <NumberInput
+                  key={selectedPart.position.y as number}
                   value={selectedPart.position.y as number}
                   onChange={(number) => {
                     updatePart(selectedPart.id, {
                       position: { ...selectedPart.position, y: number },
                     });
                   }}
-                  classNames="w-1/2"
                   icon={<p>Y</p>}
                 />
               </div>
               <p className="text-[9px] font-medium text-gray-500">サイズ</p>
               <div className="flex w-full gap-2 mb-2">
                 <NumberInput
+                  key={selectedPart.width}
                   value={selectedPart.width}
                   onChange={(number) => {
                     updatePart(selectedPart.id, { width: number });
                   }}
-                  classNames="w-1/2"
                   icon={<p>W</p>}
                 />
                 <NumberInput
+                  key={selectedPart.height}
                   value={selectedPart.height}
                   onChange={(number) => {
                     updatePart(selectedPart.id, { height: number });
                   }}
-                  classNames="w-1/2"
                   icon={<p>H</p>}
                 />
               </div>
               <p className="text-[9px] font-medium text-gray-500">名前</p>
               <div className="flex w-full mb-2">
                 <TextInput
+                  key={currentProperty?.name}
                   value={currentProperty?.name ?? ''}
                   onChange={(name) => handleUpdateProperty({ name })}
-                  classNames="w-full"
                   icon={<p>T</p>}
                 />
               </div>
               <p className="text-[9px] font-medium text-gray-500">説明</p>
               <div className="flex w-full mb-2">
                 <TextInput
+                  key={currentProperty?.description}
                   value={currentProperty?.description ?? ''}
                   onChange={(description) =>
                     handleUpdateProperty({ description })
                   }
-                  classNames="w-full"
                   icon={<p>T</p>}
-                  multiline={true}
+                  multiline
                 />
               </div>
               <p className="text-[9px] font-medium text-gray-500">カラー</p>

@@ -1,89 +1,75 @@
-import React, {
-  ChangeEvent,
-  ReactNode,
-  useEffect,
-  useState,
-  useRef,
-  useCallback,
-} from 'react';
+import React, { ReactNode, useState } from 'react';
 
-const TextInput = ({
+type TextInputProps = {
+  // 入力値
+  value: string;
+  // 値が変更されたときのコールバック
+  onChange: (value: string) => void;
+  // 入力欄の前に表示するアイコン
+  icon: ReactNode;
+  // 複数行入力を許可するか
+  multiline?: boolean;
+};
+
+const TextInput: React.FC<TextInputProps> = ({
   value,
   onChange,
   icon,
-  classNames,
   multiline = false,
-  debounceMs = 500,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  icon: ReactNode;
-  classNames?: string;
-  multiline?: boolean;
-  debounceMs?: number;
 }) => {
+  // 入力値
   const [inputValue, setInputValue] = useState(value);
+  // 日本語入力の変換中か
   const [isComposing, setIsComposing] = useState(false);
-  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const clearDebounceTimer = useCallback(() => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-      debounceTimerRef.current = null;
-    }
-  }, []);
-
-  const setDebounceTimer = useCallback(() => {
-    clearDebounceTimer();
-    debounceTimerRef.current = setTimeout(() => {
-      if (!isComposing) {
-        onChange(inputValue);
-      }
-    }, debounceMs);
-  }, [inputValue, onChange, debounceMs, clearDebounceTimer, isComposing]);
-
-  useEffect(() => {
-    setInputValue(value);
-  }, [value]);
-
-  useEffect(() => {
-    setDebounceTimer();
-    return clearDebounceTimer;
-  }, [setDebounceTimer, clearDebounceTimer]);
-
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setInputValue(e.target.value);
-  };
-
+  /**
+   * キー押下時の処理
+   */
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    if (e.key === 'Enter' && !multiline) {
-      clearDebounceTimer();
-      onChange(inputValue);
-      (e.currentTarget as HTMLElement).blur();
-    }
+    // 複数行入力の場合、Enterキー以外の場合は何もしない
+    if (multiline || e.key !== 'Enter') return;
+
+    onChange(inputValue);
+
+    // 日本語変換用のEnterキーの場合
+    if (isComposing) return;
+    // フォーカスを外す
+    (e.currentTarget as HTMLElement).blur();
   };
 
+  /**
+   * フォーカスが外れたときの処理
+   */
+  const handleBlur = () => {
+    onChange(inputValue);
+  };
+
+  /**
+   * 日本語入力の変換開始時の処理
+   */
   const handleCompositionStart = () => {
     setIsComposing(true);
   };
 
+  /**
+   * 日本語入力の変換終了時の処理
+   */
   const handleCompositionEnd = () => {
     setIsComposing(false);
-    onChange(inputValue);
   };
 
+  // 入力コンポーネント
   const InputComponent = multiline ? 'textarea' : 'input';
 
   return (
-    <div className={`relative h-fit ${classNames ?? 'w-28'}`}>
+    <div className="relative h-fit w-full">
       <InputComponent
         value={inputValue}
-        onChange={handleChange}
+        onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
         onCompositionStart={handleCompositionStart}
         onCompositionEnd={handleCompositionEnd}
         rows={multiline ? 3 : undefined}
@@ -91,18 +77,7 @@ const TextInput = ({
           multiline ? 'resize-none' : ''
         }`}
       />
-      {React.isValidElement(icon) && icon.type === 'p' ? (
-        <p className="absolute left-2 top-2 text-[10px] text-gray-400">
-          {
-            (icon as React.ReactElement<{ children: React.ReactNode }>).props
-              .children
-          }
-        </p>
-      ) : (
-        React.cloneElement(icon as React.ReactElement, {
-          className: 'absolute left-1.5 top-2 h-3 w-3 text-gray-400',
-        })
-      )}
+      <p className="absolute left-2 top-2 text-[10px] text-gray-400">{icon}</p>
     </div>
   );
 };
