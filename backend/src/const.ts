@@ -1,11 +1,3 @@
-export const PART_TYPE = {
-  TOKEN: 'token',
-  CARD: 'card',
-  HAND: 'hand',
-  DECK: 'deck',
-  AREA: 'area',
-};
-
 export const PROTOTYPE_VERSION = {
   INITIAL: '0.0.0',
 };

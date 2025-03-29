@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react';
 
-import { PART_TYPE } from '@/features/prototype/const';
 import { needsParentUpdate } from '@/features/prototype/helpers/partHelper';
 import { Camera, Point } from '@/features/prototype/type';
 import { Part } from '@/types/models';
@@ -127,7 +126,7 @@ export const useCanvasEvents = ({
 
     const part = parts.find((part) => part.id === draggingPartId);
     // パーツがカードでない場合
-    if (!part || part.type !== PART_TYPE.CARD) {
+    if (!part || part.type !== 'card') {
       setDraggingPartId(null);
       setIsDraggingCanvas(false);
       return;
@@ -151,13 +150,12 @@ export const useCanvasEvents = ({
     // 前の親は裏向き必須か
     const previousParentPart = parts.find((p) => p.id === part.parentId);
     const isPreviousParentReverseRequired =
-      !!(previousParentPart?.type === PART_TYPE.DECK) &&
+      !!(previousParentPart?.type === 'deck') &&
       !!previousParentPart.canReverseCardOnDeck;
 
     // 新しい親は裏向き必須か
     const isNextParentReverseRequired =
-      !!(parentPart?.type === PART_TYPE.DECK) &&
-      !!parentPart.canReverseCardOnDeck;
+      !!(parentPart?.type === 'deck') && !!parentPart.canReverseCardOnDeck;
 
     if (isPreviousParentReverseRequired !== isNextParentReverseRequired) {
       reverseCard(draggingPartId, !isPreviousParentReverseRequired);

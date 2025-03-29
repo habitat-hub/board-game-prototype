@@ -12,7 +12,7 @@ import Dropdown from '@/components/atoms/Dropdown';
 import NumberInput from '@/components/atoms/NumberInput';
 import TextIconButton from '@/components/atoms/TextIconButton';
 import TextInput from '@/components/atoms/TextInput';
-import { COLORS, PART_TYPE } from '@/features/prototype/const';
+import { COLORS } from '@/features/prototype/const';
 import { Part, PartProperty, Player } from '@/types/models';
 
 export default function PartPropertySidebar({
@@ -87,13 +87,13 @@ export default function PartPropertySidebar({
     };
 
     // カードパーツの場合
-    if (selectedPart.type === PART_TYPE.CARD) {
+    if (selectedPart.type === 'card') {
       newPart.isReversible = selectedPart.isReversible;
       newPart.isFlipped = selectedPart.isFlipped;
     }
 
     // 手札パーツの場合
-    if (selectedPart.type === PART_TYPE.HAND) {
+    if (selectedPart.type === 'hand') {
       newPart.ownerId = selectedPart.ownerId;
     }
 
@@ -271,7 +271,7 @@ export default function PartPropertySidebar({
               </div>
             </div>
           </div>
-          {selectedPart.type === PART_TYPE.CARD && (
+          {selectedPart.type === 'card' && (
             <>
               <div className="border-b border-gray-200"></div>
               <div className="flex flex-col gap-2 p-4">
@@ -300,7 +300,7 @@ export default function PartPropertySidebar({
               </div>
             </>
           )}
-          {selectedPart.type === PART_TYPE.HAND && (
+          {selectedPart.type === 'hand' && (
             <>
               <div className="border-b border-gray-200"></div>
               <div className="flex flex-col gap-2 p-4">
@@ -332,7 +332,7 @@ export default function PartPropertySidebar({
               </div>
             </>
           )}
-          {selectedPart.type === PART_TYPE.DECK && (
+          {selectedPart.type === 'deck' && (
             <>
               <div className="border-b border-gray-200"></div>
               <div className="flex flex-col gap-2 p-4">

@@ -92,7 +92,14 @@ export const swaggerSchemas = {
                   "type": "integer"
             },
             "type": {
-                  "type": "string"
+                  "type": "string",
+                  "enum": [
+                        "token",
+                        "card",
+                        "hand",
+                        "deck",
+                        "area"
+                  ]
             },
             "prototypeVersionId": {
                   "type": "string",

@@ -4,7 +4,7 @@ import PrototypeVersionModel from './PrototypeVersion';
 
 class PartModel extends Model {
   public id!: number;
-  public type!: string;
+  public type!: 'token' | 'card' | 'hand' | 'deck' | 'area';
   public prototypeVersionId!: string;
   public parentId!: number | null;
   public position!: { x: number; y: number };
@@ -36,7 +36,7 @@ PartModel.init(
       primaryKey: true,
     },
     type: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM('token', 'card', 'hand', 'deck', 'area'),
       allowNull: false,
     },
     prototypeVersionId: {

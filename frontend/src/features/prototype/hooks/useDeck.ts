@@ -1,6 +1,5 @@
 import { Socket } from 'socket.io-client';
 
-import { PART_TYPE } from '@/features/prototype/const';
 import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
 import { Part } from '@/types/models';
 
@@ -18,7 +17,7 @@ export const useDeck = (part: Part, socket: Socket) => {
    */
   const handleShuffleDeck = () => {
     // 山札でない場合
-    if (part.type !== PART_TYPE.DECK) return;
+    if (part.type !== 'deck') return;
 
     shuffleDeck(part.id);
   };

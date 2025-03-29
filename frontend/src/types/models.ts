@@ -8,7 +8,7 @@ export interface Access {
 
 export interface Part {
   id: number;
-  type: string;
+  type: 'token' | 'card' | 'hand' | 'deck' | 'area';
   prototypeVersionId: string;
   parentId?: number;
   position: Record<string, unknown>;

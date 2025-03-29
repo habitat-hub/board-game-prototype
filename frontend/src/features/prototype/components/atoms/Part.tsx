@@ -5,7 +5,6 @@ import { VscSync, VscSyncIgnored } from 'react-icons/vsc';
 import { Socket } from 'socket.io-client';
 
 import PartContextMenu from '@/features/prototype/components/atoms/PartContextMenu';
-import { PART_TYPE } from '@/features/prototype/const';
 import { useCard } from '@/features/prototype/hooks/useCard';
 import { useDeck } from '@/features/prototype/hooks/useDeck';
 import { PartHandle } from '@/features/prototype/type';
@@ -58,10 +57,8 @@ const Part = forwardRef<PartHandle, PartProps>(
     );
     const { shuffleDeck } = useDeck(part, socket);
 
-    const isCard = part.type === PART_TYPE.CARD;
-    const isDeck = part.type === PART_TYPE.DECK;
-    const isHand = part.type === PART_TYPE.HAND;
-    const isToken = part.type === PART_TYPE.TOKEN;
+    const isCard = part.type === 'card';
+    const isDeck = part.type === 'deck';
 
     // 所持プレイヤー名
     const ownerName = useMemo(() => {
@@ -130,10 +127,10 @@ const Part = forwardRef<PartHandle, PartProps>(
           onTransitionEnd={() => setIsReversing(false)}
           style={{
             stroke: 'gray',
-            strokeDasharray: part.type === PART_TYPE.AREA ? '4' : 'none',
+            strokeDasharray: part.type === 'area' ? '4' : 'none',
             fill: targetProperty?.color || 'white',
             // fill: `url(#bgPattern)`, // 画像設定その2
-            opacity: part.type === PART_TYPE.AREA ? 0.6 : 1,
+            opacity: part.type === 'area' ? 0.6 : 1,
             transform: `
             translate(${part.position.x}px, ${part.position.y}px)
             translate(${part.width / 2}px, ${part.height / 2}px)
@@ -161,12 +158,12 @@ const Part = forwardRef<PartHandle, PartProps>(
               <div className="flex items-center justify-between">
                 {/* パーツ名 */}
                 <p
-                  className={`flex-1 truncate ${isToken ? 'text-xs' : 'text-sm'} font-medium`}
+                  className={`flex-1 truncate ${part.type === 'token' ? 'text-xs' : 'text-sm'} font-medium`}
                 >
                   {targetProperty?.name}
                 </p>
                 {/* 所持プレイヤー名 */}
-                {isHand && (
+                {part.type === 'hand' && (
                   <div className="ml-2 flex items-center gap-1 rounded bg-gray-100 px-1.5 py-0.5">
                     <FaRegEye className="h-3 w-3 text-gray-500" />
                     <span className="text-[10px] text-gray-600">
