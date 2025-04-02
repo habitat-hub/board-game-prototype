@@ -1,9 +1,10 @@
 'use client';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { GiWoodenCrate } from 'react-icons/gi';
 
 import { WoodenCrateBackground } from '@/features/prototype/components/atoms/WoodenCrateBackground';
+import { useUser } from '@/hooks/useUser';
 import axiosInstance from '@/utils/axiosInstance';
 
 // フッターを非表示にしたいURLパターン
@@ -16,36 +17,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const router = useRouter();
   const pathname = usePathname();
 
+  const { user } = useUser();
+
   // ログアウトメニューの表示状態
   const [showLogout, setShowLogout] = useState(false);
-  // ユーザー名
-  const [userName, setUserName] = useState<string | null>(null);
   // ログアウトメニューのRef
   const logoutRef = useRef(null);
   // フッターと背景画像を表示するか
   const showsFooterAndBackgroundImage = !hideFooterPattern.test(pathname);
-
-  /**
-   * ユーザー名を更新する
-   */
-  const updateUserName = useCallback(() => {
-    const user = localStorage.getItem('user');
-    // ユーザー情報が存在しない場合
-    if (!user) {
-      setUserName(null);
-      return;
-    }
-    setUserName(JSON.parse(user).username);
-  }, []);
-
-  // ヘッダーにユーザー名を表示する
-  useEffect(() => {
-    updateUserName();
-    window.addEventListener('userUpdated', updateUserName);
-    return () => {
-      window.removeEventListener('userUpdated', updateUserName);
-    };
-  }, [updateUserName, pathname]);
 
   /**
    * ログアウトボタンの外側をクリックしたらログアウトボタンを非表示にする
@@ -77,8 +56,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     axiosInstance
       .post(`${apiUrl}/auth/logout`)
       .then(() => {
-        localStorage.removeItem('user'); // ログアウト時にユーザー情報を削除
-        window.dispatchEvent(new Event('userUpdated')); // カスタムイベントを発火
         router.replace('/');
       })
       .catch((error) => console.error('Logout error:', error));
@@ -110,13 +87,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <span className="text-2xl tracking-wider font-light">KIBAKO</span>
           </div>
         </button>
-        {userName && pathname !== '/' && (
+        {user?.username && pathname !== '/' && (
           <div className="relative" ref={logoutRef}>
             <button
               onClick={() => setShowLogout(!showLogout)}
               className="hover:text-wood-light transition-colors duration-200"
             >
-              {userName}
+              {user.username}
             </button>
             {showLogout && (
               <button

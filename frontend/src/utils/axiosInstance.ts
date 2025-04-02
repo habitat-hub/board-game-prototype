@@ -13,8 +13,6 @@ axiosInstance.interceptors.response.use(
   (error) => {
     // 権限エラーの場合
     if (error.response && error.response.status === 401) {
-      // ローカルストレージからユーザー情報を削除
-      localStorage.removeItem('user');
       // トップページにリダイレクト
       window.location.replace('/');
     }
