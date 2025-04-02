@@ -20,30 +20,38 @@ const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
 const PrototypePlay: React.FC = () => {
   const router = useRouter();
+  // プロトタイプID, バージョンID
   const { prototypeId, versionId } = useParams<{
     prototypeId: string;
     versionId: string;
   }>();
+
+  // プロトタイプ
   const [prototype, setPrototype] = useState<
     | (Prototype & {
         versions: PrototypeVersion[];
       })
     | null
   >(null);
+  // パーツ
   const [parts, setParts] = useState<Part[]>([]);
+  // パーツのプロパティ
   const [properties, setProperties] = useState<PartProperty[]>([]);
+  // プレイヤー
   const [players, setPlayers] = useState<Player[]>([]);
 
-  // socket通信の設定
+  // socket通信
   useEffect(() => {
     // サーバーに接続した後、特定のプロトタイプに参加
     socket.emit('JOIN_PROTOTYPE', { prototypeVersionId: versionId });
 
+    // 更新パーツの受信
     socket.on('UPDATE_PARTS', ({ parts, properties }) => {
       setParts(parts);
       setProperties(properties);
     });
 
+    // 更新プレイヤーの受信
     socket.on('UPDATE_PLAYERS', (players: Player[]) => {
       setPlayers(players.sort((a, b) => a.id - b.id));
     });
@@ -60,6 +68,8 @@ const PrototypePlay: React.FC = () => {
       .get(`/api/prototypes/${prototypeId}/versions`)
       .then((response: AxiosResponse<GetPrototypeVersionsResponse>) => {
         const { prototype, versions } = response.data;
+
+        // プレビュー版でない場合
         if (prototype.type !== 'PREVIEW') {
           router.replace(`/prototypes/groups/${prototype.groupId}`);
           return;
@@ -70,11 +80,13 @@ const PrototypePlay: React.FC = () => {
       .catch((error) => console.error('Error fetching prototypes:', error));
   }, [prototypeId, router]);
 
+  // プロトタイプバージョン番号
   const versionNumber = useMemo(() => {
     return prototype?.versions.find((version) => version.id === versionId)
       ?.versionNumber;
   }, [prototype, versionId]);
 
+  // プロトタイプが存在しない場合
   if (!prototype) return null;
 
   return (

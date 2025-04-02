@@ -7,10 +7,17 @@ import React, { useState } from 'react';
 import axiosInstance from '@/utils/axiosInstance';
 
 const CreatePrototypeForm: React.FC = () => {
-  const [name, setName] = useState('');
-  const [playerCount, setPlayerCount] = useState<number>(4); // 初期値を4に設定
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  // フォーム
+  const [form, setForm] = useState({
+    // プロトタイプ名
+    name: '',
+    // プレイヤー人数
+    playerCount: 4,
+  });
+  // エラー
+  const [error, setError] = useState<string | null>(null);
 
   /**
    * プロトタイプを作成する
@@ -18,20 +25,25 @@ const CreatePrototypeForm: React.FC = () => {
    */
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!name || playerCount <= 0) {
+
+    // プロトタイプ名またはプレイヤー人数を入力していない場合
+    if (!form.name || form.playerCount <= 0) {
       setError('プロトタイプ名とプレイヤー人数を入力してください。');
       return;
     }
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      await axiosInstance.post(`${apiUrl}/api/prototypes`, {
-        name,
-        playerCount,
+      // プロトタイプを作成する
+      await axiosInstance.post('/api/prototypes', {
+        name: form.name,
+        playerCount: form.playerCount,
       });
 
-      setName('');
-      setPlayerCount(4); // 初期値にリセット
+      // フォームをリセットする
+      setForm({
+        name: '',
+        playerCount: 4,
+      });
       setError(null);
       router.push('/prototypes');
     } catch (error) {
@@ -57,8 +69,8 @@ const CreatePrototypeForm: React.FC = () => {
           <input
             id="prototypeName"
             type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
             placeholder="プロトタイプ名"
             className="w-full p-2 border border-gray-300 rounded"
             required
@@ -71,11 +83,11 @@ const CreatePrototypeForm: React.FC = () => {
           <input
             id="playerCount"
             type="number"
-            value={playerCount}
+            value={form.playerCount}
             onChange={(e) => {
               const value = Number(e.target.value);
               if (value >= 0) {
-                setPlayerCount(value);
+                setForm({ ...form, playerCount: value });
               }
             }}
             placeholder="プレイヤー人数"

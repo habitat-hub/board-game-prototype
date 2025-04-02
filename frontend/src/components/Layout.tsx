@@ -52,9 +52,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
    * ログアウトする
    */
   const handleLogout = () => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     axiosInstance
-      .post(`${apiUrl}/auth/logout`)
+      .post('/auth/logout')
       .then(() => {
         router.replace('/');
       })
