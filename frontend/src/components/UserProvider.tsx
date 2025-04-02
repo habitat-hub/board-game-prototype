@@ -4,6 +4,7 @@ import { AxiosResponse } from 'axios';
 import { useRouter } from 'next/navigation';
 import React, { ReactNode, useState, useEffect } from 'react';
 
+import { UserContext } from '@/hooks/useUser';
 import { GetUserResponse } from '@/types';
 import axiosInstance from '@/utils/axiosInstance';
 
@@ -15,34 +16,26 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const router = useRouter();
   // ローディング中か
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<GetUserResponse | null>(null);
 
   // ユーザー情報チェック、存在しない場合はユーザー情報取得
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    // ローカルストレージにユーザーが存在する場合
-    if (storedUser) {
-      setLoading(false);
-      return;
-    }
-
     axiosInstance
       .get('/auth/user')
       .then((response: AxiosResponse<GetUserResponse>) => {
         const data = response.data;
         // ユーザーが存在しない、またはidが存在しない場合
         if (!data || !data.id) {
-          setLoading(false);
-          router.replace('/');
-          return;
+          throw new Error('ユーザーが存在しません');
         }
 
-        localStorage.setItem('user', JSON.stringify(data));
-        window.dispatchEvent(new Event('userUpdated'));
-        setLoading(false);
+        setUser(data);
       })
       .catch(() => {
-        setLoading(false);
         router.replace('/');
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, [router]);
 
@@ -51,7 +44,11 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     return null;
   }
 
-  return <>{children}</>;
+  return (
+    <UserContext.Provider value={{ user, setUser }}>
+      {children}
+    </UserContext.Provider>
+  );
 };
 
 export default UserProvider;

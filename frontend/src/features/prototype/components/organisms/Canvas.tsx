@@ -1,6 +1,5 @@
 'use client';
 
-import { AxiosResponse } from 'axios';
 import React, {
   useCallback,
   useEffect,
@@ -20,14 +19,13 @@ import { VERSION_NUMBER } from '@/features/prototype/const';
 import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
 import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
 import { AddPartProps, Camera, PartHandle } from '@/features/prototype/type';
+import { useUser } from '@/hooks/useUser';
 import {
   Part as PartType,
   PartProperty as PropertyType,
   Player,
   PartProperty,
-  GetUserResponse,
 } from '@/types';
-import axiosInstance from '@/utils/axiosInstance';
 
 interface CanvasProps {
   prototypeName: string;
@@ -66,18 +64,7 @@ export default function Canvas({
   const mainViewRef = useRef<HTMLDivElement>(null);
   const partRefs = useRef<{ [key: number]: React.RefObject<PartHandle> }>({});
 
-  const [user, setUser] = useState<{ id?: string; username?: string } | null>(
-    null
-  );
-  useEffect(() => {
-    axiosInstance
-      .get('/auth/user')
-      .then((res: AxiosResponse<GetUserResponse>) => {
-        if (res.data.id && res.data.username) {
-          setUser(res.data);
-        }
-      });
-  }, []);
+  const { user } = useUser();
 
   const { addPart, updatePart, deletePart, changeOrder, reverseCard } =
     usePartOperations(prototypeVersionId, socket);
