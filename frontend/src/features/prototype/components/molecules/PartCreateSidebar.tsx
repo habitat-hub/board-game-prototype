@@ -19,7 +19,7 @@ import { PiSidebarSimpleThin } from 'react-icons/pi';
 import TextIconButton from '@/components/atoms/TextIconButton';
 import { PART_DEFAULT_CONFIG } from '@/features/prototype/const';
 import { AddPartProps } from '@/features/prototype/type';
-import { Part, PartProperty, Player } from '@/types/models';
+import { Part, PartProperty, Player } from '@/types';
 
 export default function PartCreateSidebar({
   prototypeName,

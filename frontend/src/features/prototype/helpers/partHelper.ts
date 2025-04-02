@@ -1,4 +1,4 @@
-import { Part } from '@/types/models';
+import { Part } from '@/types';
 
 /**
  * パーツが他のパーツの上にあるかどうかを判定

@@ -1,8 +1,10 @@
 'use client';
 
+import { AxiosResponse } from 'axios';
 import { useRouter } from 'next/navigation';
 import React, { ReactNode, useState, useEffect } from 'react';
 
+import { GetUserResponse } from '@/types';
 import axiosInstance from '@/utils/axiosInstance';
 
 interface UserProviderProps {
@@ -25,7 +27,7 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
     axiosInstance
       .get('/auth/user')
-      .then((response) => {
+      .then((response: AxiosResponse<GetUserResponse>) => {
         const data = response.data;
         // ユーザーが存在しない、またはidが存在しない場合
         if (!data || !data.id) {

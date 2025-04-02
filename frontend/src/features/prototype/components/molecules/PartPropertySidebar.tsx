@@ -14,7 +14,7 @@ import TextIconButton from '@/components/atoms/TextIconButton';
 import TextInput from '@/components/atoms/TextInput';
 import { COLORS } from '@/features/prototype/const';
 import { AddPartProps } from '@/features/prototype/type';
-import { Part, PartProperty, Player } from '@/types/models';
+import { Part, PartProperty, Player } from '@/types';
 
 export default function PartPropertySidebar({
   groupId,

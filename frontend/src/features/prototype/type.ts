@@ -1,4 +1,4 @@
-import { Part, PartProperty } from '@/types/models';
+import { Part, PartProperty } from '@/types';
 
 // Partコンポーネントの外部から呼び出せる関数のインターフェース
 export interface PartHandle {

@@ -7,7 +7,7 @@ import { FaCopy } from 'react-icons/fa';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { FaPlus } from 'react-icons/fa6';
 
-import { Prototype } from '@/types/models';
+import { GetPrototypesResponse, Prototype } from '@/types';
 import axiosInstance from '@/utils/axiosInstance';
 import formatDate from '@/utils/dateFormat';
 
@@ -55,11 +55,9 @@ const PrototypeList: React.FC = () => {
    */
   const fetchPrototypes = useCallback(async () => {
     try {
-      const response: AxiosResponse<{ prototypes: Prototype[] }> =
+      const response: AxiosResponse<GetPrototypesResponse> =
         await axiosInstance.get(`${apiUrl}/api/prototypes`);
-      setEditPrototypes(
-        response.data.prototypes.filter(({ type }) => type === 'EDIT')
-      );
+      setEditPrototypes(response.data.filter(({ type }) => type === 'EDIT'));
     } catch (error) {
       console.error('Error fetching prototypes:', error);
     }

@@ -1,7 +1,7 @@
 import { Socket } from 'socket.io-client';
 
 import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
-import { Part } from '@/types/models';
+import { Part } from '@/types';
 
 /**
  * 山札の状態を管理するフック

@@ -3,6 +3,7 @@
  */
 'use client';
 
+import { AxiosResponse } from 'axios';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { PiSidebarSimpleThin } from 'react-icons/pi';
@@ -10,7 +11,7 @@ import { Socket } from 'socket.io-client';
 
 import Dropdown from '@/components/atoms/Dropdown';
 import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
-import { Player, User } from '@/types/models';
+import { GetAccessibleUsersResponse, Player, User } from '@/types';
 import axiosInstance from '@/utils/axiosInstance';
 
 export default function PlayerAssignmentSidebar({
@@ -39,7 +40,7 @@ export default function PlayerAssignmentSidebar({
   useEffect(() => {
     axiosInstance
       .get(`/api/prototypes/groups/${groupId}/accessUsers`)
-      .then((response) => {
+      .then((response: AxiosResponse<GetAccessibleUsersResponse>) => {
         setAccessibleUsers(response.data);
       });
   }, [groupId]);

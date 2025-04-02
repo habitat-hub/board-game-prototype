@@ -3,7 +3,7 @@ import { Socket } from 'socket.io-client';
 
 import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
 import { PartHandle } from '@/features/prototype/type';
-import { Part } from '@/types/models';
+import { Part } from '@/types';
 
 /**
  * カードの状態を管理するフック

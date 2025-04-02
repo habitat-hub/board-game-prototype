@@ -12,7 +12,7 @@ import {
   Part as PartType,
   PartProperty as PropertyType,
   Player,
-} from '@/types/models';
+} from '@/types';
 
 interface PartProps {
   // パーツタイプ
