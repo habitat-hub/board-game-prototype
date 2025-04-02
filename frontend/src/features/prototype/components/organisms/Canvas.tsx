@@ -1,5 +1,6 @@
 'use client';
 
+import { AxiosResponse } from 'axios';
 import React, {
   useCallback,
   useEffect,
@@ -23,9 +24,9 @@ import {
   Part as PartType,
   PartProperty as PropertyType,
   Player,
-  User,
   PartProperty,
-} from '@/types/models';
+  GetUserResponse,
+} from '@/types';
 import axiosInstance from '@/utils/axiosInstance';
 
 interface CanvasProps {
@@ -65,13 +66,17 @@ export default function Canvas({
   const mainViewRef = useRef<HTMLDivElement>(null);
   const partRefs = useRef<{ [key: number]: React.RefObject<PartHandle> }>({});
 
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<{ id?: string; username?: string } | null>(
+    null
+  );
   useEffect(() => {
-    axiosInstance.get('/auth/user').then((res) => {
-      if ('id' in res.data) {
-        setUser(res.data);
-      }
-    });
+    axiosInstance
+      .get('/auth/user')
+      .then((res: AxiosResponse<GetUserResponse>) => {
+        if (res.data.id && res.data.username) {
+          setUser(res.data);
+        }
+      });
   }, []);
 
   const { addPart, updatePart, deletePart, changeOrder, reverseCard } =

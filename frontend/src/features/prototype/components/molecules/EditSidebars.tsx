@@ -7,7 +7,7 @@
 import PartCreateSidebar from '@/features/prototype/components/molecules/PartCreateSidebar';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
 import { AddPartProps } from '@/features/prototype/type';
-import { Part, PartProperty, Player } from '@/types/models';
+import { Part, PartProperty, Player } from '@/types';
 
 export default function EditSidebars({
   prototypeName,

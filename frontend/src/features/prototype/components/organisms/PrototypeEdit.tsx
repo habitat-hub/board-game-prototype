@@ -7,12 +7,13 @@ import { io } from 'socket.io-client';
 
 import Canvas from '@/features/prototype/components/organisms/Canvas';
 import {
+  GetPrototypeVersionsResponse,
   Part,
   PartProperty,
   Player,
   Prototype,
   PrototypeVersion,
-} from '@/types/models';
+} from '@/types';
 import axiosInstance from '@/utils/axiosInstance';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
@@ -57,22 +58,15 @@ const PrototypeEdit: React.FC = () => {
   useEffect(() => {
     axiosInstance
       .get(`/api/prototypes/${prototypeId}/versions`)
-      .then(
-        (
-          response: AxiosResponse<{
-            prototype: Prototype;
-            versions: PrototypeVersion[];
-          }>
-        ) => {
-          const { prototype, versions } = response.data;
-          if (prototype.type !== 'EDIT') {
-            router.replace(`/prototypes/groups/${prototype.groupId}`);
-            return;
-          }
-
-          setPrototype({ ...prototype, versions });
+      .then((response: AxiosResponse<GetPrototypeVersionsResponse>) => {
+        const { prototype, versions } = response.data;
+        if (prototype.type !== 'EDIT') {
+          router.replace(`/prototypes/groups/${prototype.groupId}`);
+          return;
         }
-      )
+
+        setPrototype({ ...prototype, versions });
+      })
       .catch((error) => console.error('Error fetching prototypes:', error));
   }, [prototypeId, router]);
 

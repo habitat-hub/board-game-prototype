@@ -9,7 +9,7 @@ import { IoArrowBack } from 'react-icons/io5';
 import { Socket } from 'socket.io-client';
 
 import PlayerAssignmentSidebar from '@/features/prototype/components/molecules/PlayerAssignmentSidebar';
-import { Player } from '@/types/models';
+import { Player } from '@/types';
 
 export default function PreviewSidebars({
   prototypeVersionId,

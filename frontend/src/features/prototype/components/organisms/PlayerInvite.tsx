@@ -1,9 +1,14 @@
 'use client';
 
+import { AxiosResponse } from 'axios';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
 
-import { User } from '@/types/models';
+import {
+  GetAccessibleUsersResponse,
+  GetSearchUsersResponse,
+  User,
+} from '@/types';
 import axiosInstance from '@/utils/axiosInstance';
 
 const PlayerInvite: React.FC = () => {
@@ -17,9 +22,8 @@ const PlayerInvite: React.FC = () => {
   const { groupId } = useParams();
 
   const fetchInvitedUsers = useCallback(async () => {
-    const response = await axiosInstance.get(
-      `/api/prototypes/groups/${groupId}/accessUsers`
-    );
+    const response: AxiosResponse<GetAccessibleUsersResponse> =
+      await axiosInstance.get(`/api/prototypes/groups/${groupId}/accessUsers`);
     setInvitedUsers(response.data);
   }, [groupId]);
 
@@ -33,7 +37,7 @@ const PlayerInvite: React.FC = () => {
     if (searchTerm) {
       axiosInstance
         .get(`/api/users/search?username=${encodeURIComponent(searchTerm)}`)
-        .then((response) => {
+        .then((response: AxiosResponse<GetSearchUsersResponse>) => {
           setSuggestedUsers(response.data);
           setError(null);
         })
