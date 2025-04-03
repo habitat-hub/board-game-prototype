@@ -2,7 +2,7 @@ import { Server, Socket } from 'socket.io';
 import PartModel from '../models/Part';
 import PartPropertyModel from '../models/PartProperty';
 import PlayerModel from '../models/Player';
-import { MoveOrderType, UPDATABLE_PROTOTYPE_FIELDS } from '../const';
+import { UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import PrototypeVersionModel from '../models/PrototypeVersion';
 import {
   getOverLappingPart,
@@ -201,7 +201,7 @@ function handleChangeOrder(socket: Socket, io: Server) {
     }: {
       prototypeVersionId: string;
       partId: number;
-      type: string;
+      type: 'back' | 'front' | 'backmost' | 'frontmost';
     }) => {
       const sortedParts = await PartModel.findAll({
         where: { prototypeVersionId },
@@ -212,23 +212,20 @@ function handleChangeOrder(socket: Socket, io: Server) {
       if (selfPartIndex === -1) return;
 
       // 最背面、かつ背面に移動しようとした場合は何もしない
-      if (
-        selfPartIndex === 0 &&
-        (type === MoveOrderType.BACK || type === MoveOrderType.BACKMOST)
-      ) {
+      if (selfPartIndex === 0 && (type === 'back' || type === 'backmost')) {
         return;
       }
 
       // 最前面、かつ前面に移動しようとした場合は何もしない
       if (
         selfPartIndex === sortedParts.length - 1 &&
-        (type === MoveOrderType.FRONT || type === MoveOrderType.FRONTMOST)
+        (type === 'front' || type === 'frontmost')
       ) {
         return;
       }
 
       switch (type) {
-        case MoveOrderType.BACK: {
+        case 'back': {
           // 一つ後ろに移動
           const underLappingPart = await getUnderLappingPart(
             partId,
@@ -250,7 +247,7 @@ function handleChangeOrder(socket: Socket, io: Server) {
           }
           break;
         }
-        case MoveOrderType.FRONT: {
+        case 'front': {
           // 一つ前に移動
           const overLappingPart = await getOverLappingPart(partId, sortedParts);
           if (overLappingPart) {
@@ -269,7 +266,7 @@ function handleChangeOrder(socket: Socket, io: Server) {
           }
           break;
         }
-        case MoveOrderType.BACKMOST: {
+        case 'backmost': {
           // 最背面に移動
           const firstPart = sortedParts[0];
           const newOrder = (firstPart.order + 0) / 2;
@@ -280,7 +277,7 @@ function handleChangeOrder(socket: Socket, io: Server) {
           await emitUpdatedPartsAndProperties(io, prototypeVersionId);
           break;
         }
-        case MoveOrderType.FRONTMOST: {
+        case 'frontmost': {
           // 最前面に移動
           const lastPart = sortedParts[sortedParts.length - 1];
           const newOrder = (lastPart.order + 1) / 2;
