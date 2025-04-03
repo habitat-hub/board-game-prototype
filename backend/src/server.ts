@@ -36,6 +36,10 @@ if (process.env.NODE_ENV === 'development') {
       stdio: 'inherit',
       cwd: path.join(__dirname, '..'),
     });
+    execSync('npm run generate-api-types', {
+      stdio: 'inherit',
+      cwd: path.join(__dirname, '..'),
+    });
   } catch (error) {
     console.error('Failed to generate Swagger schemas:', error);
   }

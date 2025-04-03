@@ -7,13 +7,13 @@ import { io } from 'socket.io-client';
 
 import Canvas from '@/features/prototype/components/organisms/Canvas';
 import {
-  GetPrototypeVersionsResponse,
   Part,
   PartProperty,
   Player,
   Prototype,
   PrototypeVersion,
 } from '@/types';
+import { PrototypesVersionsListData } from '@/types/data-contracts';
 import axiosInstance from '@/utils/axiosInstance';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
@@ -66,7 +66,7 @@ const PrototypePlay: React.FC = () => {
   useEffect(() => {
     axiosInstance
       .get(`/api/prototypes/${prototypeId}/versions`)
-      .then((response: AxiosResponse<GetPrototypeVersionsResponse>) => {
+      .then((response: AxiosResponse<PrototypesVersionsListData>) => {
         const { prototype, versions } = response.data;
 
         // プレビュー版でない場合

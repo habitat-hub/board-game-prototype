@@ -7,11 +7,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { IoAdd, IoArrowBack } from 'react-icons/io5';
 
 import { VERSION_NUMBER } from '@/features/prototype/const';
-import {
-  GetPrototypeGroupsResponse,
-  Prototype,
-  PrototypeVersion,
-} from '@/types';
+import { Prototype, PrototypeVersion } from '@/types';
+import { PrototypesGroupsDetailData } from '@/types/data-contracts';
 import axiosInstance from '@/utils/axiosInstance';
 import formatDate from '@/utils/dateFormat';
 
@@ -37,7 +34,7 @@ const GroupPrototypeList: React.FC = () => {
    * プロトタイプを取得する
    */
   const getPrototypeGroups = useCallback(async () => {
-    const response: AxiosResponse<GetPrototypeGroupsResponse> =
+    const response: AxiosResponse<PrototypesGroupsDetailData> =
       await axiosInstance.get(`/api/prototypes/groups/${groupId}`);
     const prototypes = response.data;
 

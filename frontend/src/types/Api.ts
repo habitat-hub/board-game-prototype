@@ -18,6 +18,7 @@ import {
   PrototypesCreatePayload,
   PrototypesDeleteData,
   PrototypesDetailData,
+  PrototypesDuplicateCreateData,
   PrototypesGroupsAccessUsersListData,
   PrototypesGroupsDetailData,
   PrototypesGroupsInviteCreateData,
@@ -223,9 +224,13 @@ export class Api<
     prototypeId: string,
     params: RequestParams = {}
   ) =>
-    this.request<any, any>({
+    this.request<
+      PrototypesDuplicateCreateData,
+      Error404Response | Error500Response
+    >({
       path: `/api/prototypes/${prototypeId}/duplicate`,
       method: 'POST',
+      format: 'json',
       ...params,
     });
   /**

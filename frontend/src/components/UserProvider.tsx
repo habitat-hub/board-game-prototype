@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import React, { ReactNode, useState, useEffect } from 'react';
 
 import { UserContext } from '@/hooks/useUser';
-import { GetUserResponse } from '@/types';
+import { UserListData } from '@/types';
 import axiosInstance from '@/utils/axiosInstance';
 
 interface UserProviderProps {
@@ -16,13 +16,13 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const router = useRouter();
   // ローディング中か
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<GetUserResponse | null>(null);
+  const [user, setUser] = useState<UserListData | null>(null);
 
   // ユーザー情報チェック、存在しない場合はユーザー情報取得
   useEffect(() => {
     axiosInstance
       .get('/auth/user')
-      .then((response: AxiosResponse<GetUserResponse>) => {
+      .then((response: AxiosResponse<UserListData>) => {
         const data = response.data;
         // ユーザーが存在しない、またはidが存在しない場合
         if (!data || !data.id) {

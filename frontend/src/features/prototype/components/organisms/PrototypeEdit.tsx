@@ -7,12 +7,12 @@ import { io } from 'socket.io-client';
 
 import Canvas from '@/features/prototype/components/organisms/Canvas';
 import {
-  GetPrototypeVersionsResponse,
   Part,
   PartProperty,
   Player,
   Prototype,
   PrototypeVersion,
+  PrototypesVersionsListData,
 } from '@/types';
 import axiosInstance from '@/utils/axiosInstance';
 
@@ -66,7 +66,7 @@ const PrototypeEdit: React.FC = () => {
   useEffect(() => {
     axiosInstance
       .get(`/api/prototypes/${prototypeId}/versions`)
-      .then((response: AxiosResponse<GetPrototypeVersionsResponse>) => {
+      .then((response: AxiosResponse<PrototypesVersionsListData>) => {
         const { prototype, versions } = response.data;
 
         // プロトタイプのタイプが編集版でない場合

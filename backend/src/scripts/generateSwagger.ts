@@ -71,6 +71,14 @@ function getSwaggerType(sequelizeType: any): any {
     };
   }
 
+  if (sequelizeType instanceof DataTypes.ARRAY) {
+    const itemType = getSwaggerType((sequelizeType as any).type);
+    return {
+      type: 'array',
+      items: itemType,
+    };
+  }
+
   if (type.includes('uuid')) {
     return {
       type: 'string',
@@ -90,13 +98,6 @@ function getSwaggerType(sequelizeType: any): any {
     return {
       type: 'string',
       format: 'date-time',
-    };
-  }
-
-  if (type.includes('array')) {
-    return {
-      type: 'array',
-      items: { type: 'string' },
     };
   }
 

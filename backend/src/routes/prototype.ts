@@ -346,7 +346,17 @@ router.get('/:prototypeId/versions', checkPrototypeAccess, async (req, res) => {
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Prototype'
+ *                 type: object
+ *                 required:
+ *                   - prototype
+ *                   - versions
+ *                 properties:
+ *                   prototype:
+ *                     $ref: '#/components/schemas/Prototype'
+ *                   versions:
+ *                     type: array
+ *                     items:
+ *                       $ref: '#/components/schemas/PrototypeVersion'
  */
 router.get('/groups/:groupId', checkGroupAccess, async (req, res) => {
   const groupId = req.params.groupId;
@@ -587,6 +597,25 @@ router.delete(
  *         description: プロトタイプのID
  *         schema:
  *           type: string
+ *     responses:
+ *       '200':
+ *         description: プロトタイプを複製しました
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       '404':
+ *         description: プロトタイプが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
+ *       '500':
+ *         description: サーバーエラー
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
  */
 router.post(
   '/:prototypeId/duplicate',

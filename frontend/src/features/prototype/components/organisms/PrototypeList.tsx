@@ -7,7 +7,7 @@ import { FaCopy } from 'react-icons/fa';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { FaPlus } from 'react-icons/fa6';
 
-import { GetPrototypesResponse, Prototype } from '@/types';
+import { PrototypesListData, Prototype } from '@/types';
 import axiosInstance from '@/utils/axiosInstance';
 import formatDate from '@/utils/dateFormat';
 
@@ -31,7 +31,7 @@ const PrototypeList: React.FC = () => {
    */
   const fetchPrototypes = useCallback(async () => {
     try {
-      const response: AxiosResponse<GetPrototypesResponse> =
+      const response: AxiosResponse<PrototypesListData> =
         await axiosInstance.get('/api/prototypes');
       setEditPrototypes(response.data.filter(({ type }) => type === 'EDIT'));
     } catch (error) {

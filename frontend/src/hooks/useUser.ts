@@ -1,12 +1,12 @@
 import { createContext, useContext } from 'react';
 
-import { GetUserResponse } from '@/types';
+import { UserListData } from '@/types';
 
 interface UserContextType {
   // ユーザー情報
-  user: GetUserResponse | null;
+  user: UserListData | null;
   // ユーザー情報を設定
-  setUser: (user: GetUserResponse | null) => void;
+  setUser: (user: UserListData | null) => void;
 }
 
 export const UserContext = createContext<UserContextType | undefined>(

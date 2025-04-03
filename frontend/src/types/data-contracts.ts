@@ -51,7 +51,7 @@ export interface Part {
   width: number;
   height: number;
   order: number;
-  configurableTypeAsChild: string;
+  configurableTypeAsChild: string[];
   originalPartId?: number;
   isReversible?: boolean;
   isFlipped?: boolean;
@@ -135,7 +135,10 @@ export interface UserAccess {
 
 export type LogoutCreateData = SuccessResponse;
 
-export type UserListData = User;
+export interface UserListData {
+  id?: string;
+  username?: string;
+}
 
 export type PrototypesListData = Prototype[];
 
@@ -157,7 +160,10 @@ export interface PrototypesVersionsListData {
   versions: PrototypeVersion[];
 }
 
-export type PrototypesGroupsDetailData = Prototype[];
+export type PrototypesGroupsDetailData = {
+  prototype: Prototype;
+  versions: PrototypeVersion[];
+}[];
 
 export type PrototypesGroupsAccessUsersListData = User[];
 
@@ -168,6 +174,8 @@ export interface PrototypesGroupsInviteCreatePayload {
 export type PrototypesGroupsInviteCreateData = SuccessResponse;
 
 export type PrototypesGroupsInviteDeleteData = SuccessResponse;
+
+export type PrototypesDuplicateCreateData = SuccessResponse;
 
 export type PrototypesPreviewCreateData = Prototype;
 

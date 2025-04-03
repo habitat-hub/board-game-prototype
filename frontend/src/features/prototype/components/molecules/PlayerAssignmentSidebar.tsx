@@ -11,7 +11,8 @@ import { Socket } from 'socket.io-client';
 
 import Dropdown from '@/components/atoms/Dropdown';
 import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
-import { GetAccessibleUsersResponse, Player, User } from '@/types';
+import { Player, User } from '@/types';
+import { PrototypesGroupsAccessUsersListData } from '@/types/data-contracts';
 import axiosInstance from '@/utils/axiosInstance';
 
 export default function PlayerAssignmentSidebar({
@@ -40,7 +41,7 @@ export default function PlayerAssignmentSidebar({
   useEffect(() => {
     axiosInstance
       .get(`/api/prototypes/groups/${groupId}/accessUsers`)
-      .then((response: AxiosResponse<GetAccessibleUsersResponse>) => {
+      .then((response: AxiosResponse<PrototypesGroupsAccessUsersListData>) => {
         setAccessibleUsers(response.data);
       });
   }, [groupId]);

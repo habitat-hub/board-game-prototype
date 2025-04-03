@@ -5,9 +5,9 @@ import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
 
 import {
-  GetAccessibleUsersResponse,
-  GetSearchUsersResponse,
+  PrototypesGroupsAccessUsersListData,
   User,
+  UsersSearchListData,
 } from '@/types';
 import axiosInstance from '@/utils/axiosInstance';
 
@@ -34,7 +34,7 @@ const PlayerInvite: React.FC = () => {
    * 招待されているユーザーを取得
    */
   const fetchInvitedUsers = useCallback(async () => {
-    const response: AxiosResponse<GetAccessibleUsersResponse> =
+    const response: AxiosResponse<PrototypesGroupsAccessUsersListData> =
       await axiosInstance.get(`/api/prototypes/groups/${groupId}/accessUsers`);
     setInvitedUsers(response.data);
   }, [groupId]);
@@ -53,7 +53,7 @@ const PlayerInvite: React.FC = () => {
 
     axiosInstance
       .get(`/api/users/search?username=${encodeURIComponent(searchTerm)}`)
-      .then((response: AxiosResponse<GetSearchUsersResponse>) => {
+      .then((response: AxiosResponse<UsersSearchListData>) => {
         setSuggestedUsers(response.data);
         setError(null);
       })

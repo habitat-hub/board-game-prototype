@@ -122,7 +122,10 @@ export const swaggerSchemas = {
                   "type": "integer"
             },
             "configurableTypeAsChild": {
-                  "type": "string"
+                  "type": "array",
+                  "items": {
+                        "type": "string"
+                  }
             },
             "originalPartId": {
                   "type": "integer"
