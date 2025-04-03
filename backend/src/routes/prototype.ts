@@ -291,6 +291,9 @@ router.delete(
  *           application/json:
  *             schema:
  *               type: object
+ *               required:
+ *                 - prototype
+ *                 - versions
  *               properties:
  *                 prototype:
  *                   $ref: '#/components/schemas/Prototype'
