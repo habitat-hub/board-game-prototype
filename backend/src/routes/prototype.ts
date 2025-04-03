@@ -185,6 +185,19 @@ router.get(
  *         description: プロトタイプのID
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               minPlayers:
+ *                 type: integer
+ *               maxPlayers:
+ *                 type: integer
  *     responses:
  *       '200':
  *         description: プロトタイプを更新しました

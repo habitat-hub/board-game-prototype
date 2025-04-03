@@ -27,6 +27,7 @@ import {
   PrototypesListData,
   PrototypesPreviewCreateData,
   PrototypesUpdateData,
+  PrototypesUpdatePayload,
   PrototypesVersionsCreateData,
   PrototypesVersionsCreatePayload,
   PrototypesVersionsListData,
@@ -96,10 +97,16 @@ export class Api<
    * @summary プロトタイプ更新
    * @request PUT:/api/prototypes/{prototypeId}
    */
-  prototypesUpdate = (prototypeId: string, params: RequestParams = {}) =>
+  prototypesUpdate = (
+    prototypeId: string,
+    data: PrototypesUpdatePayload,
+    params: RequestParams = {}
+  ) =>
     this.request<PrototypesUpdateData, Error404Response>({
       path: `/api/prototypes/${prototypeId}`,
       method: 'PUT',
+      body: data,
+      type: ContentType.Json,
       format: 'json',
       ...params,
     });

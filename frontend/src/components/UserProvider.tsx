@@ -1,12 +1,11 @@
 'use client';
 
-import { AxiosResponse } from 'axios';
 import { useRouter } from 'next/navigation';
 import React, { ReactNode, useState, useEffect } from 'react';
 
+import { useAuth } from '@/api/hooks/useAuth';
 import { UserContext } from '@/hooks/useUser';
 import { UserListData } from '@/types';
-import axiosInstance from '@/utils/axiosInstance';
 
 interface UserProviderProps {
   children: ReactNode;
@@ -14,16 +13,18 @@ interface UserProviderProps {
 
 const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const router = useRouter();
+  const { getUser } = useAuth();
+
   // ローディング中か
   const [loading, setLoading] = useState(true);
+  // ユーザー情報
   const [user, setUser] = useState<UserListData | null>(null);
 
   // ユーザー情報チェック、存在しない場合はユーザー情報取得
   useEffect(() => {
-    axiosInstance
-      .get('/auth/user')
-      .then((response: AxiosResponse<UserListData>) => {
-        const data = response.data;
+    getUser()
+      .then((response) => {
+        const data = response;
         // ユーザーが存在しない、またはidが存在しない場合
         if (!data || !data.id) {
           throw new Error('ユーザーが存在しません');
@@ -37,7 +38,7 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       .finally(() => {
         setLoading(false);
       });
-  }, [router]);
+  }, [getUser, router]);
 
   // ローディング中の場合
   if (loading) {

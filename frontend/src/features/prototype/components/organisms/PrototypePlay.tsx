@@ -1,10 +1,10 @@
 'use client';
 
-import { AxiosResponse } from 'axios';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 import { io } from 'socket.io-client';
 
+import { usePrototypes } from '@/api/hooks/usePrototypes';
 import Canvas from '@/features/prototype/components/organisms/Canvas';
 import {
   Part,
@@ -13,13 +13,13 @@ import {
   Prototype,
   PrototypeVersion,
 } from '@/types';
-import { PrototypesVersionsListData } from '@/types/data-contracts';
-import axiosInstance from '@/utils/axiosInstance';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
 const PrototypePlay: React.FC = () => {
   const router = useRouter();
+  const { getPrototypeVersions } = usePrototypes();
+
   // プロトタイプID, バージョンID
   const { prototypeId, versionId } = useParams<{
     prototypeId: string;
@@ -64,10 +64,9 @@ const PrototypePlay: React.FC = () => {
 
   // プロタイプの取得
   useEffect(() => {
-    axiosInstance
-      .get(`/api/prototypes/${prototypeId}/versions`)
-      .then((response: AxiosResponse<PrototypesVersionsListData>) => {
-        const { prototype, versions } = response.data;
+    getPrototypeVersions(prototypeId)
+      .then((response) => {
+        const { prototype, versions } = response;
 
         // プレビュー版でない場合
         if (prototype.type !== 'PREVIEW') {
@@ -78,7 +77,7 @@ const PrototypePlay: React.FC = () => {
         setPrototype({ ...prototype, versions });
       })
       .catch((error) => console.error('Error fetching prototypes:', error));
-  }, [prototypeId, router]);
+  }, [getPrototypeVersions, prototypeId, router]);
 
   // プロトタイプバージョン番号
   const versionNumber = useMemo(() => {

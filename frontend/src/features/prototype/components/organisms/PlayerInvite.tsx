@@ -1,20 +1,19 @@
 'use client';
 
-import { AxiosResponse } from 'axios';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
 
-import {
-  PrototypesGroupsAccessUsersListData,
-  User,
-  UsersSearchListData,
-} from '@/types';
-import axiosInstance from '@/utils/axiosInstance';
+import { usePrototypes } from '@/api/hooks/usePrototypes';
+import { useUsers } from '@/api/hooks/useUsers';
+import { User } from '@/types';
 
 const PlayerInvite: React.FC = () => {
   const router = useRouter();
-  const { groupId } = useParams();
+  const { groupId } = useParams<{ groupId: string }>();
 
+  const { searchUsers } = useUsers();
+  const { getAccessUsersByGroup, inviteUserToGroup, deleteUserFromGroup } =
+    usePrototypes();
   // TODO: もう少しステート整理したい
   // 招待されているユーザー
   const [invitedUsers, setInvitedUsers] = useState<User[]>([]);
@@ -34,10 +33,9 @@ const PlayerInvite: React.FC = () => {
    * 招待されているユーザーを取得
    */
   const fetchInvitedUsers = useCallback(async () => {
-    const response: AxiosResponse<PrototypesGroupsAccessUsersListData> =
-      await axiosInstance.get(`/api/prototypes/groups/${groupId}/accessUsers`);
-    setInvitedUsers(response.data);
-  }, [groupId]);
+    const response = await getAccessUsersByGroup(groupId);
+    setInvitedUsers(response);
+  }, [getAccessUsersByGroup, groupId]);
 
   // グループにアクセス可能なユーザーを取得
   useEffect(() => {
@@ -51,17 +49,15 @@ const PlayerInvite: React.FC = () => {
       return;
     }
 
-    axiosInstance
-      .get(`/api/users/search?username=${encodeURIComponent(searchTerm)}`)
-      .then((response: AxiosResponse<UsersSearchListData>) => {
-        setSuggestedUsers(response.data);
+    searchUsers({ username: encodeURIComponent(searchTerm) })
+      .then((response) => {
+        setSuggestedUsers(response);
         setError(null);
       })
-      .catch((error) => {
-        console.error('Error fetching users:', error);
+      .catch(() => {
         setError('ユーザーの検索に失敗しました。');
       });
-  }, [searchTerm]);
+  }, [searchTerm, searchUsers]);
 
   /**
    * ユーザーを選択
@@ -94,7 +90,7 @@ const PlayerInvite: React.FC = () => {
     }
 
     try {
-      await axiosInstance.post(`/api/prototypes/groups/${groupId}/invite`, {
+      await inviteUserToGroup(groupId, {
         guestIds: selectedUsers.map((user) => user.id),
       });
 
@@ -112,9 +108,7 @@ const PlayerInvite: React.FC = () => {
   // ユーザーを削除
   const handleRemoveInvitedUser = async (userId: string) => {
     try {
-      await axiosInstance.delete(
-        `/api/prototypes/groups/${groupId}/invite/${userId}`
-      );
+      await deleteUserFromGroup(groupId, userId);
       setInvitedUsers((prev) => prev.filter((user) => user.id !== userId));
       setSuccessMessage('ユーザーが削除されました。');
     } catch (error) {

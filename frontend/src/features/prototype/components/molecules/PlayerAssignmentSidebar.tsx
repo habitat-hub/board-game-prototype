@@ -3,17 +3,15 @@
  */
 'use client';
 
-import { AxiosResponse } from 'axios';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { PiSidebarSimpleThin } from 'react-icons/pi';
 import { Socket } from 'socket.io-client';
 
+import { usePrototypes } from '@/api/hooks/usePrototypes';
 import Dropdown from '@/components/atoms/Dropdown';
 import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
 import { Player, User } from '@/types';
-import { PrototypesGroupsAccessUsersListData } from '@/types/data-contracts';
-import axiosInstance from '@/utils/axiosInstance';
 
 export default function PlayerAssignmentSidebar({
   prototypeVersionId,
@@ -31,6 +29,8 @@ export default function PlayerAssignmentSidebar({
   socket: Socket;
 }) {
   const router = useRouter();
+  const { getAccessUsersByGroup } = usePrototypes();
+
   // サイドバーが最小化されているか
   const [isMinimized, setIsMinimized] = useState(false);
   // グループにアクセス可能なユーザー
@@ -39,12 +39,10 @@ export default function PlayerAssignmentSidebar({
 
   // グループにアクセス可能なユーザーを取得
   useEffect(() => {
-    axiosInstance
-      .get(`/api/prototypes/groups/${groupId}/accessUsers`)
-      .then((response: AxiosResponse<PrototypesGroupsAccessUsersListData>) => {
-        setAccessibleUsers(response.data);
-      });
-  }, [groupId]);
+    getAccessUsersByGroup(groupId).then((response) => {
+      setAccessibleUsers(response);
+    });
+  }, [groupId, getAccessUsersByGroup]);
 
   return (
     <>

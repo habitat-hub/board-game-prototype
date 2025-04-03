@@ -151,6 +151,12 @@ export type PrototypesCreateData = Prototype;
 
 export type PrototypesDetailData = Prototype;
 
+export interface PrototypesUpdatePayload {
+  name?: string;
+  minPlayers?: number;
+  maxPlayers?: number;
+}
+
 export type PrototypesUpdateData = Prototype;
 
 export type PrototypesDeleteData = SuccessResponse;

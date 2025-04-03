@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
-import axiosInstance from '@/utils/axiosInstance';
+import { usePrototypes } from '@/api/hooks/usePrototypes';
 
 const CreatePrototypeForm: React.FC = () => {
   const router = useRouter();
+  const { createPrototype } = usePrototypes();
 
   // フォーム
   const [form, setForm] = useState({
@@ -34,7 +35,7 @@ const CreatePrototypeForm: React.FC = () => {
 
     try {
       // プロトタイプを作成する
-      await axiosInstance.post('/api/prototypes', {
+      await createPrototype({
         name: form.name,
         playerCount: form.playerCount,
       });

@@ -1,21 +1,22 @@
 'use client';
 
-import { AxiosResponse } from 'axios';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
 import { IoAdd, IoArrowBack } from 'react-icons/io5';
 
+import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { VERSION_NUMBER } from '@/features/prototype/const';
 import { Prototype, PrototypeVersion } from '@/types';
-import { PrototypesGroupsDetailData } from '@/types/data-contracts';
-import axiosInstance from '@/utils/axiosInstance';
 import formatDate from '@/utils/dateFormat';
 
 const GroupPrototypeList: React.FC = () => {
   const router = useRouter();
+  const { getPrototypesByGroup, createPreview, createVersion } =
+    usePrototypes();
+
   // グループID
-  const groupId = useParams().groupId;
+  const { groupId } = useParams<{ groupId: string }>();
 
   const [prototype, setPrototype] = useState<{
     // 編集版プロトタイプ
@@ -34,9 +35,8 @@ const GroupPrototypeList: React.FC = () => {
    * プロトタイプを取得する
    */
   const getPrototypeGroups = useCallback(async () => {
-    const response: AxiosResponse<PrototypesGroupsDetailData> =
-      await axiosInstance.get(`/api/prototypes/groups/${groupId}`);
-    const prototypes = response.data;
+    const response = await getPrototypesByGroup(groupId);
+    const prototypes = response;
 
     // 編集版プロトタイプ
     const edit = prototypes.find((p) => p.prototype.type === 'EDIT');
@@ -47,7 +47,7 @@ const GroupPrototypeList: React.FC = () => {
       edit: edit || null,
       preview: previews,
     });
-  }, [groupId]);
+  }, [getPrototypesByGroup, groupId]);
 
   // プロトタイプを取得する
   useEffect(() => {
@@ -59,7 +59,7 @@ const GroupPrototypeList: React.FC = () => {
    * @param prototypeVersionId プレビュー版プロトタイプのID
    */
   const handleCreatePreviewPrototype = async (prototypeVersionId: string) => {
-    await axiosInstance.post(`/api/prototypes/${prototypeVersionId}/preview`);
+    await createPreview(prototypeVersionId);
     await getPrototypeGroups();
   };
 
@@ -77,13 +77,10 @@ const GroupPrototypeList: React.FC = () => {
     // 新しいバージョン番号
     const newVersionNumber = versions.length.toString() + '.0.0';
 
-    await axiosInstance.post(
-      `/api/prototypes/${prototypeId}/versions/${prototypeVersionId}`,
-      {
-        newVersionNumber,
-        description: null,
-      }
-    );
+    await createVersion(prototypeId, prototypeVersionId, {
+      newVersionNumber,
+      description: undefined,
+    });
     await getPrototypeGroups();
   };
 

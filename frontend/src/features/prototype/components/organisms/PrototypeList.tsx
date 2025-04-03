@@ -1,20 +1,21 @@
 'use client';
 
-import { AxiosResponse } from 'axios';
 import Link from 'next/link';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { FaCopy } from 'react-icons/fa';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { FaPlus } from 'react-icons/fa6';
 
-import { PrototypesListData, Prototype } from '@/types';
-import axiosInstance from '@/utils/axiosInstance';
+import { usePrototypes } from '@/api/hooks/usePrototypes';
+import { Prototype } from '@/types';
 import formatDate from '@/utils/dateFormat';
 
 type SortKey = 'name' | 'createdAt';
 type SortOrder = 'asc' | 'desc';
 
 const PrototypeList: React.FC = () => {
+  const { getPrototypes, duplicatePrototype } = usePrototypes();
+
   // 編集用プロトタイプ
   const [editPrototypes, setEditPrototypes] = useState<Prototype[]>([]);
   // ソート
@@ -31,13 +32,12 @@ const PrototypeList: React.FC = () => {
    */
   const fetchPrototypes = useCallback(async () => {
     try {
-      const response: AxiosResponse<PrototypesListData> =
-        await axiosInstance.get('/api/prototypes');
-      setEditPrototypes(response.data.filter(({ type }) => type === 'EDIT'));
+      const response = await getPrototypes();
+      setEditPrototypes(response.filter(({ type }) => type === 'EDIT'));
     } catch (error) {
       console.error('Error fetching prototypes:', error);
     }
-  }, []);
+  }, [getPrototypes]);
 
   // プロトタイプの取得
   useEffect(() => {
@@ -98,7 +98,7 @@ const PrototypeList: React.FC = () => {
   const handleDuplicate = async (prototypeId: string, e: React.MouseEvent) => {
     e.preventDefault(); // リンククリックのイベントバブリングを防止
     try {
-      await axiosInstance.post(`/api/prototypes/${prototypeId}/duplicate`);
+      await duplicatePrototype(prototypeId);
       fetchPrototypes(); // 一覧を更新
     } catch (error) {
       console.error('Error duplicating prototype:', error);

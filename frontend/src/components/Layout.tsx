@@ -3,10 +3,9 @@ import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useState, useRef } from 'react';
 import { GiWoodenCrate } from 'react-icons/gi';
 
+import { useAuth } from '@/api/hooks/useAuth';
 import { WoodenCrateBackground } from '@/features/prototype/components/atoms/WoodenCrateBackground';
 import { useUser } from '@/hooks/useUser';
-import axiosInstance from '@/utils/axiosInstance';
-
 // フッターを非表示にしたいURLパターン
 const hideFooterPattern = /^\/prototypes\/[a-f0-9-]+\/versions\/[a-f0-9-]+\//;
 
@@ -18,6 +17,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const pathname = usePathname();
 
   const { user } = useUser();
+  const { logout } = useAuth();
 
   // ログアウトメニューの表示状態
   const [showLogout, setShowLogout] = useState(false);
@@ -52,8 +52,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
    * ログアウトする
    */
   const handleLogout = () => {
-    axiosInstance
-      .post('/auth/logout')
+    logout()
       .then(() => {
         router.replace('/');
       })
