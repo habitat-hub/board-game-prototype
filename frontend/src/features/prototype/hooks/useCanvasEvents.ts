@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
 
+import { Part } from '@/api/types';
 import { needsParentUpdate } from '@/features/prototype/helpers/partHelper';
 import { Camera, Point } from '@/features/prototype/type';
-import { Part } from '@/types';
 
 interface UseCanvasEventsProps {
   camera: Camera;

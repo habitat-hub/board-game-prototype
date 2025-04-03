@@ -1,9 +1,9 @@
 import { useImperativeHandle, useState } from 'react';
 import { Socket } from 'socket.io-client';
 
+import { Part } from '@/api/types';
 import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
 import { PartHandle } from '@/features/prototype/type';
-import { Part } from '@/types';
 
 /**
  * カードの状態を管理するフック

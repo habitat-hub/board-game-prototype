@@ -6,8 +6,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { IoAdd, IoArrowBack } from 'react-icons/io5';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
+import { Prototype, PrototypeVersion } from '@/api/types';
 import { VERSION_NUMBER } from '@/features/prototype/const';
-import { Prototype, PrototypeVersion } from '@/types';
 import formatDate from '@/utils/dateFormat';
 
 const GroupPrototypeList: React.FC = () => {

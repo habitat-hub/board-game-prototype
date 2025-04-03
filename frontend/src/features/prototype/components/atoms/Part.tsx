@@ -4,15 +4,15 @@ import { TbCards } from 'react-icons/tb';
 import { VscSync, VscSyncIgnored } from 'react-icons/vsc';
 import { Socket } from 'socket.io-client';
 
-import PartContextMenu from '@/features/prototype/components/atoms/PartContextMenu';
-import { useCard } from '@/features/prototype/hooks/useCard';
-import { useDeck } from '@/features/prototype/hooks/useDeck';
-import { PartHandle } from '@/features/prototype/type';
 import {
   Part as PartType,
   PartProperty as PropertyType,
   Player,
-} from '@/types';
+} from '@/api/types';
+import PartContextMenu from '@/features/prototype/components/atoms/PartContextMenu';
+import { useCard } from '@/features/prototype/hooks/useCard';
+import { useDeck } from '@/features/prototype/hooks/useDeck';
+import { PartHandle } from '@/features/prototype/type';
 
 interface PartProps {
   // パーツタイプ

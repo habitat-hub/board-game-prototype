@@ -1,4 +1,4 @@
-import { Part } from '@/types';
+import { Part } from '@/api/types';
 
 /**
  * パーツが他のパーツの上にあるかどうかを判定

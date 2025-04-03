@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
 import { usersService } from '@/api/endpoints/users';
-import { UsersSearchListParams } from '@/types';
+import { UsersSearchListParams } from '@/api/types';
 
 export const useUsers = () => {
   /**

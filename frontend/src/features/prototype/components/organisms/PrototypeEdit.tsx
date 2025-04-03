@@ -5,14 +5,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { io } from 'socket.io-client';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
-import Canvas from '@/features/prototype/components/organisms/Canvas';
 import {
   Part,
   PartProperty,
   Player,
   Prototype,
   PrototypeVersion,
-} from '@/types';
+} from '@/api/types';
+import Canvas from '@/features/prototype/components/organisms/Canvas';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 

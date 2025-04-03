@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { useUsers } from '@/api/hooks/useUsers';
-import { User } from '@/types';
+import { User } from '@/api/types';
 
 const PlayerInvite: React.FC = () => {
   const router = useRouter();

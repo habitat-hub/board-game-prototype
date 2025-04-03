@@ -10,6 +10,12 @@ import React, {
 import { AiOutlineTool } from 'react-icons/ai';
 import { Socket } from 'socket.io-client';
 
+import {
+  Part as PartType,
+  PartProperty as PropertyType,
+  Player,
+  PartProperty,
+} from '@/api/types';
 import Part from '@/features/prototype/components/atoms/Part';
 import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumberTool';
 import EditSidebars from '@/features/prototype/components/molecules/EditSidebars';
@@ -20,12 +26,6 @@ import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
 import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
 import { AddPartProps, Camera, PartHandle } from '@/features/prototype/type';
 import { useUser } from '@/hooks/useUser';
-import {
-  Part as PartType,
-  PartProperty as PropertyType,
-  Player,
-  PartProperty,
-} from '@/types';
 
 interface CanvasProps {
   prototypeName: string;

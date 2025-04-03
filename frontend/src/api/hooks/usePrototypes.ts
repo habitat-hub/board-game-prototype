@@ -6,7 +6,7 @@ import {
   PrototypesUpdatePayload,
   PrototypesVersionsCreatePayload,
   PrototypesGroupsInviteCreatePayload,
-} from '@/types';
+} from '@/api/types';
 
 export const usePrototypes = () => {
   /**

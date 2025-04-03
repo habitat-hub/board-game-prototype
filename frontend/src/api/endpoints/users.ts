@@ -1,5 +1,5 @@
 import axiosInstance from '@/api/client';
-import { UsersSearchListData, UsersSearchListParams } from '@/types';
+import { UsersSearchListData, UsersSearchListParams } from '@/api/types';
 
 export const usersService = {
   /**

@@ -8,13 +8,13 @@ import { useRouter } from 'next/navigation';
 import React, { useMemo } from 'react';
 import { FaRegCopy, FaRegTrashAlt } from 'react-icons/fa';
 
+import { Part, PartProperty, Player } from '@/api/types';
 import Dropdown from '@/components/atoms/Dropdown';
 import NumberInput from '@/components/atoms/NumberInput';
 import TextIconButton from '@/components/atoms/TextIconButton';
 import TextInput from '@/components/atoms/TextInput';
 import { COLORS } from '@/features/prototype/const';
 import { AddPartProps } from '@/features/prototype/type';
-import { Part, PartProperty, Player } from '@/types';
 
 export default function PartPropertySidebar({
   groupId,

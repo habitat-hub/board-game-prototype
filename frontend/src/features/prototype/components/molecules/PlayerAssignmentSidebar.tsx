@@ -9,9 +9,9 @@ import { PiSidebarSimpleThin } from 'react-icons/pi';
 import { Socket } from 'socket.io-client';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
+import { Player, User } from '@/api/types';
 import Dropdown from '@/components/atoms/Dropdown';
 import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
-import { Player, User } from '@/types';
 
 export default function PlayerAssignmentSidebar({
   prototypeVersionId,

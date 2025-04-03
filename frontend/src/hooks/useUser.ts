@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-import { UserListData } from '@/types';
+import { UserListData } from '@/api/types';
 
 interface UserContextType {
   // ユーザー情報

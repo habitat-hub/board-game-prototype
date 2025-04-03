@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation';
 import React, { ReactNode, useState, useEffect } from 'react';
 
 import { useAuth } from '@/api/hooks/useAuth';
+import { UserListData } from '@/api/types';
 import { UserContext } from '@/hooks/useUser';
-import { UserListData } from '@/types';
 
 interface UserProviderProps {
   children: ReactNode;

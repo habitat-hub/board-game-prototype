@@ -17,7 +17,7 @@ import {
   PrototypesVersionsCreateData,
   PrototypesVersionsCreatePayload,
   PrototypesVersionsListData,
-} from '@/types';
+} from '@/api/types';
 
 export const prototypesService = {
   /**
