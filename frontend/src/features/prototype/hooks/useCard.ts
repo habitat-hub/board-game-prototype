@@ -1,8 +1,8 @@
-import { useImperativeHandle, useState } from 'react';
+import { useImperativeHandle, useReducer, useState } from 'react';
 import { Socket } from 'socket.io-client';
 
 import { Part } from '@/api/types';
-import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
+import { createPartReducer } from '@/features/prototype/reducers/partReducer';
 import { PartHandle } from '@/features/prototype/type';
 
 /**
@@ -22,7 +22,10 @@ export const useCard = (
   // カードが反転中かどうか
   const [isReversing, setIsReversing] = useState(false);
 
-  const { reverseCard } = usePartOperations(part.prototypeVersionId, socket);
+  const [, dispatch] = useReducer(
+    createPartReducer(socket, part.prototypeVersionId),
+    undefined
+  );
 
   /**
    * カードを反転させる
@@ -45,7 +48,10 @@ export const useCard = (
 
     // ソケットをemitする場合
     if (needsSocketEmit) {
-      reverseCard(part.id, isNextFlipped);
+      dispatch({
+        type: 'FLIP_CARD',
+        payload: { cardId: part.id, isNextFlipped },
+      });
     }
   };
 

@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useReducer,
   useRef,
   useState,
 } from 'react';
@@ -23,9 +24,10 @@ import PreviewSidebars from '@/features/prototype/components/molecules/PreviewSi
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
 import { VERSION_NUMBER } from '@/features/prototype/const';
 import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
-import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
 import { AddPartProps, Camera, PartHandle } from '@/features/prototype/type';
 import { useUser } from '@/hooks/useUser';
+
+import { createPartReducer } from '../../reducers/partReducer';
 
 interface CanvasProps {
   prototypeName: string;
@@ -65,24 +67,26 @@ export default function Canvas({
   const partRefs = useRef<{ [key: number]: React.RefObject<PartHandle> }>({});
 
   const { user } = useUser();
+  const [, dispatch] = useReducer(
+    createPartReducer(socket, prototypeVersionId),
+    undefined
+  );
 
-  const { addPart, updatePart, deletePart, changeOrder, reverseCard } =
-    usePartOperations(prototypeVersionId, socket);
   const handleAddPart = useCallback(
     ({ part, properties }: AddPartProps) => {
-      addPart(part, properties);
+      dispatch({ type: 'ADD_PART', payload: { part, properties } });
       setSelectedPart(null);
       setSelectedPartProperties(null);
     },
-    [addPart]
+    [dispatch]
   );
   const handleDeletePart = useCallback(() => {
     if (!selectedPart) return;
 
-    deletePart(selectedPart.id);
+    dispatch({ type: 'DELETE_PART', payload: { partId: selectedPart.id } });
     setSelectedPart(null);
     setSelectedPartProperties(null);
-  }, [deletePart, selectedPart]);
+  }, [dispatch, selectedPart]);
 
   const isEdit = prototypeType === 'EDIT';
   const isPreview = prototypeType === 'PREVIEW';
@@ -96,10 +100,10 @@ export default function Canvas({
       camera,
       setCamera,
       setSelectedPart,
-      updatePart,
-      reverseCard,
       parts,
       mainViewRef,
+      socket,
+      prototypeVersionId,
     });
   const handleMouseDown = useCallback(
     (e: React.MouseEvent, partId?: number) => {
@@ -262,7 +266,10 @@ export default function Canvas({
                       }) => {
                         if (isMasterPreview) return;
 
-                        changeOrder(partId, type);
+                        dispatch({
+                          type: 'CHANGE_ORDER',
+                          payload: { partId, type },
+                        });
                       }}
                       isActive={selectedPart?.id === part.id}
                     />
@@ -294,8 +301,9 @@ export default function Canvas({
           selectedPartProperties={selectedPartProperties}
           onAddPart={handleAddPart}
           onDeletePart={handleDeletePart}
-          updatePart={updatePart}
           mainViewRef={mainViewRef}
+          socket={socket}
+          prototypeVersionId={prototypeVersionId}
         />
       )}
       {isPreview && (

@@ -5,8 +5,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useMemo } from 'react';
+import React, { useMemo, useReducer } from 'react';
 import { FaRegCopy, FaRegTrashAlt } from 'react-icons/fa';
+import { Socket } from 'socket.io-client';
 
 import { Part, PartProperty, Player } from '@/api/types';
 import Dropdown from '@/components/atoms/Dropdown';
@@ -14,6 +15,7 @@ import NumberInput from '@/components/atoms/NumberInput';
 import TextIconButton from '@/components/atoms/TextIconButton';
 import TextInput from '@/components/atoms/TextInput';
 import { COLORS } from '@/features/prototype/const';
+import { createPartReducer } from '@/features/prototype/reducers/partReducer';
 import { AddPartProps } from '@/features/prototype/type';
 
 export default function PartPropertySidebar({
@@ -23,7 +25,8 @@ export default function PartPropertySidebar({
   selectedPartProperties,
   onAddPart,
   onDeletePart,
-  updatePart,
+  socket,
+  prototypeVersionId,
 }: {
   // グループID
   groupId: string;
@@ -37,19 +40,16 @@ export default function PartPropertySidebar({
   onAddPart: ({ part, properties }: AddPartProps) => void;
   // パーツを削除時の処理
   onDeletePart: () => void;
-  // パーツを更新時の処理
-  updatePart: (
-    // パーツID
-    partId: number,
-    // 更新するパーツ情報
-    updatePart?: Partial<Part>,
-    // 更新するパーツのプロパティ情報
-    updateProperties?: Partial<PartProperty>[],
-    // パーツを反転させるかどうか
-    isFlipped?: boolean
-  ) => void;
+  // ソケット
+  socket: Socket;
+  // プロトタイプバージョンID
+  prototypeVersionId: string;
 }) {
   const router = useRouter();
+  const [, dispatch] = useReducer(
+    createPartReducer(socket, prototypeVersionId),
+    undefined
+  );
 
   // 現在のプロパティ
   const currentProperty = useMemo(() => {
@@ -131,7 +131,13 @@ export default function PartPropertySidebar({
       return;
 
     // プロパティの最新化
-    updatePart(selectedPart.id, undefined, [updatedProperty]);
+    dispatch({
+      type: 'UPDATE_PART',
+      payload: {
+        partId: selectedPart.id,
+        updateProperties: [updatedProperty],
+      },
+    });
   };
 
   return (
@@ -182,8 +188,12 @@ export default function PartPropertySidebar({
                   key={selectedPart.id}
                   value={selectedPart.position.x}
                   onChange={(number) => {
-                    updatePart(selectedPart.id, {
-                      position: { ...selectedPart.position, x: number },
+                    dispatch({
+                      type: 'UPDATE_PART',
+                      payload: {
+                        partId: selectedPart.id,
+                        updatePart: { position: { x: number } },
+                      },
                     });
                   }}
                   icon={<p>X</p>}
@@ -192,8 +202,12 @@ export default function PartPropertySidebar({
                   key={selectedPart.id}
                   value={selectedPart.position.y}
                   onChange={(number) => {
-                    updatePart(selectedPart.id, {
-                      position: { ...selectedPart.position, y: number },
+                    dispatch({
+                      type: 'UPDATE_PART',
+                      payload: {
+                        partId: selectedPart.id,
+                        updatePart: { position: { y: number } },
+                      },
                     });
                   }}
                   icon={<p>Y</p>}
@@ -205,7 +219,13 @@ export default function PartPropertySidebar({
                   key={selectedPart.id}
                   value={selectedPart.width}
                   onChange={(number) => {
-                    updatePart(selectedPart.id, { width: number });
+                    dispatch({
+                      type: 'UPDATE_PART',
+                      payload: {
+                        partId: selectedPart.id,
+                        updatePart: { width: number },
+                      },
+                    });
                   }}
                   icon={<p>W</p>}
                 />
@@ -213,7 +233,13 @@ export default function PartPropertySidebar({
                   key={selectedPart.id}
                   value={selectedPart.height}
                   onChange={(number) => {
-                    updatePart(selectedPart.id, { height: number });
+                    dispatch({
+                      type: 'UPDATE_PART',
+                      payload: {
+                        partId: selectedPart.id,
+                        updatePart: { height: number },
+                      },
+                    });
                   }}
                   icon={<p>H</p>}
                 />
@@ -285,14 +311,13 @@ export default function PartPropertySidebar({
                     <Dropdown
                       value={selectedPart.isReversible ? 'はい' : 'いいえ'}
                       onChange={(value) => {
-                        updatePart(
-                          selectedPart.id,
-                          {
-                            isReversible: value === 'はい',
+                        dispatch({
+                          type: 'UPDATE_PART',
+                          payload: {
+                            partId: selectedPart.id,
+                            updatePart: { isReversible: value === 'はい' },
                           },
-                          undefined,
-                          true
-                        );
+                        });
                       }}
                       options={['はい', 'いいえ']}
                     />
@@ -320,7 +345,13 @@ export default function PartPropertySidebar({
                           (player) => player.playerName === value
                         );
                         if (player) {
-                          updatePart(selectedPart.id, { ownerId: player.id });
+                          dispatch({
+                            type: 'UPDATE_PART',
+                            payload: {
+                              partId: selectedPart.id,
+                              updatePart: { ownerId: player.id },
+                            },
+                          });
                         }
                       }}
                       options={[
@@ -348,14 +379,15 @@ export default function PartPropertySidebar({
                         selectedPart.canReverseCardOnDeck ? 'はい' : 'いいえ'
                       }
                       onChange={(value) => {
-                        updatePart(
-                          selectedPart.id,
-                          {
-                            canReverseCardOnDeck: value === 'はい',
+                        dispatch({
+                          type: 'UPDATE_PART',
+                          payload: {
+                            partId: selectedPart.id,
+                            updatePart: {
+                              canReverseCardOnDeck: value === 'はい',
+                            },
                           },
-                          undefined,
-                          true
-                        );
+                        });
                       }}
                       options={['はい', 'いいえ']}
                     />

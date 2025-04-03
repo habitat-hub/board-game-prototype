@@ -1,7 +1,8 @@
+import { useReducer } from 'react';
 import { Socket } from 'socket.io-client';
 
 import { Part } from '@/api/types';
-import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
+import { createPartReducer } from '@/features/prototype/reducers/partReducer';
 
 /**
  * 山札の状態を管理するフック
@@ -10,7 +11,10 @@ import { usePartOperations } from '@/features/prototype/hooks/usePartOperations'
  * @returns 山札の状態
  */
 export const useDeck = (part: Part, socket: Socket) => {
-  const { shuffleDeck } = usePartOperations(part.prototypeVersionId, socket);
+  const [, dispatch] = useReducer(
+    createPartReducer(socket, part.prototypeVersionId),
+    undefined
+  );
 
   /**
    * 山札をシャッフルする
@@ -19,7 +23,7 @@ export const useDeck = (part: Part, socket: Socket) => {
     // 山札でない場合
     if (part.type !== 'deck') return;
 
-    shuffleDeck(part.id);
+    dispatch({ type: 'SHUFFLE_DECK', payload: { deckId: part.id } });
   };
 
   return {

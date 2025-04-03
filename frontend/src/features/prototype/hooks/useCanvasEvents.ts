@@ -1,28 +1,34 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useReducer, useState } from 'react';
+import { Socket } from 'socket.io-client';
 
 import { Part } from '@/api/types';
 import { needsParentUpdate } from '@/features/prototype/helpers/partHelper';
+import { createPartReducer } from '@/features/prototype/reducers/partReducer';
 import { Camera, Point } from '@/features/prototype/type';
-
 interface UseCanvasEventsProps {
   camera: Camera;
   setCamera: React.Dispatch<React.SetStateAction<Camera>>;
   setSelectedPart: React.Dispatch<React.SetStateAction<Part | null>>;
-  updatePart: (partId: number, updatePart: Partial<Part>) => void;
-  reverseCard: (partId: number, isNextFlipped: boolean) => void;
   parts: Part[];
   mainViewRef: React.RefObject<HTMLDivElement>;
+  socket: Socket;
+  prototypeVersionId: string;
 }
 
 export const useCanvasEvents = ({
   camera,
   setCamera,
   setSelectedPart,
-  updatePart,
-  reverseCard,
   parts,
   mainViewRef,
+  socket,
+  prototypeVersionId,
 }: UseCanvasEventsProps) => {
+  const [, dispatch] = useReducer(
+    createPartReducer(socket, prototypeVersionId),
+    undefined
+  );
+
   const [draggingPartId, setDraggingPartId] = useState<number | null>(null);
   const [offset, setOffset] = useState<Point>({ x: 0, y: 0 });
   const [dragStart, setDragStart] = useState<Point>({ x: 0, y: 0 });
@@ -89,7 +95,10 @@ export const useCanvasEvents = ({
       const x = (e.clientX - rect.left) / camera.zoom - offset.x;
       const y = (e.clientY - rect.top) / camera.zoom - offset.y;
 
-      updatePart(draggingPartId, { position: { x, y } });
+      dispatch({
+        type: 'UPDATE_PART',
+        payload: { partId: draggingPartId, updatePart: { position: { x, y } } },
+      });
       return;
     }
 
@@ -141,7 +150,13 @@ export const useCanvasEvents = ({
       newPosition
     );
     if (needsUpdate) {
-      updatePart(draggingPartId, { parentId: parentPart?.id || undefined });
+      dispatch({
+        type: 'UPDATE_PART',
+        payload: {
+          partId: draggingPartId,
+          updatePart: { parentId: parentPart?.id || undefined },
+        },
+      });
     }
 
     // カードの反転処理
@@ -156,7 +171,13 @@ export const useCanvasEvents = ({
       !!(parentPart?.type === 'deck') && !!parentPart.canReverseCardOnDeck;
 
     if (isPreviousParentReverseRequired !== isNextParentReverseRequired) {
-      reverseCard(draggingPartId, !isPreviousParentReverseRequired);
+      dispatch({
+        type: 'FLIP_CARD',
+        payload: {
+          cardId: draggingPartId,
+          isNextFlipped: !isPreviousParentReverseRequired,
+        },
+      });
     }
 
     setDraggingPartId(null);

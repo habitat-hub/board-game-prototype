@@ -4,14 +4,14 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { PiSidebarSimpleThin } from 'react-icons/pi';
 import { Socket } from 'socket.io-client';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Player, User } from '@/api/types';
 import Dropdown from '@/components/atoms/Dropdown';
-import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
+import { createPartReducer } from '@/features/prototype/reducers/partReducer';
 
 export default function PlayerAssignmentSidebar({
   prototypeVersionId,
@@ -35,7 +35,10 @@ export default function PlayerAssignmentSidebar({
   const [isMinimized, setIsMinimized] = useState(false);
   // グループにアクセス可能なユーザー
   const [accessibleUsers, setAccessibleUsers] = useState<User[]>([]);
-  const { assignPlayer } = usePartOperations(prototypeVersionId, socket);
+  const [, dispatch] = useReducer(
+    createPartReducer(socket, prototypeVersionId),
+    undefined
+  );
 
   // グループにアクセス可能なユーザーを取得
   useEffect(() => {
@@ -86,7 +89,13 @@ export default function PlayerAssignmentSidebar({
                         const userId = accessibleUsers.find(
                           (user) => user.username === value
                         )?.id;
-                        assignPlayer(player.id, userId ?? null);
+                        dispatch({
+                          type: 'UPDATE_PLAYER_USER',
+                          payload: {
+                            playerId: player.id,
+                            userId: userId ?? null,
+                          },
+                        });
                       }}
                       options={[
                         'プレイヤーを選択',
