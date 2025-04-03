@@ -6,21 +6,16 @@
 
 import { useRouter } from 'next/navigation';
 import { IoArrowBack } from 'react-icons/io5';
-import { Socket } from 'socket.io-client';
 
 import { Player } from '@/api/types';
 import PlayerAssignmentSidebar from '@/features/prototype/components/molecules/PlayerAssignmentSidebar';
 
 export default function PreviewSidebars({
-  prototypeVersionId,
   prototypeName,
   prototypeVersionNumber,
   groupId,
   players,
-  socket,
 }: {
-  // プロトタイプバージョンID
-  prototypeVersionId: string;
   // プロトタイプ名
   prototypeName: string;
   // プロトタイプバージョン番号
@@ -29,8 +24,6 @@ export default function PreviewSidebars({
   groupId: string;
   // プレイヤー
   players: Player[];
-  // ソケット
-  socket: Socket;
 }) {
   const router = useRouter();
 
@@ -58,12 +51,7 @@ export default function PreviewSidebars({
       </div>
 
       {/* Right Sidebar */}
-      <PlayerAssignmentSidebar
-        prototypeVersionId={prototypeVersionId}
-        groupId={groupId}
-        players={players}
-        socket={socket}
-      />
+      <PlayerAssignmentSidebar groupId={groupId} players={players} />
     </>
   );
 }

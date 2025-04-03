@@ -2,7 +2,6 @@ import React, { forwardRef, useMemo } from 'react';
 import { FaRegEye } from 'react-icons/fa';
 import { TbCards } from 'react-icons/tb';
 import { VscSync, VscSyncIgnored } from 'react-icons/vsc';
-import { Socket } from 'socket.io-client';
 
 import {
   Part as PartType,
@@ -27,8 +26,6 @@ interface PartProps {
   prototypeType: 'EDIT' | 'PREVIEW';
   // マウスダウン時のコールバック
   onMouseDown: (e: React.MouseEvent, partId: number) => void;
-  // ソケット
-  socket: Socket;
   // 移動順序を変更するコールバック
   onMoveOrder: ({
     partId,
@@ -50,7 +47,6 @@ const Part = forwardRef<PartHandle, PartProps>(
       isOtherPlayerCard = false,
       prototypeType,
       onMouseDown,
-      socket,
       onMoveOrder,
       isActive = false,
     },
@@ -58,10 +54,9 @@ const Part = forwardRef<PartHandle, PartProps>(
   ) => {
     const { isFlipped, isReversing, setIsReversing, reverseCard } = useCard(
       part,
-      ref,
-      socket
+      ref
     );
-    const { shuffleDeck } = useDeck(part, socket);
+    const { shuffleDeck } = useDeck(part);
 
     const isCard = part.type === 'card';
     const isDeck = part.type === 'deck';

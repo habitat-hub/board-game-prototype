@@ -9,7 +9,6 @@ import React, {
   useState,
 } from 'react';
 import { AiOutlineTool } from 'react-icons/ai';
-import { Socket } from 'socket.io-client';
 
 import {
   Part as PartType,
@@ -23,33 +22,29 @@ import EditSidebars from '@/features/prototype/components/molecules/EditSidebars
 import PreviewSidebars from '@/features/prototype/components/molecules/PreviewSidebars';
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
 import { VERSION_NUMBER } from '@/features/prototype/const';
+import { usePrototype } from '@/features/prototype/contexts/PrototypeContext';
 import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
+import { createPartReducer } from '@/features/prototype/reducers/partReducer';
 import { AddPartProps, Camera, PartHandle } from '@/features/prototype/type';
 import { useUser } from '@/hooks/useUser';
 
-import { createPartReducer } from '../../reducers/partReducer';
-
 interface CanvasProps {
   prototypeName: string;
-  prototypeVersionId: string;
   prototypeVersionNumber?: string;
   groupId: string;
   parts: PartType[];
   properties: PropertyType[];
   players: Player[];
-  socket: Socket;
   prototypeType: 'EDIT' | 'PREVIEW';
 }
 
 export default function Canvas({
   prototypeName,
-  prototypeVersionId,
   prototypeVersionNumber,
   groupId,
   parts,
   properties,
   players,
-  socket,
   prototypeType,
 }: CanvasProps) {
   // TODO: キャンバスの状態(パーツ選択中とか、パーツ作成中とか)を管理できるようにしたい（あった方が便利そう）
@@ -62,6 +57,8 @@ export default function Canvas({
   const [selectedPartProperties, setSelectedPartProperties] = useState<
     PartProperty[] | null
   >(null);
+
+  const { socket, prototypeVersionId } = usePrototype();
 
   const mainViewRef = useRef<HTMLDivElement>(null);
   const partRefs = useRef<{ [key: number]: React.RefObject<PartHandle> }>({});
@@ -102,8 +99,6 @@ export default function Canvas({
       setSelectedPart,
       parts,
       mainViewRef,
-      socket,
-      prototypeVersionId,
     });
   const handleMouseDown = useCallback(
     (e: React.MouseEvent, partId?: number) => {
@@ -256,7 +251,6 @@ export default function Canvas({
                       prototypeType={prototypeType}
                       isOtherPlayerCard={otherPlayerCards.includes(part.id)}
                       onMouseDown={(e) => handleMouseDown(e, part.id)}
-                      socket={socket}
                       onMoveOrder={({
                         partId,
                         type,
@@ -302,18 +296,14 @@ export default function Canvas({
           onAddPart={handleAddPart}
           onDeletePart={handleDeletePart}
           mainViewRef={mainViewRef}
-          socket={socket}
-          prototypeVersionId={prototypeVersionId}
         />
       )}
       {isPreview && (
         <PreviewSidebars
-          prototypeVersionId={prototypeVersionId}
           prototypeName={prototypeName}
           prototypeVersionNumber={prototypeVersionNumber}
           groupId={groupId}
           players={players}
-          socket={socket}
         />
       )}
       {/* 乱数ツールボタン */}

@@ -7,7 +7,6 @@
 import { useRouter } from 'next/navigation';
 import React, { useMemo, useReducer } from 'react';
 import { FaRegCopy, FaRegTrashAlt } from 'react-icons/fa';
-import { Socket } from 'socket.io-client';
 
 import { Part, PartProperty, Player } from '@/api/types';
 import Dropdown from '@/components/atoms/Dropdown';
@@ -15,6 +14,7 @@ import NumberInput from '@/components/atoms/NumberInput';
 import TextIconButton from '@/components/atoms/TextIconButton';
 import TextInput from '@/components/atoms/TextInput';
 import { COLORS } from '@/features/prototype/const';
+import { usePrototype } from '@/features/prototype/contexts/PrototypeContext';
 import { createPartReducer } from '@/features/prototype/reducers/partReducer';
 import { AddPartProps } from '@/features/prototype/type';
 
@@ -25,8 +25,6 @@ export default function PartPropertySidebar({
   selectedPartProperties,
   onAddPart,
   onDeletePart,
-  socket,
-  prototypeVersionId,
 }: {
   // グループID
   groupId: string;
@@ -40,11 +38,9 @@ export default function PartPropertySidebar({
   onAddPart: ({ part, properties }: AddPartProps) => void;
   // パーツを削除時の処理
   onDeletePart: () => void;
-  // ソケット
-  socket: Socket;
-  // プロトタイプバージョンID
-  prototypeVersionId: string;
 }) {
+  const { socket, prototypeVersionId } = usePrototype();
+
   const router = useRouter();
   const [, dispatch] = useReducer(
     createPartReducer(socket, prototypeVersionId),

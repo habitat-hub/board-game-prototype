@@ -6,30 +6,25 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useReducer, useState } from 'react';
 import { PiSidebarSimpleThin } from 'react-icons/pi';
-import { Socket } from 'socket.io-client';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Player, User } from '@/api/types';
 import Dropdown from '@/components/atoms/Dropdown';
+import { usePrototype } from '@/features/prototype/contexts/PrototypeContext';
 import { createPartReducer } from '@/features/prototype/reducers/partReducer';
 
 export default function PlayerAssignmentSidebar({
-  prototypeVersionId,
   groupId,
   players,
-  socket,
 }: {
-  // プロトタイプバージョンID
-  prototypeVersionId: string;
   // グループID
   groupId: string;
   // プレイヤー
   players: Player[];
-  // ソケット
-  socket: Socket;
 }) {
   const router = useRouter();
   const { getAccessUsersByGroup } = usePrototypes();
+  const { socket, prototypeVersionId } = usePrototype();
 
   // サイドバーが最小化されているか
   const [isMinimized, setIsMinimized] = useState(false);

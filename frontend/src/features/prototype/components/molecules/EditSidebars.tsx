@@ -4,12 +4,11 @@
 
 'use client';
 
-import { Socket } from 'socket.io-client';
-
 import { Part, PartProperty, Player } from '@/api/types';
 import PartCreateSidebar from '@/features/prototype/components/molecules/PartCreateSidebar';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
 import { AddPartProps } from '@/features/prototype/type';
+
 export default function EditSidebars({
   prototypeName,
   prototypeVersionNumber,
@@ -20,8 +19,6 @@ export default function EditSidebars({
   onAddPart,
   onDeletePart,
   mainViewRef,
-  socket,
-  prototypeVersionId,
 }: {
   // プロトタイプ名
   prototypeName: string;
@@ -41,10 +38,6 @@ export default function EditSidebars({
   onDeletePart: () => void;
   // メインビューのref
   mainViewRef: React.RefObject<HTMLDivElement>;
-  // ソケット
-  socket: Socket;
-  // プロトタイプバージョンID
-  prototypeVersionId: string;
 }) {
   return (
     <>
@@ -66,8 +59,6 @@ export default function EditSidebars({
         selectedPartProperties={selectedPartProperties}
         onAddPart={onAddPart}
         onDeletePart={onDeletePart}
-        socket={socket}
-        prototypeVersionId={prototypeVersionId}
       />
     </>
   );

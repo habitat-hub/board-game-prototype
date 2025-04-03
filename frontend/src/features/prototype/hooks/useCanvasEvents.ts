@@ -1,18 +1,17 @@
 import { useCallback, useReducer, useState } from 'react';
-import { Socket } from 'socket.io-client';
 
 import { Part } from '@/api/types';
+import { usePrototype } from '@/features/prototype/contexts/PrototypeContext';
 import { needsParentUpdate } from '@/features/prototype/helpers/partHelper';
 import { createPartReducer } from '@/features/prototype/reducers/partReducer';
 import { Camera, Point } from '@/features/prototype/type';
+
 interface UseCanvasEventsProps {
   camera: Camera;
   setCamera: React.Dispatch<React.SetStateAction<Camera>>;
   setSelectedPart: React.Dispatch<React.SetStateAction<Part | null>>;
   parts: Part[];
   mainViewRef: React.RefObject<HTMLDivElement>;
-  socket: Socket;
-  prototypeVersionId: string;
 }
 
 export const useCanvasEvents = ({
@@ -21,9 +20,9 @@ export const useCanvasEvents = ({
   setSelectedPart,
   parts,
   mainViewRef,
-  socket,
-  prototypeVersionId,
 }: UseCanvasEventsProps) => {
+  const { socket, prototypeVersionId } = usePrototype();
+
   const [, dispatch] = useReducer(
     createPartReducer(socket, prototypeVersionId),
     undefined

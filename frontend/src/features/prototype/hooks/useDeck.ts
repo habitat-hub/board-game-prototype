@@ -1,18 +1,19 @@
 import { useReducer } from 'react';
-import { Socket } from 'socket.io-client';
 
 import { Part } from '@/api/types';
+import { usePrototype } from '@/features/prototype/contexts/PrototypeContext';
 import { createPartReducer } from '@/features/prototype/reducers/partReducer';
 
 /**
  * 山札の状態を管理するフック
  * @param part - パーツ
- * @param socket - ソケット
  * @returns 山札の状態
  */
-export const useDeck = (part: Part, socket: Socket) => {
+export const useDeck = (part: Part) => {
+  const { socket, prototypeVersionId } = usePrototype();
+
   const [, dispatch] = useReducer(
-    createPartReducer(socket, part.prototypeVersionId),
+    createPartReducer(socket, prototypeVersionId),
     undefined
   );
 
