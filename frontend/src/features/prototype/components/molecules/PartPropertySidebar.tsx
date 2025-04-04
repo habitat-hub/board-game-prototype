@@ -5,7 +5,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useMemo, useReducer } from 'react';
+import React, { useMemo } from 'react';
 import { FaRegCopy, FaRegTrashAlt } from 'react-icons/fa';
 
 import { Part, PartProperty, Player } from '@/api/types';
@@ -14,8 +14,7 @@ import NumberInput from '@/components/atoms/NumberInput';
 import TextIconButton from '@/components/atoms/TextIconButton';
 import TextInput from '@/components/atoms/TextInput';
 import { COLORS } from '@/features/prototype/const';
-import { usePrototype } from '@/features/prototype/contexts/PrototypeContext';
-import { createPartReducer } from '@/features/prototype/reducers/partReducer';
+import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { AddPartProps } from '@/features/prototype/type';
 
 export default function PartPropertySidebar({
@@ -39,13 +38,9 @@ export default function PartPropertySidebar({
   // パーツを削除時の処理
   onDeletePart: () => void;
 }) {
-  const { socket, prototypeVersionId } = usePrototype();
+  const { dispatch } = usePartReducer();
 
   const router = useRouter();
-  const [, dispatch] = useReducer(
-    createPartReducer(socket, prototypeVersionId),
-    undefined
-  );
 
   // 現在のプロパティ
   const currentProperty = useMemo(() => {

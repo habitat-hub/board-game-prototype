@@ -1,8 +1,5 @@
-import { useReducer } from 'react';
-
 import { Part } from '@/api/types';
-import { usePrototype } from '@/features/prototype/contexts/PrototypeContext';
-import { createPartReducer } from '@/features/prototype/reducers/partReducer';
+import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 
 /**
  * 山札の状態を管理するフック
@@ -10,12 +7,7 @@ import { createPartReducer } from '@/features/prototype/reducers/partReducer';
  * @returns 山札の状態
  */
 export const useDeck = (part: Part) => {
-  const { socket, prototypeVersionId } = usePrototype();
-
-  const [, dispatch] = useReducer(
-    createPartReducer(socket, prototypeVersionId),
-    undefined
-  );
+  const { dispatch } = usePartReducer();
 
   /**
    * 山札をシャッフルする

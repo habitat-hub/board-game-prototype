@@ -4,14 +4,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PiSidebarSimpleThin } from 'react-icons/pi';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Player, User } from '@/api/types';
 import Dropdown from '@/components/atoms/Dropdown';
-import { usePrototype } from '@/features/prototype/contexts/PrototypeContext';
-import { createPartReducer } from '@/features/prototype/reducers/partReducer';
+import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 
 export default function PlayerAssignmentSidebar({
   groupId,
@@ -23,17 +22,13 @@ export default function PlayerAssignmentSidebar({
   players: Player[];
 }) {
   const router = useRouter();
+  const { dispatch } = usePartReducer();
   const { getAccessUsersByGroup } = usePrototypes();
-  const { socket, prototypeVersionId } = usePrototype();
 
   // サイドバーが最小化されているか
   const [isMinimized, setIsMinimized] = useState(false);
   // グループにアクセス可能なユーザー
   const [accessibleUsers, setAccessibleUsers] = useState<User[]>([]);
-  const [, dispatch] = useReducer(
-    createPartReducer(socket, prototypeVersionId),
-    undefined
-  );
 
   // グループにアクセス可能なユーザーを取得
   useEffect(() => {

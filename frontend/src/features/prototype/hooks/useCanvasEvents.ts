@@ -1,9 +1,8 @@
-import { useCallback, useReducer, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { Part } from '@/api/types';
-import { usePrototype } from '@/features/prototype/contexts/PrototypeContext';
 import { needsParentUpdate } from '@/features/prototype/helpers/partHelper';
-import { createPartReducer } from '@/features/prototype/reducers/partReducer';
+import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { Camera, Point } from '@/features/prototype/type';
 
 interface UseCanvasEventsProps {
@@ -21,12 +20,7 @@ export const useCanvasEvents = ({
   parts,
   mainViewRef,
 }: UseCanvasEventsProps) => {
-  const { socket, prototypeVersionId } = usePrototype();
-
-  const [, dispatch] = useReducer(
-    createPartReducer(socket, prototypeVersionId),
-    undefined
-  );
+  const { dispatch } = usePartReducer();
 
   const [draggingPartId, setDraggingPartId] = useState<number | null>(null);
   const [offset, setOffset] = useState<Point>({ x: 0, y: 0 });

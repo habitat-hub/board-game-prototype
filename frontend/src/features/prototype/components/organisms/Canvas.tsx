@@ -4,7 +4,6 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
-  useReducer,
   useRef,
   useState,
 } from 'react';
@@ -24,7 +23,7 @@ import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
 import { VERSION_NUMBER } from '@/features/prototype/const';
 import { usePrototype } from '@/features/prototype/contexts/PrototypeContext';
 import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
-import { createPartReducer } from '@/features/prototype/reducers/partReducer';
+import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { AddPartProps, Camera, PartHandle } from '@/features/prototype/type';
 import { useUser } from '@/hooks/useUser';
 
@@ -58,16 +57,12 @@ export default function Canvas({
     PartProperty[] | null
   >(null);
 
-  const { socket, prototypeVersionId } = usePrototype();
-
   const mainViewRef = useRef<HTMLDivElement>(null);
   const partRefs = useRef<{ [key: number]: React.RefObject<PartHandle> }>({});
 
   const { user } = useUser();
-  const [, dispatch] = useReducer(
-    createPartReducer(socket, prototypeVersionId),
-    undefined
-  );
+  const { dispatch } = usePartReducer();
+  const { socket } = usePrototype();
 
   const handleAddPart = useCallback(
     ({ part, properties }: AddPartProps) => {

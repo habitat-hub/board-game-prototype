@@ -1,8 +1,7 @@
-import { useImperativeHandle, useReducer, useState } from 'react';
+import { useImperativeHandle, useState } from 'react';
 
 import { Part } from '@/api/types';
-import { usePrototype } from '@/features/prototype/contexts/PrototypeContext';
-import { createPartReducer } from '@/features/prototype/reducers/partReducer';
+import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { PartHandle } from '@/features/prototype/type';
 
 /**
@@ -12,17 +11,11 @@ import { PartHandle } from '@/features/prototype/type';
  * @returns カードの状態
  */
 export const useCard = (part: Part, ref: React.ForwardedRef<PartHandle>) => {
-  const { socket, prototypeVersionId } = usePrototype();
-
+  const { dispatch } = usePartReducer();
   // カードが裏返しになっているかどうか
   const [isFlipped, setIsFlipped] = useState(part.isFlipped);
   // カードが反転中かどうか
   const [isReversing, setIsReversing] = useState(false);
-
-  const [, dispatch] = useReducer(
-    createPartReducer(socket, prototypeVersionId),
-    undefined
-  );
 
   /**
    * カードを反転させる
