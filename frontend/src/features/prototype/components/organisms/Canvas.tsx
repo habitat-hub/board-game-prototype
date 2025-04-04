@@ -21,9 +21,9 @@ import EditSidebars from '@/features/prototype/components/molecules/EditSidebars
 import PreviewSidebars from '@/features/prototype/components/molecules/PreviewSidebars';
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
 import { VERSION_NUMBER } from '@/features/prototype/const';
-import { usePrototype } from '@/features/prototype/contexts/PrototypeContext';
 import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
+import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { AddPartProps, Camera, PartHandle } from '@/features/prototype/type';
 import { useUser } from '@/hooks/useUser';
 
@@ -62,7 +62,7 @@ export default function Canvas({
 
   const { user } = useUser();
   const { dispatch } = usePartReducer();
-  const { socket } = usePrototype();
+  const { socket } = useSocket();
 
   const handleAddPart = useCallback(
     ({ part, properties }: AddPartProps) => {

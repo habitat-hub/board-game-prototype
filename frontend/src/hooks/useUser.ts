@@ -1,17 +1,6 @@
-import { createContext, useContext } from 'react';
+import { useContext } from 'react';
 
-import { UserListData } from '@/api/types';
-
-interface UserContextType {
-  // ユーザー情報
-  user: UserListData | null;
-  // ユーザー情報を設定
-  setUser: (user: UserListData | null) => void;
-}
-
-export const UserContext = createContext<UserContextType | undefined>(
-  undefined
-);
+import { UserContext } from '@/contexts/UserContext';
 
 export const useUser = () => {
   const context = useContext(UserContext);

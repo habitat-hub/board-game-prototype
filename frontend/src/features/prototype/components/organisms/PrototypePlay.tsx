@@ -13,7 +13,8 @@ import {
   PrototypeVersion,
 } from '@/api/types';
 import Canvas from '@/features/prototype/components/organisms/Canvas';
-import { PrototypeProvider } from '@/features/prototype/contexts/PrototypeContext';
+import { PrototypeVersionIdProvider } from '@/features/prototype/contexts/PrototypeVersionIdContext';
+import { SocketProvider } from '@/features/prototype/contexts/SocketContext';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
@@ -90,17 +91,19 @@ const PrototypePlay: React.FC = () => {
   if (!prototype) return null;
 
   return (
-    <PrototypeProvider socket={socket} prototypeVersionId={versionId}>
-      <Canvas
-        prototypeName={prototype.name}
-        parts={parts}
-        properties={properties}
-        players={players}
-        prototypeVersionNumber={versionNumber}
-        groupId={prototype.groupId}
-        prototypeType="PREVIEW"
-      />
-    </PrototypeProvider>
+    <SocketProvider socket={socket}>
+      <PrototypeVersionIdProvider prototypeVersionId={versionId}>
+        <Canvas
+          prototypeName={prototype.name}
+          parts={parts}
+          properties={properties}
+          players={players}
+          prototypeVersionNumber={versionNumber}
+          groupId={prototype.groupId}
+          prototypeType="PREVIEW"
+        />
+      </PrototypeVersionIdProvider>
+    </SocketProvider>
   );
 };
 

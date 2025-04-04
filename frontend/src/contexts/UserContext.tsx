@@ -1,22 +1,29 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { ReactNode, useState, useEffect } from 'react';
+import React, { ReactNode, useState, useEffect, createContext } from 'react';
 
 import { useAuth } from '@/api/hooks/useAuth';
 import { UserListData } from '@/api/types';
-import { UserContext } from '@/hooks/useUser';
 
-interface UserProviderProps {
-  children: ReactNode;
+// ユーザー情報コンテキスト型
+interface UserContextType {
+  // ユーザー情報
+  user: UserListData | null;
+  // ユーザー情報を設定
+  setUser: (user: UserListData | null) => void;
 }
 
-const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
+// ユーザー情報コンテキスト
+export const UserContext = createContext<UserContextType | undefined>(
+  undefined
+);
+
+// ユーザー情報プロバイダー
+export const UserProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const { getUser } = useAuth();
 
-  // ローディング中か
-  const [loading, setLoading] = useState(true);
   // ユーザー情報
   const [user, setUser] = useState<UserListData | null>(null);
 
@@ -34,16 +41,8 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       })
       .catch(() => {
         router.replace('/');
-      })
-      .finally(() => {
-        setLoading(false);
       });
   }, [getUser, router]);
-
-  // ローディング中の場合
-  if (loading) {
-    return null;
-  }
 
   return (
     <UserContext.Provider value={{ user, setUser }}>
@@ -51,5 +50,3 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     </UserContext.Provider>
   );
 };
-
-export default UserProvider;
