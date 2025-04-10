@@ -75,13 +75,6 @@ const Part = forwardRef<PartHandle, PartProps>(
       return properties.find((p) => p.side === side);
     }, [part, properties]);
 
-    // テキスト色
-    const textColor = useMemo(() => {
-      return targetProperty?.textColor
-        ? 'text-[' + targetProperty.textColor + ']'
-        : 'text-black';
-    }, [targetProperty]);
-
     const handleDoubleClick = () => {
       // カードやデッキでない場合
       if (!isCard && !isDeck) return;
