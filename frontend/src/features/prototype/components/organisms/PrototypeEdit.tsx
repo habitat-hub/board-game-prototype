@@ -15,7 +15,7 @@ import {
 import Canvas from '@/features/prototype/components/organisms/Canvas';
 import { PrototypeVersionIdProvider } from '@/features/prototype/contexts/PrototypeVersionIdContext';
 import { SocketProvider } from '@/features/prototype/contexts/SocketContext';
-
+import { ValidationType } from '@/types/validation';
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
 const PrototypeEdit: React.FC = () => {
@@ -41,6 +41,9 @@ const PrototypeEdit: React.FC = () => {
   const [properties, setProperties] = useState<PartProperty[]>([]);
   // プレイヤー
   const [players, setPlayers] = useState<Player[]>([]);
+  const [validationResults, setValidationResults] = useState<ValidationType[]>(
+    []
+  );
 
   // socket通信の設定
   useEffect(() => {
@@ -51,6 +54,10 @@ const PrototypeEdit: React.FC = () => {
     socket.on('UPDATE_PARTS', ({ parts, properties }) => {
       setParts(parts);
       setProperties(properties);
+    });
+
+    socket.on('UPDATE_PARTS_ERROR', ({ validationResults }) => {
+      setValidationResults(validationResults);
     });
 
     // 更新されたプレイヤーを受信
@@ -101,6 +108,7 @@ const PrototypeEdit: React.FC = () => {
           prototypeVersionNumber={versionNumber}
           groupId={prototype.groupId}
           prototypeType="EDIT"
+          validationResults={validationResults}
         />
       </PrototypeVersionIdProvider>
     </SocketProvider>

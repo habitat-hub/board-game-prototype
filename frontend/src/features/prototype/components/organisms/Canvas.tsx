@@ -26,6 +26,7 @@ import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { AddPartProps, Camera, PartHandle } from '@/features/prototype/type';
 import { useUser } from '@/hooks/useUser';
+import { ValidationType } from '@/types/validation';
 
 interface CanvasProps {
   prototypeName: string;
@@ -35,6 +36,7 @@ interface CanvasProps {
   properties: PropertyType[];
   players: Player[];
   prototypeType: 'EDIT' | 'PREVIEW';
+  validationResults?: ValidationType[];
 }
 
 export default function Canvas({
@@ -45,6 +47,7 @@ export default function Canvas({
   properties,
   players,
   prototypeType,
+  validationResults = [],
 }: CanvasProps) {
   // TODO: キャンバスの状態(パーツ選択中とか、パーツ作成中とか)を管理できるようにしたい（あった方が便利そう）
   // const [canvasState, setState] = useState<CanvasState>({
@@ -291,6 +294,7 @@ export default function Canvas({
           onAddPart={handleAddPart}
           onDeletePart={handleDeletePart}
           mainViewRef={mainViewRef}
+          validationResults={validationResults}
         />
       )}
       {isPreview && (

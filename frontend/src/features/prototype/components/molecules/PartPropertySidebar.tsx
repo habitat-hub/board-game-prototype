@@ -5,7 +5,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { FaRegCopy, FaRegTrashAlt } from 'react-icons/fa';
 
 import { Part, PartProperty, Player } from '@/api/types';
@@ -16,6 +16,8 @@ import TextInput from '@/components/atoms/TextInput';
 import { COLORS } from '@/features/prototype/const';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { AddPartProps } from '@/features/prototype/type';
+import { ValidationType } from '@/types/validation';
+import { checkValue } from '@/utils/varidation';
 
 export default function PartPropertySidebar({
   groupId,
@@ -24,6 +26,7 @@ export default function PartPropertySidebar({
   selectedPartProperties,
   onAddPart,
   onDeletePart,
+  validationResults = [],
 }: {
   // グループID
   groupId: string;
@@ -37,10 +40,15 @@ export default function PartPropertySidebar({
   onAddPart: ({ part, properties }: AddPartProps) => void;
   // パーツを削除時の処理
   onDeletePart: () => void;
+  // バリデーション結果
+  validationResults?: ValidationType[];
 }) {
   const { dispatch } = usePartReducer();
 
   const router = useRouter();
+
+  // パーツ名のバリデーション文言
+  const [nameValidation, setNameValidation] = useState<string>();
 
   // 現在のプロパティ
   const currentProperty = useMemo(() => {
@@ -129,6 +137,23 @@ export default function PartPropertySidebar({
         updateProperties: [updatedProperty],
       },
     });
+  };
+
+  /**
+   * パーツ名の登録を行う関数
+   * @param name - パーツ名
+   * @returns void
+   */
+  const handleChangedName = (name: string) => {
+    const validationResult = checkValue('stringValidation', name);
+
+    if (!validationResult.isValid) {
+      setNameValidation(validationResult.errorMessage);
+      return;
+    }
+
+    setNameValidation('');
+    handleUpdateProperty({ name });
   };
 
   return (
@@ -235,12 +260,26 @@ export default function PartPropertySidebar({
                   icon={<p>H</p>}
                 />
               </div>
-              <p className="text-[9px] font-medium text-gray-500">名前</p>
-              <div className="flex w-full mb-2">
+              <p className="text-[9px] font-medium text-gray-500">
+                名前
+                {validationResults.length > 0 ? (
+                  <span style={{ color: 'red' }}>
+                    {' '}
+                    {validationResults[0].name.errorMessage}
+                  </span>
+                ) : nameValidation ? (
+                  <span style={{ color: 'red' }}> {nameValidation}</span>
+                ) : null}
+              </p>
+              <div
+                className={`flex w-full mb-2 ${
+                  nameValidation ? 'border border-red-500 rounded' : ''
+                }`}
+              >
                 <TextInput
                   key={selectedPart.id}
                   value={currentProperty?.name ?? ''}
-                  onChange={(name) => handleUpdateProperty({ name })}
+                  onChange={(name) => handleChangedName(name)}
                   icon={<p>T</p>}
                 />
               </div>

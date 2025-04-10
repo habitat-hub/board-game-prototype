@@ -19,7 +19,7 @@ const NumberInput = ({
   icon: ReactNode;
 }) => {
   // 入力値
-  const [inputValue, setInputValue] = useState(value.toString());
+  const [inputValue, setInputValue] = useState(value?.toString() || '10');
 
   /**
    * 値が変更されたときの処理

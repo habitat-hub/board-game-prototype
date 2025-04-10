@@ -9,6 +9,7 @@ import {
   getUnderLappingPart,
   shuffleDeck,
 } from '../helpers/prototypeHelper';
+import { checkPartsProperty } from '../helpers/validationHelper';
 
 /**
  * プロトタイプ参加
@@ -117,6 +118,26 @@ function handleUpdatePart(socket: Socket, io: Server) {
 
       // PartPropertiesの更新
       if (updateProperties) {
+        // バリデーションチェック
+        const validationResult = updateProperties
+          .map((property) => checkPartsProperty(property, partId))
+          .filter((result) => result.invalidValueInResult);
+
+        // バリデーションエラーがある場合は、エラーメッセージをクライアントに送信
+        if (validationResult.length > 0) {
+          // エラーがある場合は、エラーメッセージをクライアントに送信
+          socket.emit('UPDATE_PARTS_ERROR', {
+            validationResults: validationResult || [],
+          });
+          return;
+        }
+
+        // エラーがない場合は、空配列をクライアントに送信
+        socket.emit('UPDATE_PARTS_ERROR', {
+          validationResults: [],
+        });
+
+        // バリデーションを通過したプロパティのみを更新
         const updatePromises = updateProperties.map((property) => {
           return PartPropertyModel.update(property, {
             where: { partId, side: property.side },

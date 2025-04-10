@@ -8,6 +8,7 @@ import { Part, PartProperty, Player } from '@/api/types';
 import PartCreateSidebar from '@/features/prototype/components/molecules/PartCreateSidebar';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
 import { AddPartProps } from '@/features/prototype/type';
+import { ValidationType } from '@/types/validation';
 
 export default function EditSidebars({
   prototypeName,
@@ -19,6 +20,7 @@ export default function EditSidebars({
   onAddPart,
   onDeletePart,
   mainViewRef,
+  validationResults = [],
 }: {
   // プロトタイプ名
   prototypeName: string;
@@ -38,6 +40,8 @@ export default function EditSidebars({
   onDeletePart: () => void;
   // メインビューのref
   mainViewRef: React.RefObject<HTMLDivElement>;
+  // バリデーション結果
+  validationResults?: ValidationType[];
 }) {
   return (
     <>
@@ -59,6 +63,7 @@ export default function EditSidebars({
         selectedPartProperties={selectedPartProperties}
         onAddPart={onAddPart}
         onDeletePart={onDeletePart}
+        validationResults={validationResults}
       />
     </>
   );
