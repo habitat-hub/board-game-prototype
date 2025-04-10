@@ -184,6 +184,9 @@ export const swaggerSchemas = {
             "color": {
                   "type": "string"
             },
+            "textColor": {
+                  "type": "string"
+            },
             "image": {
                   "type": "string"
             },
@@ -200,6 +203,7 @@ export const swaggerSchemas = {
             "name",
             "description",
             "color",
+            "textColor",
             "image",
             "createdAt",
             "updatedAt"

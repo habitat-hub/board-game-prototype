@@ -16,6 +16,7 @@ export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
     height: 150,
     description: '',
     color: '#FFFFFF',
+    textColor: '#000000',
     isReversible: false,
     configurableTypeAsChild: [],
   },
@@ -27,6 +28,7 @@ export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
     height: 50,
     description: '',
     color: '#FFFFFF',
+    textColor: '#000000',
     configurableTypeAsChild: [],
   },
   // 手札
@@ -37,6 +39,7 @@ export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
     height: 150,
     description: '',
     color: '#FFFFFF',
+    textColor: '#000000',
     configurableTypeAsChild: ['card'],
   },
   // 山札
@@ -47,6 +50,7 @@ export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
     height: 150,
     description: '',
     color: '#FFFFFF',
+    textColor: '#000000',
     configurableTypeAsChild: ['card'],
     canReverseCardOnDeck: false,
   },
@@ -58,6 +62,7 @@ export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
     height: 200,
     description: '',
     color: '#FFFFFF',
+    textColor: '#000000',
     configurableTypeAsChild: ['card', 'token', 'hand', 'deck'],
   },
 };
@@ -76,4 +81,17 @@ export const COLORS = [
   '#FFC0CB', // Pink
   '#FFFFFF', // White
   '#808080', // Gray
+];
+
+// テキスト色
+export const TEXT_COLORS = [
+  '#FFFFFF', // White
+  '#000000', // Black
+];
+
+// プレイヤー名の色
+export const PLAYER_NAME_COLORS = [
+  '#FFFFFF', // White
+  '#808080', // Gray
+  '#000000', // Black
 ];

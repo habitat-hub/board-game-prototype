@@ -160,6 +160,9 @@ const Part = forwardRef<PartHandle, PartProps>(
                 {/* パーツ名 */}
                 <p
                   className={`flex-1 truncate ${part.type === 'token' ? 'text-xs' : 'text-sm'} font-medium`}
+                  style={{
+                    color: targetProperty?.textColor || 'black',
+                  }}
                 >
                   {targetProperty?.name}
                 </p>

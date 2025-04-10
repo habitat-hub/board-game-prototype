@@ -9,6 +9,7 @@ export const UPDATABLE_PROTOTYPE_FIELDS = {
     'name',
     'description',
     'color',
+    'textColor',
     'position',
     'width',
     'height',

@@ -14,8 +14,11 @@ class PartPropertyModel extends Model {
   public name!: string;
   // 説明
   public description!: string;
-  // 色
+  // 背景色
   public color!: string;
+  // テキスト色
+  public textColor!: string;
+  // 画像
   public image?: string;
 }
 
@@ -44,6 +47,10 @@ PartPropertyModel.init(
       allowNull: false,
     },
     color: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    textColor: {
       type: DataTypes.STRING,
       allowNull: false,
     },

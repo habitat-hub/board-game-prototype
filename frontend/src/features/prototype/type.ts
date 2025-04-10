@@ -12,6 +12,7 @@ export interface PartDefaultConfig {
   width: number;
   height: number;
   description: string;
+  textColor: string;
   color: string;
   isReversible?: boolean;
   configurableTypeAsChild: string[];
