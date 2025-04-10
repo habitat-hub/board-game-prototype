@@ -13,7 +13,7 @@ import Dropdown from '@/components/atoms/Dropdown';
 import NumberInput from '@/components/atoms/NumberInput';
 import TextIconButton from '@/components/atoms/TextIconButton';
 import TextInput from '@/components/atoms/TextInput';
-import { COLORS } from '@/features/prototype/const';
+import { COLORS, TEXT_COLORS } from '@/features/prototype/const';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { AddPartProps } from '@/features/prototype/type';
 
@@ -94,12 +94,13 @@ export default function PartPropertySidebar({
       PartProperty,
       'id' | 'partId' | 'createdAt' | 'updatedAt'
     >[] = selectedPartProperties.map(
-      ({ side, name, description, color, image }) => {
+      ({ side, name, description, color, image, textColor }) => {
         return {
           side,
           name,
           description,
           color,
+          textColor,
           image,
         };
       }
@@ -256,7 +257,25 @@ export default function PartPropertySidebar({
                   multiline
                 />
               </div>
-              <p className="text-[9px] font-medium text-gray-500">カラー</p>
+              <p className="text-[9px] font-medium text-gray-500">テキスト色</p>
+              <div className="w-full mb-2 px-4">
+                <div className="grid grid-cols-4 gap-2">
+                  {TEXT_COLORS.map((textColor) => (
+                    <button
+                      key={textColor}
+                      onClick={() => handleUpdateProperty({ textColor })}
+                      className={`w-5 h-5 rounded-full border-2 ${
+                        currentProperty?.textColor === textColor
+                          ? 'border-blue-500'
+                          : 'border-gray-300'
+                      }`}
+                      style={{ backgroundColor: textColor }}
+                      title={textColor}
+                    />
+                  ))}
+                </div>
+              </div>
+              <p className="text-[9px] font-medium text-gray-500">背景色</p>
               <div className="w-full mb-2 px-4">
                 <div className="grid grid-cols-4 gap-2">
                   {COLORS.map((color) => (

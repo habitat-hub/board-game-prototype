@@ -67,6 +67,7 @@ export interface PartProperty {
   name: string;
   description: string;
   color: string;
+  textColor: string;
   image: string;
   createdAt: string;
   updatedAt: string;

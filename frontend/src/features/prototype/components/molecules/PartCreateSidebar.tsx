@@ -105,6 +105,7 @@ export default function PartCreateSidebar({
       name: partConfig.name,
       description: partConfig.description,
       color: partConfig.color,
+      textColor: partConfig.textColor,
       image: '',
     };
     // パーツのプロパティ
