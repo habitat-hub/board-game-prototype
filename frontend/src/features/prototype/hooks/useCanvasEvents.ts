@@ -1,3 +1,4 @@
+import { throttle } from 'lodash';
 import { useCallback, useState } from 'react';
 
 import { Part } from '@/api/types';
@@ -26,6 +27,27 @@ export const useCanvasEvents = ({
   const [offset, setOffset] = useState<Point>({ x: 0, y: 0 });
   const [dragStart, setDragStart] = useState<Point>({ x: 0, y: 0 });
   const [isDraggingCanvas, setIsDraggingCanvas] = useState(false);
+
+  /**
+   * パーツの位置を更新するためのthrottledなdispatch関数
+   * @param x - パーツのx座標
+   * @param y - パーツのy座標
+   */
+  const throttledDispatch = useCallback(
+    (x: number, y: number) => {
+      if (draggingPartId !== null) {
+        dispatch({
+          type: 'UPDATE_PART',
+          payload: {
+            partId: draggingPartId,
+            updatePart: { position: { x, y } },
+          },
+        });
+      }
+    },
+    [draggingPartId, dispatch]
+  );
+  const throttledUpdate = throttle(throttledDispatch, 50);
 
   /**
    * ズーム操作
@@ -88,10 +110,8 @@ export const useCanvasEvents = ({
       const x = (e.clientX - rect.left) / camera.zoom - offset.x;
       const y = (e.clientY - rect.top) / camera.zoom - offset.y;
 
-      dispatch({
-        type: 'UPDATE_PART',
-        payload: { partId: draggingPartId, updatePart: { position: { x, y } } },
-      });
+      // パーツの位置を更新
+      throttledUpdate(x, y);
       return;
     }
 
