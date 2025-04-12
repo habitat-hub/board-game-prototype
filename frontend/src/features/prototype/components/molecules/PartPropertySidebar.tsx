@@ -176,65 +176,65 @@ export default function PartPropertySidebar({
             <div className="flex flex-col gap-1">
               <p className="text-[9px] font-medium text-gray-500">位置</p>
               <div className="flex w-full gap-2 mb-2">
-                <Fragment key={selectedPart.id}>
-                  <NumberInput
-                    value={selectedPart.position.x}
-                    onChange={(number) => {
-                      dispatch({
-                        type: 'UPDATE_PART',
-                        payload: {
-                          partId: selectedPart.id,
-                          updatePart: { position: { x: number } },
-                        },
-                      });
-                    }}
-                    icon={<>X</>}
-                  />
-                  <NumberInput
-                    value={selectedPart.position.y}
-                    onChange={(number) => {
-                      dispatch({
-                        type: 'UPDATE_PART',
-                        payload: {
-                          partId: selectedPart.id,
-                          updatePart: { position: { y: number } },
-                        },
-                      });
-                    }}
-                    icon={<>Y</>}
-                  />
-                </Fragment>
+                <NumberInput
+                  key={`${selectedPart.id}-x`}
+                  value={selectedPart.position.x}
+                  onChange={(number) => {
+                    dispatch({
+                      type: 'UPDATE_PART',
+                      payload: {
+                        partId: selectedPart.id,
+                        updatePart: { position: { x: number } },
+                      },
+                    });
+                  }}
+                  icon={<>X</>}
+                />
+                <NumberInput
+                  key={`${selectedPart.id}-y`}
+                  value={selectedPart.position.y}
+                  onChange={(number) => {
+                    dispatch({
+                      type: 'UPDATE_PART',
+                      payload: {
+                        partId: selectedPart.id,
+                        updatePart: { position: { y: number } },
+                      },
+                    });
+                  }}
+                  icon={<>Y</>}
+                />
               </div>
               <p className="text-[9px] font-medium text-gray-500">サイズ</p>
               <div className="flex w-full gap-2 mb-2">
-                <Fragment key={selectedPart.id}>
-                  <NumberInput
-                    value={selectedPart.width}
-                    onChange={(number) => {
-                      dispatch({
-                        type: 'UPDATE_PART',
-                        payload: {
-                          partId: selectedPart.id,
-                          updatePart: { width: number },
-                        },
-                      });
-                    }}
-                    icon={<>W</>}
-                  />
-                  <NumberInput
-                    value={selectedPart.height}
-                    onChange={(number) => {
-                      dispatch({
-                        type: 'UPDATE_PART',
-                        payload: {
-                          partId: selectedPart.id,
-                          updatePart: { height: number },
-                        },
-                      });
-                    }}
-                    icon={<>H</>}
-                  />
-                </Fragment>
+                <NumberInput
+                  key={`${selectedPart.id}-width`}
+                  value={selectedPart.width}
+                  onChange={(number) => {
+                    dispatch({
+                      type: 'UPDATE_PART',
+                      payload: {
+                        partId: selectedPart.id,
+                        updatePart: { width: number },
+                      },
+                    });
+                  }}
+                  icon={<>W</>}
+                />
+                <NumberInput
+                  key={`${selectedPart.id}-height`}
+                  value={selectedPart.height}
+                  onChange={(number) => {
+                    dispatch({
+                      type: 'UPDATE_PART',
+                      payload: {
+                        partId: selectedPart.id,
+                        updatePart: { height: number },
+                      },
+                    });
+                  }}
+                  icon={<>H</>}
+                />
               </div>
               <p className="text-[9px] font-medium text-gray-500">名前</p>
               <div className="flex w-full mb-2">
