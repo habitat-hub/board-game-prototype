@@ -1,11 +1,11 @@
 'use client';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { GiWoodenCrate } from 'react-icons/gi';
 
+import { useAuth } from '@/api/hooks/useAuth';
 import { WoodenCrateBackground } from '@/features/prototype/components/atoms/WoodenCrateBackground';
-import axiosInstance from '@/utils/axiosInstance';
-
+import { useUser } from '@/hooks/useUser';
 // フッターを非表示にしたいURLパターン
 const hideFooterPattern = /^\/prototypes\/[a-f0-9-]+\/versions\/[a-f0-9-]+\//;
 
@@ -13,37 +13,18 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  // ログアウトメニューの表示状態
-  const [showLogout, setShowLogout] = useState(false);
-  const [userName, setUserName] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
+
+  const { user } = useUser();
+  const { logout } = useAuth();
+
+  // ログアウトメニューの表示状態
+  const [showLogout, setShowLogout] = useState(false);
   // ログアウトメニューのRef
   const logoutRef = useRef(null);
   // フッターと背景画像を表示するか
   const showsFooterAndBackgroundImage = !hideFooterPattern.test(pathname);
-
-  /**
-   * ユーザー名を更新する
-   */
-  const updateUserName = useCallback(() => {
-    const user = localStorage.getItem('user');
-    // ユーザー情報が存在しない場合
-    if (!user) {
-      setUserName(null);
-      return;
-    }
-    setUserName(JSON.parse(user).username);
-  }, []);
-
-  // ヘッダーにユーザー名を表示する
-  useEffect(() => {
-    updateUserName();
-    window.addEventListener('userUpdated', updateUserName);
-    return () => {
-      window.removeEventListener('userUpdated', updateUserName);
-    };
-  }, [updateUserName, pathname]);
 
   /**
    * ログアウトボタンの外側をクリックしたらログアウトボタンを非表示にする
@@ -71,12 +52,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
    * ログアウトする
    */
   const handleLogout = () => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    axiosInstance
-      .post(`${apiUrl}/auth/logout`)
+    logout()
       .then(() => {
-        localStorage.removeItem('user'); // ログアウト時にユーザー情報を削除
-        window.dispatchEvent(new Event('userUpdated')); // カスタムイベントを発火
         router.replace('/');
       })
       .catch((error) => console.error('Logout error:', error));
@@ -108,13 +85,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <span className="text-2xl tracking-wider font-light">KIBAKO</span>
           </div>
         </button>
-        {userName && pathname !== '/' && (
+        {user?.username && pathname !== '/' && (
           <div className="relative" ref={logoutRef}>
             <button
               onClick={() => setShowLogout(!showLogout)}
               className="hover:text-wood-light transition-colors duration-200"
             >
-              {userName}
+              {user.username}
             </button>
             {showLogout && (
               <button

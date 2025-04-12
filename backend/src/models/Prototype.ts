@@ -1,16 +1,23 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
 import User from './User';
-import { PROTOTYPE_TYPE } from '../const';
 
 class PrototypeModel extends Model {
+  // ID
   public id!: string;
+  // ユーザーID
   public userId!: string;
+  // 名前
   public name!: string;
-  public type!: typeof PROTOTYPE_TYPE.EDIT | typeof PROTOTYPE_TYPE.PREVIEW;
+  // タイプ
+  public type!: 'EDIT' | 'PREVIEW';
+  // マスタープロトタイプID
   public masterPrototypeId!: string | null;
+  // グループID
   public groupId!: string;
+  // 最小プレイヤー数
   public minPlayers!: number;
+  // 最大プレイヤー数
   public maxPlayers!: number;
 }
 
@@ -31,7 +38,7 @@ PrototypeModel.init(
       allowNull: false,
     },
     type: {
-      type: DataTypes.ENUM(PROTOTYPE_TYPE.EDIT, PROTOTYPE_TYPE.PREVIEW),
+      type: DataTypes.ENUM('EDIT', 'PREVIEW'),
       allowNull: false,
     },
     masterPrototypeId: {

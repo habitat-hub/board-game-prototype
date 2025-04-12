@@ -12,7 +12,7 @@ import {
   createPrototype,
   createPrototypeVersion,
 } from '../factories/prototypeFactory';
-import { PROTOTYPE_TYPE, UPDATABLE_PROTOTYPE_FIELDS } from '../const';
+import { UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import sequelize from '../models';
 import { getAccessibleUsers } from '../helpers/userHelper';
 import PrototypeVersionModel from '../models/PrototypeVersion';
@@ -185,6 +185,19 @@ router.get(
  *         description: プロトタイプのID
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               minPlayers:
+ *                 type: integer
+ *               maxPlayers:
+ *                 type: integer
  *     responses:
  *       '200':
  *         description: プロトタイプを更新しました
@@ -291,6 +304,9 @@ router.delete(
  *           application/json:
  *             schema:
  *               type: object
+ *               required:
+ *                 - prototype
+ *                 - versions
  *               properties:
  *                 prototype:
  *                   $ref: '#/components/schemas/Prototype'
@@ -343,7 +359,17 @@ router.get('/:prototypeId/versions', checkPrototypeAccess, async (req, res) => {
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Prototype'
+ *                 type: object
+ *                 required:
+ *                   - prototype
+ *                   - versions
+ *                 properties:
+ *                   prototype:
+ *                     $ref: '#/components/schemas/Prototype'
+ *                   versions:
+ *                     type: array
+ *                     items:
+ *                       $ref: '#/components/schemas/PrototypeVersion'
  */
 router.get('/groups/:groupId', checkGroupAccess, async (req, res) => {
   const groupId = req.params.groupId;
@@ -539,7 +565,7 @@ router.delete(
 
     try {
       const prototype = await PrototypeModel.findOne({
-        where: { groupId, type: PROTOTYPE_TYPE.EDIT },
+        where: { groupId, type: 'EDIT' },
       });
       if (!prototype) {
         throw new Error('プロトタイプが見つかりません');
@@ -584,6 +610,25 @@ router.delete(
  *         description: プロトタイプのID
  *         schema:
  *           type: string
+ *     responses:
+ *       '200':
+ *         description: プロトタイプを複製しました
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       '404':
+ *         description: プロトタイプが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
+ *       '500':
+ *         description: サーバーエラー
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
  */
 router.post(
   '/:prototypeId/duplicate',
@@ -660,7 +705,7 @@ router.post(
   async (req: Request, res: Response) => {
     const editPrototypeId = req.params.prototypeId;
     const editPrototype = await PrototypeModel.findByPk(editPrototypeId);
-    if (!editPrototype || editPrototype.type !== PROTOTYPE_TYPE.EDIT) {
+    if (!editPrototype || editPrototype.type !== 'EDIT') {
       res.status(404).json({ error: 'プロトタイプが見つかりません' });
       return;
     }

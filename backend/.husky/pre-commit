@@ -3,7 +3,7 @@
 cd backend
 
 # ERDとRedocを生成
-npm run generate-erd && npm run redoc && npm run generate-types
+npm run generate-erd && npm run redoc && npm run generate-api-types
 
 cd ..
 
@@ -18,10 +18,13 @@ if [ -f "backend/erd.svg" ]; then
   echo "✨ Added backend/erd.svg to staging"
 fi
 
-if [ -f "frontend/src/types/models.ts" ]; then
-  git add frontend/src/types/models.ts
-  echo "✨ Added frontend/src/types/models.ts to staging"
-fi
+# frontend/src/types配下に生成されたファイルをステージングに追加
+for file in frontend/src/types/*; do
+  if [ -f "$file" ]; then
+    git add "$file"
+    echo "✨ Added $file to staging"
+  fi
+done
 
 # 正常終了
 exit 0

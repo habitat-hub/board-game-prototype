@@ -1,29 +1,21 @@
 import { useImperativeHandle, useState } from 'react';
-import { Socket } from 'socket.io-client';
 
-import { PART_TYPE } from '@/features/prototype/const';
-import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
+import { Part } from '@/api/types';
+import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { PartHandle } from '@/features/prototype/type';
-import { Part } from '@/types/models';
 
 /**
  * カードの状態を管理するフック
  * @param part - パーツ
  * @param ref - Partコンポーネントのref
- * @param socket - ソケット
  * @returns カードの状態
  */
-export const useCard = (
-  part: Part,
-  ref: React.ForwardedRef<PartHandle>,
-  socket: Socket
-) => {
+export const useCard = (part: Part, ref: React.ForwardedRef<PartHandle>) => {
+  const { dispatch } = usePartReducer();
   // カードが裏返しになっているかどうか
   const [isFlipped, setIsFlipped] = useState(part.isFlipped);
   // カードが反転中かどうか
   const [isReversing, setIsReversing] = useState(false);
-
-  const { reverseCard } = usePartOperations(part.prototypeVersionId, socket);
 
   /**
    * カードを反転させる
@@ -34,7 +26,7 @@ export const useCard = (
     needsSocketEmit: boolean
   ) => {
     // カードでない場合
-    if (part.type !== PART_TYPE.CARD) return;
+    if (part.type !== 'card') return;
     // 反転不可の場合
     if (!part.isReversible) return;
     // 反転が不要な場合
@@ -46,7 +38,10 @@ export const useCard = (
 
     // ソケットをemitする場合
     if (needsSocketEmit) {
-      reverseCard(part.id, isNextFlipped);
+      dispatch({
+        type: 'FLIP_CARD',
+        payload: { cardId: part.id, isNextFlipped },
+      });
     }
   };
 

@@ -1,19 +1,4 @@
-// パーツタイプ
-export const PART_TYPE = {
-  TOKEN: 'token',
-  CARD: 'card',
-  HAND: 'hand',
-  DECK: 'deck',
-  AREA: 'area',
-};
-
-// プロトタイプタイプ
-export const PROTOTYPE_TYPE = {
-  // 編集
-  EDIT: 'EDIT',
-  // プレビュー
-  PREVIEW: 'PREVIEW',
-};
+import { PartDefaultConfig } from './type';
 
 // バージョン番号
 export const VERSION_NUMBER = {
@@ -22,57 +7,62 @@ export const VERSION_NUMBER = {
 };
 
 // パーツのデフォルト設定
-export const PART_DEFAULT_CONFIG = {
+export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
   // カード
   CARD: {
-    id: 'card',
+    type: 'card',
     name: 'カード',
     width: 100,
     height: 150,
     description: '',
     color: '#FFFFFF',
+    textColor: '#000000',
     isReversible: false,
     configurableTypeAsChild: [],
   },
   // トークン
   TOKEN: {
-    id: 'token',
+    type: 'token',
     name: 'token',
     width: 50,
     height: 50,
     description: '',
     color: '#FFFFFF',
+    textColor: '#000000',
     configurableTypeAsChild: [],
   },
   // 手札
   HAND: {
-    id: 'hand',
+    type: 'hand',
     name: '手札',
     width: 400,
     height: 150,
     description: '',
     color: '#FFFFFF',
+    textColor: '#000000',
     configurableTypeAsChild: ['card'],
   },
   // 山札
   DECK: {
-    id: 'deck',
+    type: 'deck',
     name: '山札',
     width: 150,
     height: 150,
     description: '',
     color: '#FFFFFF',
+    textColor: '#000000',
     configurableTypeAsChild: ['card'],
     canReverseCardOnDeck: false,
   },
   // エリア
   AREA: {
-    id: 'area',
+    type: 'area',
     name: 'エリア',
     width: 300,
     height: 200,
     description: '',
     color: '#FFFFFF',
+    textColor: '#000000',
     configurableTypeAsChild: ['card', 'token', 'hand', 'deck'],
   },
 };
@@ -91,4 +81,17 @@ export const COLORS = [
   '#FFC0CB', // Pink
   '#FFFFFF', // White
   '#808080', // Gray
+];
+
+// テキスト色
+export const TEXT_COLORS = [
+  '#FFFFFF', // White
+  '#000000', // Black
+];
+
+// プレイヤー名の色
+export const PLAYER_NAME_COLORS = [
+  '#FFFFFF', // White
+  '#808080', // Gray
+  '#000000', // Black
 ];

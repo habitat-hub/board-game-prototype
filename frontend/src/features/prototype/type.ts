@@ -1,14 +1,22 @@
+import { Part, PartProperty } from '@/api/types';
+
 // Partコンポーネントの外部から呼び出せる関数のインターフェース
 export interface PartHandle {
   reverseCard: (isNextFlipped: boolean, needsSocketEmit: boolean) => void;
 }
 
-// パーツの移動順序
-export enum MoveOrderType {
-  BACK = 'back',
-  FRONT = 'front',
-  BACKMOST = 'backmost',
-  FRONTMOST = 'frontmost',
+// パーツのデフォルト設定
+export interface PartDefaultConfig {
+  type: 'card' | 'token' | 'hand' | 'deck' | 'area';
+  name: string;
+  width: number;
+  height: number;
+  description: string;
+  textColor: string;
+  color: string;
+  isReversible?: boolean;
+  configurableTypeAsChild: string[];
+  canReverseCardOnDeck?: boolean;
 }
 
 // キャンバスのカメラ
@@ -86,3 +94,12 @@ export type CanvasState =
       mode: CanvasMode.Pressing;
       origin: Point;
     };
+
+// パーツを追加時のprops
+export interface AddPartProps {
+  part: Omit<
+    Part,
+    'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'
+  >;
+  properties: Omit<PartProperty, 'id' | 'createdAt' | 'updatedAt' | 'partId'>[];
+}

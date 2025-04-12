@@ -1,4 +1,4 @@
-import { Part } from '@/types/models';
+import { Part } from '@/api/types';
 
 /**
  * パーツが他のパーツの上にあるかどうかを判定
@@ -43,13 +43,13 @@ export const needsParentUpdate = (
   newPosition: { x: number; y: number }
 ) => {
   // ドロップ位置の真下にある親になりえるパーツを探す
-  const parentParts = parts.filter((part) => 
+  const parentParts = parts.filter((part) =>
     part.configurableTypeAsChild.includes(draggingPart.type)
   );
   const targetParentPart = parentParts.find((parentPart) => {
     const parentPartPosition = {
-      x: parentPart.position.x as number,
-      y: parentPart.position.y as number,
+      x: parentPart.position.x,
+      y: parentPart.position.y,
     };
     const parentPartSize = {
       width: parentPart.width,

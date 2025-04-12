@@ -3,9 +3,13 @@ import sequelize from './index';
 import PrototypeModel from './Prototype';
 
 class PrototypeVersionModel extends Model {
+  // ID
   public id!: string;
+  // プロトタイプID
   public prototypeId!: string;
+  // バージョン番号
   public versionNumber!: string;
+  // 説明
   public description!: string | null;
 }
 

@@ -3,25 +3,39 @@
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
 
-import { User } from '@/types/models';
-import axiosInstance from '@/utils/axiosInstance';
+import { usePrototypes } from '@/api/hooks/usePrototypes';
+import { useUsers } from '@/api/hooks/useUsers';
+import { User } from '@/api/types';
 
 const PlayerInvite: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [suggestedUsers, setSuggestedUsers] = useState<User[]>([]);
-  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [invitedUsers, setInvitedUsers] = useState<User[]>([]);
   const router = useRouter();
-  const { groupId } = useParams();
+  const { groupId } = useParams<{ groupId: string }>();
 
+  const { searchUsers } = useUsers();
+  const { getAccessUsersByGroup, inviteUserToGroup, deleteUserFromGroup } =
+    usePrototypes();
+  // TODO: もう少しステート整理したい
+  // 招待されているユーザー
+  const [invitedUsers, setInvitedUsers] = useState<User[]>([]);
+  // 検索用語
+  const [searchTerm, setSearchTerm] = useState('');
+  // 検索結果
+  const [suggestedUsers, setSuggestedUsers] = useState<User[]>([]);
+  // 選択中のユーザー
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+
+  // エラー
+  const [error, setError] = useState<string | null>(null);
+  // 成功メッセージ
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  /**
+   * 招待されているユーザーを取得
+   */
   const fetchInvitedUsers = useCallback(async () => {
-    const response = await axiosInstance.get(
-      `/api/prototypes/groups/${groupId}/accessUsers`
-    );
-    setInvitedUsers(response.data);
-  }, [groupId]);
+    const response = await getAccessUsersByGroup(groupId);
+    setInvitedUsers(response);
+  }, [getAccessUsersByGroup, groupId]);
 
   // グループにアクセス可能なユーザーを取得
   useEffect(() => {
@@ -30,24 +44,27 @@ const PlayerInvite: React.FC = () => {
 
   // ユーザーを検索
   useEffect(() => {
-    if (searchTerm) {
-      axiosInstance
-        .get(`/api/users/search?username=${encodeURIComponent(searchTerm)}`)
-        .then((response) => {
-          setSuggestedUsers(response.data);
-          setError(null);
-        })
-        .catch((error) => {
-          console.error('Error fetching users:', error);
-          setError('ユーザーの検索に失敗しました。');
-        });
-    } else {
+    if (searchTerm === '') {
       setSuggestedUsers([]);
+      return;
     }
-  }, [searchTerm]);
 
-  // ユーザーを選択
+    searchUsers({ username: encodeURIComponent(searchTerm) })
+      .then((response) => {
+        setSuggestedUsers(response);
+        setError(null);
+      })
+      .catch(() => {
+        setError('ユーザーの検索に失敗しました。');
+      });
+  }, [searchTerm, searchUsers]);
+
+  /**
+   * ユーザーを選択
+   * @param user - ユーザー
+   */
   const handleSelectUser = (user: User) => {
+    // すでに選択されている場合
     if (selectedUsers.some((u) => u.id === user.id)) {
       setSearchTerm('');
       setSuggestedUsers([]);
@@ -59,16 +76,21 @@ const PlayerInvite: React.FC = () => {
     setSuggestedUsers([]);
   };
 
-  // ユーザーを招待
+  /**
+   * ユーザーを招待
+   * @param e - イベント
+   */
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 選択されているユーザーがいない場合
     if (selectedUsers.length === 0) {
       setError('ユーザーを選択してください。');
       return;
     }
 
     try {
-      await axiosInstance.post(`/api/prototypes/groups/${groupId}/invite`, {
+      await inviteUserToGroup(groupId, {
         guestIds: selectedUsers.map((user) => user.id),
       });
 
@@ -86,20 +108,13 @@ const PlayerInvite: React.FC = () => {
   // ユーザーを削除
   const handleRemoveInvitedUser = async (userId: string) => {
     try {
-      await axiosInstance.delete(
-        `/api/prototypes/groups/${groupId}/invite/${userId}`
-      );
+      await deleteUserFromGroup(groupId, userId);
       setInvitedUsers((prev) => prev.filter((user) => user.id !== userId));
       setSuccessMessage('ユーザーが削除されました。');
     } catch (error) {
       console.error('Error removing user:', error);
       setError('ユーザーの削除に失敗しました。');
     }
-  };
-
-  // 戻る
-  const handleBack = () => {
-    router.push(`/prototypes/groups/${groupId}`);
   };
 
   return (
@@ -169,7 +184,7 @@ const PlayerInvite: React.FC = () => {
         招待
       </button>
       <button
-        onClick={handleBack}
+        onClick={() => router.push(`/prototypes/groups/${groupId}`)}
         className="mt-4 ml-2 p-2 bg-gray-500 text-white rounded"
       >
         戻る

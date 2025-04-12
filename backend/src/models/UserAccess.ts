@@ -4,7 +4,9 @@ import UserModel from './User';
 import AccessModel from './Access';
 
 class UserAccessModel extends Model {
+  // ユーザーID
   public userId!: string;
+  // アクセス権ID
   public accessId!: number;
 }
 

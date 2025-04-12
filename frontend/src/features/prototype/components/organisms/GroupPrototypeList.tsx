@@ -5,77 +5,87 @@ import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
 import { IoAdd, IoArrowBack } from 'react-icons/io5';
 
-import { PROTOTYPE_TYPE, VERSION_NUMBER } from '@/features/prototype/const';
-import { Prototype, PrototypeVersion } from '@/types/models';
-import axiosInstance from '@/utils/axiosInstance';
+import { usePrototypes } from '@/api/hooks/usePrototypes';
+import { Prototype, PrototypeVersion } from '@/api/types';
+import { VERSION_NUMBER } from '@/features/prototype/const';
 import formatDate from '@/utils/dateFormat';
 
 const GroupPrototypeList: React.FC = () => {
   const router = useRouter();
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  const groupId = useParams().groupId;
-  const [editPrototype, setEditPrototype] = useState<{
-    prototype: Prototype;
-    versions: PrototypeVersion[];
-  } | null>(null);
-  const [previewPrototypes, setPreviewPrototypes] = useState<
-    {
+  const { getPrototypesByGroup, createPreview, createVersion } =
+    usePrototypes();
+
+  // グループID
+  const { groupId } = useParams<{ groupId: string }>();
+
+  const [prototype, setPrototype] = useState<{
+    // 編集版プロトタイプ
+    edit: {
       prototype: Prototype;
       versions: PrototypeVersion[];
-    }[]
-  >([]);
+    } | null;
+    // プレビュー版プロトタイプ
+    preview: {
+      prototype: Prototype;
+      versions: PrototypeVersion[];
+    }[];
+  } | null>(null);
 
+  /**
+   * プロトタイプを取得する
+   */
   const getPrototypeGroups = useCallback(async () => {
-    const response = await axiosInstance.get(
-      `${apiUrl}/api/prototypes/groups/${groupId}`
-    );
-    const prototypes = response.data;
+    const response = await getPrototypesByGroup(groupId);
+    const prototypes = response;
 
-    // 編集版
-    const edit = prototypes.find(
-      (p: { prototype: Prototype }) => p.prototype.type === PROTOTYPE_TYPE.EDIT
-    );
-    setEditPrototype(edit || null);
+    // 編集版プロトタイプ
+    const edit = prototypes.find((p) => p.prototype.type === 'EDIT');
+    // プレビュー版プロトタイプ
+    const previews = prototypes.filter((p) => p.prototype.type === 'PREVIEW');
 
-    // プレビュー版
-    const previews = prototypes.filter(
-      (p: { prototype: Prototype }) =>
-        p.prototype.type === PROTOTYPE_TYPE.PREVIEW
-    );
-    setPreviewPrototypes(previews);
-  }, [apiUrl, groupId]);
-
-  const handleCreatePreviewPrototype = async (prototypeVersionId: string) => {
-    await axiosInstance.post(
-      `${apiUrl}/api/prototypes/${prototypeVersionId}/preview`
-    );
-    await getPrototypeGroups();
-  };
-
-  const handleCreateRoom = async (
-    prototypeId: string,
-    prototypeVersionId: string,
-    versions: PrototypeVersion[]
-  ) => {
-    const newVersionNumber = versions.length.toString() + '.0.0';
-
-    await axiosInstance.post(
-      `${apiUrl}/api/prototypes/${prototypeId}/versions/${prototypeVersionId}`,
-      {
-        newVersionNumber,
-        description: null,
-      }
-    );
-    await getPrototypeGroups();
-  };
+    setPrototype({
+      edit: edit || null,
+      preview: previews,
+    });
+  }, [getPrototypesByGroup, groupId]);
 
   // プロトタイプを取得する
   useEffect(() => {
     getPrototypeGroups();
   }, [getPrototypeGroups]);
 
-  if (!editPrototype && Object.keys(previewPrototypes).length === 0)
-    return null;
+  /**
+   * プレビュー版プロトタイプを作成する
+   * @param prototypeVersionId プレビュー版プロトタイプのID
+   */
+  const handleCreatePreviewPrototype = async (prototypeVersionId: string) => {
+    await createPreview(prototypeVersionId);
+    await getPrototypeGroups();
+  };
+
+  /**
+   * 新しいルームを作成する
+   * @param prototypeId プロトタイプのID
+   * @param prototypeVersionId プロトタイプのバージョンのID
+   * @param versions プロトタイプのバージョン
+   */
+  const handleCreateRoom = async (
+    prototypeId: string,
+    prototypeVersionId: string,
+    versions: PrototypeVersion[]
+  ) => {
+    // 新しいバージョン番号
+    const newVersionNumber = versions.length.toString() + '.0.0';
+
+    await createVersion(prototypeId, prototypeVersionId, {
+      newVersionNumber,
+      description: undefined,
+    });
+    await getPrototypeGroups();
+  };
+
+  // プロトタイプが存在しない場合
+  if (!prototype) return null;
 
   return (
     <div className="max-w-4xl mx-auto mt-16 relative pb-24">
@@ -88,25 +98,28 @@ const GroupPrototypeList: React.FC = () => {
           <IoArrowBack className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
         </button>
         <h1 className="text-2xl font-bold text-center flex-grow bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
-          {editPrototype?.prototype.name}
+          {prototype.edit?.prototype.name}
         </h1>
       </div>
 
       {/* 編集版 */}
-      {editPrototype && (
+      {prototype.edit && (
         <div className="mb-8">
           <h2 className="text-lg font-medium mb-4 text-wood-darkest">編集版</h2>
           <div className="shadow-xl rounded-2xl overflow-hidden bg-content border border-wood-lightest/20">
             <Link
-              href={`/prototypes/${editPrototype.prototype.id}/versions/${editPrototype.versions[0].id}/edit`}
+              href={`/prototypes/${prototype.edit.prototype.id}/versions/${prototype.edit.versions[0].id}/edit`}
             >
               <div className="hover:bg-content-secondary/50 transition-colors duration-200 flex justify-between items-center p-4">
                 <span className="text-wood-darkest">Master版</span>
                 <button
                   onClick={(e) => {
                     e.preventDefault();
-                    handleCreatePreviewPrototype(editPrototype.prototype.id);
+
+                    if (!prototype.edit) return;
+                    handleCreatePreviewPrototype(prototype.edit.prototype.id);
                   }}
+                  disabled={!prototype.edit}
                   className="flex items-center gap-2 px-3 py-1.5 text-sm text-wood-dark hover:text-header rounded-lg hover:bg-wood-lightest/20 transition-all duration-200 border border-wood-light/20"
                   title="プレビュー版を作成"
                 >
@@ -120,7 +133,7 @@ const GroupPrototypeList: React.FC = () => {
       )}
 
       {/* プレビュー版 */}
-      {previewPrototypes.map(({ prototype, versions }, index) => (
+      {prototype.preview.map(({ prototype, versions }, index) => (
         <div key={prototype.id} className="mb-8">
           <h2 className="text-lg font-medium mb-4 text-wood-darkest">
             プレビュー版 {index + 1}

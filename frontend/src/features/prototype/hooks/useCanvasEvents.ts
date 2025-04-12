@@ -1,16 +1,15 @@
+import { throttle } from 'lodash';
 import { useCallback, useState } from 'react';
 
-import { PART_TYPE } from '@/features/prototype/const';
+import { Part } from '@/api/types';
 import { needsParentUpdate } from '@/features/prototype/helpers/partHelper';
+import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { Camera, Point } from '@/features/prototype/type';
-import { Part } from '@/types/models';
 
 interface UseCanvasEventsProps {
   camera: Camera;
   setCamera: React.Dispatch<React.SetStateAction<Camera>>;
   setSelectedPart: React.Dispatch<React.SetStateAction<Part | null>>;
-  updatePart: (partId: number, updatePart: Partial<Part>) => void;
-  reverseCard: (partId: number, isNextFlipped: boolean) => void;
   parts: Part[];
   mainViewRef: React.RefObject<HTMLDivElement>;
 }
@@ -19,15 +18,36 @@ export const useCanvasEvents = ({
   camera,
   setCamera,
   setSelectedPart,
-  updatePart,
-  reverseCard,
   parts,
   mainViewRef,
 }: UseCanvasEventsProps) => {
+  const { dispatch } = usePartReducer();
+
   const [draggingPartId, setDraggingPartId] = useState<number | null>(null);
   const [offset, setOffset] = useState<Point>({ x: 0, y: 0 });
   const [dragStart, setDragStart] = useState<Point>({ x: 0, y: 0 });
   const [isDraggingCanvas, setIsDraggingCanvas] = useState(false);
+
+  /**
+   * パーツの位置を更新するためのthrottledなdispatch関数
+   * @param x - パーツのx座標
+   * @param y - パーツのy座標
+   */
+  const throttledDispatch = useCallback(
+    (x: number, y: number) => {
+      if (draggingPartId !== null) {
+        dispatch({
+          type: 'UPDATE_PART',
+          payload: {
+            partId: draggingPartId,
+            updatePart: { position: { x, y } },
+          },
+        });
+      }
+    },
+    [draggingPartId, dispatch]
+  );
+  const throttledUpdate = throttle(throttledDispatch, 50);
 
   /**
    * ズーム操作
@@ -53,17 +73,15 @@ export const useCanvasEvents = ({
   const onMouseDown = (e: React.MouseEvent, partId?: number) => {
     if (partId !== undefined) {
       // パーツのドラッグ開始
-      const part = parts.find((part) => part.id === partId) as Part;
+      const part = parts.find((part) => part.id === partId);
       const rect = mainViewRef.current?.getBoundingClientRect();
-      if (!rect) return;
+      if (!rect || !part) return;
 
       setSelectedPart(part);
       setDraggingPartId(partId);
 
-      const x =
-        (e.clientX - rect.left) / camera.zoom - (part.position.x as number);
-      const y =
-        (e.clientY - rect.top) / camera.zoom - (part.position.y as number);
+      const x = (e.clientX - rect.left) / camera.zoom - part.position.x;
+      const y = (e.clientY - rect.top) / camera.zoom - part.position.y;
       setOffset({ x, y });
       return;
     }
@@ -92,7 +110,8 @@ export const useCanvasEvents = ({
       const x = (e.clientX - rect.left) / camera.zoom - offset.x;
       const y = (e.clientY - rect.top) / camera.zoom - offset.y;
 
-      updatePart(draggingPartId, { position: { x, y } });
+      // パーツの位置を更新
+      throttledUpdate(x, y);
       return;
     }
 
@@ -127,7 +146,7 @@ export const useCanvasEvents = ({
 
     const part = parts.find((part) => part.id === draggingPartId);
     // パーツがカードでない場合
-    if (!part || part.type !== PART_TYPE.CARD) {
+    if (!part || part.type !== 'card') {
       setDraggingPartId(null);
       setIsDraggingCanvas(false);
       return;
@@ -144,23 +163,34 @@ export const useCanvasEvents = ({
       newPosition
     );
     if (needsUpdate) {
-      updatePart(draggingPartId, { parentId: parentPart?.id || undefined });
+      dispatch({
+        type: 'UPDATE_PART',
+        payload: {
+          partId: draggingPartId,
+          updatePart: { parentId: parentPart?.id || undefined },
+        },
+      });
     }
 
     // カードの反転処理
     // 前の親は裏向き必須か
     const previousParentPart = parts.find((p) => p.id === part.parentId);
     const isPreviousParentReverseRequired =
-      !!(previousParentPart?.type === PART_TYPE.DECK) &&
+      !!(previousParentPart?.type === 'deck') &&
       !!previousParentPart.canReverseCardOnDeck;
 
     // 新しい親は裏向き必須か
     const isNextParentReverseRequired =
-      !!(parentPart?.type === PART_TYPE.DECK) &&
-      !!parentPart.canReverseCardOnDeck;
+      !!(parentPart?.type === 'deck') && !!parentPart.canReverseCardOnDeck;
 
     if (isPreviousParentReverseRequired !== isNextParentReverseRequired) {
-      reverseCard(draggingPartId, !isPreviousParentReverseRequired);
+      dispatch({
+        type: 'FLIP_CARD',
+        payload: {
+          cardId: draggingPartId,
+          isNextFlipped: !isPreviousParentReverseRequired,
+        },
+      });
     }
 
     setDraggingPartId(null);

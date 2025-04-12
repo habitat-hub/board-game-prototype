@@ -16,9 +16,10 @@ import {
 import { IoArrowBack } from 'react-icons/io5';
 import { PiSidebarSimpleThin } from 'react-icons/pi';
 
+import { Part, PartProperty, Player } from '@/api/types';
 import TextIconButton from '@/components/atoms/TextIconButton';
-import { PART_DEFAULT_CONFIG, PART_TYPE } from '@/features/prototype/const';
-import { Part, PartProperty, Player } from '@/types/models';
+import { PART_DEFAULT_CONFIG } from '@/features/prototype/const';
+import { AddPartProps } from '@/features/prototype/type';
 
 export default function PartCreateSidebar({
   prototypeName,
@@ -37,7 +38,7 @@ export default function PartCreateSidebar({
   // プレイヤー
   players: Player[];
   // パーツを追加時の処理
-  onAddPart: (part: Part, properties: PartProperty[]) => void;
+  onAddPart: ({ part, properties }: AddPartProps) => void;
   // メインビューのref
   mainViewRef: React.RefObject<HTMLDivElement>;
 }) {
@@ -47,17 +48,17 @@ export default function PartCreateSidebar({
 
   /**
    * パーツを作成する
-   * @param partId - パーツのID
+   * @param partType - パーツのタイプ
    */
-  const handleCreatePart = (partId: string) => {
-    // FIXME: partIdではなく、partTypeとかにして、ユニオン型にしたい
-
+  const handleCreatePart = (
+    partType: 'card' | 'token' | 'hand' | 'deck' | 'area'
+  ) => {
     // メインビューのrefが存在しない場合
     if (!mainViewRef.current) return;
 
     // パーツの初期設定情報
     const partConfig = Object.values(PART_DEFAULT_CONFIG).find(
-      (part) => part.id === partId
+      (part) => part.type === partType
     );
     // パーツの初期設定情報が存在しない場合
     if (!partConfig) {
@@ -77,7 +78,7 @@ export default function PartCreateSidebar({
       Part,
       'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'
     > = {
-      type: partId,
+      type: partType,
       parentId: undefined,
       position: { x: centerX, y: centerY },
       width: partConfig.width,
@@ -87,16 +88,15 @@ export default function PartCreateSidebar({
     };
 
     // カードパーツか
-    const isCard = partId === PART_TYPE.CARD;
+    const isCard = partType === 'card';
     // カードパーツの場合
     if (isCard) {
-      newPart.isReversible = (
-        partConfig as typeof PART_DEFAULT_CONFIG.CARD
-      ).isReversible;
+      newPart.isReversible =
+        'isReversible' in partConfig && partConfig.isReversible;
       newPart.isFlipped = false;
     }
     // 手札パーツの場合
-    if (partId === PART_TYPE.HAND) {
+    if (partType === 'hand') {
       newPart.ownerId = players[0].id;
     }
 
@@ -105,6 +105,7 @@ export default function PartCreateSidebar({
       name: partConfig.name,
       description: partConfig.description,
       color: partConfig.color,
+      textColor: partConfig.textColor,
       image: '',
     };
     // パーツのプロパティ
@@ -118,7 +119,7 @@ export default function PartCreateSidebar({
         ]
       : [{ side: 'front', ...commonProperties }];
 
-    onAddPart(newPart as Part, newPartProperties as PartProperty[]);
+    onAddPart({ part: newPart, properties: newPartProperties });
   };
 
   return (
@@ -158,25 +159,25 @@ export default function PartCreateSidebar({
             <span className="mb-2 text-xs font-medium">パーツ</span>
             {Object.values(PART_DEFAULT_CONFIG).map((part) => {
               const icon =
-                part.id === 'card' ? (
+                part.type === 'card' ? (
                   <GiCard10Clubs className="h-4 w-4 text-gray-500" />
-                ) : part.id === 'token' ? (
+                ) : part.type === 'token' ? (
                   <Gi3dMeeple className="h-4 w-4 text-gray-500" />
-                ) : part.id === 'hand' ? (
+                ) : part.type === 'hand' ? (
                   <GiPokerHand className="h-4 w-4 text-gray-500" />
-                ) : part.id === 'deck' ? (
+                ) : part.type === 'deck' ? (
                   <GiStoneBlock className="h-4 w-4 text-gray-500" />
-                ) : part.id === 'area' ? (
+                ) : part.type === 'area' ? (
                   <BiArea className="h-4 w-4 text-gray-500" />
                 ) : null;
 
               return (
                 <TextIconButton
-                  key={part.id}
+                  key={part.type}
                   text={part.name}
                   isSelected={false}
                   icon={icon}
-                  onClick={() => handleCreatePart(part.id)}
+                  onClick={() => handleCreatePart(part.type)}
                 />
               );
             })}

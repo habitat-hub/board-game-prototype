@@ -4,33 +4,42 @@ import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 import { io } from 'socket.io-client';
 
-import Canvas from '@/features/prototype/components/organisms/Canvas';
-import { PROTOTYPE_TYPE } from '@/features/prototype/const';
+import { usePrototypes } from '@/api/hooks/usePrototypes';
 import {
   Part,
   PartProperty,
   Player,
   Prototype,
   PrototypeVersion,
-} from '@/types/models';
-import axiosInstance from '@/utils/axiosInstance';
+} from '@/api/types';
+import Canvas from '@/features/prototype/components/organisms/Canvas';
+import { PrototypeVersionIdProvider } from '@/features/prototype/contexts/PrototypeVersionIdContext';
+import { SocketProvider } from '@/features/prototype/contexts/SocketContext';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
 const PrototypeEdit: React.FC = () => {
   const router = useRouter();
+  const { getPrototypeVersions } = usePrototypes();
+
+  // プロトタイプID, バージョンID
   const { prototypeId, versionId } = useParams<{
     prototypeId: string;
     versionId: string;
   }>();
+
+  // プロトタイプ
   const [prototype, setPrototype] = useState<
     | (Prototype & {
         versions: PrototypeVersion[];
       })
     | null
   >(null);
+  // パーツ
   const [parts, setParts] = useState<Part[]>([]);
+  // パーツのプロパティ
   const [properties, setProperties] = useState<PartProperty[]>([]);
+  // プレイヤー
   const [players, setPlayers] = useState<Player[]>([]);
 
   // socket通信の設定
@@ -38,11 +47,13 @@ const PrototypeEdit: React.FC = () => {
     // サーバーに接続した後、特定のプロトタイプに参加
     socket.emit('JOIN_PROTOTYPE', { prototypeVersionId: versionId });
 
+    // 更新されたパーツを受信
     socket.on('UPDATE_PARTS', ({ parts, properties }) => {
       setParts(parts);
       setProperties(properties);
     });
 
+    // 更新されたプレイヤーを受信
     socket.on('UPDATE_PLAYERS', (players: Player[]) => {
       setPlayers(players.sort((a, b) => a.id - b.id));
     });
@@ -55,11 +66,12 @@ const PrototypeEdit: React.FC = () => {
 
   // プロタイプの取得
   useEffect(() => {
-    axiosInstance
-      .get(`/api/prototypes/${prototypeId}/versions`)
+    getPrototypeVersions(prototypeId)
       .then((response) => {
-        const { prototype, versions } = response.data;
-        if (prototype.type !== PROTOTYPE_TYPE.EDIT) {
+        const { prototype, versions } = response;
+
+        // プロトタイプのタイプが編集版でない場合
+        if (prototype.type !== 'EDIT') {
           router.replace(`/prototypes/groups/${prototype.groupId}`);
           return;
         }
@@ -67,27 +79,31 @@ const PrototypeEdit: React.FC = () => {
         setPrototype({ ...prototype, versions });
       })
       .catch((error) => console.error('Error fetching prototypes:', error));
-  }, [prototypeId, router]);
+  }, [getPrototypeVersions, prototypeId, router]);
 
+  // バージョン番号
   const versionNumber = useMemo(() => {
     return prototype?.versions.find((version) => version.id === versionId)
       ?.versionNumber;
   }, [prototype, versionId]);
 
+  // プロトタイプが存在しない場合
   if (!prototype) return null;
 
   return (
-    <Canvas
-      prototypeName={prototype.name}
-      parts={parts}
-      properties={properties}
-      players={players}
-      prototypeVersionId={versionId}
-      prototypeVersionNumber={versionNumber}
-      socket={socket}
-      groupId={prototype.groupId}
-      prototypeType={PROTOTYPE_TYPE.EDIT}
-    />
+    <SocketProvider socket={socket}>
+      <PrototypeVersionIdProvider prototypeVersionId={versionId}>
+        <Canvas
+          prototypeName={prototype.name}
+          parts={parts}
+          properties={properties}
+          players={players}
+          prototypeVersionNumber={versionNumber}
+          groupId={prototype.groupId}
+          prototypeType="EDIT"
+        />
+      </PrototypeVersionIdProvider>
+    </SocketProvider>
   );
 };
 

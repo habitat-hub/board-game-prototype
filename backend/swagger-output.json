@@ -94,7 +94,14 @@
             "type": "integer"
           },
           "type": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "token",
+              "card",
+              "hand",
+              "deck",
+              "area"
+            ]
           },
           "prototypeVersionId": {
             "type": "string",
@@ -117,7 +124,10 @@
             "type": "integer"
           },
           "configurableTypeAsChild": {
-            "type": "string"
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "originalPartId": {
             "type": "integer"
@@ -176,6 +186,9 @@
           "color": {
             "type": "string"
           },
+          "textColor": {
+            "type": "string"
+          },
           "image": {
             "type": "string"
           },
@@ -192,6 +205,7 @@
           "name",
           "description",
           "color",
+          "textColor",
           "image",
           "createdAt",
           "updatedAt"
@@ -468,7 +482,15 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             }
@@ -615,6 +637,27 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "minPlayers": {
+                    "type": "integer"
+                  },
+                  "maxPlayers": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "プロトタイプを更新しました",
@@ -704,6 +747,10 @@
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "required": [
+                    "prototype",
+                    "versions"
+                  ],
                   "properties": {
                     "prototype": {
                       "$ref": "#/components/schemas/Prototype"
@@ -758,7 +805,22 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Prototype"
+                    "type": "object",
+                    "required": [
+                      "prototype",
+                      "versions"
+                    ],
+                    "properties": {
+                      "prototype": {
+                        "$ref": "#/components/schemas/Prototype"
+                      },
+                      "versions": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/PrototypeVersion"
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -970,7 +1032,39 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "プロトタイプを複製しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "プロトタイプが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "サーバーエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/prototypes/{prototypeId}/preview": {

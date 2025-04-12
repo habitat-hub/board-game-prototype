@@ -5,15 +5,17 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useMemo } from 'react';
+import React, { Fragment, useMemo } from 'react';
 import { FaRegCopy, FaRegTrashAlt } from 'react-icons/fa';
 
+import { Part, PartProperty, Player } from '@/api/types';
 import Dropdown from '@/components/atoms/Dropdown';
 import NumberInput from '@/components/atoms/NumberInput';
 import TextIconButton from '@/components/atoms/TextIconButton';
 import TextInput from '@/components/atoms/TextInput';
-import { COLORS, PART_TYPE } from '@/features/prototype/const';
-import { Part, PartProperty, Player } from '@/types/models';
+import { COLORS, TEXT_COLORS } from '@/features/prototype/const';
+import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
+import { AddPartProps } from '@/features/prototype/type';
 
 export default function PartPropertySidebar({
   groupId,
@@ -22,7 +24,6 @@ export default function PartPropertySidebar({
   selectedPartProperties,
   onAddPart,
   onDeletePart,
-  updatePart,
 }: {
   // グループID
   groupId: string;
@@ -33,21 +34,12 @@ export default function PartPropertySidebar({
   // 選択中のパーツのプロパティ
   selectedPartProperties: PartProperty[] | null;
   // パーツを追加時の処理
-  onAddPart: (part: Part, properties: PartProperty[]) => void;
+  onAddPart: ({ part, properties }: AddPartProps) => void;
   // パーツを削除時の処理
   onDeletePart: () => void;
-  // パーツを更新時の処理
-  updatePart: (
-    // パーツID
-    partId: number,
-    // 更新するパーツ情報
-    updatePart?: Partial<Part>,
-    // 更新するパーツのプロパティ情報
-    updateProperties?: Partial<PartProperty>[],
-    // パーツを反転させるかどうか
-    isFlipped?: boolean
-  ) => void;
 }) {
+  const { dispatch } = usePartReducer();
+
   const router = useRouter();
 
   // 現在のプロパティ
@@ -76,8 +68,8 @@ export default function PartPropertySidebar({
       parentId: selectedPart.parentId,
       // NOTE： 少し複製元からずらす
       position: {
-        x: (selectedPart.position.x as number) + 10,
-        y: (selectedPart.position.y as number) + 10,
+        x: selectedPart.position.x + 10,
+        y: selectedPart.position.y + 10,
       },
       width: selectedPart.width,
       height: selectedPart.height,
@@ -87,13 +79,13 @@ export default function PartPropertySidebar({
     };
 
     // カードパーツの場合
-    if (selectedPart.type === PART_TYPE.CARD) {
+    if (selectedPart.type === 'card') {
       newPart.isReversible = selectedPart.isReversible;
       newPart.isFlipped = selectedPart.isFlipped;
     }
 
     // 手札パーツの場合
-    if (selectedPart.type === PART_TYPE.HAND) {
+    if (selectedPart.type === 'hand') {
       newPart.ownerId = selectedPart.ownerId;
     }
 
@@ -102,17 +94,18 @@ export default function PartPropertySidebar({
       PartProperty,
       'id' | 'partId' | 'createdAt' | 'updatedAt'
     >[] = selectedPartProperties.map(
-      ({ side, name, description, color, image }) => {
+      ({ side, name, description, color, image, textColor }) => {
         return {
           side,
           name,
           description,
           color,
+          textColor,
           image,
         };
       }
     );
-    onAddPart(newPart as Part, newPartProperties as PartProperty[]);
+    onAddPart({ part: newPart, properties: newPartProperties });
   };
 
   /**
@@ -130,7 +123,13 @@ export default function PartPropertySidebar({
       return;
 
     // プロパティの最新化
-    updatePart(selectedPart.id, undefined, [updatedProperty]);
+    dispatch({
+      type: 'UPDATE_PART',
+      payload: {
+        partId: selectedPart.id,
+        updateProperties: [updatedProperty],
+      },
+    });
   };
 
   return (
@@ -178,67 +177,105 @@ export default function PartPropertySidebar({
               <p className="text-[9px] font-medium text-gray-500">位置</p>
               <div className="flex w-full gap-2 mb-2">
                 <NumberInput
-                  value={selectedPart.position.x as number}
+                  key={`${selectedPart.id}-${selectedPart.position.x}`}
+                  value={selectedPart.position.x}
                   onChange={(number) => {
-                    updatePart(selectedPart.id, {
-                      position: { ...selectedPart.position, x: number },
+                    dispatch({
+                      type: 'UPDATE_PART',
+                      payload: {
+                        partId: selectedPart.id,
+                        updatePart: { position: { x: number } },
+                      },
                     });
                   }}
-                  classNames="w-1/2"
-                  icon={<p>X</p>}
+                  icon={<>X</>}
                 />
                 <NumberInput
-                  value={selectedPart.position.y as number}
+                  key={`${selectedPart.id}-${selectedPart.position.y}`}
+                  value={selectedPart.position.y}
                   onChange={(number) => {
-                    updatePart(selectedPart.id, {
-                      position: { ...selectedPart.position, y: number },
+                    dispatch({
+                      type: 'UPDATE_PART',
+                      payload: {
+                        partId: selectedPart.id,
+                        updatePart: { position: { y: number } },
+                      },
                     });
                   }}
-                  classNames="w-1/2"
-                  icon={<p>Y</p>}
+                  icon={<>Y</>}
                 />
               </div>
               <p className="text-[9px] font-medium text-gray-500">サイズ</p>
               <div className="flex w-full gap-2 mb-2">
                 <NumberInput
+                  key={`${selectedPart.id}-${selectedPart.width}`}
                   value={selectedPart.width}
                   onChange={(number) => {
-                    updatePart(selectedPart.id, { width: number });
+                    dispatch({
+                      type: 'UPDATE_PART',
+                      payload: {
+                        partId: selectedPart.id,
+                        updatePart: { width: number },
+                      },
+                    });
                   }}
-                  classNames="w-1/2"
-                  icon={<p>W</p>}
+                  icon={<>W</>}
                 />
                 <NumberInput
+                  key={`${selectedPart.id}-${selectedPart.height}`}
                   value={selectedPart.height}
                   onChange={(number) => {
-                    updatePart(selectedPart.id, { height: number });
+                    dispatch({
+                      type: 'UPDATE_PART',
+                      payload: {
+                        partId: selectedPart.id,
+                        updatePart: { height: number },
+                      },
+                    });
                   }}
-                  classNames="w-1/2"
-                  icon={<p>H</p>}
+                  icon={<>H</>}
                 />
               </div>
               <p className="text-[9px] font-medium text-gray-500">名前</p>
               <div className="flex w-full mb-2">
                 <TextInput
+                  key={`${selectedPart.id}-${currentProperty?.name}`}
                   value={currentProperty?.name ?? ''}
                   onChange={(name) => handleUpdateProperty({ name })}
-                  classNames="w-full"
-                  icon={<p>T</p>}
+                  icon={<>T</>}
                 />
               </div>
               <p className="text-[9px] font-medium text-gray-500">説明</p>
               <div className="flex w-full mb-2">
                 <TextInput
+                  key={`${selectedPart.id}-${currentProperty?.description}`}
                   value={currentProperty?.description ?? ''}
                   onChange={(description) =>
                     handleUpdateProperty({ description })
                   }
-                  classNames="w-full"
-                  icon={<p>T</p>}
-                  multiline={true}
+                  icon={<>T</>}
+                  multiline
                 />
               </div>
-              <p className="text-[9px] font-medium text-gray-500">カラー</p>
+              <p className="text-[9px] font-medium text-gray-500">テキスト色</p>
+              <div className="w-full mb-2 px-4">
+                <div className="grid grid-cols-4 gap-2">
+                  {TEXT_COLORS.map((textColor) => (
+                    <button
+                      key={textColor}
+                      onClick={() => handleUpdateProperty({ textColor })}
+                      className={`w-5 h-5 rounded-full border-2 ${
+                        currentProperty?.textColor === textColor
+                          ? 'border-blue-500'
+                          : 'border-gray-300'
+                      }`}
+                      style={{ backgroundColor: textColor }}
+                      title={textColor}
+                    />
+                  ))}
+                </div>
+              </div>
+              <p className="text-[9px] font-medium text-gray-500">背景色</p>
               <div className="w-full mb-2 px-4">
                 <div className="grid grid-cols-4 gap-2">
                   {COLORS.map((color) => (
@@ -271,7 +308,7 @@ export default function PartPropertySidebar({
               </div>
             </div>
           </div>
-          {selectedPart.type === PART_TYPE.CARD && (
+          {selectedPart.type === 'card' && (
             <>
               <div className="border-b border-gray-200"></div>
               <div className="flex flex-col gap-2 p-4">
@@ -284,24 +321,22 @@ export default function PartPropertySidebar({
                     <Dropdown
                       value={selectedPart.isReversible ? 'はい' : 'いいえ'}
                       onChange={(value) => {
-                        updatePart(
-                          selectedPart.id,
-                          {
-                            isReversible: value === 'はい',
+                        dispatch({
+                          type: 'UPDATE_PART',
+                          payload: {
+                            partId: selectedPart.id,
+                            updatePart: { isReversible: value === 'はい' },
                           },
-                          undefined,
-                          true
-                        );
+                        });
                       }}
                       options={['はい', 'いいえ']}
-                      className="w-full"
                     />
                   </div>
                 </div>
               </div>
             </>
           )}
-          {selectedPart.type === PART_TYPE.HAND && (
+          {selectedPart.type === 'hand' && (
             <>
               <div className="border-b border-gray-200"></div>
               <div className="flex flex-col gap-2 p-4">
@@ -320,21 +355,26 @@ export default function PartPropertySidebar({
                           (player) => player.playerName === value
                         );
                         if (player) {
-                          updatePart(selectedPart.id, { ownerId: player.id });
+                          dispatch({
+                            type: 'UPDATE_PART',
+                            payload: {
+                              partId: selectedPart.id,
+                              updatePart: { ownerId: player.id },
+                            },
+                          });
                         }
                       }}
                       options={[
                         '未設定',
                         ...players.map((player) => player.playerName),
                       ]}
-                      className="w-full"
                     />
                   </div>
                 </div>
               </div>
             </>
           )}
-          {selectedPart.type === PART_TYPE.DECK && (
+          {selectedPart.type === 'deck' && (
             <>
               <div className="border-b border-gray-200"></div>
               <div className="flex flex-col gap-2 p-4">
@@ -349,17 +389,17 @@ export default function PartPropertySidebar({
                         selectedPart.canReverseCardOnDeck ? 'はい' : 'いいえ'
                       }
                       onChange={(value) => {
-                        updatePart(
-                          selectedPart.id,
-                          {
-                            canReverseCardOnDeck: value === 'はい',
+                        dispatch({
+                          type: 'UPDATE_PART',
+                          payload: {
+                            partId: selectedPart.id,
+                            updatePart: {
+                              canReverseCardOnDeck: value === 'はい',
+                            },
                           },
-                          undefined,
-                          true
-                        );
+                        });
                       }}
                       options={['はい', 'いいえ']}
-                      className="w-full"
                     />
                   </div>
                 </div>

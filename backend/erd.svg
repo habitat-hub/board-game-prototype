@@ -170,7 +170,7 @@
 <text text-anchor="start" x="244.5" y="-551" font-family="Times,serif" text-decoration="underline" font-size="10.00" fill="#000000">id</text>
 <text text-anchor="start" x="252.279" y="-551" font-family="Times,serif" font-size="10.00" fill="#000000">: NUMBER</text>
 <polygon fill="none" stroke="#000000" points="239.5,-520 239.5,-542 400.5,-542 400.5,-520 239.5,-520"/>
-<text text-anchor="start" x="244.5" y="-528" font-family="Times,serif" font-size="10.00" fill="#000000">type: STRING</text>
+<text text-anchor="start" x="244.5" y="-528" font-family="Times,serif" font-size="10.00" fill="#000000">type: ENUM</text>
 <polygon fill="none" stroke="#000000" points="239.5,-498 239.5,-520 400.5,-520 400.5,-498 239.5,-498"/>
 <text text-anchor="start" x="244.5" y="-507" font-family="Times,serif" font-style="italic" text-decoration="underline" font-size="10.00" fill="#000000">prototypeVersionId</text>
 <text text-anchor="start" x="322.81" y="-507" font-family="Times,serif" font-size="10.00" fill="#000000">: UUID</text>
@@ -211,27 +211,29 @@
 <!-- PartProperty -->
 <g id="node7" class="node">
 <title>PartProperty</title>
-<polygon fill="#add8e6" stroke="transparent" points=".5,-476 .5,-498 95.5,-498 95.5,-476 .5,-476"/>
-<polygon fill="none" stroke="#000000" points=".5,-476 .5,-498 95.5,-498 95.5,-476 .5,-476"/>
-<text text-anchor="start" x="22.7295" y="-485" font-family="Times,serif" font-weight="bold" font-size="10.00" fill="#000000">PartProperty</text>
-<polygon fill="none" stroke="#000000" points=".5,-454 .5,-476 95.5,-476 95.5,-454 .5,-454"/>
-<text text-anchor="start" x="5.5" y="-463" font-family="Times,serif" text-decoration="underline" font-size="10.00" fill="#000000">partId</text>
-<text text-anchor="start" x="29.376" y="-463" font-family="Times,serif" font-size="10.00" fill="#000000">: NUMBER</text>
-<polygon fill="none" stroke="#000000" points=".5,-432 .5,-454 95.5,-454 95.5,-432 .5,-432"/>
-<text text-anchor="start" x="5.5" y="-441" font-family="Times,serif" text-decoration="underline" font-size="10.00" fill="#000000">side</text>
-<text text-anchor="start" x="21.607" y="-441" font-family="Times,serif" font-size="10.00" fill="#000000">: ENUM</text>
-<polygon fill="none" stroke="#000000" points=".5,-410 .5,-432 95.5,-432 95.5,-410 .5,-410"/>
-<text text-anchor="start" x="5.5" y="-418" font-family="Times,serif" font-size="10.00" fill="#000000">name: STRING</text>
-<polygon fill="none" stroke="#000000" points=".5,-388 .5,-410 95.5,-410 95.5,-388 .5,-388"/>
-<text text-anchor="start" x="5.092" y="-396" font-family="Times,serif" font-size="10.00" fill="#000000">description: STRING</text>
-<polygon fill="none" stroke="#000000" points=".5,-366 .5,-388 95.5,-388 95.5,-366 .5,-366"/>
-<text text-anchor="start" x="5.5" y="-374" font-family="Times,serif" font-size="10.00" fill="#000000">color: STRING</text>
-<polygon fill="none" stroke="#000000" points=".5,-344 .5,-366 95.5,-366 95.5,-344 .5,-344"/>
-<text text-anchor="start" x="5.5" y="-352" font-family="Times,serif" font-size="10.00" fill="#000000">image: STRING</text>
-<polygon fill="none" stroke="#000000" points=".5,-322 .5,-344 95.5,-344 95.5,-322 .5,-322"/>
-<text text-anchor="start" x="5.5" y="-330" font-family="Times,serif" font-size="10.00" fill="#000000">createdAt: DATE</text>
-<polygon fill="none" stroke="#000000" points=".5,-300 .5,-322 95.5,-322 95.5,-300 .5,-300"/>
-<text text-anchor="start" x="5.5" y="-308" font-family="Times,serif" font-size="10.00" fill="#000000">updatedAt: DATE</text>
+<polygon fill="#add8e6" stroke="transparent" points=".5,-487 .5,-509 95.5,-509 95.5,-487 .5,-487"/>
+<polygon fill="none" stroke="#000000" points=".5,-487 .5,-509 95.5,-509 95.5,-487 .5,-487"/>
+<text text-anchor="start" x="22.7295" y="-496" font-family="Times,serif" font-weight="bold" font-size="10.00" fill="#000000">PartProperty</text>
+<polygon fill="none" stroke="#000000" points=".5,-465 .5,-487 95.5,-487 95.5,-465 .5,-465"/>
+<text text-anchor="start" x="5.5" y="-474" font-family="Times,serif" text-decoration="underline" font-size="10.00" fill="#000000">partId</text>
+<text text-anchor="start" x="29.376" y="-474" font-family="Times,serif" font-size="10.00" fill="#000000">: NUMBER</text>
+<polygon fill="none" stroke="#000000" points=".5,-443 .5,-465 95.5,-465 95.5,-443 .5,-443"/>
+<text text-anchor="start" x="5.5" y="-452" font-family="Times,serif" text-decoration="underline" font-size="10.00" fill="#000000">side</text>
+<text text-anchor="start" x="21.607" y="-452" font-family="Times,serif" font-size="10.00" fill="#000000">: ENUM</text>
+<polygon fill="none" stroke="#000000" points=".5,-421 .5,-443 95.5,-443 95.5,-421 .5,-421"/>
+<text text-anchor="start" x="5.5" y="-429" font-family="Times,serif" font-size="10.00" fill="#000000">name: STRING</text>
+<polygon fill="none" stroke="#000000" points=".5,-399 .5,-421 95.5,-421 95.5,-399 .5,-399"/>
+<text text-anchor="start" x="5.092" y="-407" font-family="Times,serif" font-size="10.00" fill="#000000">description: STRING</text>
+<polygon fill="none" stroke="#000000" points=".5,-377 .5,-399 95.5,-399 95.5,-377 .5,-377"/>
+<text text-anchor="start" x="5.5" y="-385" font-family="Times,serif" font-size="10.00" fill="#000000">color: STRING</text>
+<polygon fill="none" stroke="#000000" points=".5,-355 .5,-377 95.5,-377 95.5,-355 .5,-355"/>
+<text text-anchor="start" x="5.5" y="-363" font-family="Times,serif" font-size="10.00" fill="#000000">textColor: STRING</text>
+<polygon fill="none" stroke="#000000" points=".5,-333 .5,-355 95.5,-355 95.5,-333 .5,-333"/>
+<text text-anchor="start" x="5.5" y="-341" font-family="Times,serif" font-size="10.00" fill="#000000">image: STRING</text>
+<polygon fill="none" stroke="#000000" points=".5,-311 .5,-333 95.5,-333 95.5,-311 .5,-311"/>
+<text text-anchor="start" x="5.5" y="-319" font-family="Times,serif" font-size="10.00" fill="#000000">createdAt: DATE</text>
+<polygon fill="none" stroke="#000000" points=".5,-289 .5,-311 95.5,-311 95.5,-289 .5,-289"/>
+<text text-anchor="start" x="5.5" y="-297" font-family="Times,serif" font-size="10.00" fill="#000000">updatedAt: DATE</text>
 </g>
 <!-- PartProperty&#45;&gt;Part -->
 <g id="edge8" class="edge">

@@ -92,7 +92,14 @@ export const swaggerSchemas = {
                   "type": "integer"
             },
             "type": {
-                  "type": "string"
+                  "type": "string",
+                  "enum": [
+                        "token",
+                        "card",
+                        "hand",
+                        "deck",
+                        "area"
+                  ]
             },
             "prototypeVersionId": {
                   "type": "string",
@@ -115,7 +122,10 @@ export const swaggerSchemas = {
                   "type": "integer"
             },
             "configurableTypeAsChild": {
-                  "type": "string"
+                  "type": "array",
+                  "items": {
+                        "type": "string"
+                  }
             },
             "originalPartId": {
                   "type": "integer"
@@ -174,6 +184,9 @@ export const swaggerSchemas = {
             "color": {
                   "type": "string"
             },
+            "textColor": {
+                  "type": "string"
+            },
             "image": {
                   "type": "string"
             },
@@ -190,6 +203,7 @@ export const swaggerSchemas = {
             "name",
             "description",
             "color",
+            "textColor",
             "image",
             "createdAt",
             "updatedAt"

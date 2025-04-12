@@ -6,43 +6,36 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { PiSidebarSimpleThin } from 'react-icons/pi';
-import { Socket } from 'socket.io-client';
 
+import { usePrototypes } from '@/api/hooks/usePrototypes';
+import { Player, User } from '@/api/types';
 import Dropdown from '@/components/atoms/Dropdown';
-import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
-import { Player, User } from '@/types/models';
-import axiosInstance from '@/utils/axiosInstance';
+import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 
 export default function PlayerAssignmentSidebar({
-  prototypeVersionId,
   groupId,
   players,
-  socket,
 }: {
-  // プロトタイプバージョンID
-  prototypeVersionId: string;
   // グループID
   groupId: string;
   // プレイヤー
   players: Player[];
-  // ソケット
-  socket: Socket;
 }) {
   const router = useRouter();
+  const { dispatch } = usePartReducer();
+  const { getAccessUsersByGroup } = usePrototypes();
+
   // サイドバーが最小化されているか
   const [isMinimized, setIsMinimized] = useState(false);
   // グループにアクセス可能なユーザー
   const [accessibleUsers, setAccessibleUsers] = useState<User[]>([]);
-  const { assignPlayer } = usePartOperations(prototypeVersionId, socket);
 
   // グループにアクセス可能なユーザーを取得
   useEffect(() => {
-    axiosInstance
-      .get(`/api/prototypes/groups/${groupId}/accessUsers`)
-      .then((response) => {
-        setAccessibleUsers(response.data);
-      });
-  }, [groupId]);
+    getAccessUsersByGroup(groupId).then((response) => {
+      setAccessibleUsers(response);
+    });
+  }, [groupId, getAccessUsersByGroup]);
 
   return (
     <>
@@ -86,13 +79,18 @@ export default function PlayerAssignmentSidebar({
                         const userId = accessibleUsers.find(
                           (user) => user.username === value
                         )?.id;
-                        assignPlayer(player.id, userId ?? null);
+                        dispatch({
+                          type: 'UPDATE_PLAYER_USER',
+                          payload: {
+                            playerId: player.id,
+                            userId: userId ?? null,
+                          },
+                        });
                       }}
                       options={[
                         'プレイヤーを選択',
                         ...accessibleUsers.map((user) => user.username),
                       ]}
-                      className="w-full"
                     />
                   </div>
                 </div>

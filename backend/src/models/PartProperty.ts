@@ -4,12 +4,21 @@ import PartModel from './Part';
 
 // パーツの設定値を管理
 class PartPropertyModel extends Model {
+  // ID
   public id!: number;
+  // パーツID
   public partId!: number;
+  // 面
   public side!: 'front' | 'back';
+  // 名前
   public name!: string;
+  // 説明
   public description!: string;
+  // 背景色
   public color!: string;
+  // テキスト色
+  public textColor!: string;
+  // 画像
   public image?: string;
 }
 
@@ -38,6 +47,10 @@ PartPropertyModel.init(
       allowNull: false,
     },
     color: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    textColor: {
       type: DataTypes.STRING,
       allowNull: false,
     },

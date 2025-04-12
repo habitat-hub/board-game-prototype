@@ -8,51 +8,42 @@ import React, {
   useState,
 } from 'react';
 import { AiOutlineTool } from 'react-icons/ai';
-import { Socket } from 'socket.io-client';
 
+import {
+  Part as PartType,
+  PartProperty as PropertyType,
+  Player,
+  PartProperty,
+} from '@/api/types';
 import Part from '@/features/prototype/components/atoms/Part';
 import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumberTool';
 import EditSidebars from '@/features/prototype/components/molecules/EditSidebars';
 import PreviewSidebars from '@/features/prototype/components/molecules/PreviewSidebars';
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
-import {
-  PART_TYPE,
-  PROTOTYPE_TYPE,
-  VERSION_NUMBER,
-} from '@/features/prototype/const';
+import { VERSION_NUMBER } from '@/features/prototype/const';
 import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
-import { usePartOperations } from '@/features/prototype/hooks/usePartOperations';
-import { Camera, PartHandle } from '@/features/prototype/type';
-import {
-  Part as PartType,
-  PartProperty as PropertyType,
-  Player,
-  User,
-  PartProperty,
-} from '@/types/models';
-import axiosInstance from '@/utils/axiosInstance';
+import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
+import { useSocket } from '@/features/prototype/hooks/useSocket';
+import { AddPartProps, Camera, PartHandle } from '@/features/prototype/type';
+import { useUser } from '@/hooks/useUser';
 
 interface CanvasProps {
   prototypeName: string;
-  prototypeVersionId: string;
   prototypeVersionNumber?: string;
   groupId: string;
   parts: PartType[];
   properties: PropertyType[];
   players: Player[];
-  socket: Socket;
-  prototypeType: typeof PROTOTYPE_TYPE.EDIT | typeof PROTOTYPE_TYPE.PREVIEW;
+  prototypeType: 'EDIT' | 'PREVIEW';
 }
 
 export default function Canvas({
   prototypeName,
-  prototypeVersionId,
   prototypeVersionNumber,
   groupId,
   parts,
   properties,
   players,
-  socket,
   prototypeType,
 }: CanvasProps) {
   // TODO: キャンバスの状態(パーツ選択中とか、パーツ作成中とか)を管理できるようにしたい（あった方が便利そう）
@@ -69,35 +60,28 @@ export default function Canvas({
   const mainViewRef = useRef<HTMLDivElement>(null);
   const partRefs = useRef<{ [key: number]: React.RefObject<PartHandle> }>({});
 
-  const [user, setUser] = useState<User | null>(null);
-  useEffect(() => {
-    axiosInstance.get('/auth/user').then((res) => {
-      if ('id' in res.data) {
-        setUser(res.data);
-      }
-    });
-  }, []);
+  const { user } = useUser();
+  const { dispatch } = usePartReducer();
+  const { socket } = useSocket();
 
-  const { addPart, updatePart, deletePart, changeOrder, reverseCard } =
-    usePartOperations(prototypeVersionId, socket);
   const handleAddPart = useCallback(
-    (part: PartType, properties: PropertyType[]) => {
-      addPart(part, properties);
+    ({ part, properties }: AddPartProps) => {
+      dispatch({ type: 'ADD_PART', payload: { part, properties } });
       setSelectedPart(null);
       setSelectedPartProperties(null);
     },
-    [addPart]
+    [dispatch]
   );
   const handleDeletePart = useCallback(() => {
     if (!selectedPart) return;
 
-    deletePart(selectedPart.id);
+    dispatch({ type: 'DELETE_PART', payload: { partId: selectedPart.id } });
     setSelectedPart(null);
     setSelectedPartProperties(null);
-  }, [deletePart, selectedPart]);
+  }, [dispatch, selectedPart]);
 
-  const isEdit = prototypeType === PROTOTYPE_TYPE.EDIT;
-  const isPreview = prototypeType === PROTOTYPE_TYPE.PREVIEW;
+  const isEdit = prototypeType === 'EDIT';
+  const isPreview = prototypeType === 'PREVIEW';
 
   // マスタープレビューかどうかを判定
   const isMasterPreview =
@@ -108,8 +92,6 @@ export default function Canvas({
       camera,
       setCamera,
       setSelectedPart,
-      updatePart,
-      reverseCard,
       parts,
       mainViewRef,
     });
@@ -197,7 +179,7 @@ export default function Canvas({
     const otherPlayerHandIds = parts
       .filter(
         (part) =>
-          part.type === PART_TYPE.HAND &&
+          part.type === 'hand' &&
           part.ownerId != null &&
           playerIds.includes(part.ownerId)
       )
@@ -206,7 +188,7 @@ export default function Canvas({
     return parts
       .filter(
         (part) =>
-          part.type === PART_TYPE.CARD &&
+          part.type === 'card' &&
           part.parentId != null &&
           otherPlayerHandIds.includes(part.parentId)
       )
@@ -264,12 +246,21 @@ export default function Canvas({
                       prototypeType={prototypeType}
                       isOtherPlayerCard={otherPlayerCards.includes(part.id)}
                       onMouseDown={(e) => handleMouseDown(e, part.id)}
-                      socket={socket}
-                      onMoveOrder={({ partId, type }) => {
-                        if (!isMasterPreview) {
-                          changeOrder(partId, type);
-                        }
+                      onMoveOrder={({
+                        partId,
+                        type,
+                      }: {
+                        partId: number;
+                        type: 'front' | 'back' | 'backmost' | 'frontmost';
+                      }) => {
+                        if (isMasterPreview) return;
+
+                        dispatch({
+                          type: 'CHANGE_ORDER',
+                          payload: { partId, type },
+                        });
                       }}
+                      isActive={selectedPart?.id === part.id}
                     />
                   );
                 })}
@@ -299,18 +290,15 @@ export default function Canvas({
           selectedPartProperties={selectedPartProperties}
           onAddPart={handleAddPart}
           onDeletePart={handleDeletePart}
-          updatePart={updatePart}
           mainViewRef={mainViewRef}
         />
       )}
       {isPreview && (
         <PreviewSidebars
-          prototypeVersionId={prototypeVersionId}
           prototypeName={prototypeName}
           prototypeVersionNumber={prototypeVersionNumber}
           groupId={groupId}
           players={players}
-          socket={socket}
         />
       )}
       {/* 乱数ツールボタン */}
