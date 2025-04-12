@@ -1,4 +1,4 @@
-# BoardCraft
+# KIBAKO
 
 ## 概要
 
