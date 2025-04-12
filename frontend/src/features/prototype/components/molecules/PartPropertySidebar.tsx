@@ -177,7 +177,7 @@ export default function PartPropertySidebar({
               <p className="text-[9px] font-medium text-gray-500">位置</p>
               <div className="flex w-full gap-2 mb-2">
                 <NumberInput
-                  key={`${selectedPart.id}-x`}
+                  key={`${selectedPart.id}-${selectedPart.position.x}`}
                   value={selectedPart.position.x}
                   onChange={(number) => {
                     dispatch({
@@ -191,7 +191,7 @@ export default function PartPropertySidebar({
                   icon={<>X</>}
                 />
                 <NumberInput
-                  key={`${selectedPart.id}-y`}
+                  key={`${selectedPart.id}-${selectedPart.position.y}`}
                   value={selectedPart.position.y}
                   onChange={(number) => {
                     dispatch({
@@ -208,7 +208,7 @@ export default function PartPropertySidebar({
               <p className="text-[9px] font-medium text-gray-500">サイズ</p>
               <div className="flex w-full gap-2 mb-2">
                 <NumberInput
-                  key={`${selectedPart.id}-width`}
+                  key={`${selectedPart.id}-${selectedPart.width}`}
                   value={selectedPart.width}
                   onChange={(number) => {
                     dispatch({
@@ -222,7 +222,7 @@ export default function PartPropertySidebar({
                   icon={<>W</>}
                 />
                 <NumberInput
-                  key={`${selectedPart.id}-height`}
+                  key={`${selectedPart.id}-${selectedPart.height}`}
                   value={selectedPart.height}
                   onChange={(number) => {
                     dispatch({
@@ -239,7 +239,7 @@ export default function PartPropertySidebar({
               <p className="text-[9px] font-medium text-gray-500">名前</p>
               <div className="flex w-full mb-2">
                 <TextInput
-                  key={selectedPart.id}
+                  key={`${selectedPart.id}-${currentProperty?.name}`}
                   value={currentProperty?.name ?? ''}
                   onChange={(name) => handleUpdateProperty({ name })}
                   icon={<>T</>}
@@ -248,7 +248,7 @@ export default function PartPropertySidebar({
               <p className="text-[9px] font-medium text-gray-500">説明</p>
               <div className="flex w-full mb-2">
                 <TextInput
-                  key={selectedPart.id}
+                  key={`${selectedPart.id}-${currentProperty?.description}`}
                   value={currentProperty?.description ?? ''}
                   onChange={(description) =>
                     handleUpdateProperty({ description })
