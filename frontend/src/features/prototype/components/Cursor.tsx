@@ -17,6 +17,16 @@ export const Cursor = ({ cursor }: CursorProps) => {
     cursorRef.current.style.transform = `translate(${cursor.position.x}px, ${cursor.position.y}px)`;
   }, [cursor.position]);
 
+  // ユーザーIDから数値を生成するヘルパー関数
+  const hashStringToNumber = (str: string) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash);
+  };
+
   return (
     <div
       ref={cursorRef}
@@ -36,7 +46,7 @@ export const Cursor = ({ cursor }: CursorProps) => {
           width: '100%',
           height: '100%',
           borderRadius: '50%',
-          backgroundColor: '#000',
+          backgroundColor: `hsl(${hashStringToNumber(cursor.userId) % 360}, 70%, 50%)`,
           opacity: 0.5,
         }}
       />
