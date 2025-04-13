@@ -72,7 +72,7 @@ export default function Canvas({
   // パーツのref
   const partRefs = useRef<{ [key: number]: React.RefObject<PartHandle> }>({});
   // カメラ
-  const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, zoom: 1 });
+  const [camera, setCamera] = useState<Camera>({ x: -500, y: -750, zoom: 0.6 });
   // 乱数ツールを開いているか
   const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
   // 選択中のパーツ
@@ -275,11 +275,59 @@ export default function Canvas({
                 : isMasterPreview
                   ? 'not-allowed'
                   : 'grab',
+              width: '2000px',
+              height: '2000px',
             }}
           >
+            {/* 非表示エリアの背景 */}
+            <rect
+              x="-100000"
+              y="-100000"
+              width="200000"
+              height="200000"
+              fill="#e2e8f0"
+              opacity="0.7"
+            />
+            {/* 非表示エリアの斜線 */}
+            <pattern
+              id="diagonalHatch"
+              patternUnits="userSpaceOnUse"
+              width="10"
+              height="10"
+            >
+              <path
+                d="M-1,1 l2,-2 M0,10 l10,-10 M9,11 l2,-2"
+                stroke="#94a3b8"
+                strokeWidth="1"
+              />
+            </pattern>
+            <rect
+              x="-100000"
+              y="-100000"
+              width="200000"
+              height="200000"
+              fill="url(#diagonalHatch)"
+              opacity="0.3"
+            />
+            {/* 表示可能エリアの背景 */}
+            <rect
+              x="0"
+              y="0"
+              width="2000"
+              height="2000"
+              fill="#ffffff"
+              stroke="#94a3b8"
+              strokeWidth="1"
+              strokeDasharray="4"
+              style={{
+                transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom})`,
+                transformOrigin: 'center center',
+              }}
+            />
             <g
               style={{
                 transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom})`,
+                transformOrigin: 'center center',
               }}
             >
               {[...parts]
@@ -338,8 +386,8 @@ export default function Canvas({
         zoomOut={() => {
           setCamera((camera) => ({ ...camera, zoom: camera.zoom - 0.1 }));
         }}
-        canZoomIn={camera.zoom < 2}
-        canZoomOut={camera.zoom > 0.5}
+        canZoomIn={camera.zoom < 1}
+        canZoomOut={camera.zoom > 0.4}
       />
       {/* サイドバー */}
       {prototypeType === 'EDIT' && (
@@ -353,7 +401,6 @@ export default function Canvas({
           properties={properties}
           onAddPart={handleAddPart}
           onDeletePart={handleDeletePart}
-          mainViewRef={mainViewRef}
         />
       )}
       {prototypeType === 'PREVIEW' && (

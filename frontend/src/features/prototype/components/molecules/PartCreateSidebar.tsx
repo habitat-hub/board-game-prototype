@@ -21,13 +21,17 @@ import TextIconButton from '@/components/atoms/TextIconButton';
 import { PART_DEFAULT_CONFIG } from '@/features/prototype/const';
 import { AddPartProps } from '@/features/prototype/type';
 
+const PART_DEFAULT_POSITION = {
+  X: 1000,
+  Y: 1000,
+};
+
 export default function PartCreateSidebar({
   prototypeName,
   prototypeVersionNumber,
   groupId,
   players,
   onAddPart,
-  mainViewRef,
 }: {
   // プロトタイプ名
   prototypeName: string;
@@ -39,8 +43,6 @@ export default function PartCreateSidebar({
   players: Player[];
   // パーツを追加時の処理
   onAddPart: ({ part, properties }: AddPartProps) => void;
-  // メインビューのref
-  mainViewRef: React.RefObject<HTMLDivElement>;
 }) {
   const router = useRouter();
   // 左サイドバーが最小化されているか
@@ -53,9 +55,6 @@ export default function PartCreateSidebar({
   const handleCreatePart = (
     partType: 'card' | 'token' | 'hand' | 'deck' | 'area'
   ) => {
-    // メインビューのrefが存在しない場合
-    if (!mainViewRef.current) return;
-
     // パーツの初期設定情報
     const partConfig = Object.values(PART_DEFAULT_CONFIG).find(
       (part) => part.type === partType
@@ -65,14 +64,6 @@ export default function PartCreateSidebar({
       return;
     }
 
-    // メインビューの幅と高さを取得
-    const mainViewWidth = mainViewRef.current.offsetWidth;
-    const mainViewHeight = mainViewRef.current.offsetHeight;
-
-    // 新しいパーツを配置する中央の座標を計算
-    const centerX = mainViewWidth / 2;
-    const centerY = mainViewHeight / 2;
-
     // 新しいパーツ
     const newPart: Omit<
       Part,
@@ -80,7 +71,7 @@ export default function PartCreateSidebar({
     > = {
       type: partType,
       parentId: undefined,
-      position: { x: centerX, y: centerY },
+      position: { x: PART_DEFAULT_POSITION.X, y: PART_DEFAULT_POSITION.Y },
       width: partConfig.width,
       height: partConfig.height,
       configurableTypeAsChild: partConfig.configurableTypeAsChild,

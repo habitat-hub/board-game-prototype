@@ -19,7 +19,6 @@ export default function EditSidebars({
   properties,
   onAddPart,
   onDeletePart,
-  mainViewRef,
 }: {
   // プロトタイプ名
   prototypeName: string;
@@ -39,8 +38,6 @@ export default function EditSidebars({
   onAddPart: ({ part, properties }: AddPartProps) => void;
   // パーツを削除時の処理
   onDeletePart: () => void;
-  // メインビューのref
-  mainViewRef: React.RefObject<HTMLDivElement>;
 }) {
   return (
     <>
@@ -51,7 +48,6 @@ export default function EditSidebars({
         groupId={groupId}
         players={players}
         onAddPart={onAddPart}
-        mainViewRef={mainViewRef}
       />
 
       {/* Right Sidebar */}
