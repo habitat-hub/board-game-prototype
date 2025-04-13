@@ -1,5 +1,6 @@
 'use client';
 
+import { throttle } from 'lodash';
 import React, {
   useCallback,
   useEffect,
@@ -205,7 +206,7 @@ export default function Canvas({
    * @param e - マウスイベント
    */
   const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
+    throttle((e: MouseEvent) => {
       if (!mainViewRef.current) return;
 
       const rect = mainViewRef.current.getBoundingClientRect();
@@ -218,7 +219,7 @@ export default function Canvas({
         userName: user?.username || 'Nanashi-san',
         position: { x, y },
       });
-    },
+    }, 50), // 50ミリ秒ごとに実行
     [socket, user]
   );
   // カーソル更新のイベントリスナーを追加
