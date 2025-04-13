@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import type { CursorInfo } from '../types/cursor';
 
@@ -18,14 +18,14 @@ export const Cursor = ({ cursor }: CursorProps) => {
   }, [cursor.position]);
 
   // ユーザーIDから数値を生成するヘルパー関数
-  const hashStringToNumber = (str: string) => {
+  const hashStringToNumber = useCallback((str: string) => {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       hash = (hash << 5) - hash + str.charCodeAt(i);
       hash = hash & hash; // Convert to 32bit integer
     }
     return Math.abs(hash);
-  };
+  }, []);
 
   return (
     <div
