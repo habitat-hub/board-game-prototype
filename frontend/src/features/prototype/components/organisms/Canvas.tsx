@@ -43,7 +43,7 @@ interface CanvasProps {
   // プレイヤー
   players: Player[];
   // カーソル
-  cursors: CursorInfo[];
+  cursors: Record<string, CursorInfo>;
   // プロトタイプの種類
   prototypeType: 'EDIT' | 'PREVIEW';
 }
@@ -201,26 +201,31 @@ export default function Canvas({
     };
   }, [handleKeyDown]);
 
-  /**
-   * マウス移動時のカーソル情報更新
-   * @param e - マウスイベント
-   */
-  const handleMouseMove = useCallback(
-    throttle((e: MouseEvent) => {
-      if (!mainViewRef.current) return;
+  // throttle関数はレンダリング間で一貫性を保つためにuseMemoでメモ化
+  const throttledMouseMove = useMemo(
+    () =>
+      throttle((e: MouseEvent) => {
+        if (!mainViewRef.current) return;
 
-      const rect = mainViewRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+        const rect = mainViewRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
 
-      // ソケットでカーソル情報を送信
-      socket.emit('UPDATE_CURSOR', {
-        userId: user?.id || '',
-        userName: user?.username || 'Nanashi-san',
-        position: { x, y },
-      });
-    }, 50), // 50ミリ秒ごとに実行
+        // ソケットでカーソル情報を送信
+        socket.emit('UPDATE_CURSOR', {
+          userId: user?.id || '',
+          userName: user?.username || 'Nanashi-san',
+          position: { x, y },
+        });
+      }, 50),
     [socket, user]
+  );
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      throttledMouseMove(e);
+    },
+    [throttledMouseMove]
   );
   // カーソル更新のイベントリスナーを追加
   useEffect(() => {

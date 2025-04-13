@@ -45,7 +45,7 @@ const PrototypePlay: React.FC = () => {
   // プレイヤー
   const [players, setPlayers] = useState<Player[]>([]);
   // カーソル
-  const [cursors, setCursors] = useState<CursorInfo[]>([]);
+  const [cursors, setCursors] = useState<Record<string, CursorInfo>>({});
 
   // socket通信
   useEffect(() => {
