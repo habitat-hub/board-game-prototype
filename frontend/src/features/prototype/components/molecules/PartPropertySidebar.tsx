@@ -20,8 +20,9 @@ import { AddPartProps } from '@/features/prototype/type';
 export default function PartPropertySidebar({
   groupId,
   players,
-  selectedPart,
-  selectedPartProperties,
+  selectedPartId,
+  parts,
+  properties,
   onAddPart,
   onDeletePart,
 }: {
@@ -29,18 +30,29 @@ export default function PartPropertySidebar({
   groupId: string;
   // プレイヤー
   players: Player[];
-  // 選択中のパーツ
-  selectedPart: Part | null;
-  // 選択中のパーツのプロパティ
-  selectedPartProperties: PartProperty[] | null;
+  // 選択中のパーツID
+  selectedPartId: number | null;
+  // パーツ
+  parts: Part[];
+  // パーツのプロパティ
+  properties: PartProperty[];
   // パーツを追加時の処理
   onAddPart: ({ part, properties }: AddPartProps) => void;
   // パーツを削除時の処理
   onDeletePart: () => void;
 }) {
   const { dispatch } = usePartReducer();
-
   const router = useRouter();
+
+  // 選択中のパーツ、プロパティ
+  const { selectedPart, selectedPartProperties } = useMemo(() => {
+    return {
+      selectedPart: parts.find((part) => part.id === selectedPartId),
+      selectedPartProperties: properties.filter(
+        (property) => property.partId === selectedPartId
+      ),
+    };
+  }, [parts, properties, selectedPartId]);
 
   // 現在のプロパティ
   const currentProperty = useMemo(() => {

@@ -14,8 +14,9 @@ export default function EditSidebars({
   prototypeVersionNumber,
   groupId,
   players,
-  selectedPart,
-  selectedPartProperties,
+  selectedPartId,
+  parts,
+  properties,
   onAddPart,
   onDeletePart,
   mainViewRef,
@@ -28,10 +29,12 @@ export default function EditSidebars({
   groupId: string;
   // プレイヤー
   players: Player[];
-  // 選択中のパーツ
-  selectedPart: Part | null;
-  // 選択中のパーツのプロパティ
-  selectedPartProperties: PartProperty[] | null;
+  // 選択中のパーツID
+  selectedPartId: number | null;
+  // パーツ
+  parts: Part[];
+  // パーツのプロパティ
+  properties: PartProperty[];
   // パーツを追加時の処理
   onAddPart: ({ part, properties }: AddPartProps) => void;
   // パーツを削除時の処理
@@ -55,8 +58,9 @@ export default function EditSidebars({
       <PartPropertySidebar
         groupId={groupId}
         players={players}
-        selectedPart={selectedPart}
-        selectedPartProperties={selectedPartProperties}
+        selectedPartId={selectedPartId}
+        parts={parts}
+        properties={properties}
         onAddPart={onAddPart}
         onDeletePart={onDeletePart}
       />

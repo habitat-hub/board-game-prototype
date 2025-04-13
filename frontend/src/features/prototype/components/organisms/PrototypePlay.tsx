@@ -15,12 +15,15 @@ import {
 import Canvas from '@/features/prototype/components/organisms/Canvas';
 import { PrototypeVersionIdProvider } from '@/features/prototype/contexts/PrototypeVersionIdContext';
 import { SocketProvider } from '@/features/prototype/contexts/SocketContext';
+import { useUser } from '@/hooks/useUser';
+import { CursorInfo } from '@/features/prototype/types/cursor';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
 const PrototypePlay: React.FC = () => {
   const router = useRouter();
   const { getPrototypeVersions } = usePrototypes();
+  const { user } = useUser();
 
   // プロトタイプID, バージョンID
   const { prototypeId, versionId } = useParams<{
@@ -41,11 +44,16 @@ const PrototypePlay: React.FC = () => {
   const [properties, setProperties] = useState<PartProperty[]>([]);
   // プレイヤー
   const [players, setPlayers] = useState<Player[]>([]);
+  // カーソル
+  const [cursors, setCursors] = useState<CursorInfo[]>([]);
 
   // socket通信
   useEffect(() => {
     // サーバーに接続した後、特定のプロトタイプに参加
-    socket.emit('JOIN_PROTOTYPE', { prototypeVersionId: versionId });
+    socket.emit('JOIN_PROTOTYPE', {
+      prototypeVersionId: versionId,
+      userId: user?.id || '',
+    });
 
     // 更新パーツの受信
     socket.on('UPDATE_PARTS', ({ parts, properties }) => {
@@ -58,9 +66,15 @@ const PrototypePlay: React.FC = () => {
       setPlayers(players.sort((a, b) => a.id - b.id));
     });
 
+    // 更新カーソルの受信
+    socket.on('UPDATE_CURSORS', ({ cursors }) => {
+      setCursors(cursors);
+    });
+
     return () => {
       socket.off('UPDATE_PARTS');
       socket.off('UPDATE_PLAYERS');
+      socket.off('UPDATE_CURSORS');
     };
   }, [versionId]);
 
@@ -98,6 +112,7 @@ const PrototypePlay: React.FC = () => {
           parts={parts}
           properties={properties}
           players={players}
+          cursors={cursors}
           prototypeVersionNumber={versionNumber}
           groupId={prototype.groupId}
           prototypeType="PREVIEW"

@@ -9,6 +9,56 @@ import {
   getUnderLappingPart,
   shuffleDeck,
 } from '../helpers/prototypeHelper';
+import type { CursorInfo } from '../types/cursor';
+
+// カーソル情報のマップ
+const cursorMap: Record<string, CursorInfo> = {};
+
+// socket.dataの型定義
+interface SocketData {
+  prototypeVersionId: string;
+  userId: string;
+}
+
+/**
+ * 指定されたプロトタイプバージョンIDに関連する全てのパーツとプロパティを取得する。
+ *
+ * @param {string} prototypeVersionId - プロトタイプバージョンID
+ * @returns {Promise<{ parts: PartModel[], properties: PartPropertyModel[] }>} - プロトタイプバージョンに関連するパーツとプロパティの配列を含むオブジェクトを返すPromise
+ */
+async function fetchPartsAndProperties(prototypeVersionId: string) {
+  const [parts, properties] = await Promise.all([
+    PartModel.findAll({
+      where: { prototypeVersionId },
+    }),
+    PartPropertyModel.findAll({
+      include: [
+        {
+          model: PartModel,
+          required: true, // INNER JOIN
+          where: { prototypeVersionId },
+        },
+      ],
+    }),
+  ]);
+
+  return { parts, properties };
+}
+
+/**
+ * 指定されたプロトタイプバージョンIDに関連する全てのパーツとプロパティを取得し、
+ * それらをクライアントにemitする。
+ * @param io - Server
+ * @param {string} prototypeVersionId - プロトタイプバージョンID
+ */
+async function emitUpdatedPartsAndProperties(
+  io: Server,
+  prototypeVersionId: string
+) {
+  const { parts, properties } =
+    await fetchPartsAndProperties(prototypeVersionId);
+  io.to(prototypeVersionId).emit('UPDATE_PARTS', { parts, properties });
+}
 
 /**
  * プロトタイプ参加
@@ -17,10 +67,23 @@ import {
 function handleJoinPrototype(socket: Socket) {
   socket.on(
     'JOIN_PROTOTYPE',
-    async ({ prototypeVersionId }: { prototypeVersionId: string }) => {
+    async ({
+      prototypeVersionId,
+      userId,
+    }: {
+      prototypeVersionId: string;
+      userId: string;
+    }) => {
       const prototypeVersion =
         await PrototypeVersionModel.findByPk(prototypeVersionId);
       if (!prototypeVersion) return;
+
+      // socket.dataにprototypeVersionIdとuserIdを設定
+      socket.data = {
+        ...socket.data,
+        prototypeVersionId,
+        userId,
+      } as SocketData;
 
       socket.join(prototypeVersionId);
 
@@ -35,6 +98,9 @@ function handleJoinPrototype(socket: Socket) {
       const [players, partsAndProperties] = await Promise.all(promises);
       socket.emit('UPDATE_PLAYERS', players);
       socket.emit('UPDATE_PARTS', partsAndProperties);
+      socket.emit('UPDATE_CURSORS', {
+        cursors: cursorMap,
+      });
     }
   );
 }
@@ -48,14 +114,14 @@ function handleAddPart(socket: Socket, io: Server) {
   socket.on(
     'ADD_PART',
     async ({
-      prototypeVersionId,
       part,
       properties,
     }: {
-      prototypeVersionId: string;
       part: Omit<PartModel, 'id'>;
       properties: Omit<PartPropertyModel, 'id' | 'partId'>[];
     }) => {
+      const { prototypeVersionId } = socket.data as SocketData;
+
       const maxOrder: number = await PartModel.max('order', {
         where: { prototypeVersionId },
       });
@@ -88,16 +154,16 @@ function handleUpdatePart(socket: Socket, io: Server) {
   socket.on(
     'UPDATE_PART',
     async ({
-      prototypeVersionId,
       partId,
       updatePart,
       updateProperties,
     }: {
-      prototypeVersionId: string;
       partId: number;
       updatePart: Partial<PartModel>;
       updateProperties?: Omit<PartPropertyModel, 'id' | 'partId'>[];
     }) => {
+      const { prototypeVersionId } = socket.data as SocketData;
+
       // Partの更新
       if (updatePart && Object.keys(updatePart).length > 0) {
         const updateData = Object.entries(updatePart).reduce(
@@ -137,20 +203,13 @@ function handleUpdatePart(socket: Socket, io: Server) {
  * @param io - Server
  */
 function handleDeletePart(socket: Socket, io: Server) {
-  socket.on(
-    'DELETE_PART',
-    async ({
-      prototypeVersionId,
-      partId,
-    }: {
-      prototypeVersionId: string;
-      partId: number;
-    }) => {
-      // PartPropertyは CASCADE で自動的に削除される
-      await PartModel.destroy({ where: { id: partId } });
-      await emitUpdatedPartsAndProperties(io, prototypeVersionId);
-    }
-  );
+  socket.on('DELETE_PART', async ({ partId }: { partId: number }) => {
+    const { prototypeVersionId } = socket.data as SocketData;
+
+    // PartPropertyは CASCADE で自動的に削除される
+    await PartModel.destroy({ where: { id: partId } });
+    await emitUpdatedPartsAndProperties(io, prototypeVersionId);
+  });
 }
 
 // TODO: ReverseCardという名前に変える
@@ -163,14 +222,14 @@ function handleFlipCard(socket: Socket, io: Server) {
   socket.on(
     'FLIP_CARD',
     async ({
-      prototypeVersionId,
       cardId,
       isNextFlipped,
     }: {
-      prototypeVersionId: string;
       cardId: number;
       isNextFlipped: boolean;
     }) => {
+      const { prototypeVersionId } = socket.data as SocketData;
+
       await PartModel.update(
         { isFlipped: isNextFlipped },
         { where: { id: cardId } }
@@ -195,14 +254,14 @@ function handleChangeOrder(socket: Socket, io: Server) {
   socket.on(
     'CHANGE_ORDER',
     async ({
-      prototypeVersionId,
       partId,
       type,
     }: {
-      prototypeVersionId: string;
       partId: number;
       type: 'back' | 'front' | 'backmost' | 'frontmost';
     }) => {
+      const { prototypeVersionId } = socket.data as SocketData;
+
       const sortedParts = await PartModel.findAll({
         where: { prototypeVersionId },
         order: [['order', 'ASC']],
@@ -301,22 +360,15 @@ function handleChangeOrder(socket: Socket, io: Server) {
  * @param io - Server
  */
 function handleShuffleDeck(socket: Socket, io: Server) {
-  socket.on(
-    'SHUFFLE_DECK',
-    async ({
-      prototypeVersionId,
-      deckId,
-    }: {
-      prototypeVersionId: string;
-      deckId: number;
-    }) => {
-      const cardsOnDeck = await PartModel.findAll({
-        where: { prototypeVersionId, type: 'card', parentId: deckId },
-      });
-      await shuffleDeck(cardsOnDeck);
-      await emitUpdatedPartsAndProperties(io, prototypeVersionId);
-    }
-  );
+  socket.on('SHUFFLE_DECK', async ({ deckId }: { deckId: number }) => {
+    const { prototypeVersionId } = socket.data as SocketData;
+
+    const cardsOnDeck = await PartModel.findAll({
+      where: { prototypeVersionId, type: 'card', parentId: deckId },
+    });
+    await shuffleDeck(cardsOnDeck);
+    await emitUpdatedPartsAndProperties(io, prototypeVersionId);
+  });
 }
 
 /**
@@ -328,14 +380,14 @@ function handleUpdatePlayerUser(socket: Socket, io: Server) {
   socket.on(
     'UPDATE_PLAYER_USER',
     async ({
-      prototypeVersionId,
       playerId,
       userId,
     }: {
-      prototypeVersionId: string;
       playerId: number;
       userId: string | null;
     }) => {
+      const { prototypeVersionId } = socket.data as SocketData;
+
       await PlayerModel.update({ userId }, { where: { id: playerId } });
       const players = await PlayerModel.findAll({
         where: { prototypeVersionId },
@@ -348,44 +400,21 @@ function handleUpdatePlayerUser(socket: Socket, io: Server) {
 }
 
 /**
- * 指定されたプロトタイプバージョンIDに関連する全てのパーツとプロパティを取得し、
- * それらをクライアントにemitする。
+ * カーソル情報の更新
+ * @param socket - Socket
  * @param io - Server
- * @param {string} prototypeVersionId - プロトタイプバージョンID
  */
-async function emitUpdatedPartsAndProperties(
-  io: Server,
-  prototypeVersionId: string
-) {
-  const { parts, properties } =
-    await fetchPartsAndProperties(prototypeVersionId);
-  io.to(prototypeVersionId).emit('UPDATE_PARTS', { parts, properties });
-}
+function handleUpdateCursor(socket: Socket, io: Server) {
+  socket.on('UPDATE_CURSOR', (cursorInfo: CursorInfo) => {
+    const { prototypeVersionId } = socket.data as SocketData;
 
-/**
- * 指定されたプロトタイプバージョンIDに関連する全てのパーツとプロパティを取得する。
- *
- * @param {string} prototypeVersionId - プロトタイプバージョンID
- * @returns {Promise<{ parts: PartModel[], properties: PartPropertyModel[] }>} -
- *          プロトタイプバージョンに関連するパーツとプロパティの配列を含むオブジェクトを返すPromise
- */
-async function fetchPartsAndProperties(prototypeVersionId: string) {
-  const [parts, properties] = await Promise.all([
-    PartModel.findAll({
-      where: { prototypeVersionId },
-    }),
-    PartPropertyModel.findAll({
-      include: [
-        {
-          model: PartModel,
-          required: true, // INNER JOIN
-          where: { prototypeVersionId },
-        },
-      ],
-    }),
-  ]);
+    if (!prototypeVersionId || !cursorInfo.userId) return;
 
-  return { parts, properties };
+    cursorMap[cursorInfo.userId] = cursorInfo;
+    io.to(prototypeVersionId).emit('UPDATE_CURSORS', {
+      cursors: cursorMap,
+    });
+  });
 }
 
 export default function handlePrototype(socket: Socket, io: Server) {
@@ -397,4 +426,15 @@ export default function handlePrototype(socket: Socket, io: Server) {
   handleChangeOrder(socket, io);
   handleShuffleDeck(socket, io);
   handleUpdatePlayerUser(socket, io);
+  handleUpdateCursor(socket, io);
+
+  socket.on('disconnect', () => {
+    const { prototypeVersionId, userId } = socket.data as SocketData;
+    if (prototypeVersionId && userId) {
+      delete cursorMap[userId];
+      io.to(prototypeVersionId).emit('UPDATE_CURSORS', {
+        cursors: cursorMap,
+      });
+    }
+  });
 }

@@ -9,7 +9,7 @@ import { Camera, Point } from '@/features/prototype/type';
 interface UseCanvasEventsProps {
   camera: Camera;
   setCamera: React.Dispatch<React.SetStateAction<Camera>>;
-  setSelectedPart: React.Dispatch<React.SetStateAction<Part | null>>;
+  setSelectedPartId: React.Dispatch<React.SetStateAction<number | null>>;
   parts: Part[];
   mainViewRef: React.RefObject<HTMLDivElement>;
 }
@@ -17,7 +17,7 @@ interface UseCanvasEventsProps {
 export const useCanvasEvents = ({
   camera,
   setCamera,
-  setSelectedPart,
+  setSelectedPartId,
   parts,
   mainViewRef,
 }: UseCanvasEventsProps) => {
@@ -77,7 +77,7 @@ export const useCanvasEvents = ({
       const rect = mainViewRef.current?.getBoundingClientRect();
       if (!rect || !part) return;
 
-      setSelectedPart(part);
+      setSelectedPartId(partId);
       setDraggingPartId(partId);
 
       const x = (e.clientX - rect.left) / camera.zoom - part.position.x;
@@ -122,7 +122,7 @@ export const useCanvasEvents = ({
         x: e.clientX - dragStart.x,
         y: e.clientY - dragStart.y,
       }));
-      setSelectedPart(null);
+      setSelectedPartId(null);
     }
   };
 
