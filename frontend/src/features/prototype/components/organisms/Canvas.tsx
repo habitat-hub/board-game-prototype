@@ -13,10 +13,10 @@ import {
   Part as PartType,
   PartProperty as PropertyType,
   Player,
-  PartProperty,
 } from '@/api/types';
 import Part from '@/features/prototype/components/atoms/Part';
 import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumberTool';
+import { Cursor } from '@/features/prototype/components/Cursor';
 import EditSidebars from '@/features/prototype/components/molecules/EditSidebars';
 import PreviewSidebars from '@/features/prototype/components/molecules/PreviewSidebars';
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
@@ -25,9 +25,8 @@ import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { AddPartProps, Camera, PartHandle } from '@/features/prototype/type';
-import { useUser } from '@/hooks/useUser';
-import { Cursor } from '@/features/prototype/components/Cursor';
 import { CursorInfo } from '@/features/prototype/types/cursor';
+import { useUser } from '@/hooks/useUser';
 
 interface CanvasProps {
   // プロトタイプ名

@@ -15,8 +15,8 @@ import {
 import Canvas from '@/features/prototype/components/organisms/Canvas';
 import { PrototypeVersionIdProvider } from '@/features/prototype/contexts/PrototypeVersionIdContext';
 import { SocketProvider } from '@/features/prototype/contexts/SocketContext';
-import { useUser } from '@/hooks/useUser';
 import { CursorInfo } from '@/features/prototype/types/cursor';
+import { useUser } from '@/hooks/useUser';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
@@ -76,7 +76,7 @@ const PrototypeEdit: React.FC = () => {
       socket.off('UPDATE_PLAYERS');
       socket.off('UPDATE_CURSORS');
     };
-  }, [versionId]);
+  }, [versionId, user?.id]);
 
   // プロタイプの取得
   useEffect(() => {

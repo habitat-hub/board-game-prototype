@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 
 import { Part, PartProperty } from '@/api/types';
-import { usePrototypeVersionId } from '@/features/prototype/hooks/usePrototypeVersionId';
 import { useSocket } from '@/features/prototype/hooks/useSocket';
 
 // パーツのプロパティの型定義(metadataを除いた型)
@@ -55,7 +54,6 @@ export type PartAction =
 
 export const usePartReducer = () => {
   const { socket } = useSocket();
-  const { prototypeVersionId } = usePrototypeVersionId();
 
   const dispatch = useCallback(
     (action: PartAction) => {
@@ -122,7 +120,7 @@ export const usePartReducer = () => {
           break;
       }
     },
-    [socket, prototypeVersionId]
+    [socket]
   );
 
   return { dispatch };

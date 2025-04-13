@@ -1,5 +1,3 @@
-import { Player } from '@/api/types';
-
 // カーソル情報の型定義
 export interface CursorInfo {
   // ユーザーID
