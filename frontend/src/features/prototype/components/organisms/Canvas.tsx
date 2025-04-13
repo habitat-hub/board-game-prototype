@@ -1,5 +1,6 @@
 'use client';
 
+import { throttle } from 'lodash';
 import React, {
   useCallback,
   useEffect,
@@ -13,10 +14,10 @@ import {
   Part as PartType,
   PartProperty as PropertyType,
   Player,
-  PartProperty,
 } from '@/api/types';
 import Part from '@/features/prototype/components/atoms/Part';
 import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumberTool';
+import { Cursor } from '@/features/prototype/components/Cursor';
 import EditSidebars from '@/features/prototype/components/molecules/EditSidebars';
 import PreviewSidebars from '@/features/prototype/components/molecules/PreviewSidebars';
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
@@ -25,15 +26,25 @@ import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { AddPartProps, Camera, PartHandle } from '@/features/prototype/type';
+import { CursorInfo } from '@/features/prototype/types/cursor';
 import { useUser } from '@/hooks/useUser';
 
 interface CanvasProps {
+  // プロトタイプ名
   prototypeName: string;
+  // プロトタイプバージョン番号
   prototypeVersionNumber?: string;
+  // グループID
   groupId: string;
+  // パーツ
   parts: PartType[];
+  // パーツのプロパティ
   properties: PropertyType[];
+  // プレイヤー
   players: Player[];
+  // カーソル
+  cursors: Record<string, CursorInfo>;
+  // プロトタイプの種類
   prototypeType: 'EDIT' | 'PREVIEW';
 }
 
@@ -44,128 +55,41 @@ export default function Canvas({
   parts,
   properties,
   players,
+  cursors,
   prototypeType,
 }: CanvasProps) {
   // TODO: キャンバスの状態(パーツ選択中とか、パーツ作成中とか)を管理できるようにしたい（あった方が便利そう）
   // const [canvasState, setState] = useState<CanvasState>({
   //   mode: CanvasMode.None,
   // });
-  const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, zoom: 1 });
-  const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
-  const [selectedPart, setSelectedPart] = useState<PartType | null>(null);
-  const [selectedPartProperties, setSelectedPartProperties] = useState<
-    PartProperty[] | null
-  >(null);
-
-  const mainViewRef = useRef<HTMLDivElement>(null);
-  const partRefs = useRef<{ [key: number]: React.RefObject<PartHandle> }>({});
 
   const { user } = useUser();
   const { dispatch } = usePartReducer();
   const { socket } = useSocket();
 
-  const handleAddPart = useCallback(
-    ({ part, properties }: AddPartProps) => {
-      dispatch({ type: 'ADD_PART', payload: { part, properties } });
-      setSelectedPart(null);
-      setSelectedPartProperties(null);
-    },
-    [dispatch]
-  );
-  const handleDeletePart = useCallback(() => {
-    if (!selectedPart) return;
-
-    dispatch({ type: 'DELETE_PART', payload: { partId: selectedPart.id } });
-    setSelectedPart(null);
-    setSelectedPartProperties(null);
-  }, [dispatch, selectedPart]);
-
-  const isEdit = prototypeType === 'EDIT';
-  const isPreview = prototypeType === 'PREVIEW';
-
-  // マスタープレビューかどうかを判定
-  const isMasterPreview =
-    isPreview && prototypeVersionNumber === VERSION_NUMBER.MASTER;
-
+  // メインビューのref
+  const mainViewRef = useRef<HTMLDivElement>(null);
+  // パーツのref
+  const partRefs = useRef<{ [key: number]: React.RefObject<PartHandle> }>({});
+  // カメラ
+  const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, zoom: 1 });
+  // 乱数ツールを開いているか
+  const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
+  // 選択中のパーツ
+  const [selectedPartId, setSelectedPartId] = useState<number | null>(null);
   const { isDraggingCanvas, onWheel, onMouseDown, onMouseMove, onMouseUp } =
     useCanvasEvents({
       camera,
       setCamera,
-      setSelectedPart,
+      setSelectedPartId,
       parts,
       mainViewRef,
     });
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent, partId?: number) => {
-      if (isMasterPreview) return;
 
-      onMouseDown(e, partId);
-    },
-    [isMasterPreview, onMouseDown]
-  );
-
-  // 選択したパーツが更新されたら、最新化
-  useEffect(() => {
-    const part = parts.find((part) => part.id === selectedPart?.id);
-    if (part) {
-      setSelectedPart(part);
-      const partProperties = properties.filter(
-        (property) => property.partId === part.id
-      );
-      setSelectedPartProperties(partProperties);
-    }
-  }, [parts, properties, selectedPart?.id]);
-
-  /**
-   * キーボードイベントのハンドラー
-   * @param e - キーボードイベント
-   */
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      // 入力要素にフォーカスがある場合は処理をスキップ
-      if (
-        document.activeElement?.tagName === 'INPUT' ||
-        document.activeElement?.tagName === 'TEXTAREA' ||
-        document.activeElement?.tagName === 'SELECT'
-      ) {
-        return;
-      }
-
-      if (e.key === 'Backspace') {
-        handleDeletePart();
-      }
-    },
-    [handleDeletePart]
-  );
-
-  // キーボードイベントの登録
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [handleKeyDown]);
-
-  // ソケットイベントの定義
-  useEffect(() => {
-    socket.on(
-      'FLIP_CARD',
-      ({
-        cardId,
-        isNextFlipped,
-      }: {
-        cardId: number;
-        isNextFlipped: boolean;
-      }) => {
-        // 該当するパーツのreverseCard関数を呼び出し
-        partRefs.current[cardId]?.current?.reverseCard(isNextFlipped, false);
-      }
-    );
-
-    return () => {
-      socket.off('FLIP_CARD');
-    };
-  }, [socket]);
+  // マスタープレビューかどうか
+  const isMasterPreview =
+    prototypeType === 'PREVIEW' &&
+    prototypeVersionNumber === VERSION_NUMBER.MASTER;
 
   // 他のプレイヤーのカード
   const otherPlayerCards = useMemo(() => {
@@ -194,6 +118,137 @@ export default function Canvas({
       )
       .map((part) => part.id);
   }, [parts, players, user]);
+
+  // 選択したパーツが更新されたら、最新化
+  useEffect(() => {
+    const selectedPart = parts.find((part) => part.id === selectedPartId);
+    if (selectedPart) return;
+
+    // 選択中のパーツが存在しない場合は、選択中のパーツを解除
+    setSelectedPartId(null);
+  }, [parts, selectedPartId]);
+
+  // ソケットイベントの定義
+  useEffect(() => {
+    socket.on(
+      'FLIP_CARD',
+      ({
+        cardId,
+        isNextFlipped,
+      }: {
+        cardId: number;
+        isNextFlipped: boolean;
+      }) => {
+        // 該当するパーツのreverseCard関数を呼び出し
+        partRefs.current[cardId]?.current?.reverseCard(isNextFlipped, false);
+      }
+    );
+
+    return () => {
+      socket.off('FLIP_CARD');
+    };
+  }, [socket]);
+
+  /**
+   * パーツを追加
+   * @param part - パーツ
+   * @param properties - パーツのプロパティ
+   */
+  const handleAddPart = useCallback(
+    ({ part, properties }: AddPartProps) => {
+      dispatch({ type: 'ADD_PART', payload: { part, properties } });
+      setSelectedPartId(null);
+    },
+    [dispatch]
+  );
+
+  /**
+   * パーツを削除
+   */
+  const handleDeletePart = useCallback(() => {
+    if (!selectedPartId) return;
+
+    dispatch({ type: 'DELETE_PART', payload: { partId: selectedPartId } });
+    setSelectedPartId(null);
+  }, [dispatch, selectedPartId]);
+
+  /**
+   * キーボードイベントのハンドラー
+   * @param e - キーボードイベント
+   */
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      // 入力要素にフォーカスがある場合は処理をスキップ
+      if (
+        document.activeElement?.tagName === 'INPUT' ||
+        document.activeElement?.tagName === 'TEXTAREA' ||
+        document.activeElement?.tagName === 'SELECT'
+      ) {
+        return;
+      }
+
+      if (e.key === 'Backspace') {
+        handleDeletePart();
+      }
+    },
+    [handleDeletePart]
+  );
+  // キーボードイベントの登録
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
+
+  // throttle関数はレンダリング間で一貫性を保つためにuseMemoでメモ化
+  const throttledMouseMove = useMemo(
+    () =>
+      throttle((e: MouseEvent) => {
+        if (!mainViewRef.current) return;
+
+        const rect = mainViewRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        // ソケットでカーソル情報を送信
+        socket.emit('UPDATE_CURSOR', {
+          userId: user?.id || '',
+          userName: user?.username || 'Nanashi-san',
+          position: { x, y },
+        });
+      }, 50),
+    [socket, user]
+  );
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      throttledMouseMove(e);
+    },
+    [throttledMouseMove]
+  );
+  // カーソル更新のイベントリスナーを追加
+  useEffect(() => {
+    const mainView = mainViewRef.current;
+    if (!mainView) return;
+
+    mainView.addEventListener('mousemove', handleMouseMove);
+
+    return () => {
+      mainView.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, [handleMouseMove]);
+
+  /**
+   * マウスダウン時の処理
+   * @param e - マウスイベント
+   * @param partId - パーツID
+   */
+  const handleMouseDown = (e: React.MouseEvent, partId?: number) => {
+    if (isMasterPreview) return;
+
+    onMouseDown(e, partId);
+  };
 
   return (
     <div className="flex h-full w-full">
@@ -260,12 +315,19 @@ export default function Canvas({
                           payload: { partId, type },
                         });
                       }}
-                      isActive={selectedPart?.id === part.id}
+                      isActive={selectedPartId === part.id}
                     />
                   );
                 })}
             </g>
           </svg>
+          {/* カーソルを表示 */}
+          {Object.values(cursors).map((cursor) => {
+            // 自分のカーソルは表示しない
+            if (cursor.userId === user?.id) return null;
+
+            return <Cursor key={cursor.userId} cursor={cursor} />;
+          })}
         </div>
       </main>
       {/* ツールバー */}
@@ -280,20 +342,21 @@ export default function Canvas({
         canZoomOut={camera.zoom > 0.5}
       />
       {/* サイドバー */}
-      {isEdit && (
+      {prototypeType === 'EDIT' && (
         <EditSidebars
           prototypeName={prototypeName}
           prototypeVersionNumber={prototypeVersionNumber}
           groupId={groupId}
           players={players}
-          selectedPart={selectedPart}
-          selectedPartProperties={selectedPartProperties}
+          selectedPartId={selectedPartId}
+          parts={parts}
+          properties={properties}
           onAddPart={handleAddPart}
           onDeletePart={handleDeletePart}
           mainViewRef={mainViewRef}
         />
       )}
-      {isPreview && (
+      {prototypeType === 'PREVIEW' && (
         <PreviewSidebars
           prototypeName={prototypeName}
           prototypeVersionNumber={prototypeVersionNumber}
