@@ -51,8 +51,15 @@ router.use(ensureAuthenticated);
  */
 router.get('/', async (req: Request, res: Response) => {
   const user = req.user as UserModel;
-  const prototypes = await getAccessiblePrototypes({ userId: user.id });
-  res.json(prototypes);
+
+  try {
+    const prototypes = await getAccessiblePrototypes({ userId: user.id });
+
+    res.json(prototypes);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: '予期せぬエラーが発生しました' });
+  }
 });
 
 /**
@@ -161,13 +168,20 @@ router.get(
   checkPrototypeAccess,
   async (req: Request, res: Response) => {
     const prototypeId = req.params.prototypeId;
-    const prototype = await PrototypeModel.findByPk(prototypeId);
-    if (!prototype) {
-      res.status(404).json({ error: 'プロトタイプが見つかりません' });
-      return;
-    }
 
-    res.json(prototype);
+    try {
+      const prototype = await PrototypeModel.findByPk(prototypeId);
+
+      if (!prototype) {
+        res.status(404).json({ error: 'プロトタイプが見つかりません' });
+        return;
+      }
+
+      res.json(prototype);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+    }
   }
 );
 
@@ -217,24 +231,34 @@ router.put(
   checkPrototypeAccess,
   async (req: Request, res: Response) => {
     const prototypeId = req.params.prototypeId;
-    const prototype = await PrototypeModel.findByPk(prototypeId);
-    if (!prototype) {
-      res.status(404).json({ error: 'プロトタイプが見つかりません' });
-      return;
-    }
 
-    const updateData = Object.entries(req.body).reduce((acc, [key, value]) => {
-      if (
-        value !== undefined &&
-        UPDATABLE_PROTOTYPE_FIELDS.PROTOTYPE.includes(key)
-      ) {
-        return { ...acc, [key]: value };
+    try {
+      const prototype = await PrototypeModel.findByPk(prototypeId);
+
+      if (!prototype) {
+        res.status(404).json({ error: 'プロトタイプが見つかりません' });
+        return;
       }
-      return acc;
-    }, {} as Partial<PrototypeModel>);
-    await PrototypeModel.update(updateData, { where: { id: prototypeId } });
 
-    res.json(prototype);
+      const updateData = Object.entries(req.body).reduce(
+        (acc, [key, value]) => {
+          if (
+            value !== undefined &&
+            UPDATABLE_PROTOTYPE_FIELDS.PROTOTYPE.includes(key)
+          ) {
+            return { ...acc, [key]: value };
+          }
+          return acc;
+        },
+        {} as Partial<PrototypeModel>
+      );
+      await PrototypeModel.update(updateData, { where: { id: prototypeId } });
+
+      res.json(prototype);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+    }
   }
 );
 
@@ -271,15 +295,21 @@ router.delete(
   checkPrototypeOwner,
   async (req: Request, res: Response) => {
     const prototypeId = req.params.prototypeId;
-    const prototype = await PrototypeModel.findByPk(prototypeId);
-    if (!prototype) {
-      res.status(404).json({ error: 'プロトタイプが見つかりません' });
-      return;
+
+    try {
+      const prototype = await PrototypeModel.findByPk(prototypeId);
+      if (!prototype) {
+        res.status(404).json({ error: 'プロトタイプが見つかりません' });
+        return;
+      }
+
+      await PrototypeModel.destroy({ where: { id: prototypeId } });
+
+      res.json({ message: 'プロトタイプを削除しました' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
     }
-
-    await PrototypeModel.destroy({ where: { id: prototypeId } });
-
-    res.json({ message: 'プロトタイプを削除しました' });
   }
 );
 
@@ -323,18 +353,24 @@ router.delete(
  */
 router.get('/:prototypeId/versions', checkPrototypeAccess, async (req, res) => {
   const prototypeId = req.params.prototypeId;
-  const prototype = await PrototypeModel.findByPk(prototypeId);
-  if (!prototype) {
-    res.status(404).json({ error: 'プロトタイプが見つかりません' });
-    return;
+
+  try {
+    const prototype = await PrototypeModel.findByPk(prototypeId);
+    if (!prototype) {
+      res.status(404).json({ error: 'プロトタイプが見つかりません' });
+      return;
+    }
+    const versions = await PrototypeVersionModel.findAll({
+      where: { prototypeId },
+    });
+    res.json({
+      prototype,
+      versions,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: '予期せぬエラーが発生しました' });
   }
-  const versions = await PrototypeVersionModel.findAll({
-    where: { prototypeId },
-  });
-  res.json({
-    prototype,
-    versions,
-  });
 });
 
 /**
@@ -373,20 +409,26 @@ router.get('/:prototypeId/versions', checkPrototypeAccess, async (req, res) => {
  */
 router.get('/groups/:groupId', checkGroupAccess, async (req, res) => {
   const groupId = req.params.groupId;
-  const prototypes = await PrototypeModel.findAll({ where: { groupId } });
-  const result = await Promise.all(
-    prototypes.map(async (prototype) => {
-      const versions = await PrototypeVersionModel.findAll({
-        where: { prototypeId: prototype.id },
-      });
-      return {
-        prototype,
-        versions,
-      };
-    })
-  );
 
-  res.json(result);
+  try {
+    const prototypes = await PrototypeModel.findAll({ where: { groupId } });
+    const result = await Promise.all(
+      prototypes.map(async (prototype) => {
+        const versions = await PrototypeVersionModel.findAll({
+          where: { prototypeId: prototype.id },
+        });
+        return {
+          prototype,
+          versions,
+        };
+      })
+    );
+
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: '予期せぬエラーが発生しました' });
+  }
 });
 
 /**
@@ -418,7 +460,13 @@ router.get(
   checkGroupAccess,
   async (req: Request, res: Response) => {
     const groupId = req.params.groupId;
-    res.json(await getAccessibleUsers({ groupId }));
+
+    try {
+      res.json(await getAccessibleUsers({ groupId }));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+    }
   }
 );
 
@@ -642,6 +690,7 @@ router.post(
     }
 
     const transaction = await sequelize.transaction();
+
     try {
       await createPrototype({
         userId: prototype.userId,
