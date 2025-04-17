@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
+import { CiSquareRemove } from 'react-icons/ci';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { useUsers } from '@/api/hooks/useUsers';
@@ -30,6 +31,30 @@ const PlayerInvite: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   /**
+   * メッセージを表示し、5秒後に自動的に削除
+   * @param message - 表示するメッセージ
+   * @param type - メッセージの種類 ('success' または 'error')
+   */
+  const showMessage = (message: string, type: 'success' | 'error') => {
+    if (type === 'success') {
+      setSuccessMessage(message);
+    } else if (type === 'error') {
+      setError(message);
+    }
+
+    const timer = setTimeout(() => {
+      if (type === 'success') {
+        setSuccessMessage(null);
+      } else if (type === 'error') {
+        setError(null);
+      }
+    }, 3000);
+
+    // クリーンアップ処理
+    return () => clearTimeout(timer);
+  };
+
+  /**
    * 招待されているユーザーを取得
    */
   const fetchInvitedUsers = useCallback(async () => {
@@ -55,7 +80,10 @@ const PlayerInvite: React.FC = () => {
         setError(null);
       })
       .catch(() => {
-        setError('ユーザーの検索に失敗しました。');
+        showMessage(
+          'ユーザーの検索に失敗しました。再度お試しください。',
+          'error'
+        );
       });
   }, [searchTerm, searchUsers]);
 
@@ -85,7 +113,7 @@ const PlayerInvite: React.FC = () => {
 
     // 選択されているユーザーがいない場合
     if (selectedUsers.length === 0) {
-      setError('ユーザーを選択してください。');
+      showMessage('ユーザーを選択してください。', 'error');
       return;
     }
 
@@ -97,11 +125,11 @@ const PlayerInvite: React.FC = () => {
       setSelectedUsers([]);
       setSearchTerm('');
       setError(null);
-      setSuccessMessage('招待が成功しました！');
+      showMessage('招待が成功しました！', 'success');
       fetchInvitedUsers();
     } catch (error) {
       console.error('Error inviting users:', error);
-      setError('プロトタイプの作成に失敗しました。');
+      showMessage('プロトタイプの作成に失敗しました。', 'error');
     }
   };
 
@@ -110,15 +138,15 @@ const PlayerInvite: React.FC = () => {
     try {
       await deleteUserFromGroup(groupId, userId);
       setInvitedUsers((prev) => prev.filter((user) => user.id !== userId));
-      setSuccessMessage('ユーザーが削除されました。');
+      showMessage('ユーザーが削除されました。', 'success');
     } catch (error) {
       console.error('Error removing user:', error);
-      setError('ユーザーの削除に失敗しました。');
+      showMessage('ユーザーの削除に失敗しました。', 'error');
     }
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 relative">
       <h2 className="text-lg font-bold mb-2">招待者を選択</h2>
       {error && (
         <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">{error}</div>
@@ -133,50 +161,74 @@ const PlayerInvite: React.FC = () => {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         placeholder="ユーザー名で検索"
-        className="w-full p-2 border rounded mb-4"
+        className={`w-full p-2 border rounded ${
+          suggestedUsers.length > 0 ? 'mb-2' : 'mb-10'
+        }`}
       />
-      <ul className="mb-4">
-        {suggestedUsers.map((user) => (
-          <li key={user.id} className="mb-2">
-            <button
-              onClick={() => handleSelectUser(user)}
-              className="text-blue-500 hover:underline"
-            >
-              {user.username}
-            </button>
-          </li>
-        ))}
-      </ul>
+      {suggestedUsers.length > 0 && (
+        <div className="border rounded shadow-lgs bg-content mb-10">
+          <ul className="divide-y divide-gray-200">
+            {suggestedUsers.map((user) => (
+              <li
+                key={user.id}
+                className="flex items-center justify-between p-2 hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
+                onClick={() => handleSelectUser(user)}
+              >
+                <span className="font-medium">{user.username}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <h3 className="text-md font-bold mb-2">招待されたユーザー</h3>
-      <ul className="mb-8">
+      <ul className="divide-y divide-wood-lightest/20 space-y-[5px] mb-4">
         {invitedUsers.map((user) => (
-          <li key={user.id} className="mb-2 flex justify-between items-center">
-            {user.username}
+          <li
+            key={user.id}
+            className="shadow-2xl rounded-2xl overflow-hidden border border-wood-lightest/20 hover:bg-content-secondary/50 bg-content transition-colors duration-200 flex items-center p-4"
+          >
+            <div className="flex-1 flex items-center">
+              <span className="flex-1 text-wood-darkest">
+                <span className="font-medium">{user.username}</span>
+              </span>
+            </div>
             <button
               onClick={() => handleRemoveInvitedUser(user.id)}
               className="text-red-500 hover:underline ml-2"
             >
-              削除
+              <CiSquareRemove className="text-[25px] text-red-500" />
             </button>
           </li>
         ))}
       </ul>
-      <h3 className="text-md font-bold mb-2">選択されたユーザー</h3>
-      <ul className="mb-2">
-        {selectedUsers.map((user) => (
-          <li key={user.id} className="mb-2 flex justify-between items-center">
-            {user.username}
-            <button
-              onClick={() =>
-                setSelectedUsers((prev) => prev.filter((u) => u.id !== user.id))
-              }
-              className="text-red-500 hover:underline ml-2"
-            >
-              削除
-            </button>
-          </li>
-        ))}
-      </ul>
+      {selectedUsers.length > 0 && (
+        <>
+          <h3 className="text-md font-bold mb-2">選択されたユーザー</h3>
+          <ul className="divide-y divide-wood-lightest/20 space-y-[5px]">
+            {selectedUsers.map((user) => (
+              <li
+                key={user.id}
+                className="shadow-2xl rounded-2xl overflow-hidden border border-wood-lightest/20 hover:bg-content-secondary/50 bg-content transition-colors duration-200 flex items-center p-4"
+              >
+                <div className="flex-1 flex items-center">
+                  <span className="flex-1 text-wood-darkest">
+                    <span className="font-medium">{user.username}</span>
+                  </span>
+                </div>
+                <button
+                  onClick={() =>
+                    setSelectedUsers((prev) =>
+                      prev.filter((u) => u.id !== user.id)
+                    )
+                  }
+                >
+                  <CiSquareRemove className="text-[25px] text-red-500" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
       <button
         onClick={handleInvite}
         className="mt-4 p-2 bg-blue-500 text-white rounded"
