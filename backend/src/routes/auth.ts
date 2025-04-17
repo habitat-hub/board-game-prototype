@@ -121,14 +121,19 @@ router.post('/logout', (req, res) => {
  *                   type: string
  */
 router.get('/user', (req, res) => {
-  if (req.isAuthenticated()) {
-    const user = req.user as UserModel;
-    res.json({
-      id: user.id,
-      username: user.username,
-    });
-  } else {
-    res.json({});
+  try {
+    if (req.isAuthenticated()) {
+      const user = req.user as UserModel;
+      res.json({
+        id: user.id,
+        username: user.username,
+      });
+    } else {
+      res.json({});
+    }
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
