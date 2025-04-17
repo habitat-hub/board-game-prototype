@@ -57,14 +57,17 @@ const CreatePrototypeForm: React.FC = () => {
     <>
       <form
         onSubmit={handleSubmit}
-        className="max-w-md mx-auto mt-10 p-4 bg-white shadow-md rounded-lg"
+        className="max-w-md mx-auto mt-10 p-4 shadow-md rounded-lg bg-content-secondary relative"
       >
         <h2 className="text-xl font-bold mb-4 text-center">
           新しいプロトタイプを作成
         </h2>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         <div className="mb-4">
-          <label htmlFor="prototypeName" className="block text-gray-700 mb-2">
+          <label
+            htmlFor="prototypeName"
+            className="block text-wood-darkest mb-2"
+          >
             プロトタイプ名
           </label>
           <input
@@ -73,12 +76,12 @@ const CreatePrototypeForm: React.FC = () => {
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             placeholder="プロトタイプ名"
-            className="w-full p-2 border border-gray-300 rounded"
+            className="w-full p-2 border bg-content rounded text-wood-darkest"
             required
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="playerCount" className="block text-gray-700 mb-2">
+          <label htmlFor="playerCount" className="block text-wood-darkest mb-2">
             プレイヤー人数
           </label>
           <input
@@ -92,7 +95,7 @@ const CreatePrototypeForm: React.FC = () => {
               }
             }}
             placeholder="プレイヤー人数"
-            className="w-full p-2 border border-gray-300 rounded"
+            className="w-full p-2 border bg-content rounded text-wood-darkest"
             required
           />
         </div>
