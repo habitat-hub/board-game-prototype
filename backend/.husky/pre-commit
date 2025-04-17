@@ -18,8 +18,8 @@ if [ -f "backend/erd.svg" ]; then
   echo "✨ Added backend/erd.svg to staging"
 fi
 
-# frontend/src/types配下に生成されたファイルをステージングに追加
-for file in frontend/src/types/*; do
+# frontend/src/api/types配下に生成されたファイルをステージングに追加
+for file in frontend/src/api/types/*; do
   if [ -f "$file" ]; then
     git add "$file"
     echo "✨ Added $file to staging"
