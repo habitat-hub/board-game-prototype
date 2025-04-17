@@ -6,8 +6,8 @@ import { UserProvider } from '@/contexts/UserContext';
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | BoardCraft',
-    default: 'BoardCraft',
+    template: '%s | KIBAKO',
+    default: 'KIBAKO',
   },
   description: '気軽にボードゲームを作ろう',
   icons: [{ rel: 'icon', url: '/favicon.ico' }],

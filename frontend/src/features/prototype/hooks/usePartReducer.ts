@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 
 import { Part, PartProperty } from '@/api/types';
-import { usePrototypeVersionId } from '@/features/prototype/hooks/usePrototypeVersionId';
 import { useSocket } from '@/features/prototype/hooks/useSocket';
 
 // パーツのプロパティの型定義(metadataを除いた型)
@@ -55,7 +54,6 @@ export type PartAction =
 
 export const usePartReducer = () => {
   const { socket } = useSocket();
-  const { prototypeVersionId } = usePrototypeVersionId();
 
   const dispatch = useCallback(
     (action: PartAction) => {
@@ -63,7 +61,6 @@ export const usePartReducer = () => {
         // パーツの追加
         case 'ADD_PART':
           socket.emit('ADD_PART', {
-            prototypeVersionId,
             part: action.payload.part,
             properties: action.payload.properties,
           });
@@ -71,7 +68,6 @@ export const usePartReducer = () => {
         // カードの裏返し
         case 'FLIP_CARD':
           socket.emit('FLIP_CARD', {
-            prototypeVersionId,
             cardId: action.payload.cardId,
             isNextFlipped: action.payload.isNextFlipped,
           });
@@ -80,7 +76,6 @@ export const usePartReducer = () => {
         // パーツの更新
         case 'UPDATE_PART':
           socket.emit('UPDATE_PART', {
-            prototypeVersionId,
             partId: action.payload.partId,
             updatePart: action.payload.updatePart,
             updateProperties: action.payload.updateProperties,
@@ -92,7 +87,6 @@ export const usePartReducer = () => {
             action.payload.isFlipped
           ) {
             socket.emit('FLIP_CARD', {
-              prototypeVersionId,
               cardId: action.payload.partId,
               isNextFlipped: !action.payload.isFlipped,
             });
@@ -101,14 +95,12 @@ export const usePartReducer = () => {
         // パーツの削除
         case 'DELETE_PART':
           socket.emit('DELETE_PART', {
-            prototypeVersionId,
             partId: action.payload.partId,
           });
           break;
         // パーツの順番の変更
         case 'CHANGE_ORDER':
           socket.emit('CHANGE_ORDER', {
-            prototypeVersionId,
             partId: action.payload.partId,
             type: action.payload.type,
           });
@@ -116,21 +108,19 @@ export const usePartReducer = () => {
         // デッキのシャッフル
         case 'SHUFFLE_DECK':
           socket.emit('SHUFFLE_DECK', {
-            prototypeVersionId,
             deckId: action.payload.deckId,
           });
           break;
         // プレイヤーのユーザーの更新
         case 'UPDATE_PLAYER_USER':
           socket.emit('UPDATE_PLAYER_USER', {
-            prototypeVersionId,
             playerId: action.payload.playerId,
             userId: action.payload.userId,
           });
           break;
       }
     },
-    [socket, prototypeVersionId]
+    [socket]
   );
 
   return { dispatch };
