@@ -4,7 +4,7 @@ import React from 'react';
 import GroupPrototypeList from '@/features/prototype/components/organisms/GroupPrototypeList';
 
 export const metadata: Metadata = {
-  title: 'グループプロトタイプ一覧',
+  title: 'プロトタイプ管理',
 };
 
 export const runtime = 'edge';
