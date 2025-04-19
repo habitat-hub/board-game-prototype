@@ -133,10 +133,13 @@ const GroupPrototypeList: React.FC = () => {
       )}
 
       {/* プレビュー版 */}
-      {prototype.preview.map(({ prototype, versions }, index) => (
+      {prototype.preview.map(({ prototype, versions }) => (
         <div key={prototype.id} className="mb-8">
           <h2 className="text-lg font-medium mb-4 text-wood-darkest">
-            プレビュー版 {index + 1}
+            {prototype.name}
+            <span className="text-sm font-medium text-wood-dark ml-2">
+              {prototype.id.substring(0, 6)}
+            </span>
           </h2>
           <div className="shadow-xl rounded-2xl overflow-hidden bg-content border border-wood-lightest/20">
             <div className="bg-content-secondary border-b border-wood-lightest/30">
