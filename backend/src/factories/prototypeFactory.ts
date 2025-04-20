@@ -189,6 +189,7 @@ export async function createPrototype({
           name: property.name,
           description: property.description,
           color: property.color,
+          textColor: property.textColor,
           image: property.image,
         }));
       }
@@ -333,6 +334,7 @@ export const createPrototypeVersion = async (
         name: property.name,
         description: property.description,
         color: property.color,
+        textColor: property.textColor,
         image: property.image,
       }));
     }
