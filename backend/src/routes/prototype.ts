@@ -831,4 +831,86 @@ router.post(
   }
 );
 
+/**
+ * @swagger
+ * /api/prototypes/{prototypeId}/versions/{prototypeVersionId}:
+ *   delete:
+ *     tags: [Prototypes]
+ *     summary: バージョン削除
+ *     description: 指定されたプロトタイプのバージョンを削除します。最後の1つのバージョンは削除できません。
+ *     parameters:
+ *       - name: prototypeId
+ *         in: path
+ *         required: true
+ *         description: プロトタイプのID
+ *         schema:
+ *           type: string
+ *       - name: prototypeVersionId
+ *         in: path
+ *         required: true
+ *         description: バージョンのID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: バージョンを削除しました
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       '400':
+ *         description: 最後のバージョンは削除できません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error400Response'
+ *       '404':
+ *         description: バージョンが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
+ *       '500':
+ *         description: サーバーエラー
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
+ */
+router.delete(
+  '/:prototypeId/versions/:prototypeVersionId',
+  checkPrototypeAccess,
+  async (req: Request, res: Response) => {
+    const prototypeId = req.params.prototypeId;
+    const prototypeVersionId = req.params.prototypeVersionId;
+
+    try {
+      const prototypeVersion =
+        await PrototypeVersionModel.findByPk(prototypeVersionId);
+      if (!prototypeVersion || prototypeVersion.prototypeId !== prototypeId) {
+        res.status(404).json({ error: 'バージョンが見つかりません' });
+        return;
+      }
+
+      const versionCount = await PrototypeVersionModel.count({
+        where: { prototypeId },
+      });
+
+      if (versionCount <= 1) {
+        res.status(400).json({ error: '最後のバージョンは削除できません' });
+        return;
+      }
+
+      await PrototypeVersionModel.destroy({
+        where: { id: prototypeVersionId },
+      });
+
+      res.status(200).json({ message: 'バージョンを削除しました' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+    }
+  }
+);
+
 export default router;

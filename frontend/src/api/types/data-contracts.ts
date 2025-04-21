@@ -193,6 +193,8 @@ export interface PrototypesVersionsCreatePayload {
 
 export type PrototypesVersionsCreateData = SuccessResponse;
 
+export type PrototypesVersionsDeleteData = SuccessResponse;
+
 export interface UsersSearchListParams {
   /** 検索するユーザー名 */
   username: string;

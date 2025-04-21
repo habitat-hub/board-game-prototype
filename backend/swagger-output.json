@@ -1206,6 +1206,75 @@
             }
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "Prototypes"
+        ],
+        "summary": "バージョン削除",
+        "description": "指定されたプロトタイプのバージョンを削除します。最後の1つのバージョンは削除できません。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプのID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prototypeVersionId",
+            "in": "path",
+            "required": true,
+            "description": "バージョンのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "バージョンを削除しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "最後のバージョンは削除できません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "バージョンが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "サーバーエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/users/search": {
