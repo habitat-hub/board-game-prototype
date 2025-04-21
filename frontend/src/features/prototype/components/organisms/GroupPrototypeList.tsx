@@ -206,36 +206,46 @@ const GroupPrototypeList: React.FC = () => {
                     </span>
                     <div className="w-40 flex gap-2 justify-end">
                       {version.versionNumber === VERSION_NUMBER.MASTER && (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleCreateRoom(
+                                version.prototypeId,
+                                version.id,
+                                versions
+                              );
+                            }}
+                            className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-sm text-wood-dark hover:text-header rounded-lg hover:bg-wood-lightest/20 transition-all duration-200 border border-wood-light/20"
+                            title="新しいルームを作成"
+                          >
+                            <IoAdd className="h-4 w-4" />
+                            ルーム
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleDeletePreview(version.prototypeId);
+                            }}
+                            className="flex items-center justify-center gap-1 px-2 py-1.5 text-sm text-wood-dark hover:text-red-500 rounded-lg hover:bg-red-50 transition-all duration-200 border border-wood-light/20"
+                            title="プレビューを削除"
+                          >
+                            <IoTrash className="h-4 w-4" />
+                          </button>
+                        </>
+                      )}
+                      {version.versionNumber !== VERSION_NUMBER.MASTER && (
                         <button
                           onClick={(e) => {
                             e.preventDefault();
-                            handleCreateRoom(
-                              version.prototypeId,
-                              version.id,
-                              versions
-                            );
+                            handleDeleteRoom(version.prototypeId, version.id);
                           }}
-                          className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-sm text-wood-dark hover:text-header rounded-lg hover:bg-wood-lightest/20 transition-all duration-200 border border-wood-light/20"
-                          title="新しいルームを作成"
+                          className="flex items-center justify-center gap-1 px-2 py-1.5 text-sm text-wood-dark hover:text-red-500 rounded-lg hover:bg-red-50 transition-all duration-200 border border-wood-light/20"
+                          title="ルームを削除"
                         >
-                          <IoAdd className="h-4 w-4" />
-                          ルーム
+                          <IoTrash className="h-4 w-4" />
                         </button>
                       )}
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (version.versionNumber === VERSION_NUMBER.MASTER) {
-                            handleDeletePreview(version.prototypeId);
-                          } else {
-                            handleDeleteRoom(version.prototypeId, version.id);
-                          }
-                        }}
-                        className="flex items-center justify-center gap-1 px-2 py-1.5 text-sm text-wood-dark hover:text-red-500 rounded-lg hover:bg-red-50 transition-all duration-200 border border-wood-light/20"
-                        title="プレビューを削除"
-                      >
-                        <IoTrash className="h-4 w-4" />
-                      </button>
                     </div>
                   </li>
                 </Link>
