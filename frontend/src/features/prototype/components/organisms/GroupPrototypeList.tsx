@@ -94,12 +94,8 @@ const GroupPrototypeList: React.FC = () => {
    * @param prototypeId プロトタイプのID
    */
   const handleDeletePreview = async (prototypeId: string) => {
-    try {
-      await deletePrototype(prototypeId);
-      await getPrototypeGroups();
-    } catch (error) {
-      console.error('Failed to delete room:', error);
-    }
+    await deletePrototype(prototypeId);
+    await getPrototypeGroups();
   };
 
   /**
@@ -111,12 +107,8 @@ const GroupPrototypeList: React.FC = () => {
     prototypeId: string,
     prototypeVersionId: string
   ) => {
-    try {
-      await deleteVersion(prototypeId, prototypeVersionId);
-      await getPrototypeGroups();
-    } catch (error) {
-      console.error('Failed to delete room:', error);
-    }
+    await deleteVersion(prototypeId, prototypeVersionId);
+    await getPrototypeGroups();
   };
 
   // プロトタイプが存在しない場合
