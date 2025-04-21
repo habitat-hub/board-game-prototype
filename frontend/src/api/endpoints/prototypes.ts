@@ -15,6 +15,7 @@ import {
   PrototypesUpdateData,
   PrototypesUpdatePayload,
   PrototypesVersionsCreateData,
+  PrototypesVersionsDeleteData,
   PrototypesVersionsCreatePayload,
   PrototypesVersionsListData,
 } from '@/api/types';
@@ -168,7 +169,7 @@ export const prototypesService = {
   deleteVersion: async (
     prototypeId: string,
     prototypeVersionId: string
-  ): Promise<PrototypesVersionsCreateData> => {
+  ): Promise<PrototypesVersionsDeleteData> => {
     const response = await axiosInstance.delete(
       `/api/prototypes/${prototypeId}/versions/${prototypeVersionId}`
     );
