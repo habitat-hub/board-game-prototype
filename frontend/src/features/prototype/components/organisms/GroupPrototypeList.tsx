@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
-import { IoAdd, IoArrowBack } from 'react-icons/io5';
+import { IoAdd, IoArrowBack, IoTrash } from 'react-icons/io5';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Prototype, PrototypeVersion } from '@/api/types';
@@ -12,8 +12,13 @@ import formatDate from '@/utils/dateFormat';
 
 const GroupPrototypeList: React.FC = () => {
   const router = useRouter();
-  const { getPrototypesByGroup, createPreview, createVersion } =
-    usePrototypes();
+  const {
+    getPrototypesByGroup,
+    createPreview,
+    createVersion,
+    deletePrototype,
+    deleteVersion,
+  } = usePrototypes();
 
   // グループID
   const { groupId } = useParams<{ groupId: string }>();
@@ -82,6 +87,36 @@ const GroupPrototypeList: React.FC = () => {
       description: undefined,
     });
     await getPrototypeGroups();
+  };
+
+  /**
+   * プレビューを削除する
+   * @param prototypeId プロトタイプのID
+   */
+  const handleDeletePreview = async (prototypeId: string) => {
+    try {
+      await deletePrototype(prototypeId);
+      await getPrototypeGroups();
+    } catch (error) {
+      console.error('Failed to delete room:', error);
+    }
+  };
+
+  /**
+   * ルームを削除する
+   * @param prototypeId プロトタイプのID
+   * @param prototypeVersionId プロトタイプのバージョンのID
+   */
+  const handleDeleteRoom = async (
+    prototypeId: string,
+    prototypeVersionId: string
+  ) => {
+    try {
+      await deleteVersion(prototypeId, prototypeVersionId);
+      await getPrototypeGroups();
+    } catch (error) {
+      console.error('Failed to delete room:', error);
+    }
   };
 
   // プロトタイプが存在しない場合
@@ -177,7 +212,7 @@ const GroupPrototypeList: React.FC = () => {
                     <span className="w-32 text-sm text-wood">
                       {formatDate(version.createdAt, true)}
                     </span>
-                    <div className="w-32">
+                    <div className="w-40 flex gap-2 justify-end">
                       {version.versionNumber === VERSION_NUMBER.MASTER && (
                         <button
                           onClick={(e) => {
@@ -188,13 +223,27 @@ const GroupPrototypeList: React.FC = () => {
                               versions
                             );
                           }}
-                          className="w-full flex items-center justify-center gap-2 px-3 py-1.5 text-sm text-wood-dark hover:text-header rounded-lg hover:bg-wood-lightest/20 transition-all duration-200 border border-wood-light/20"
+                          className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-sm text-wood-dark hover:text-header rounded-lg hover:bg-wood-lightest/20 transition-all duration-200 border border-wood-light/20"
                           title="新しいルームを作成"
                         >
                           <IoAdd className="h-4 w-4" />
                           ルーム
                         </button>
                       )}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (version.versionNumber === VERSION_NUMBER.MASTER) {
+                            handleDeletePreview(version.prototypeId);
+                          } else {
+                            handleDeleteRoom(version.prototypeId, version.id);
+                          }
+                        }}
+                        className="flex items-center justify-center gap-1 px-2 py-1.5 text-sm text-wood-dark hover:text-red-500 rounded-lg hover:bg-red-50 transition-all duration-200 border border-wood-light/20"
+                        title="プレビューを削除"
+                      >
+                        <IoTrash className="h-4 w-4" />
+                      </button>
                     </div>
                   </li>
                 </Link>

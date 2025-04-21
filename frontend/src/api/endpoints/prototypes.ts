@@ -161,4 +161,17 @@ export const prototypesService = {
     );
     return response.data;
   },
+
+  /**
+   * プロトタイプのバージョンを削除
+   */
+  deleteVersion: async (
+    prototypeId: string,
+    prototypeVersionId: string
+  ): Promise<PrototypesVersionsCreateData> => {
+    const response = await axiosInstance.delete(
+      `/api/prototypes/${prototypeId}/versions/${prototypeVersionId}`
+    );
+    return response.data;
+  },
 };
