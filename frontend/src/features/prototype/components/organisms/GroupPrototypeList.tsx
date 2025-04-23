@@ -72,18 +72,12 @@ const GroupPrototypeList: React.FC = () => {
    * 新しいルームを作成する
    * @param prototypeId プロトタイプのID
    * @param prototypeVersionId プロトタイプのバージョンのID
-   * @param versions プロトタイプのバージョン
    */
   const handleCreateRoom = async (
     prototypeId: string,
-    prototypeVersionId: string,
-    versions: PrototypeVersion[]
+    prototypeVersionId: string
   ) => {
-    // 新しいバージョン番号
-    const newVersionNumber = versions.length.toString() + '.0.0';
-
     await createVersion(prototypeId, prototypeVersionId, {
-      newVersionNumber,
       description: undefined,
     });
     await getPrototypeGroups();
@@ -210,11 +204,7 @@ const GroupPrototypeList: React.FC = () => {
                           <button
                             onClick={(e) => {
                               e.preventDefault();
-                              handleCreateRoom(
-                                version.prototypeId,
-                                version.id,
-                                versions
-                              );
+                              handleCreateRoom(version.prototypeId, version.id);
                             }}
                             className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-sm text-wood-dark hover:text-header rounded-lg hover:bg-wood-lightest/20 transition-all duration-200 border border-wood-light/20"
                             title="新しいルームを作成"

@@ -1153,11 +1153,9 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "newVersionNumber": {
-                    "type": "string"
-                  },
                   "description": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "新しいバージョンの説明"
                   }
                 }
               }
