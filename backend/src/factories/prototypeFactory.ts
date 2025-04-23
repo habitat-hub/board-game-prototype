@@ -384,11 +384,13 @@ export const createPrototypeVersion = async (
  *
  * @param prototypeVersionId - 削除するプロトタイプバージョンID
  * @param prototypeId - プロトタイプID (検証用)
+ * @param transaction - トランザクション (オプション)
  * @returns - 削除が成功したかどうかと、エラーメッセージ
  */
 export const deletePrototypeVersion = async (
   prototypeVersionId: string,
-  prototypeId: string
+  prototypeId: string,
+  transaction?: Transaction
 ): Promise<{ success: boolean; message?: string }> => {
   // バージョンを取得
   const prototypeVersion =
@@ -406,6 +408,7 @@ export const deletePrototypeVersion = async (
 
   await PrototypeVersionModel.destroy({
     where: { id: prototypeVersionId },
+    transaction,
   });
 
   return { success: true, message: 'バージョンを削除しました' };

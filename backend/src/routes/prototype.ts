@@ -885,21 +885,27 @@ router.delete(
     const prototypeId = req.params.prototypeId;
     const prototypeVersionId = req.params.prototypeVersionId;
 
+    const transaction = await sequelize.transaction();
+
     try {
       const result = await deletePrototypeVersion(
         prototypeVersionId,
-        prototypeId
+        prototypeId,
+        transaction
       );
 
       if (!result.success) {
+        await transaction.rollback();
         res
           .status(result.message === 'バージョンが見つかりません' ? 404 : 400)
           .json({ error: result.message });
         return;
       }
 
+      await transaction.commit();
       res.status(200).json({ message: result.message });
     } catch (error) {
+      await transaction.rollback();
       console.error(error);
       res.status(500).json({ error: '予期せぬエラーが発生しました' });
     }
