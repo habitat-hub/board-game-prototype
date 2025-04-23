@@ -187,7 +187,7 @@ export type PrototypesDuplicateCreateData = SuccessResponse;
 export type PrototypesPreviewCreateData = Prototype;
 
 export interface PrototypesVersionsCreatePayload {
-  newVersionNumber?: string;
+  /** 新しいバージョンの説明 */
   description?: string;
 }
 

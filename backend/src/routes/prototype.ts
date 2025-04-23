@@ -774,10 +774,9 @@ router.post(
  *           schema:
  *             type: object
  *             properties:
- *               newVersionNumber:
- *                 type: string
  *               description:
  *                 type: string
+ *                 description: 新しいバージョンの説明
  *     responses:
  *       '200':
  *         description: 新しいバージョンを作成しました
@@ -809,23 +808,18 @@ router.post(
   checkPrototypeAccess,
   async (req: Request, res: Response) => {
     const prototypeVersionId = req.params.prototypeVersionId;
-    const { newVersionNumber, description } = req.body;
+    const { description } = req.body;
     const prototypeVersion =
       await PrototypeVersionModel.findByPk(prototypeVersionId);
 
-    if (!prototypeVersion || !newVersionNumber) {
+    if (!prototypeVersion) {
       res.status(400).json({ error: 'リクエストが不正です' });
       return;
     }
 
     const transaction = await sequelize.transaction();
     try {
-      await createPrototypeVersion(
-        prototypeVersion,
-        newVersionNumber,
-        description,
-        transaction
-      );
+      await createPrototypeVersion(prototypeVersion, description, transaction);
       await transaction.commit();
       res.status(200).json({ message: '新しいバージョンを作成しました' });
     } catch (error) {

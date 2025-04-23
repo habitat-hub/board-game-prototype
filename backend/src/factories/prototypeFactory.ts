@@ -239,10 +239,22 @@ export async function createPrototype({
 
 export const createPrototypeVersion = async (
   originalPrototypeVersion: PrototypeVersionModel,
-  newVersionNumber: string,
   description: string,
   transaction: Transaction
 ) => {
+  const existingVersions = await PrototypeVersionModel.findAll({
+    where: {
+      prototypeId: originalPrototypeVersion.prototypeId,
+    },
+    attributes: ['versionNumber'],
+  });
+  const majorVersions = existingVersions.map((version) => {
+    const parts = version.versionNumber.split('.');
+    return parseInt(parts[0], 10);
+  });
+  const maxMajorVersion = Math.max(...majorVersions);
+  const newVersionNumber = `${maxMajorVersion + 1}.0.0`;
+
   const newPrototypeVersion = await PrototypeVersionModel.create(
     {
       prototypeId: originalPrototypeVersion.prototypeId,
