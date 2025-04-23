@@ -239,10 +239,22 @@ export async function createPrototype({
 
 export const createPrototypeVersion = async (
   originalPrototypeVersion: PrototypeVersionModel,
-  newVersionNumber: string,
   description: string,
   transaction: Transaction
 ) => {
+  const existingVersions = await PrototypeVersionModel.findAll({
+    where: {
+      prototypeId: originalPrototypeVersion.prototypeId,
+    },
+    attributes: ['versionNumber'],
+  });
+  const majorVersions = existingVersions.map((version) => {
+    const parts = version.versionNumber.split('.');
+    return parseInt(parts[0], 10);
+  });
+  const maxMajorVersion = Math.max(...majorVersions);
+  const newVersionNumber = `${maxMajorVersion + 1}.0.0`;
+
   const newPrototypeVersion = await PrototypeVersionModel.create(
     {
       prototypeId: originalPrototypeVersion.prototypeId,
@@ -377,4 +389,39 @@ export const createPrototypeVersion = async (
       );
     })
   );
+};
+
+/**
+ * プロトタイプバージョンを削除する
+ *
+ * @param prototypeVersionId - 削除するプロトタイプバージョンID
+ * @param prototypeId - プロトタイプID (検証用)
+ * @param transaction - トランザクション (オプション)
+ * @returns - 削除が成功したかどうかと、エラーメッセージ
+ */
+export const deletePrototypeVersion = async (
+  prototypeVersionId: string,
+  prototypeId: string,
+  transaction?: Transaction
+): Promise<{ success: boolean; message?: string }> => {
+  // バージョンを取得
+  const prototypeVersion =
+    await PrototypeVersionModel.findByPk(prototypeVersionId);
+
+  // 存在しないかIDが一致しない場合
+  if (!prototypeVersion || prototypeVersion.prototypeId !== prototypeId) {
+    return { success: false, message: 'バージョンが見つかりません' };
+  }
+
+  // マスターバージョン（0.0.0）は削除できない
+  if (prototypeVersion.versionNumber === '0.0.0') {
+    return { success: false, message: 'マスターバージョンは削除できません' };
+  }
+
+  await PrototypeVersionModel.destroy({
+    where: { id: prototypeVersionId },
+    transaction,
+  });
+
+  return { success: true, message: 'バージョンを削除しました' };
 };

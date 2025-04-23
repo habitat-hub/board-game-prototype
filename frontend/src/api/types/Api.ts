@@ -30,6 +30,7 @@ import {
   PrototypesUpdatePayload,
   PrototypesVersionsCreateData,
   PrototypesVersionsCreatePayload,
+  PrototypesVersionsDeleteData,
   PrototypesVersionsListData,
   UsersSearchListData,
   UsersSearchListParams,
@@ -141,7 +142,7 @@ export class Api<
       ...params,
     });
   /**
-   * @description 指定されたグループに属するプロトタイプの一覧を取得します。
+   * @description 指定されたグループに属するプロトタイプの一覧を作成日の古い順で取得します。
    *
    * @tags Prototypes
    * @name PrototypesGroupsDetail
@@ -280,6 +281,28 @@ export class Api<
       method: "POST",
       body: data,
       type: ContentType.Json,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description 指定されたプロトタイプのバージョンを削除します。マスターバージョン（0.0.0）は削除できません。
+   *
+   * @tags Prototypes
+   * @name PrototypesVersionsDelete
+   * @summary バージョン削除
+   * @request DELETE:/api/prototypes/{prototypeId}/versions/{prototypeVersionId}
+   */
+  prototypesVersionsDelete = (
+    prototypeId: string,
+    prototypeVersionId: string,
+    params: RequestParams = {},
+  ) =>
+    this.request<
+      PrototypesVersionsDeleteData,
+      Error400Response | Error404Response | Error500Response
+    >({
+      path: `/api/prototypes/${prototypeId}/versions/${prototypeVersionId}`,
+      method: "DELETE",
       format: "json",
       ...params,
     });

@@ -120,6 +120,19 @@ export const usePrototypes = () => {
     []
   );
 
+  /**
+   * 指定されたプロトタイプバージョンを削除
+   */
+  const deleteVersion = useCallback(
+    async (prototypeId: string, prototypeVersionId: string) => {
+      return await prototypesService.deleteVersion(
+        prototypeId,
+        prototypeVersionId
+      );
+    },
+    []
+  );
+
   return {
     getPrototypes,
     createPrototype,
@@ -134,5 +147,6 @@ export const usePrototypes = () => {
     duplicatePrototype,
     createPreview,
     createVersion,
+    deleteVersion,
   };
 };
