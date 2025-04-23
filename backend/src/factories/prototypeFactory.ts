@@ -378,3 +378,35 @@ export const createPrototypeVersion = async (
     })
   );
 };
+
+/**
+ * プロトタイプバージョンを削除する
+ *
+ * @param prototypeVersionId - 削除するプロトタイプバージョンID
+ * @param prototypeId - プロトタイプID (検証用)
+ * @returns - 削除が成功したかどうかと、エラーメッセージ
+ */
+export const deletePrototypeVersion = async (
+  prototypeVersionId: string,
+  prototypeId: string
+): Promise<{ success: boolean; message?: string }> => {
+  // バージョンを取得
+  const prototypeVersion =
+    await PrototypeVersionModel.findByPk(prototypeVersionId);
+
+  // 存在しないかIDが一致しない場合
+  if (!prototypeVersion || prototypeVersion.prototypeId !== prototypeId) {
+    return { success: false, message: 'バージョンが見つかりません' };
+  }
+
+  // マスターバージョン（0.0.0）は削除できない
+  if (prototypeVersion.versionNumber === '0.0.0') {
+    return { success: false, message: 'マスターバージョンは削除できません' };
+  }
+
+  await PrototypeVersionModel.destroy({
+    where: { id: prototypeVersionId },
+  });
+
+  return { success: true, message: 'バージョンを削除しました' };
+};

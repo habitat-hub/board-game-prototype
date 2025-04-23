@@ -11,6 +11,7 @@ import { getAccessiblePrototypes } from '../helpers/prototypeHelper';
 import {
   createPrototype,
   createPrototypeVersion,
+  deletePrototypeVersion,
 } from '../factories/prototypeFactory';
 import { UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import sequelize from '../models';
@@ -837,7 +838,7 @@ router.post(
  *   delete:
  *     tags: [Prototypes]
  *     summary: バージョン削除
- *     description: 指定されたプロトタイプのバージョンを削除します。最後の1つのバージョンは削除できません。
+ *     description: 指定されたプロトタイプのバージョンを削除します。マスターバージョン（0.0.0）は削除できません。
  *     parameters:
  *       - name: prototypeId
  *         in: path
@@ -859,7 +860,7 @@ router.post(
  *             schema:
  *               $ref: '#/components/schemas/SuccessResponse'
  *       '400':
- *         description: 最後のバージョンは削除できません
+ *         description: マスターバージョンは削除できません
  *         content:
  *           application/json:
  *             schema:
@@ -885,27 +886,19 @@ router.delete(
     const prototypeVersionId = req.params.prototypeVersionId;
 
     try {
-      const prototypeVersion =
-        await PrototypeVersionModel.findByPk(prototypeVersionId);
-      if (!prototypeVersion || prototypeVersion.prototypeId !== prototypeId) {
-        res.status(404).json({ error: 'バージョンが見つかりません' });
+      const result = await deletePrototypeVersion(
+        prototypeVersionId,
+        prototypeId
+      );
+
+      if (!result.success) {
+        res
+          .status(result.message === 'バージョンが見つかりません' ? 404 : 400)
+          .json({ error: result.message });
         return;
       }
 
-      const versionCount = await PrototypeVersionModel.count({
-        where: { prototypeId },
-      });
-
-      if (versionCount <= 1) {
-        res.status(400).json({ error: '最後のバージョンは削除できません' });
-        return;
-      }
-
-      await PrototypeVersionModel.destroy({
-        where: { id: prototypeVersionId },
-      });
-
-      res.status(200).json({ message: 'バージョンを削除しました' });
+      res.status(200).json({ message: result.message });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: '予期せぬエラーが発生しました' });

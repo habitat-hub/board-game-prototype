@@ -285,7 +285,7 @@ export class Api<
       ...params,
     });
   /**
-   * @description 指定されたプロトタイプのバージョンを削除します。最後の1つのバージョンは削除できません。
+   * @description 指定されたプロトタイプのバージョンを削除します。マスターバージョン（0.0.0）は削除できません。
    *
    * @tags Prototypes
    * @name PrototypesVersionsDelete
