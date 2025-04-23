@@ -344,7 +344,7 @@ router.get('/:prototypeId/versions', checkPrototypeAccess, async (req, res) => {
  *   get:
  *     tags: [Prototypes]
  *     summary: グループのプロトタイプ一覧取得
- *     description: 指定されたグループに属するプロトタイプの一覧を取得します。
+ *     description: 指定されたグループに属するプロトタイプの一覧を作成日の古い順で取得します。
  *     parameters:
  *       - name: groupId
  *         in: path
@@ -374,11 +374,15 @@ router.get('/:prototypeId/versions', checkPrototypeAccess, async (req, res) => {
  */
 router.get('/groups/:groupId', checkGroupAccess, async (req, res) => {
   const groupId = req.params.groupId;
-  const prototypes = await PrototypeModel.findAll({ where: { groupId } });
+  const prototypes = await PrototypeModel.findAll({
+    where: { groupId },
+    order: [['createdAt', 'ASC']],
+  });
   const result = await Promise.all(
     prototypes.map(async (prototype) => {
       const versions = await PrototypeVersionModel.findAll({
         where: { prototypeId: prototype.id },
+        order: [['createdAt', 'ASC']],
       });
       return {
         prototype,
