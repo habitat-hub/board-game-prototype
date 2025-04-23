@@ -142,7 +142,7 @@ export class Api<
       ...params,
     });
   /**
-   * @description 指定されたグループに属するプロトタイプの一覧を取得します。
+   * @description 指定されたグループに属するプロトタイプの一覧を作成日の古い順で取得します。
    *
    * @tags Prototypes
    * @name PrototypesGroupsDetail
