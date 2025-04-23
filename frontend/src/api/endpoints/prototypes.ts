@@ -15,6 +15,7 @@ import {
   PrototypesUpdateData,
   PrototypesUpdatePayload,
   PrototypesVersionsCreateData,
+  PrototypesVersionsDeleteData,
   PrototypesVersionsCreatePayload,
   PrototypesVersionsListData,
 } from '@/api/types';
@@ -158,6 +159,19 @@ export const prototypesService = {
     const response = await axiosInstance.post(
       `/api/prototypes/${prototypeId}/versions/${prototypeVersionId}`,
       data
+    );
+    return response.data;
+  },
+
+  /**
+   * プロトタイプのバージョンを削除
+   */
+  deleteVersion: async (
+    prototypeId: string,
+    prototypeVersionId: string
+  ): Promise<PrototypesVersionsDeleteData> => {
+    const response = await axiosInstance.delete(
+      `/api/prototypes/${prototypeId}/versions/${prototypeVersionId}`
     );
     return response.data;
   },

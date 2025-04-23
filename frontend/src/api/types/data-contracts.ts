@@ -43,7 +43,7 @@ export interface Access {
 
 export interface Part {
   id: number;
-  type: 'token' | 'card' | 'hand' | 'deck' | 'area';
+  type: "token" | "card" | "hand" | "deck" | "area";
   /** @format uuid */
   prototypeVersionId: string;
   parentId?: number;
@@ -63,7 +63,7 @@ export interface Part {
 
 export interface PartProperty {
   partId: number;
-  side: 'front' | 'back';
+  side: "front" | "back";
   name: string;
   description: string;
   color: string;
@@ -91,7 +91,7 @@ export interface Prototype {
   /** @format uuid */
   userId: string;
   name: string;
-  type: 'EDIT' | 'PREVIEW';
+  type: "EDIT" | "PREVIEW";
   /** @format uuid */
   masterPrototypeId?: string;
   /** @format uuid */
@@ -187,11 +187,13 @@ export type PrototypesDuplicateCreateData = SuccessResponse;
 export type PrototypesPreviewCreateData = Prototype;
 
 export interface PrototypesVersionsCreatePayload {
-  newVersionNumber?: string;
+  /** 新しいバージョンの説明 */
   description?: string;
 }
 
 export type PrototypesVersionsCreateData = SuccessResponse;
+
+export type PrototypesVersionsDeleteData = SuccessResponse;
 
 export interface UsersSearchListParams {
   /** 検索するユーザー名 */

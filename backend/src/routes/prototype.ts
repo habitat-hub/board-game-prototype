@@ -11,6 +11,7 @@ import { getAccessiblePrototypes } from '../helpers/prototypeHelper';
 import {
   createPrototype,
   createPrototypeVersion,
+  deletePrototypeVersion,
 } from '../factories/prototypeFactory';
 import { UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import sequelize from '../models';
@@ -379,7 +380,7 @@ router.get('/:prototypeId/versions', checkPrototypeAccess, async (req, res) => {
  *   get:
  *     tags: [Prototypes]
  *     summary: グループのプロトタイプ一覧取得
- *     description: 指定されたグループに属するプロトタイプの一覧を取得します。
+ *     description: 指定されたグループに属するプロトタイプの一覧を作成日の古い順で取得します。
  *     parameters:
  *       - name: groupId
  *         in: path
@@ -409,13 +410,16 @@ router.get('/:prototypeId/versions', checkPrototypeAccess, async (req, res) => {
  */
 router.get('/groups/:groupId', checkGroupAccess, async (req, res) => {
   const groupId = req.params.groupId;
-
   try {
-    const prototypes = await PrototypeModel.findAll({ where: { groupId } });
+    const prototypes = await PrototypeModel.findAll({
+      where: { groupId },
+      order: [['createdAt', 'ASC']],
+    });
     const result = await Promise.all(
       prototypes.map(async (prototype) => {
         const versions = await PrototypeVersionModel.findAll({
           where: { prototypeId: prototype.id },
+          order: [['createdAt', 'ASC']],
         });
         return {
           prototype,
@@ -818,10 +822,9 @@ router.post(
  *           schema:
  *             type: object
  *             properties:
- *               newVersionNumber:
- *                 type: string
  *               description:
  *                 type: string
+ *                 description: 新しいバージョンの説明
  *     responses:
  *       '200':
  *         description: 新しいバージョンを作成しました
@@ -853,25 +856,100 @@ router.post(
   checkPrototypeAccess,
   async (req: Request, res: Response) => {
     const prototypeVersionId = req.params.prototypeVersionId;
-    const { newVersionNumber, description } = req.body;
+    const { description } = req.body;
     const prototypeVersion =
       await PrototypeVersionModel.findByPk(prototypeVersionId);
 
-    if (!prototypeVersion || !newVersionNumber) {
+    if (!prototypeVersion) {
       res.status(400).json({ error: 'リクエストが不正です' });
       return;
     }
 
     const transaction = await sequelize.transaction();
     try {
-      await createPrototypeVersion(
-        prototypeVersion,
-        newVersionNumber,
-        description,
-        transaction
-      );
+      await createPrototypeVersion(prototypeVersion, description, transaction);
       await transaction.commit();
       res.status(200).json({ message: '新しいバージョンを作成しました' });
+    } catch (error) {
+      await transaction.rollback();
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/prototypes/{prototypeId}/versions/{prototypeVersionId}:
+ *   delete:
+ *     tags: [Prototypes]
+ *     summary: バージョン削除
+ *     description: 指定されたプロトタイプのバージョンを削除します。マスターバージョン（0.0.0）は削除できません。
+ *     parameters:
+ *       - name: prototypeId
+ *         in: path
+ *         required: true
+ *         description: プロトタイプのID
+ *         schema:
+ *           type: string
+ *       - name: prototypeVersionId
+ *         in: path
+ *         required: true
+ *         description: バージョンのID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: バージョンを削除しました
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       '400':
+ *         description: マスターバージョンは削除できません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error400Response'
+ *       '404':
+ *         description: バージョンが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
+ *       '500':
+ *         description: サーバーエラー
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
+ */
+router.delete(
+  '/:prototypeId/versions/:prototypeVersionId',
+  checkPrototypeAccess,
+  async (req: Request, res: Response) => {
+    const prototypeId = req.params.prototypeId;
+    const prototypeVersionId = req.params.prototypeVersionId;
+
+    const transaction = await sequelize.transaction();
+
+    try {
+      const result = await deletePrototypeVersion(
+        prototypeVersionId,
+        prototypeId,
+        transaction
+      );
+
+      if (!result.success) {
+        await transaction.rollback();
+        res
+          .status(result.message === 'バージョンが見つかりません' ? 404 : 400)
+          .json({ error: result.message });
+        return;
+      }
+
+      await transaction.commit();
+      res.status(200).json({ message: result.message });
     } catch (error) {
       await transaction.rollback();
       console.error(error);
