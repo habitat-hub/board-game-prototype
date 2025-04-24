@@ -687,15 +687,15 @@ router.post(
   checkPrototypeAccess,
   async (req, res) => {
     const prototypeId = req.params.prototypeId;
-    const prototype = await PrototypeModel.findByPk(prototypeId);
-    if (!prototype) {
-      res.status(404).json({ error: 'プロトタイプが見つかりません' });
-      return;
-    }
-
     const transaction = await sequelize.transaction();
 
     try {
+      const prototype = await PrototypeModel.findByPk(prototypeId);
+      if (!prototype) {
+        res.status(404).json({ error: 'プロトタイプが見つかりません' });
+        return;
+      }
+
       await createPrototype({
         userId: prototype.userId,
         name: `${prototype.name} - 複製版`,
@@ -757,22 +757,23 @@ router.post(
   checkPrototypeAccess,
   async (req: Request, res: Response) => {
     const editPrototypeId = req.params.prototypeId;
-    const editPrototype = await PrototypeModel.findByPk(editPrototypeId);
-    if (!editPrototype || editPrototype.type !== 'EDIT') {
-      res.status(404).json({ error: 'プロトタイプが見つかりません' });
-      return;
-    }
-
-    const editPrototypeDefaultVersion = await PrototypeVersionModel.findOne({
-      where: { prototypeId: editPrototype.id },
-    });
-    if (!editPrototypeDefaultVersion) {
-      res.status(404).json({ error: 'デフォルトバージョンが見つかりません' });
-      return;
-    }
-
     const transaction = await sequelize.transaction();
+
     try {
+      const editPrototype = await PrototypeModel.findByPk(editPrototypeId);
+      if (!editPrototype || editPrototype.type !== 'EDIT') {
+        res.status(404).json({ error: 'プロトタイプが見つかりません' });
+        return;
+      }
+
+      const editPrototypeDefaultVersion = await PrototypeVersionModel.findOne({
+        where: { prototypeId: editPrototype.id },
+      });
+      if (!editPrototypeDefaultVersion) {
+        res.status(404).json({ error: 'デフォルトバージョンが見つかりません' });
+        return;
+      }
+
       const previewPrototype = await createPrototype({
         userId: editPrototype.userId,
         name: `${editPrototype.name} - プレビュー版`,
@@ -857,16 +858,17 @@ router.post(
   async (req: Request, res: Response) => {
     const prototypeVersionId = req.params.prototypeVersionId;
     const { description } = req.body;
-    const prototypeVersion =
-      await PrototypeVersionModel.findByPk(prototypeVersionId);
-
-    if (!prototypeVersion) {
-      res.status(400).json({ error: 'リクエストが不正です' });
-      return;
-    }
-
     const transaction = await sequelize.transaction();
+
     try {
+      const prototypeVersion =
+        await PrototypeVersionModel.findByPk(prototypeVersionId);
+
+      if (!prototypeVersion) {
+        res.status(400).json({ error: 'リクエストが不正です' });
+        return;
+      }
+
       await createPrototypeVersion(prototypeVersion, description, transaction);
       await transaction.commit();
       res.status(200).json({ message: '新しいバージョンを作成しました' });
