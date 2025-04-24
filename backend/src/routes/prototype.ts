@@ -11,6 +11,7 @@ import { getAccessiblePrototypes } from '../helpers/prototypeHelper';
 import {
   createPrototype,
   createPrototypeVersion,
+  deletePrototypeVersion,
 } from '../factories/prototypeFactory';
 import { UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import sequelize from '../models';
@@ -51,8 +52,15 @@ router.use(ensureAuthenticated);
  */
 router.get('/', async (req: Request, res: Response) => {
   const user = req.user as UserModel;
-  const prototypes = await getAccessiblePrototypes({ userId: user.id });
-  res.json(prototypes);
+
+  try {
+    const prototypes = await getAccessiblePrototypes({ userId: user.id });
+
+    res.json(prototypes);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: '予期せぬエラーが発生しました' });
+  }
 });
 
 /**
@@ -161,13 +169,20 @@ router.get(
   checkPrototypeAccess,
   async (req: Request, res: Response) => {
     const prototypeId = req.params.prototypeId;
-    const prototype = await PrototypeModel.findByPk(prototypeId);
-    if (!prototype) {
-      res.status(404).json({ error: 'プロトタイプが見つかりません' });
-      return;
-    }
 
-    res.json(prototype);
+    try {
+      const prototype = await PrototypeModel.findByPk(prototypeId);
+
+      if (!prototype) {
+        res.status(404).json({ error: 'プロトタイプが見つかりません' });
+        return;
+      }
+
+      res.json(prototype);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+    }
   }
 );
 
@@ -217,24 +232,34 @@ router.put(
   checkPrototypeAccess,
   async (req: Request, res: Response) => {
     const prototypeId = req.params.prototypeId;
-    const prototype = await PrototypeModel.findByPk(prototypeId);
-    if (!prototype) {
-      res.status(404).json({ error: 'プロトタイプが見つかりません' });
-      return;
-    }
 
-    const updateData = Object.entries(req.body).reduce((acc, [key, value]) => {
-      if (
-        value !== undefined &&
-        UPDATABLE_PROTOTYPE_FIELDS.PROTOTYPE.includes(key)
-      ) {
-        return { ...acc, [key]: value };
+    try {
+      const prototype = await PrototypeModel.findByPk(prototypeId);
+
+      if (!prototype) {
+        res.status(404).json({ error: 'プロトタイプが見つかりません' });
+        return;
       }
-      return acc;
-    }, {} as Partial<PrototypeModel>);
-    await PrototypeModel.update(updateData, { where: { id: prototypeId } });
 
-    res.json(prototype);
+      const updateData = Object.entries(req.body).reduce(
+        (acc, [key, value]) => {
+          if (
+            value !== undefined &&
+            UPDATABLE_PROTOTYPE_FIELDS.PROTOTYPE.includes(key)
+          ) {
+            return { ...acc, [key]: value };
+          }
+          return acc;
+        },
+        {} as Partial<PrototypeModel>
+      );
+      await PrototypeModel.update(updateData, { where: { id: prototypeId } });
+
+      res.json(prototype);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+    }
   }
 );
 
@@ -271,15 +296,21 @@ router.delete(
   checkPrototypeOwner,
   async (req: Request, res: Response) => {
     const prototypeId = req.params.prototypeId;
-    const prototype = await PrototypeModel.findByPk(prototypeId);
-    if (!prototype) {
-      res.status(404).json({ error: 'プロトタイプが見つかりません' });
-      return;
+
+    try {
+      const prototype = await PrototypeModel.findByPk(prototypeId);
+      if (!prototype) {
+        res.status(404).json({ error: 'プロトタイプが見つかりません' });
+        return;
+      }
+
+      await PrototypeModel.destroy({ where: { id: prototypeId } });
+
+      res.json({ message: 'プロトタイプを削除しました' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
     }
-
-    await PrototypeModel.destroy({ where: { id: prototypeId } });
-
-    res.json({ message: 'プロトタイプを削除しました' });
   }
 );
 
@@ -323,18 +354,24 @@ router.delete(
  */
 router.get('/:prototypeId/versions', checkPrototypeAccess, async (req, res) => {
   const prototypeId = req.params.prototypeId;
-  const prototype = await PrototypeModel.findByPk(prototypeId);
-  if (!prototype) {
-    res.status(404).json({ error: 'プロトタイプが見つかりません' });
-    return;
+
+  try {
+    const prototype = await PrototypeModel.findByPk(prototypeId);
+    if (!prototype) {
+      res.status(404).json({ error: 'プロトタイプが見つかりません' });
+      return;
+    }
+    const versions = await PrototypeVersionModel.findAll({
+      where: { prototypeId },
+    });
+    res.json({
+      prototype,
+      versions,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: '予期せぬエラーが発生しました' });
   }
-  const versions = await PrototypeVersionModel.findAll({
-    where: { prototypeId },
-  });
-  res.json({
-    prototype,
-    versions,
-  });
 });
 
 /**
@@ -343,7 +380,7 @@ router.get('/:prototypeId/versions', checkPrototypeAccess, async (req, res) => {
  *   get:
  *     tags: [Prototypes]
  *     summary: グループのプロトタイプ一覧取得
- *     description: 指定されたグループに属するプロトタイプの一覧を取得します。
+ *     description: 指定されたグループに属するプロトタイプの一覧を作成日の古い順で取得します。
  *     parameters:
  *       - name: groupId
  *         in: path
@@ -373,20 +410,29 @@ router.get('/:prototypeId/versions', checkPrototypeAccess, async (req, res) => {
  */
 router.get('/groups/:groupId', checkGroupAccess, async (req, res) => {
   const groupId = req.params.groupId;
-  const prototypes = await PrototypeModel.findAll({ where: { groupId } });
-  const result = await Promise.all(
-    prototypes.map(async (prototype) => {
-      const versions = await PrototypeVersionModel.findAll({
-        where: { prototypeId: prototype.id },
-      });
-      return {
-        prototype,
-        versions,
-      };
-    })
-  );
+  try {
+    const prototypes = await PrototypeModel.findAll({
+      where: { groupId },
+      order: [['createdAt', 'ASC']],
+    });
+    const result = await Promise.all(
+      prototypes.map(async (prototype) => {
+        const versions = await PrototypeVersionModel.findAll({
+          where: { prototypeId: prototype.id },
+          order: [['createdAt', 'ASC']],
+        });
+        return {
+          prototype,
+          versions,
+        };
+      })
+    );
 
-  res.json(result);
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: '予期せぬエラーが発生しました' });
+  }
 });
 
 /**
@@ -418,7 +464,13 @@ router.get(
   checkGroupAccess,
   async (req: Request, res: Response) => {
     const groupId = req.params.groupId;
-    res.json(await getAccessibleUsers({ groupId }));
+
+    try {
+      res.json(await getAccessibleUsers({ groupId }));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+    }
   }
 );
 
@@ -635,14 +687,15 @@ router.post(
   checkPrototypeAccess,
   async (req, res) => {
     const prototypeId = req.params.prototypeId;
-    const prototype = await PrototypeModel.findByPk(prototypeId);
-    if (!prototype) {
-      res.status(404).json({ error: 'プロトタイプが見つかりません' });
-      return;
-    }
-
     const transaction = await sequelize.transaction();
+
     try {
+      const prototype = await PrototypeModel.findByPk(prototypeId);
+      if (!prototype) {
+        res.status(404).json({ error: 'プロトタイプが見つかりません' });
+        return;
+      }
+
       await createPrototype({
         userId: prototype.userId,
         name: `${prototype.name} - 複製版`,
@@ -704,22 +757,23 @@ router.post(
   checkPrototypeAccess,
   async (req: Request, res: Response) => {
     const editPrototypeId = req.params.prototypeId;
-    const editPrototype = await PrototypeModel.findByPk(editPrototypeId);
-    if (!editPrototype || editPrototype.type !== 'EDIT') {
-      res.status(404).json({ error: 'プロトタイプが見つかりません' });
-      return;
-    }
-
-    const editPrototypeDefaultVersion = await PrototypeVersionModel.findOne({
-      where: { prototypeId: editPrototype.id },
-    });
-    if (!editPrototypeDefaultVersion) {
-      res.status(404).json({ error: 'デフォルトバージョンが見つかりません' });
-      return;
-    }
-
     const transaction = await sequelize.transaction();
+
     try {
+      const editPrototype = await PrototypeModel.findByPk(editPrototypeId);
+      if (!editPrototype || editPrototype.type !== 'EDIT') {
+        res.status(404).json({ error: 'プロトタイプが見つかりません' });
+        return;
+      }
+
+      const editPrototypeDefaultVersion = await PrototypeVersionModel.findOne({
+        where: { prototypeId: editPrototype.id },
+      });
+      if (!editPrototypeDefaultVersion) {
+        res.status(404).json({ error: 'デフォルトバージョンが見つかりません' });
+        return;
+      }
+
       const previewPrototype = await createPrototype({
         userId: editPrototype.userId,
         name: `${editPrototype.name} - プレビュー版`,
@@ -769,10 +823,9 @@ router.post(
  *           schema:
  *             type: object
  *             properties:
- *               newVersionNumber:
- *                 type: string
  *               description:
  *                 type: string
+ *                 description: 新しいバージョンの説明
  *     responses:
  *       '200':
  *         description: 新しいバージョンを作成しました
@@ -804,25 +857,101 @@ router.post(
   checkPrototypeAccess,
   async (req: Request, res: Response) => {
     const prototypeVersionId = req.params.prototypeVersionId;
-    const { newVersionNumber, description } = req.body;
-    const prototypeVersion =
-      await PrototypeVersionModel.findByPk(prototypeVersionId);
-
-    if (!prototypeVersion || !newVersionNumber) {
-      res.status(400).json({ error: 'リクエストが不正です' });
-      return;
-    }
-
+    const { description } = req.body;
     const transaction = await sequelize.transaction();
+
     try {
-      await createPrototypeVersion(
-        prototypeVersion,
-        newVersionNumber,
-        description,
-        transaction
-      );
+      const prototypeVersion =
+        await PrototypeVersionModel.findByPk(prototypeVersionId);
+
+      if (!prototypeVersion) {
+        res.status(400).json({ error: 'リクエストが不正です' });
+        return;
+      }
+
+      await createPrototypeVersion(prototypeVersion, description, transaction);
       await transaction.commit();
       res.status(200).json({ message: '新しいバージョンを作成しました' });
+    } catch (error) {
+      await transaction.rollback();
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/prototypes/{prototypeId}/versions/{prototypeVersionId}:
+ *   delete:
+ *     tags: [Prototypes]
+ *     summary: バージョン削除
+ *     description: 指定されたプロトタイプのバージョンを削除します。マスターバージョン（0.0.0）は削除できません。
+ *     parameters:
+ *       - name: prototypeId
+ *         in: path
+ *         required: true
+ *         description: プロトタイプのID
+ *         schema:
+ *           type: string
+ *       - name: prototypeVersionId
+ *         in: path
+ *         required: true
+ *         description: バージョンのID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: バージョンを削除しました
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       '400':
+ *         description: マスターバージョンは削除できません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error400Response'
+ *       '404':
+ *         description: バージョンが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
+ *       '500':
+ *         description: サーバーエラー
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
+ */
+router.delete(
+  '/:prototypeId/versions/:prototypeVersionId',
+  checkPrototypeAccess,
+  async (req: Request, res: Response) => {
+    const prototypeId = req.params.prototypeId;
+    const prototypeVersionId = req.params.prototypeVersionId;
+
+    const transaction = await sequelize.transaction();
+
+    try {
+      const result = await deletePrototypeVersion(
+        prototypeVersionId,
+        prototypeId,
+        transaction
+      );
+
+      if (!result.success) {
+        await transaction.rollback();
+        res
+          .status(result.message === 'バージョンが見つかりません' ? 404 : 400)
+          .json({ error: result.message });
+        return;
+      }
+
+      await transaction.commit();
+      res.status(200).json({ message: result.message });
     } catch (error) {
       await transaction.rollback();
       console.error(error);
