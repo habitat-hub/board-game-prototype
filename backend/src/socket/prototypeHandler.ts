@@ -74,33 +74,37 @@ function handleJoinPrototype(socket: Socket) {
       prototypeVersionId: string;
       userId: string;
     }) => {
-      const prototypeVersion =
-        await PrototypeVersionModel.findByPk(prototypeVersionId);
-      if (!prototypeVersion) return;
+      try {
+        const prototypeVersion =
+          await PrototypeVersionModel.findByPk(prototypeVersionId);
+        if (!prototypeVersion) return;
 
-      // socket.dataにprototypeVersionIdとuserIdを設定
-      socket.data = {
-        ...socket.data,
-        prototypeVersionId,
-        userId,
-      } as SocketData;
+        // socket.dataにprototypeVersionIdとuserIdを設定
+        socket.data = {
+          ...socket.data,
+          prototypeVersionId,
+          userId,
+        } as SocketData;
 
-      socket.join(prototypeVersionId);
+        socket.join(prototypeVersionId);
 
-      const promises = [
-        PlayerModel.findAll({
-          where: { prototypeVersionId },
-          order: [['id', 'ASC']],
-        }),
-        fetchPartsAndProperties(prototypeVersionId),
-      ];
+        const promises = [
+          PlayerModel.findAll({
+            where: { prototypeVersionId },
+            order: [['id', 'ASC']],
+          }),
+          fetchPartsAndProperties(prototypeVersionId),
+        ];
 
-      const [players, partsAndProperties] = await Promise.all(promises);
-      socket.emit('UPDATE_PLAYERS', players);
-      socket.emit('UPDATE_PARTS', partsAndProperties);
-      socket.emit('UPDATE_CURSORS', {
-        cursors: cursorMap,
-      });
+        const [players, partsAndProperties] = await Promise.all(promises);
+        socket.emit('UPDATE_PLAYERS', players);
+        socket.emit('UPDATE_PARTS', partsAndProperties);
+        socket.emit('UPDATE_CURSORS', {
+          cursors: cursorMap,
+        });
+      } catch (error) {
+        console.error('プロトタイプの参加に失敗しました。', error);
+      }
     }
   );
 }
@@ -122,25 +126,29 @@ function handleAddPart(socket: Socket, io: Server) {
     }) => {
       const { prototypeVersionId } = socket.data as SocketData;
 
-      const maxOrder: number = await PartModel.max('order', {
-        where: { prototypeVersionId },
-      });
-
-      const newPart = await PartModel.create({
-        ...part,
-        prototypeVersionId,
-        order: (maxOrder + 1) / 2,
-      });
-
-      const propertyCreationPromises = properties.map((property) => {
-        return PartPropertyModel.create({
-          ...property,
-          partId: newPart.id,
+      try {
+        const maxOrder: number = await PartModel.max('order', {
+          where: { prototypeVersionId },
         });
-      });
 
-      await Promise.all(propertyCreationPromises);
-      await emitUpdatedPartsAndProperties(io, prototypeVersionId);
+        const newPart = await PartModel.create({
+          ...part,
+          prototypeVersionId,
+          order: (maxOrder + 1) / 2,
+        });
+
+        const propertyCreationPromises = properties.map((property) => {
+          return PartPropertyModel.create({
+            ...property,
+            partId: newPart.id,
+          });
+        });
+
+        await Promise.all(propertyCreationPromises);
+        await emitUpdatedPartsAndProperties(io, prototypeVersionId);
+      } catch (error) {
+        console.error('パーツの追加に失敗しました。', error);
+      }
     }
   );
 }
@@ -164,35 +172,39 @@ function handleUpdatePart(socket: Socket, io: Server) {
     }) => {
       const { prototypeVersionId } = socket.data as SocketData;
 
-      // Partの更新
-      if (updatePart && Object.keys(updatePart).length > 0) {
-        const updateData = Object.entries(updatePart).reduce(
-          (acc, [key, value]) => {
-            if (
-              value !== undefined &&
-              UPDATABLE_PROTOTYPE_FIELDS.PART.includes(key)
-            ) {
-              return { ...acc, [key]: value };
-            }
-            return acc;
-          },
-          {} as Partial<PartModel>
-        );
-        await PartModel.update(updateData, { where: { id: partId } });
-      }
+      try {
+        // Partの更新
+        if (updatePart && Object.keys(updatePart).length > 0) {
+          const updateData = Object.entries(updatePart).reduce(
+            (acc, [key, value]) => {
+              if (
+                value !== undefined &&
+                UPDATABLE_PROTOTYPE_FIELDS.PART.includes(key)
+              ) {
+                return { ...acc, [key]: value };
+              }
+              return acc;
+            },
+            {} as Partial<PartModel>
+          );
+          await PartModel.update(updateData, { where: { id: partId } });
+        }
 
-      // PartPropertiesの更新
-      if (updateProperties) {
-        const updatePromises = updateProperties.map((property) => {
-          return PartPropertyModel.update(property, {
-            where: { partId, side: property.side },
+        // PartPropertiesの更新
+        if (updateProperties) {
+          const updatePromises = updateProperties.map((property) => {
+            return PartPropertyModel.update(property, {
+              where: { partId, side: property.side },
+            });
           });
-        });
 
-        // 更新処理の実行
-        await Promise.all(updatePromises);
+          // 更新処理の実行
+          await Promise.all(updatePromises);
+        }
+        await emitUpdatedPartsAndProperties(io, prototypeVersionId);
+      } catch (error) {
+        console.error('パーツの更新に失敗しました。', error);
       }
-      await emitUpdatedPartsAndProperties(io, prototypeVersionId);
     }
   );
 }
@@ -230,17 +242,21 @@ function handleFlipCard(socket: Socket, io: Server) {
     }) => {
       const { prototypeVersionId } = socket.data as SocketData;
 
-      await PartModel.update(
-        { isFlipped: isNextFlipped },
-        { where: { id: cardId } }
-      );
+      try {
+        await PartModel.update(
+          { isFlipped: isNextFlipped },
+          { where: { id: cardId } }
+        );
 
-      io.to(prototypeVersionId).emit('FLIP_CARD', {
-        cardId,
-        isNextFlipped,
-      });
+        io.to(prototypeVersionId).emit('FLIP_CARD', {
+          cardId,
+          isNextFlipped,
+        });
 
-      await emitUpdatedPartsAndProperties(io, prototypeVersionId);
+        await emitUpdatedPartsAndProperties(io, prototypeVersionId);
+      } catch (error) {
+        console.error('カードの反転に失敗しました。', error);
+      }
     }
   );
 }
@@ -262,93 +278,102 @@ function handleChangeOrder(socket: Socket, io: Server) {
     }) => {
       const { prototypeVersionId } = socket.data as SocketData;
 
-      const sortedParts = await PartModel.findAll({
-        where: { prototypeVersionId },
-        order: [['order', 'ASC']],
-      });
+      try {
+        const sortedParts = await PartModel.findAll({
+          where: { prototypeVersionId },
+          order: [['order', 'ASC']],
+        });
 
-      const selfPartIndex = sortedParts.findIndex((part) => part.id === partId);
-      if (selfPartIndex === -1) return;
+        const selfPartIndex = sortedParts.findIndex(
+          (part) => part.id === partId
+        );
+        if (selfPartIndex === -1) return;
 
-      // 最背面、かつ背面に移動しようとした場合は何もしない
-      if (selfPartIndex === 0 && (type === 'back' || type === 'backmost')) {
-        return;
-      }
-
-      // 最前面、かつ前面に移動しようとした場合は何もしない
-      if (
-        selfPartIndex === sortedParts.length - 1 &&
-        (type === 'front' || type === 'frontmost')
-      ) {
-        return;
-      }
-
-      switch (type) {
-        case 'back': {
-          // 一つ後ろに移動
-          const underLappingPart = await getUnderLappingPart(
-            partId,
-            sortedParts
-          );
-          if (underLappingPart) {
-            const prevPartIndex = sortedParts.findIndex(
-              (part) => part.id === underLappingPart.id
-            );
-            const newOrder =
-              (underLappingPart.order +
-                (sortedParts[prevPartIndex - 1]?.order ?? 0)) /
-              2;
-            await PartModel.update(
-              { order: newOrder },
-              { where: { id: partId } }
-            );
-            await emitUpdatedPartsAndProperties(io, prototypeVersionId);
-          }
-          break;
-        }
-        case 'front': {
-          // 一つ前に移動
-          const overLappingPart = await getOverLappingPart(partId, sortedParts);
-          if (overLappingPart) {
-            const nextPartIndex = sortedParts.findIndex(
-              (part) => part.id === overLappingPart.id
-            );
-            const newOrder =
-              (overLappingPart.order +
-                (sortedParts[nextPartIndex + 1]?.order ?? 1)) /
-              2;
-            await PartModel.update(
-              { order: newOrder },
-              { where: { id: partId } }
-            );
-            await emitUpdatedPartsAndProperties(io, prototypeVersionId);
-          }
-          break;
-        }
-        case 'backmost': {
-          // 最背面に移動
-          const firstPart = sortedParts[0];
-          const newOrder = (firstPart.order + 0) / 2;
-          await PartModel.update(
-            { order: newOrder },
-            { where: { id: partId } }
-          );
-          await emitUpdatedPartsAndProperties(io, prototypeVersionId);
-          break;
-        }
-        case 'frontmost': {
-          // 最前面に移動
-          const lastPart = sortedParts[sortedParts.length - 1];
-          const newOrder = (lastPart.order + 1) / 2;
-          await PartModel.update(
-            { order: newOrder },
-            { where: { id: partId } }
-          );
-          await emitUpdatedPartsAndProperties(io, prototypeVersionId);
-          break;
-        }
-        default:
+        // 最背面、かつ背面に移動しようとした場合は何もしない
+        if (selfPartIndex === 0 && (type === 'back' || type === 'backmost')) {
           return;
+        }
+
+        // 最前面、かつ前面に移動しようとした場合は何もしない
+        if (
+          selfPartIndex === sortedParts.length - 1 &&
+          (type === 'front' || type === 'frontmost')
+        ) {
+          return;
+        }
+
+        switch (type) {
+          case 'back': {
+            // 一つ後ろに移動
+            const underLappingPart = await getUnderLappingPart(
+              partId,
+              sortedParts
+            );
+            if (underLappingPart) {
+              const prevPartIndex = sortedParts.findIndex(
+                (part) => part.id === underLappingPart.id
+              );
+              const newOrder =
+                (underLappingPart.order +
+                  (sortedParts[prevPartIndex - 1]?.order ?? 0)) /
+                2;
+              await PartModel.update(
+                { order: newOrder },
+                { where: { id: partId } }
+              );
+              await emitUpdatedPartsAndProperties(io, prototypeVersionId);
+            }
+            break;
+          }
+          case 'front': {
+            // 一つ前に移動
+            const overLappingPart = await getOverLappingPart(
+              partId,
+              sortedParts
+            );
+            if (overLappingPart) {
+              const nextPartIndex = sortedParts.findIndex(
+                (part) => part.id === overLappingPart.id
+              );
+              const newOrder =
+                (overLappingPart.order +
+                  (sortedParts[nextPartIndex + 1]?.order ?? 1)) /
+                2;
+              await PartModel.update(
+                { order: newOrder },
+                { where: { id: partId } }
+              );
+              await emitUpdatedPartsAndProperties(io, prototypeVersionId);
+            }
+            break;
+          }
+          case 'backmost': {
+            // 最背面に移動
+            const firstPart = sortedParts[0];
+            const newOrder = (firstPart.order + 0) / 2;
+            await PartModel.update(
+              { order: newOrder },
+              { where: { id: partId } }
+            );
+            await emitUpdatedPartsAndProperties(io, prototypeVersionId);
+            break;
+          }
+          case 'frontmost': {
+            // 最前面に移動
+            const lastPart = sortedParts[sortedParts.length - 1];
+            const newOrder = (lastPart.order + 1) / 2;
+            await PartModel.update(
+              { order: newOrder },
+              { where: { id: partId } }
+            );
+            await emitUpdatedPartsAndProperties(io, prototypeVersionId);
+            break;
+          }
+          default:
+            return;
+        }
+      } catch (error) {
+        console.error('パーツの順番変更に失敗しました。', error);
       }
     }
   );
@@ -363,11 +388,15 @@ function handleShuffleDeck(socket: Socket, io: Server) {
   socket.on('SHUFFLE_DECK', async ({ deckId }: { deckId: number }) => {
     const { prototypeVersionId } = socket.data as SocketData;
 
-    const cardsOnDeck = await PartModel.findAll({
-      where: { prototypeVersionId, type: 'card', parentId: deckId },
-    });
-    await shuffleDeck(cardsOnDeck);
-    await emitUpdatedPartsAndProperties(io, prototypeVersionId);
+    try {
+      const cardsOnDeck = await PartModel.findAll({
+        where: { prototypeVersionId, type: 'card', parentId: deckId },
+      });
+      await shuffleDeck(cardsOnDeck);
+      await emitUpdatedPartsAndProperties(io, prototypeVersionId);
+    } catch (error) {
+      console.error('カードのシャッフルに失敗しました。', error);
+    }
   });
 }
 
@@ -388,13 +417,17 @@ function handleUpdatePlayerUser(socket: Socket, io: Server) {
     }) => {
       const { prototypeVersionId } = socket.data as SocketData;
 
-      await PlayerModel.update({ userId }, { where: { id: playerId } });
-      const players = await PlayerModel.findAll({
-        where: { prototypeVersionId },
-        order: [['id', 'ASC']],
-      });
+      try {
+        await PlayerModel.update({ userId }, { where: { id: playerId } });
+        const players = await PlayerModel.findAll({
+          where: { prototypeVersionId },
+          order: [['id', 'ASC']],
+        });
 
-      io.to(prototypeVersionId).emit('UPDATE_PLAYERS', players);
+        io.to(prototypeVersionId).emit('UPDATE_PLAYERS', players);
+      } catch (error) {
+        console.error('プレイヤーのユーザー更新に失敗しました。', error);
+      }
     }
   );
 }
