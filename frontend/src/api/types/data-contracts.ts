@@ -187,11 +187,13 @@ export type PrototypesDuplicateCreateData = SuccessResponse;
 export type PrototypesPreviewCreateData = Prototype;
 
 export interface PrototypesVersionsCreatePayload {
-  newVersionNumber?: string;
+  /** 新しいバージョンの説明 */
   description?: string;
 }
 
 export type PrototypesVersionsCreateData = SuccessResponse;
+
+export type PrototypesVersionsDeleteData = SuccessResponse;
 
 export interface UsersSearchListParams {
   /** 検索するユーザー名 */
