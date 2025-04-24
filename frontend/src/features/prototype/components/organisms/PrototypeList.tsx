@@ -31,6 +31,8 @@ const PrototypeList: React.FC = () => {
   const [editingId, setEditingId] = useState<string>('');
   // 編集中のプロトタイプの名前を保持するState
   const [editedName, setEditedName] = useState<string>('');
+  // ローディングState
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   // 編集中のプロトタイプの最小プレイヤー数を保持するState
   const [editedMinPlayers, setEditedMinPlayers] = useState<number>(0);
   // 編集中のプロトタイプの最大プレイヤー数を保持するState
@@ -80,6 +82,20 @@ const PrototypeList: React.FC = () => {
    * @returns void
    */
   const handleEditComplete = async () => {
+    // 入力値のバリデーション
+    if (!editedName.trim()) {
+      alert('プロトタイプ名を入力してください');
+      return;
+    }
+    if (
+      editedMinPlayers < 0 ||
+      editedMaxPlayers < 0 ||
+      editedMinPlayers > editedMaxPlayers
+    ) {
+      alert('プレイヤー人数の値を確認してください');
+      return;
+    }
+
     try {
       // プロトタイプを作成する
       await updatePrototype(editingId, {
@@ -100,12 +116,16 @@ const PrototypeList: React.FC = () => {
    * プロトタイプを取得する
    */
   const fetchPrototypes = useCallback(async () => {
+    setIsLoading(true);
+
     try {
       const response = await getPrototypes();
       setEditPrototypes(response.filter(({ type }) => type === 'EDIT'));
     } catch (error) {
       console.error('Error fetching prototypes:', error);
     }
+
+    setIsLoading(false);
   }, [getPrototypes]);
 
   // プロトタイプの取得
@@ -148,7 +168,7 @@ const PrototypeList: React.FC = () => {
     [editPrototypes, sortPrototypes]
   );
 
-  if (sortedPrototypes.length === 0) {
+  if (sortedPrototypes.length === 0 && !isLoading) {
     return (
       <div className="flex text-wood-light h-full justify-center items-center flex-col relative">
         <GiWoodenSign className="w-[300px] h-[300px]" />
@@ -239,7 +259,7 @@ const PrototypeList: React.FC = () => {
                   className="hover:bg-content-secondary/50 transition-colors duration-200 flex items-center p-4"
                 >
                   <Link
-                    href={`prototypes/groups/${groupId}`}
+                    href={`/prototypes/groups/${groupId}`}
                     className="flex-1 flex items-center"
                     onClick={(e) => {
                       if (isEditing) {

@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
-import { CiSquareRemove } from 'react-icons/ci';
+import { FaRegTrashAlt } from 'react-icons/fa';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { useUsers } from '@/api/hooks/useUsers';
@@ -41,18 +41,19 @@ const PlayerInvite: React.FC = () => {
     } else if (type === 'error') {
       setError(message);
     }
-
-    const timer = setTimeout(() => {
-      if (type === 'success') {
-        setSuccessMessage(null);
-      } else if (type === 'error') {
-        setError(null);
-      }
-    }, 3000);
-
-    // クリーンアップ処理
-    return () => clearTimeout(timer);
   };
+
+  useEffect(() => {
+    if (successMessage || error) {
+      const timer = setTimeout(() => {
+        if (successMessage) setSuccessMessage(null);
+        if (error) setError(null);
+      }, 5000);
+
+      // クリーンアップ処理
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage, error]);
 
   /**
    * 招待されているユーザーを取得
@@ -166,7 +167,7 @@ const PlayerInvite: React.FC = () => {
         }`}
       />
       {suggestedUsers.length > 0 && (
-        <div className="border rounded shadow-lgs bg-content mb-10">
+        <div className="border rounded shadow-lg bg-content mb-10">
           <ul className="divide-y divide-gray-200">
             {suggestedUsers.map((user) => (
               <li
@@ -194,9 +195,9 @@ const PlayerInvite: React.FC = () => {
             </div>
             <button
               onClick={() => handleRemoveInvitedUser(user.id)}
-              className="text-red-500 hover:underline ml-2"
+              className="hover:underline ml-2"
             >
-              <CiSquareRemove className="text-[25px] text-red-500" />
+              <FaRegTrashAlt className="h-3 w-3" />
             </button>
           </li>
         ))}
@@ -222,7 +223,7 @@ const PlayerInvite: React.FC = () => {
                     )
                   }
                 >
-                  <CiSquareRemove className="text-[25px] text-red-500" />
+                  <FaRegTrashAlt className="h-3 w-3" />
                 </button>
               </li>
             ))}

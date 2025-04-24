@@ -14,8 +14,8 @@ import {
   Error500Response,
   LogoutCreateData,
   UserListData,
-} from './data-contracts';
-import { HttpClient, RequestParams } from './http-client';
+} from "./data-contracts";
+import { HttpClient, RequestParams } from "./http-client";
 
 export class Auth<
   SecurityDataType = unknown,
@@ -31,7 +31,7 @@ export class Auth<
   googleList = (params: RequestParams = {}) =>
     this.request<any, void>({
       path: `/auth/google`,
-      method: 'GET',
+      method: "GET",
       ...params,
     });
   /**
@@ -45,7 +45,7 @@ export class Auth<
   googleCallbackList = (params: RequestParams = {}) =>
     this.request<any, void>({
       path: `/auth/google/callback`,
-      method: 'GET',
+      method: "GET",
       ...params,
     });
   /**
@@ -59,8 +59,8 @@ export class Auth<
   logoutCreate = (params: RequestParams = {}) =>
     this.request<LogoutCreateData, Error500Response>({
       path: `/auth/logout`,
-      method: 'POST',
-      format: 'json',
+      method: "POST",
+      format: "json",
       ...params,
     });
   /**
@@ -74,8 +74,8 @@ export class Auth<
   userList = (params: RequestParams = {}) =>
     this.request<UserListData, any>({
       path: `/auth/user`,
-      method: 'GET',
-      format: 'json',
+      method: "GET",
+      format: "json",
       ...params,
     });
 }
