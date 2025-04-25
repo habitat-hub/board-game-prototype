@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { FaCopy } from 'react-icons/fa';
+import { FaCheck, FaCopy } from 'react-icons/fa';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
-import { FaPenToSquare, FaPlus } from 'react-icons/fa6';
+import { FaBoxOpen, FaPenToSquare, FaPlus } from 'react-icons/fa6';
 import { GiWoodenSign } from 'react-icons/gi';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
@@ -17,22 +17,25 @@ type SortOrder = 'asc' | 'desc';
 /**
  * PrototypeListコンポーネントで使用される各種Stateの説明:
  *
- * @state editingId - 現在編集中のプロトタイプのIDを管理するState。
+ * @state nameEditingId - 現在プロトタイプ名を編集中のIDを管理するState。
+ * @state playersEditingId - 現在プレイヤー人数を編集中のIDを管理するState。
  * @state editedName - 編集中のプロトタイプの名前を保持するState。
  * @state editedMinPlayers - 編集中のプロトタイプの最小プレイヤー数を保持するState。
  * @state editedMaxPlayers - 編集中のプロトタイプの最大プレイヤー数を保持するState。
  * @state editPrototypes - 編集可能なプロトタイプのリストを保持するState。
  * @state sort - プロトタイプのソート条件（キーと順序）を管理するState。
+ * @state isLoading - データ取得中のローディング状態を管理するState。
  */
 const PrototypeList: React.FC = () => {
   const { getPrototypes, duplicatePrototype, updatePrototype } =
     usePrototypes();
+  // ローディング状態を管理するState
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   // 編集中のプロトタイプのIDを管理するState
-  const [editingId, setEditingId] = useState<string>('');
+  const [nameEditingId, setNameEditingId] = useState<string>('');
+  const [playersEditingId, setPlayersEditingId] = useState<string>('');
   // 編集中のプロトタイプの名前を保持するState
   const [editedName, setEditedName] = useState<string>('');
-  // ローディングState
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   // 編集中のプロトタイプの最小プレイヤー数を保持するState
   const [editedMinPlayers, setEditedMinPlayers] = useState<number>(0);
   // 編集中のプロトタイプの最大プレイヤー数を保持するState
@@ -49,66 +52,120 @@ const PrototypeList: React.FC = () => {
   });
 
   /**
-   * 編集モードの切り替えを行う関数。
-   *
-   * @param id - 編集対象の項目のID。
-   * @param name - 編集対象の項目の名前。
-   * @param minPlayers - 編集対象の項目の最小プレイヤー数。
-   * @param maxPlayers - 編集対象の項目の最大プレイヤー数。
-   *
-   * @returns void
+   * プロトタイプ名の編集モードを切り替える関数
+   * @param id プロトタイプID
+   * @param name プロトタイプ名
    */
-  const handleEditToggle = (
+  const handleNameEditToggle = (id: string, name: string) => {
+    if (nameEditingId === id) {
+      // 同じ項目を再度押した場合は編集モードを解除
+      setNameEditingId('');
+    } else {
+      // 編集モードにする
+      setNameEditingId(id);
+      setEditedName(name);
+    }
+  };
+
+  /**
+   * プレイヤー人数の編集モードを切り替える関数
+   * @param id プロトタイプID
+   * @param minPlayers 最小プレイヤー数
+   * @param maxPlayers 最大プレイヤー数
+   */
+  const handlePlayersEditToggle = (
     id: string,
-    name: string,
     minPlayers: number,
     maxPlayers: number
   ) => {
-    if (editingId === id) {
+    if (playersEditingId === id) {
       // 同じ項目を再度押した場合は編集モードを解除
-      setEditingId('');
+      setPlayersEditingId('');
     } else {
       // 編集モードにする
-      setEditingId(id);
-      setEditedName(name);
+      setPlayersEditingId(id);
       setEditedMinPlayers(minPlayers);
       setEditedMaxPlayers(maxPlayers);
     }
   };
 
   /**
-   * プロトタイプの編集操作を完了する処理。
-   *
-   * @returns void
+   * プロトタイプ名の編集を完了する処理
    */
-  const handleEditComplete = async () => {
+  const handleNameEditComplete = async () => {
     // 入力値のバリデーション
     if (!editedName.trim()) {
       alert('プロトタイプ名を入力してください');
       return;
     }
-    if (
-      editedMinPlayers < 0 ||
-      editedMaxPlayers < 0 ||
-      editedMinPlayers > editedMaxPlayers
-    ) {
-      alert('プレイヤー人数の値を確認してください');
+
+    try {
+      const prototype = editPrototypes.find((p) => p.id === nameEditingId);
+      if (!prototype) return;
+
+      // 名前だけを更新
+      await updatePrototype(nameEditingId, {
+        name: editedName,
+        minPlayers: prototype.minPlayers,
+        maxPlayers: prototype.maxPlayers,
+      });
+
+      // ローカルの状態を更新
+      setEditPrototypes((currentPrototypes) =>
+        currentPrototypes.map((p) =>
+          p.id === nameEditingId ? { ...p, name: editedName } : p
+        )
+      );
+    } catch (error) {
+      console.error('Error updating prototype name:', error);
+    } finally {
+      // 編集モードを解除
+      setNameEditingId('');
+    }
+  };
+
+  /**
+   * プレイヤー人数の編集を完了する処理
+   */
+  const handlePlayersEditComplete = async () => {
+    // プレイヤー人数のバリデーション
+    if (editedMinPlayers < 1) {
+      alert('最小プレイヤー数は1人以上に設定してください');
+      return;
+    }
+    if (editedMaxPlayers < editedMinPlayers) {
+      alert('最大プレイヤー数は最小プレイヤー数以上に設定してください');
       return;
     }
 
     try {
-      // プロトタイプを作成する
-      await updatePrototype(editingId, {
-        name: editedName,
+      const prototype = editPrototypes.find((p) => p.id === playersEditingId);
+      if (!prototype) return;
+
+      // プレイヤー人数だけを更新
+      await updatePrototype(playersEditingId, {
+        name: prototype.name,
         minPlayers: editedMinPlayers,
         maxPlayers: editedMaxPlayers,
       });
-      fetchPrototypes(); // 一覧を更新
+
+      // ローカルの状態を更新
+      setEditPrototypes((currentPrototypes) =>
+        currentPrototypes.map((p) =>
+          p.id === playersEditingId
+            ? {
+                ...p,
+                minPlayers: editedMinPlayers,
+                maxPlayers: editedMaxPlayers,
+              }
+            : p
+        )
+      );
     } catch (error) {
-      console.error('Error creating prototype:', error);
+      console.error('Error updating player count:', error);
     } finally {
       // 編集モードを解除
-      setEditingId(''); // 編集モードを解除
+      setPlayersEditingId('');
     }
   };
 
@@ -119,10 +176,13 @@ const PrototypeList: React.FC = () => {
     setIsLoading(true);
 
     try {
+      setIsLoading(true); // ローディング開始
       const response = await getPrototypes();
       setEditPrototypes(response.filter(({ type }) => type === 'EDIT'));
     } catch (error) {
       console.error('Error fetching prototypes:', error);
+    } finally {
+      setIsLoading(false); // ローディング終了
     }
 
     setIsLoading(false);
@@ -168,20 +228,35 @@ const PrototypeList: React.FC = () => {
     [editPrototypes, sortPrototypes]
   );
 
-  if (sortedPrototypes.length === 0 && !isLoading) {
+  if (isLoading) {
     return (
-      <div className="flex text-wood-light h-full justify-center items-center flex-col relative">
-        <GiWoodenSign className="w-[300px] h-[300px]" />
-        <p className="text-sm absolute bottom-[51%] text-wood-darkest">
-          プロトタイプ未作成
-        </p>
-        <Link
-          href="/prototypes/create"
-          className="fixed bottom-10 right-10 w-14 h-14 flex items-center justify-center bg-gradient-to-r from-header via-header-light to-header text-content rounded-full hover:from-header-light hover:via-header hover:to-header-light transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 group"
-          title="新規プロトタイプを作成"
-        >
-          <FaPlus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
-        </Link>
+      <div className="flex flex-col h-full justify-center items-center">
+        <p className="text-2xl text-wood-darkest">Loading...</p>
+      </div>
+    );
+  }
+
+  if (sortedPrototypes.length === 0) {
+    return (
+      <div className="flex flex-col h-full justify-center items-center relative">
+        <div className="text-wood-light">
+          <GiWoodenSign className="w-[600px] h-[600px]" />
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center flex-col">
+          <p className="text-4xl text-wood-darkest text-center w-full mb-12">
+            最初のプロトタイプを
+            <br />
+            作成しましょう
+          </p>
+          <Link
+            href="/prototypes/create"
+            className="flex items-center justify-center gap-3 bg-gradient-to-r from-header via-header-light to-header text-content py-4 px-8 rounded-full hover:from-header-light hover:via-header hover:to-header-light transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 group text-xl font-bold animate-pulse"
+            title="新規プロトタイプを作成"
+          >
+            <FaPlus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
+            <span>KIBAKOの世界へ飛び込む！</span>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -226,134 +301,183 @@ const PrototypeList: React.FC = () => {
     <div className="max-w-4xl mx-auto mt-16 relative pb-24">
       {/* タイトル */}
       <h1 className="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
-        ボードゲームプロトタイプ一覧
+        プロトタイプ一覧
       </h1>
       {/* プロトタイプ一覧 */}
       <div className="shadow-2xl rounded-2xl overflow-hidden bg-content border border-wood-lightest/20">
-        <div className="bg-content-secondary border-b border-wood-lightest/30">
-          <div className="flex items-center p-4 text-sm font-medium text-wood-dark">
-            <button
-              onClick={() => handleSort('name')}
-              className="flex-1 flex items-center gap-1 hover:text-header transition-colors duration-200"
-            >
-              プロトタイプ名
-              {getSortIcon('name')}
-            </button>
-            <button
-              onClick={() => handleSort('createdAt')}
-              className="w-32 flex items-center gap-1 hover:text-header transition-colors duration-200"
-            >
-              作成日
-              {getSortIcon('createdAt')}
-            </button>
-            <div className="w-24" />
-          </div>
-        </div>
-        <ul className="divide-y divide-wood-lightest/20">
-          {sortedPrototypes.map(
-            ({ id, groupId, name, minPlayers, maxPlayers, createdAt }) => {
-              const isEditing = editingId === id; // 現在の項目が編集中かどうかを判定
-              return (
-                <li
-                  key={id}
-                  className="hover:bg-content-secondary/50 transition-colors duration-200 flex items-center p-4"
+        <table className="w-full border-collapse">
+          <thead className="bg-content-secondary border-b border-wood-lightest/30">
+            <tr className="text-sm font-medium text-wood-dark">
+              <th className="text-left p-4">
+                <button
+                  onClick={() => handleSort('name')}
+                  className="flex items-center gap-1 hover:text-header transition-colors duration-200 w-full"
                 >
-                  <Link
-                    href={`/prototypes/groups/${groupId}`}
-                    className="flex-1 flex items-center"
-                    onClick={(e) => {
-                      if (isEditing) {
-                        e.preventDefault(); // 編集中の場合は画面遷移をキャンセル
-                      }
-                    }}
-                  >
-                    {isEditing ? (
-                      <div className="flex-1 text-wood-darkest">
-                        <input
-                          type="text"
-                          value={editedName}
-                          onChange={(e) => setEditedName(e.target.value)}
-                          className="w-[80%] mb-2 p-1 border border-wood-light rounded"
-                        />
-                        <div className="flex items-center gap-2">
+                  プロトタイプ名
+                  {getSortIcon('name')}
+                </button>
+              </th>
+              <th className="text-left p-4 w-36">プレイヤー人数</th>
+              <th className="text-left p-4 w-32">
+                <button
+                  onClick={() => handleSort('createdAt')}
+                  className="flex items-center gap-1 hover:text-header transition-colors duration-200 w-full"
+                >
+                  作成日
+                  {getSortIcon('createdAt')}
+                </button>
+              </th>
+              <th className="text-center p-4 w-48">アクション</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-wood-lightest/20">
+            {sortedPrototypes.map(
+              ({ id, groupId, name, minPlayers, maxPlayers, createdAt }) => {
+                const isNameEditing = nameEditingId === id; // 現在の項目が編集中かどうかを判定
+                const isPlayersEditing = playersEditingId === id; // 現在の項目が編集中かどうかを判定
+                return (
+                  <tr key={id}>
+                    <td className="p-4">
+                      {isNameEditing ? (
+                        <form
+                          className="text-wood-darkest flex items-center"
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            handleNameEditComplete();
+                          }}
+                        >
+                          <input
+                            type="text"
+                            value={editedName}
+                            onChange={(e) => setEditedName(e.target.value)}
+                            className="w-[80%] p-1 border border-wood-light rounded"
+                            autoFocus
+                          />
+                          <button
+                            type="submit"
+                            className="ml-2 p-1.5 text-green-600 hover:text-green-700 rounded-md border border-green-500 hover:bg-green-50 transition-colors"
+                            title="編集完了"
+                          >
+                            <FaCheck className="w-3.5 h-3.5" />
+                          </button>
+                        </form>
+                      ) : (
+                        <div className="flex items-center">
+                          <Link
+                            href={`prototypes/groups/${groupId}`}
+                            className="text-wood-darkest font-medium"
+                          >
+                            {name}
+                          </Link>
+                          <button
+                            onClick={() => handleNameEditToggle(id, name)}
+                            className="ml-2 p-1 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors"
+                            title="プロトタイプ名を編集"
+                          >
+                            <FaPenToSquare className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                    <td className="p-4">
+                      {isPlayersEditing ? (
+                        <form
+                          className="flex items-center gap-2"
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            handlePlayersEditComplete();
+                          }}
+                        >
                           <input
                             type="number"
                             value={editedMinPlayers}
                             onChange={(e) =>
                               setEditedMinPlayers(Number(e.target.value))
                             }
-                            className="w-20 p-1 border border-wood-light rounded"
+                            className="w-16 p-1 border border-wood-light rounded"
+                            autoFocus
                           />
-                          <span>〜</span>
+                          <span>~</span>
                           <input
                             type="number"
                             value={editedMaxPlayers}
                             onChange={(e) =>
                               setEditedMaxPlayers(Number(e.target.value))
                             }
-                            className="w-20 p-1 border border-wood-light rounded"
+                            className="w-16 p-1 border border-wood-light rounded"
                           />
-                          <span>人用ゲーム</span>
+                          <span className="text-wood-dark">人</span>
+                          <button
+                            type="submit"
+                            className="ml-2 p-1.5 text-green-600 hover:text-green-700 rounded-md border border-green-500 hover:bg-green-50 transition-colors"
+                            title="編集完了"
+                          >
+                            <FaCheck className="w-3.5 h-3.5" />
+                          </button>
+                        </form>
+                      ) : (
+                        <div className="flex items-center">
+                          <span className="text-wood-dark">
+                            {minPlayers !== maxPlayers
+                              ? `${minPlayers} ~ ${maxPlayers}`
+                              : `${minPlayers}`}
+                          </span>
+                          <span className="text-wood-dark">人</span>
+                          <button
+                            onClick={() =>
+                              handlePlayersEditToggle(
+                                id,
+                                minPlayers,
+                                maxPlayers
+                              )
+                            }
+                            className="ml-2 p-1 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors"
+                            title="プレイヤー人数を編集"
+                          >
+                            <FaPenToSquare className="w-4 h-4" />
+                          </button>
                         </div>
-                      </div>
-                    ) : (
-                      <span className="flex-1 text-wood-darkest">
-                        <span className="font-medium">{name}</span>
-                        <span className="mx-2 text-wood-light">|</span>
-                        <span className="text-wood-dark">
-                          {minPlayers !== maxPlayers
-                            ? `${minPlayers} 〜 ${maxPlayers} 人用ゲーム`
-                            : `${minPlayers} 人用ゲーム`}
-                        </span>
-                      </span>
-                    )}
-                    <span className="w-32 text-sm text-wood">
+                      )}
+                    </td>
+                    <td className="p-4 text-sm text-wood w-32">
                       {formatDate(createdAt)}
-                    </span>
-                  </Link>
-                  <button
-                    onClick={(e) => handleDuplicate(id, e)}
-                    className="w-24 flex items-center gap-1 ml-4 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
-                    title="プロトタイプを複製"
-                  >
-                    <FaCopy className="w-4 h-4" />
-                    <span>複製</span>
-                  </button>
-                  {isEditing ? (
-                    <button
-                      onClick={() => handleEditComplete()}
-                      className="w-24 flex items-center gap-1 ml-4 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
-                      title="編集完了"
-                    >
-                      <FaPenToSquare className="w-4 h-4" />
-                      <span>完了</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() =>
-                        handleEditToggle(id, name, minPlayers, maxPlayers)
-                      }
-                      className="w-24 flex items-center gap-1 ml-4 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
-                      title="プロトタイプを編集"
-                    >
-                      <FaPenToSquare className="w-4 h-4" />
-                      <span>編集</span>
-                    </button>
-                  )}
-                </li>
-              );
-            }
-          )}
-        </ul>
+                    </td>
+                    <td className="p-4 flex justify-center gap-2">
+                      <Link
+                        href={`prototypes/groups/${groupId}`}
+                        className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
+                        title="プロトタイプを開く"
+                      >
+                        <FaBoxOpen className="w-4 h-4" />
+                        <span>開く</span>
+                      </Link>
+                      <button
+                        onClick={(e) => handleDuplicate(id, e)}
+                        className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
+                        title="プロトタイプを複製"
+                      >
+                        <FaCopy className="w-4 h-4" />
+                        <span>複製</span>
+                      </button>
+                    </td>
+                  </tr>
+                );
+              }
+            )}
+          </tbody>
+        </table>
       </div>
       {/* 新規プロトタイプ作成ボタン */}
-      <Link
-        href="/prototypes/create"
-        className="fixed bottom-10 right-10 w-14 h-14 flex items-center justify-center bg-gradient-to-r from-header via-header-light to-header text-content rounded-full hover:from-header-light hover:via-header hover:to-header-light transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 group"
-        title="新規プロトタイプを作成"
-      >
-        <FaPlus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
-      </Link>
+      <div className="mt-6 flex justify-center">
+        <Link
+          href="/prototypes/create"
+          className="flex items-center justify-center gap-3 bg-gradient-to-r from-header via-header-light to-header text-content py-3 px-6 rounded-full hover:from-header-light hover:via-header hover:to-header-light transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 group"
+          title="新規プロトタイプを作成"
+        >
+          <FaPlus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+          <span className="font-bold">新しいプロトタイプを作成</span>
+        </Link>
+      </div>
     </div>
   );
 };

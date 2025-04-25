@@ -35,7 +35,7 @@ const CreatePrototypeForm: React.FC = () => {
 
     try {
       // プロトタイプを作成する
-      await createPrototype({
+      const newPrototype = await createPrototype({
         name: form.name,
         playerCount: form.playerCount,
       });
@@ -46,7 +46,9 @@ const CreatePrototypeForm: React.FC = () => {
         playerCount: 4,
       });
       setError(null);
-      router.push('/prototypes');
+
+      // グループページへ遷移する
+      router.push(`/prototypes/groups/${newPrototype.groupId}`);
     } catch (error) {
       console.error('Error creating prototype:', error);
       setError('エラーが発生しました。');
