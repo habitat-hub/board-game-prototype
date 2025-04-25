@@ -18,7 +18,7 @@ type SortOrder = 'asc' | 'desc';
  * PrototypeListコンポーネントで使用される各種Stateの説明:
  *
  * @state nameEditingId - 現在プロトタイプ名を編集中のIDを管理するState。
- * @state playersEditingId - 現在プレイ人数を編集中のIDを管理するState。
+ * @state playersEditingId - 現在プレイヤー人数を編集中のIDを管理するState。
  * @state editedName - 編集中のプロトタイプの名前を保持するState。
  * @state editedMinPlayers - 編集中のプロトタイプの最小プレイヤー数を保持するState。
  * @state editedMaxPlayers - 編集中のプロトタイプの最大プレイヤー数を保持するState。
@@ -68,7 +68,7 @@ const PrototypeList: React.FC = () => {
   };
 
   /**
-   * プレイ人数の編集モードを切り替える関数
+   * プレイヤー人数の編集モードを切り替える関数
    * @param id プロトタイプID
    * @param minPlayers 最小プレイヤー数
    * @param maxPlayers 最大プレイヤー数
@@ -125,7 +125,7 @@ const PrototypeList: React.FC = () => {
   };
 
   /**
-   * プレイ人数の編集を完了する処理
+   * プレイヤー人数の編集を完了する処理
    */
   const handlePlayersEditComplete = async () => {
     // プレイヤー人数のバリデーション
@@ -142,7 +142,7 @@ const PrototypeList: React.FC = () => {
       const prototype = editPrototypes.find((p) => p.id === playersEditingId);
       if (!prototype) return;
 
-      // プレイ人数だけを更新
+      // プレイヤー人数だけを更新
       await updatePrototype(playersEditingId, {
         name: prototype.name,
         minPlayers: editedMinPlayers,
@@ -317,7 +317,7 @@ const PrototypeList: React.FC = () => {
                   {getSortIcon('name')}
                 </button>
               </th>
-              <th className="text-left p-4 w-36">プレイ人数</th>
+              <th className="text-left p-4 w-36">プレイヤー人数</th>
               <th className="text-left p-4 w-32">
                 <button
                   onClick={() => handleSort('createdAt')}
@@ -406,6 +406,7 @@ const PrototypeList: React.FC = () => {
                             }
                             className="w-16 p-1 border border-wood-light rounded"
                           />
+                          <span className="text-wood-dark">人</span>
                           <button
                             type="submit"
                             className="ml-2 p-1.5 text-green-600 hover:text-green-700 rounded-md border border-green-500 hover:bg-green-50 transition-colors"
@@ -421,6 +422,7 @@ const PrototypeList: React.FC = () => {
                               ? `${minPlayers} ~ ${maxPlayers}`
                               : `${minPlayers}`}
                           </span>
+                          <span className="text-wood-dark">人</span>
                           <button
                             onClick={() =>
                               handlePlayersEditToggle(
@@ -430,7 +432,7 @@ const PrototypeList: React.FC = () => {
                               )
                             }
                             className="ml-2 p-1 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors"
-                            title="プレイ人数を編集"
+                            title="プレイヤー人数を編集"
                           >
                             <FaPenToSquare className="w-4 h-4" />
                           </button>

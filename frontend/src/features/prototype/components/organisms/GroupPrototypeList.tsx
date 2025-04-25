@@ -30,9 +30,9 @@ const GroupPrototypeList: React.FC = () => {
   const [nameEditingId, setNameEditingId] = useState<string>('');
   const [editedName, setEditedName] = useState<string>('');
 
-  // プレイ人数編集を管理するState
+  // プレイヤー人数編集を管理するState
   const [playersEditingId, setPlayersEditingId] = useState<string>('');
-  const [editedMinPlayers, setEditedMinPlayers] = useState<number>(2);
+  const [editedMinPlayers, setEditedMinPlayers] = useState<number>(4);
   const [editedMaxPlayers, setEditedMaxPlayers] = useState<number>(4);
 
   const [prototype, setPrototype] = useState<{
@@ -166,7 +166,7 @@ const GroupPrototypeList: React.FC = () => {
   };
 
   /**
-   * プレイ人数の編集モードを切り替える関数
+   * プレイヤー人数の編集モードを切り替える関数
    * @param id プロトタイプID
    * @param minPlayers 最小プレイヤー数
    * @param maxPlayers 最大プレイヤー数
@@ -188,7 +188,7 @@ const GroupPrototypeList: React.FC = () => {
   };
 
   /**
-   * プレイ人数の編集を完了する処理
+   * プレイヤー人数の編集を完了する処理
    */
   const handlePlayersEditComplete = async () => {
     try {
@@ -207,7 +207,7 @@ const GroupPrototypeList: React.FC = () => {
         return;
       }
 
-      // プロトタイプのプレイ人数を更新
+      // プロトタイプのプレイヤー人数を更新
       await updatePrototype(playersEditingId, {
         name: prototypeToEdit.name,
         minPlayers: editedMinPlayers,
