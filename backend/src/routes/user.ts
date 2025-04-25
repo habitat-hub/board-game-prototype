@@ -42,12 +42,18 @@ router.use(ensureAuthenticated);
 router.get('/search', async (req: Request, res: Response) => {
   const { username } = req.query;
 
-  // 10件まで取得
-  const suggestedUsers = await UserModel.findAll({
-    where: { username: { [Op.iLike]: `%${username}%` } },
-    limit: 10,
-  });
-  res.json(suggestedUsers);
+  try {
+    // 10件まで取得
+    const suggestedUsers = await UserModel.findAll({
+      where: { username: { [Op.iLike]: `%${username}%` } },
+      limit: 10,
+    });
+
+    res.json(suggestedUsers);
+  } catch (error) {
+    console.error('Error during user search:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 export default router;

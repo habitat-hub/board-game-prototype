@@ -93,6 +93,12 @@ const PrototypeList: React.FC = () => {
    * プロトタイプ名の編集を完了する処理
    */
   const handleNameEditComplete = async () => {
+    // 入力値のバリデーション
+    if (!editedName.trim()) {
+      alert('プロトタイプ名を入力してください');
+      return;
+    }
+
     try {
       const prototype = editPrototypes.find((p) => p.id === nameEditingId);
       if (!prototype) return;
@@ -122,6 +128,16 @@ const PrototypeList: React.FC = () => {
    * プレイ人数の編集を完了する処理
    */
   const handlePlayersEditComplete = async () => {
+    // プレイヤー人数のバリデーション
+    if (editedMinPlayers < 1) {
+      alert('最小プレイヤー数は1人以上に設定してください');
+      return;
+    }
+    if (editedMaxPlayers < editedMinPlayers) {
+      alert('最大プレイヤー数は最小プレイヤー数以上に設定してください');
+      return;
+    }
+
     try {
       const prototype = editPrototypes.find((p) => p.id === playersEditingId);
       if (!prototype) return;
@@ -157,6 +173,8 @@ const PrototypeList: React.FC = () => {
    * プロトタイプを取得する
    */
   const fetchPrototypes = useCallback(async () => {
+    setIsLoading(true);
+
     try {
       setIsLoading(true); // ローディング開始
       const response = await getPrototypes();
@@ -166,6 +184,8 @@ const PrototypeList: React.FC = () => {
     } finally {
       setIsLoading(false); // ローディング終了
     }
+
+    setIsLoading(false);
   }, [getPrototypes]);
 
   // プロトタイプの取得

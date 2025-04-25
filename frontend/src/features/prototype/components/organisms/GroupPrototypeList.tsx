@@ -141,6 +141,11 @@ const GroupPrototypeList: React.FC = () => {
       // 編集中のプロトタイプがない場合は処理を終了
       if (!prototype?.edit || !nameEditingId) return;
 
+      if (editedName.trim() === '') {
+        alert('プロトタイプ名を入力してください');
+        return;
+      }
+
       const prototypeToEdit = prototype.edit.prototype;
 
       // プロトタイプ名を更新
