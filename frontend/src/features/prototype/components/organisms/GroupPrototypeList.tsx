@@ -390,7 +390,7 @@ const GroupPrototypeList: React.FC = () => {
                     `/prototypes/${prototype.edit.prototype.id}/versions/${prototype.edit.versions[0].id}/edit`
                   );
                 }}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-wood-dark hover:text-header rounded-lg hover:bg-wood-lightest/20 transition-all duration-200 border border-wood-light/20"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-wood-dark bg-white hover:text-header rounded-lg hover:bg-wood-lightest transition-all duration-200 border border-wood-light shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                 title="プロトタイプを編集"
               >
                 <TbCards className="h-5 w-5" />
@@ -404,7 +404,7 @@ const GroupPrototypeList: React.FC = () => {
                   handleCreatePreviewPrototype(prototype.edit.prototype.id);
                 }}
                 disabled={!prototype.edit}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-wood-dark hover:text-header rounded-lg hover:bg-wood-lightest/20 transition-all duration-200 border border-wood-light/20"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-wood-dark bg-white hover:text-header rounded-lg hover:bg-wood-lightest transition-all duration-200 border border-wood-light shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                 title="プレビュー版を作成"
               >
                 <IoAdd className="h-5 w-5" />
