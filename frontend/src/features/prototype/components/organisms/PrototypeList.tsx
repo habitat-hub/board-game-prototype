@@ -24,10 +24,13 @@ type SortOrder = 'asc' | 'desc';
  * @state editedMaxPlayers - 編集中のプロトタイプの最大プレイヤー数を保持するState。
  * @state editPrototypes - 編集可能なプロトタイプのリストを保持するState。
  * @state sort - プロトタイプのソート条件（キーと順序）を管理するState。
+ * @state isLoading - データ取得中のローディング状態を管理するState。
  */
 const PrototypeList: React.FC = () => {
   const { getPrototypes, duplicatePrototype, updatePrototype } =
     usePrototypes();
+  // ローディング状態を管理するState
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   // 編集中のプロトタイプのIDを管理するState
   const [nameEditingId, setNameEditingId] = useState<string>('');
   const [playersEditingId, setPlayersEditingId] = useState<string>('');
@@ -100,7 +103,13 @@ const PrototypeList: React.FC = () => {
         minPlayers: prototype.minPlayers,
         maxPlayers: prototype.maxPlayers,
       });
-      fetchPrototypes(); // 一覧を更新
+
+      // ローカルの状態を更新
+      setEditPrototypes((currentPrototypes) =>
+        currentPrototypes.map((p) =>
+          p.id === nameEditingId ? { ...p, name: editedName } : p
+        )
+      );
     } catch (error) {
       console.error('Error updating prototype name:', error);
     } finally {
@@ -123,7 +132,19 @@ const PrototypeList: React.FC = () => {
         minPlayers: editedMinPlayers,
         maxPlayers: editedMaxPlayers,
       });
-      fetchPrototypes(); // 一覧を更新
+
+      // ローカルの状態を更新
+      setEditPrototypes((currentPrototypes) =>
+        currentPrototypes.map((p) =>
+          p.id === playersEditingId
+            ? {
+                ...p,
+                minPlayers: editedMinPlayers,
+                maxPlayers: editedMaxPlayers,
+              }
+            : p
+        )
+      );
     } catch (error) {
       console.error('Error updating player count:', error);
     } finally {
@@ -137,10 +158,13 @@ const PrototypeList: React.FC = () => {
    */
   const fetchPrototypes = useCallback(async () => {
     try {
+      setIsLoading(true); // ローディング開始
       const response = await getPrototypes();
       setEditPrototypes(response.filter(({ type }) => type === 'EDIT'));
     } catch (error) {
       console.error('Error fetching prototypes:', error);
+    } finally {
+      setIsLoading(false); // ローディング終了
     }
   }, [getPrototypes]);
 
@@ -184,20 +208,35 @@ const PrototypeList: React.FC = () => {
     [editPrototypes, sortPrototypes]
   );
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col h-full justify-center items-center">
+        <p className="text-2xl text-wood-darkest">Loading...</p>
+      </div>
+    );
+  }
+
   if (sortedPrototypes.length === 0) {
     return (
-      <div className="flex text-wood-light h-full justify-center items-center flex-col relative">
-        <GiWoodenSign className="w-[300px] h-[300px]" />
-        <p className="text-sm absolute bottom-[51%] text-wood-darkest">
-          プロトタイプ未作成
-        </p>
-        <Link
-          href="/prototypes/create"
-          className="fixed bottom-10 right-10 w-14 h-14 flex items-center justify-center bg-gradient-to-r from-header via-header-light to-header text-content rounded-full hover:from-header-light hover:via-header hover:to-header-light transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 group"
-          title="新規プロトタイプを作成"
-        >
-          <FaPlus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
-        </Link>
+      <div className="flex flex-col h-full justify-center items-center relative">
+        <div className="text-wood-light">
+          <GiWoodenSign className="w-[600px] h-[600px]" />
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center flex-col">
+          <p className="text-4xl text-wood-darkest text-center w-full mb-12">
+            最初のプロトタイプを
+            <br />
+            作成しましょう
+          </p>
+          <Link
+            href="/prototypes/create"
+            className="flex items-center justify-center gap-3 bg-gradient-to-r from-header via-header-light to-header text-content py-4 px-8 rounded-full hover:from-header-light hover:via-header hover:to-header-light transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 group text-xl font-bold animate-pulse"
+            title="新規プロトタイプを作成"
+          >
+            <FaPlus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
+            <span>KIBAKOの世界へ飛び込む！</span>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -242,7 +281,7 @@ const PrototypeList: React.FC = () => {
     <div className="max-w-4xl mx-auto mt-16 relative pb-24">
       {/* タイトル */}
       <h1 className="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
-        ボードゲームプロトタイプ一覧
+        プロトタイプ一覧
       </h1>
       {/* プロトタイプ一覧 */}
       <div className="shadow-2xl rounded-2xl overflow-hidden bg-content border border-wood-lightest/20">
@@ -313,7 +352,7 @@ const PrototypeList: React.FC = () => {
                           <button
                             onClick={() => handleNameEditToggle(id, name)}
                             className="ml-2 p-1 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors"
-                            title="プロトタイプを編集"
+                            title="プロトタイプ名を編集"
                           >
                             <FaPenToSquare className="w-4 h-4" />
                           </button>
@@ -407,13 +446,16 @@ const PrototypeList: React.FC = () => {
         </table>
       </div>
       {/* 新規プロトタイプ作成ボタン */}
-      <Link
-        href="/prototypes/create"
-        className="fixed bottom-10 right-10 w-14 h-14 flex items-center justify-center bg-gradient-to-r from-header via-header-light to-header text-content rounded-full hover:from-header-light hover:via-header hover:to-header-light transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 group"
-        title="新規プロトタイプを作成"
-      >
-        <FaPlus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
-      </Link>
+      <div className="mt-6 flex justify-center">
+        <Link
+          href="/prototypes/create"
+          className="flex items-center justify-center gap-3 bg-gradient-to-r from-header via-header-light to-header text-content py-3 px-6 rounded-full hover:from-header-light hover:via-header hover:to-header-light transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 group"
+          title="新規プロトタイプを作成"
+        >
+          <FaPlus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+          <span className="font-bold">新しいプロトタイプを作成</span>
+        </Link>
+      </div>
     </div>
   );
 };
