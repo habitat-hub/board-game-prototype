@@ -225,7 +225,7 @@ const GroupPrototypeList: React.FC = () => {
   };
 
   // プロトタイプが存在しない場合
-  if (!prototype) return null;
+  if (!prototype || !prototype.edit) return null;
 
   return (
     <div className="max-w-4xl mx-auto mt-16 relative pb-24">
@@ -276,7 +276,7 @@ const GroupPrototypeList: React.FC = () => {
                   )
                 }
                 className="ml-3 p-2 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors"
-                title="プロトタイプ名を編集"
+                title="プロトタイプ名を編集する"
               >
                 <FaPenToSquare className="w-5 h-5" />
               </button>
@@ -286,139 +286,133 @@ const GroupPrototypeList: React.FC = () => {
       </div>
 
       {/* プロトタイプの基本情報 */}
-      {prototype.edit && (
-        <div className="mb-6 overflow-hidden border border-wood-lightest/20 rounded-xl bg-content">
-          <table className="w-full">
-            <tbody>
-              <tr className="border-b border-wood-lightest/20">
-                <th className="px-4 py-3 text-left bg-content-secondary text-wood-darkest w-36">
-                  プレイヤー人数
-                </th>
-                <td className="px-4 py-3 text-wood-dark">
-                  {prototype.edit &&
-                  playersEditingId === prototype.edit.prototype.id ? (
-                    <form
-                      className="flex items-center"
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        handlePlayersEditComplete();
-                      }}
-                    >
-                      <div className="flex items-center">
-                        <input
-                          type="number"
-                          min="1"
-                          value={editedMinPlayers}
-                          onChange={(e) =>
-                            setEditedMinPlayers(Number(e.target.value))
-                          }
-                          className="w-16 py-1 px-2 border border-wood-light/30 rounded-lg bg-white text-center"
-                          autoFocus
-                        />
-                        <span className="mx-2">〜</span>
-                        <input
-                          type="number"
-                          min="1"
-                          value={editedMaxPlayers}
-                          onChange={(e) =>
-                            setEditedMaxPlayers(Number(e.target.value))
-                          }
-                          className="w-16 py-1 px-2 border border-wood-light/30 rounded-lg bg-white text-center"
-                        />
-                        <span className="ml-1">人</span>
-                      </div>
-                      <button
-                        type="submit"
-                        className="ml-3 p-1.5 text-green-600 hover:text-green-700 rounded-md border border-green-500 hover:bg-green-50 transition-colors"
-                        title="編集完了"
-                      >
-                        <FaCheck className="w-4 h-4" />
-                      </button>
-                    </form>
-                  ) : (
+      <div className="mb-6 overflow-hidden border border-wood-lightest/20 rounded-xl bg-content">
+        <table className="w-full">
+          <tbody>
+            <tr className="border-b border-wood-lightest/20">
+              <th className="px-4 py-3 text-left bg-content-secondary text-wood-darkest w-36">
+                プレイヤー人数
+              </th>
+              <td className="px-4 py-3 text-wood-dark">
+                {prototype.edit &&
+                playersEditingId === prototype.edit.prototype.id ? (
+                  <form
+                    className="flex items-center"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handlePlayersEditComplete();
+                    }}
+                  >
                     <div className="flex items-center">
-                      <span>
-                        {prototype.edit.prototype.minPlayers ===
-                        prototype.edit.prototype.maxPlayers
-                          ? `${prototype.edit.prototype.minPlayers}人`
-                          : `${prototype.edit.prototype.minPlayers}〜${prototype.edit.prototype.maxPlayers}人`}
-                      </span>
-                      <button
-                        onClick={() =>
-                          prototype.edit &&
-                          handlePlayersEditToggle(
-                            prototype.edit.prototype.id,
-                            prototype.edit.prototype.minPlayers,
-                            prototype.edit.prototype.maxPlayers
-                          )
+                      <input
+                        type="number"
+                        min="1"
+                        value={editedMinPlayers}
+                        onChange={(e) =>
+                          setEditedMinPlayers(Number(e.target.value))
                         }
-                        className="ml-3 p-1.5 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors"
-                        title="プレイヤー人数を編集"
-                      >
-                        <FaPenToSquare className="w-4 h-4" />
-                      </button>
+                        className="w-16 py-1 px-2 border border-wood-light/30 rounded-lg bg-white text-center"
+                        autoFocus
+                      />
+                      <span className="mx-2">〜</span>
+                      <input
+                        type="number"
+                        min="1"
+                        value={editedMaxPlayers}
+                        onChange={(e) =>
+                          setEditedMaxPlayers(Number(e.target.value))
+                        }
+                        className="w-16 py-1 px-2 border border-wood-light/30 rounded-lg bg-white text-center"
+                      />
+                      <span className="ml-1">人</span>
                     </div>
-                  )}
-                </td>
-              </tr>
-              <tr className="border-b border-wood-lightest/20">
-                <th className="px-4 py-3 text-left bg-content-secondary text-wood-darkest w-36">
-                  作成日時
-                </th>
-                <td className="px-4 py-3 text-wood-dark">
-                  {formatDate(prototype.edit.prototype.createdAt, true)}
-                </td>
-              </tr>
-              <tr className="border-b border-wood-lightest/20">
-                <th className="px-4 py-3 text-left bg-content-secondary text-wood-darkest w-36">
-                  最終更新日時
-                </th>
-                <td className="px-4 py-3 text-wood-dark">
-                  {formatDate(prototype.edit.prototype.updatedAt, true)}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      )}
+                    <button
+                      type="submit"
+                      className="ml-3 p-1.5 text-green-600 hover:text-green-700 rounded-md border border-green-500 hover:bg-green-50 transition-colors"
+                      title="編集完了"
+                    >
+                      <FaCheck className="w-4 h-4" />
+                    </button>
+                  </form>
+                ) : (
+                  <div className="flex items-center">
+                    <span>
+                      {prototype.edit.prototype.minPlayers ===
+                      prototype.edit.prototype.maxPlayers
+                        ? `${prototype.edit.prototype.minPlayers}人`
+                        : `${prototype.edit.prototype.minPlayers}〜${prototype.edit.prototype.maxPlayers}人`}
+                    </span>
+                    <button
+                      onClick={() =>
+                        prototype.edit &&
+                        handlePlayersEditToggle(
+                          prototype.edit.prototype.id,
+                          prototype.edit.prototype.minPlayers,
+                          prototype.edit.prototype.maxPlayers
+                        )
+                      }
+                      className="ml-3 p-1.5 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors"
+                      title="プレイヤー人数を編集する"
+                    >
+                      <FaPenToSquare className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </td>
+            </tr>
+            <tr className="border-b border-wood-lightest/20">
+              <th className="px-4 py-3 text-left bg-content-secondary text-wood-darkest w-36">
+                作成日時
+              </th>
+              <td className="px-4 py-3 text-wood-dark">
+                {formatDate(prototype.edit.prototype.createdAt, true)}
+              </td>
+            </tr>
+            <tr className="border-b border-wood-lightest/20">
+              <th className="px-4 py-3 text-left bg-content-secondary text-wood-darkest w-36">
+                最終更新日時
+              </th>
+              <td className="px-4 py-3 text-wood-dark">
+                {formatDate(prototype.edit.prototype.updatedAt, true)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div className="mb-8">
+        <div className="grid grid-cols-1 gap-4">
+          <div className="flex gap-4">
+            {/* 編集するボタン */}
+            <button
+              onClick={() => {
+                if (!prototype.edit) return;
+                router.push(
+                  `/prototypes/${prototype.edit.prototype.id}/versions/${prototype.edit.versions[0].id}/edit`
+                );
+              }}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-wood-dark bg-white hover:text-header rounded-lg hover:bg-wood-lightest transition-all duration-200 border border-wood-light shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              title="編集する"
+            >
+              <TbCards className="h-5 w-5" />
+              編集する
+            </button>
 
-      {/* 編集版 */}
-      {prototype.edit && (
-        <div className="mb-8">
-          <div className="grid grid-cols-1 gap-4">
-            <div className="flex gap-4">
-              {/* プロトタイプを編集するボタン */}
-              <button
-                onClick={() => {
-                  if (!prototype.edit) return;
-                  router.push(
-                    `/prototypes/${prototype.edit.prototype.id}/versions/${prototype.edit.versions[0].id}/edit`
-                  );
-                }}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-wood-dark bg-white hover:text-header rounded-lg hover:bg-wood-lightest transition-all duration-200 border border-wood-light shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                title="プロトタイプを編集"
-              >
-                <TbCards className="h-5 w-5" />
-                プロトタイプを編集する
-              </button>
-
-              {/* プロトタイプを遊ぶボタン */}
-              <button
-                onClick={() => {
-                  if (!prototype.edit) return;
-                  handleCreatePreviewPrototype(prototype.edit.prototype.id);
-                }}
-                disabled={!prototype.edit}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-wood-dark bg-white hover:text-header rounded-lg hover:bg-wood-lightest transition-all duration-200 border border-wood-light shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                title="プレビュー版を作成"
-              >
-                <IoAdd className="h-5 w-5" />
-                プロトタイプを遊ぶ
-              </button>
-            </div>
+            {/* 新バージョンを作成するボタン */}
+            <button
+              onClick={() => {
+                if (!prototype.edit) return;
+                handleCreatePreviewPrototype(prototype.edit.prototype.id);
+              }}
+              disabled={!prototype.edit}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-wood-dark bg-white hover:text-header rounded-lg hover:bg-wood-lightest transition-all duration-200 border border-wood-light shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              title="新バージョンを作成する"
+            >
+              <IoAdd className="h-5 w-5" />
+              新バージョンを作成する
+            </button>
           </div>
         </div>
-      )}
+      </div>
 
       {/* プレビュー版 */}
       {prototype.preview.map(({ prototype, versions }) => (
