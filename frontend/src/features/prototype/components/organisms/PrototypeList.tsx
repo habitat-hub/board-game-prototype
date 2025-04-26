@@ -1,13 +1,20 @@
 'use client';
 
 import Link from 'next/link';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useContext,
+} from 'react';
 import { FaCheck, FaCopy } from 'react-icons/fa';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { FaBoxOpen, FaPenToSquare, FaPlus } from 'react-icons/fa6';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Prototype } from '@/api/types';
+import { UserContext } from '@/contexts/UserContext';
 import formatDate from '@/utils/dateFormat';
 import EmptyPrototypeList from '../molecules/EmptyPrototypeList';
 
@@ -29,6 +36,8 @@ type SortOrder = 'asc' | 'desc';
 const PrototypeList: React.FC = () => {
   const { getPrototypes, duplicatePrototype, updatePrototype } =
     usePrototypes();
+  // UserContextからユーザー情報を取得
+  const userContext = useContext(UserContext);
   // ローディング状態を管理するState
   const [isLoading, setIsLoading] = useState<boolean>(true);
   // 編集中のプロトタイプのIDを管理するState
@@ -176,16 +185,14 @@ const PrototypeList: React.FC = () => {
     setIsLoading(true);
 
     try {
-      setIsLoading(true); // ローディング開始
       const response = await getPrototypes();
-      setEditPrototypes(response.filter(({ type }) => type === 'EDIT'));
+      const filteredPrototypes = response.filter(({ type }) => type === 'EDIT');
+      setEditPrototypes(filteredPrototypes);
     } catch (error) {
       console.error('Error fetching prototypes:', error);
     } finally {
       setIsLoading(false); // ローディング終了
     }
-
-    setIsLoading(false);
   }, [getPrototypes]);
 
   // プロトタイプの取得
@@ -306,12 +313,21 @@ const PrototypeList: React.FC = () => {
                   {getSortIcon('createdAt')}
                 </button>
               </th>
+              <th className="text-left p-4 w-32">作成者</th>
               <th className="text-center p-4 w-48">アクション</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-wood-lightest/20">
             {sortedPrototypes.map(
-              ({ id, groupId, name, minPlayers, maxPlayers, createdAt }) => {
+              ({
+                id,
+                groupId,
+                name,
+                minPlayers,
+                maxPlayers,
+                createdAt,
+                userId,
+              }) => {
                 const isNameEditing = nameEditingId === id; // 現在の項目が編集中かどうかを判定
                 const isPlayersEditing = playersEditingId === id; // 現在の項目が編集中かどうかを判定
                 return (
@@ -420,6 +436,11 @@ const PrototypeList: React.FC = () => {
                     </td>
                     <td className="p-4 text-sm text-wood w-32">
                       {formatDate(createdAt)}
+                    </td>
+                    <td className="p-4 text-sm text-wood w-32">
+                      {userContext?.user?.id === userId
+                        ? '自分'
+                        : '他のユーザー'}
                     </td>
                     <td className="p-4 flex justify-center gap-2">
                       <Link
