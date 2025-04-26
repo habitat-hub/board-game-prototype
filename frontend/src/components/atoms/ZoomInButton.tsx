@@ -18,7 +18,7 @@ export default function ZoomInButton({
   disabled?: boolean;
 }) {
   return (
-    <IconButton onClick={onClick} disabled={disabled}>
+    <IconButton onClick={onClick} disabled={disabled} ariaLabel="拡大する">
       <AiOutlineZoomIn size={size} color={color} />
     </IconButton>
   );

@@ -439,6 +439,7 @@ export default function Canvas({
       <button
         onClick={() => setIsRandomToolOpen(!isRandomToolOpen)}
         className="fixed bottom-4 right-4 bg-purple-500 text-white p-2 rounded-full shadow-lg"
+        aria-label="乱数ツールを開く"
       >
         <AiOutlineTool size={30} />
       </button>

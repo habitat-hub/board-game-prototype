@@ -6,6 +6,9 @@ export const VERSION_NUMBER = {
   MASTER: '0.0.0',
 };
 
+// グリッドサイズ
+export const GRID_SIZE = 1;
+
 // パーツのデフォルト設定
 export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
   // カード
@@ -17,7 +20,7 @@ export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
     description: '',
     color: '#FFFFFF',
     textColor: '#000000',
-    isReversible: false,
+    isReversible: true,
     configurableTypeAsChild: [],
   },
   // トークン
