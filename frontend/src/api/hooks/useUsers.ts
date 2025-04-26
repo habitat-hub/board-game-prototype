@@ -11,15 +11,7 @@ export const useUsers = () => {
     return await usersService.searchUsers(query);
   }, []);
 
-  /**
-   * 複数のユーザーIDからユーザー情報を取得する
-   */
-  const getUsersByIds = useCallback(async (userIds: string[]) => {
-    return await usersService.getUsersByIds(userIds);
-  }, []);
-
   return {
     searchUsers,
-    getUsersByIds,
   };
 };
