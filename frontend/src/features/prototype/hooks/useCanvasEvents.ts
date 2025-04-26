@@ -2,6 +2,7 @@ import { throttle } from 'lodash';
 import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 
 import { Part } from '@/api/types';
+import { GRID_SIZE } from '@/features/prototype/const';
 import { needsParentUpdate } from '@/features/prototype/helpers/partHelper';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { Camera, Point } from '@/features/prototype/type';
@@ -94,6 +95,9 @@ export const useCanvasEvents = ({
    * @param partId - パーツID（パーツからの呼び出し時のみ）
    */
   const onMouseDown = (e: React.MouseEvent, partId?: number) => {
+    // テキスト選択を防止
+    e.preventDefault();
+
     if (partId !== undefined) {
       // パーツのドラッグ開始
       const part = parts.find((part) => part.id === partId);
@@ -124,14 +128,22 @@ export const useCanvasEvents = ({
    * @param e - マウス移動イベント
    */
   const onMouseMove = (e: React.MouseEvent) => {
+    // テキスト選択を防止（ドラッグ中）
+    if (isDraggingCanvas || draggingPartId !== null) {
+      e.preventDefault();
+    }
+
     if (draggingPartId !== null) {
       // パーツのドラッグ処理
       const rect = mainViewRef.current?.getBoundingClientRect();
       if (!rect) return;
 
       // マウス位置からパーツの新しい位置を計算
-      const x = (e.clientX - rect.left) / camera.zoom - offset.x;
-      const y = (e.clientY - rect.top) / camera.zoom - offset.y;
+      const rawX = (e.clientX - rect.left) / camera.zoom - offset.x;
+      const rawY = (e.clientY - rect.top) / camera.zoom - offset.y;
+
+      const x = Math.round(rawX / GRID_SIZE) * GRID_SIZE;
+      const y = Math.round(rawY / GRID_SIZE) * GRID_SIZE;
 
       // パーツの位置を更新
       throttledUpdate(x, y);
@@ -176,10 +188,17 @@ export const useCanvasEvents = ({
     }
 
     // 親パーツの更新
+    let newX = (e.clientX - rect.left) / camera.zoom - offset.x;
+    let newY = (e.clientY - rect.top) / camera.zoom - offset.y;
+
+    newX = Math.round(newX / GRID_SIZE) * GRID_SIZE;
+    newY = Math.round(newY / GRID_SIZE) * GRID_SIZE;
+
     const newPosition = {
-      x: (e.clientX - rect.left) / camera.zoom - offset.x,
-      y: (e.clientY - rect.top) / camera.zoom - offset.y,
+      x: newX,
+      y: newY,
     };
+
     const { needsUpdate, parentPart } = needsParentUpdate(
       parts,
       part,

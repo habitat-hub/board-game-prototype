@@ -52,7 +52,6 @@ export default function EditSidebars({
 
       {/* Right Sidebar */}
       <PartPropertySidebar
-        groupId={groupId}
         players={players}
         selectedPartId={selectedPartId}
         parts={parts}

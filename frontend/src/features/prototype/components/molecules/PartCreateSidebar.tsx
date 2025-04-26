@@ -14,7 +14,10 @@ import {
   GiStoneBlock,
 } from 'react-icons/gi';
 import { IoArrowBack } from 'react-icons/io5';
-import { PiSidebarSimpleThin } from 'react-icons/pi';
+import {
+  TbLayoutSidebarLeftCollapse,
+  TbLayoutSidebarLeftExpand,
+} from 'react-icons/tb';
 
 import { Part, PartProperty, Player } from '@/api/types';
 import TextIconButton from '@/components/atoms/TextIconButton';
@@ -139,10 +142,13 @@ export default function PartCreateSidebar({
                   </span>
                 )}
               </div>
-              <PiSidebarSimpleThin
+              <button
                 onClick={() => setIsLeftSidebarMinimized(true)}
-                className="h-5 w-5 cursor-pointer flex-shrink-0"
-              />
+                aria-label="サイドバーを最小化"
+                className="p-1 rounded-full transition-transform hover:scale-110"
+              >
+                <TbLayoutSidebarLeftCollapse className="h-5 w-5 text-gray-600 hover:text-blue-500 transition-colors" />
+              </button>
             </div>
           </div>
           <div className="border-b border-gray-200" />
@@ -175,7 +181,7 @@ export default function PartCreateSidebar({
           </div>
         </div>
       ) : (
-        <div className="fixed left-2 top-14 flex h-[48px] w-[250px] items-center justify-between rounded-xl border bg-white p-4">
+        <div className="fixed left-2 top-14 flex h-auto w-[250px] items-center justify-between rounded-xl border bg-white p-4 max-h-[48px]">
           <button
             onClick={() => router.push(`/prototypes/groups/${groupId}`)}
             className="p-1 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
@@ -193,10 +199,13 @@ export default function PartCreateSidebar({
               </span>
             )}
           </div>
-          <PiSidebarSimpleThin
+          <button
             onClick={() => setIsLeftSidebarMinimized(false)}
-            className="h-5 w-5 cursor-pointer flex-shrink-0"
-          />
+            aria-label="サイドバーを展開"
+            className="p-1 rounded-full transition-transform hover:scale-110"
+          >
+            <TbLayoutSidebarLeftExpand className="h-5 w-5 text-gray-600 hover:text-blue-500 transition-colors" />
+          </button>
         </div>
       )}
     </>

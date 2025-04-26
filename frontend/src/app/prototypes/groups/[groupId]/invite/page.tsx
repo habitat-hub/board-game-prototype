@@ -1,14 +1,14 @@
 import { Metadata } from 'next';
 
-import PlayerInvite from '@/features/prototype/components/organisms/PlayerInvite';
+import UserInvite from '@/features/prototype/components/organisms/UserInvite';
 
 export const metadata: Metadata = {
-  title: 'プレイヤー招待',
+  title: 'プロトタイプユーザー管理',
 };
 
 export const runtime = 'edge';
 const InvitePage: React.FC = () => {
-  return <PlayerInvite />;
+  return <UserInvite />;
 };
 
 export default InvitePage;
