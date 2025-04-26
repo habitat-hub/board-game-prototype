@@ -4,13 +4,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
 import { BsDoorOpenFill } from 'react-icons/bs';
-import {
-  FaCheck,
-  FaPenToSquare,
-  FaUserPlus,
-  FaEye,
-  FaLock,
-} from 'react-icons/fa6';
+import { FaCheck, FaPenToSquare, FaUserPlus, FaEye } from 'react-icons/fa6';
 import { HiOutlinePencilAlt } from 'react-icons/hi';
 import { IoAdd, IoArrowBack, IoTrash } from 'react-icons/io5';
 import { TbVersions } from 'react-icons/tb';
