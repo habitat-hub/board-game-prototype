@@ -255,7 +255,7 @@ const GroupPrototypeList: React.FC = () => {
   if (!prototype || !prototype.edit) return null;
 
   return (
-    <div className="max-w-4xl mx-auto mt-16 relative pb-24">
+    <div className="max-w-4xl mx-auto mt-16 relative">
       <div className="flex items-center gap-4 mb-8">
         <button
           onClick={() => router.push('/prototypes')}

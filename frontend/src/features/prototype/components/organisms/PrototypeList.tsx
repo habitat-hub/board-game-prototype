@@ -284,7 +284,7 @@ const PrototypeList: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto mt-16 relative pb-24">
+    <div className="max-w-4xl mx-auto mt-16 relative">
       {/* タイトル */}
       <h1 className="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
         プロトタイプ一覧

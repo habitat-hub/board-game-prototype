@@ -11,7 +11,7 @@ import { GiWoodenSign } from 'react-icons/gi';
  */
 const EmptyPrototypeList: React.FC = () => {
   return (
-    <div className="flex flex-col h-full justify-center items-center relative">
+    <div className="flex flex-col h-full justify-center items-center relative mt-32">
       <div className="text-wood-light">
         <GiWoodenSign className="w-[600px] h-[600px]" />
       </div>

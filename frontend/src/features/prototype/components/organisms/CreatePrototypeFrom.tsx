@@ -65,7 +65,7 @@ const CreatePrototypeForm: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-16 relative pb-24">
+    <div className="max-w-md mx-auto mt-16 relative">
       <div className="flex items-center gap-4 mb-8">
         <Link
           href="/prototypes"
