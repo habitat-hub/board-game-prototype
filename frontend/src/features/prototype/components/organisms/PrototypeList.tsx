@@ -434,10 +434,10 @@ const PrototypeList: React.FC = () => {
                         </div>
                       )}
                     </td>
-                    <td className="p-4 text-sm text-wood w-32">
+                    <td className="p-4 text-sm text-wood">
                       {formatDate(createdAt)}
                     </td>
-                    <td className="p-4 text-sm text-wood w-32">
+                    <td className="p-4 text-sm text-wood">
                       {userContext?.user?.id === userId
                         ? '自分'
                         : '他のユーザー'}
