@@ -5,9 +5,9 @@ import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
 import { BsDoorOpenFill } from 'react-icons/bs';
 import { FaCheck, FaPenToSquare, FaUserPlus, FaEye } from 'react-icons/fa6';
-import { IoAdd, IoArrowBack, IoTrash } from 'react-icons/io5';
-import { TbCards, TbVersions } from 'react-icons/tb';
 import { HiOutlinePencilAlt } from 'react-icons/hi';
+import { IoAdd, IoArrowBack, IoTrash } from 'react-icons/io5';
+import { TbVersions } from 'react-icons/tb';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Prototype, PrototypeVersion } from '@/api/types';
