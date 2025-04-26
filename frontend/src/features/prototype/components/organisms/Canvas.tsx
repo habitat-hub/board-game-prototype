@@ -217,8 +217,8 @@ export default function Canvas({
         // 前回の位置があり、かつ、前回の位置と現在の位置が5px以内の場合は更新しない
         if (
           lastPosition &&
-          Math.abs(lastPosition.x - x) <= 5 &&
-          Math.abs(lastPosition.y - y) <= 5
+          Math.abs(lastPosition.x - x) <= 20 &&
+          Math.abs(lastPosition.y - y) <= 20
         ) {
           return;
         }
@@ -229,7 +229,7 @@ export default function Canvas({
           userName: user?.username || 'Nanashi-san',
           position: { x, y },
         });
-      }, 50),
+      }, 100),
     [socket, user]
   );
 

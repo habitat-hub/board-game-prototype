@@ -44,8 +44,8 @@ export const useCanvasEvents = ({
         // 前回の位置があり、かつ、前回の位置と現在の位置が5px以内の場合は更新しない
         if (
           lastPosition &&
-          Math.abs(lastPosition.x - x) <= 5 &&
-          Math.abs(lastPosition.y - y) <= 5
+          Math.abs(lastPosition.x - x) <= 10 &&
+          Math.abs(lastPosition.y - y) <= 10
         ) {
           return;
         }
@@ -58,7 +58,7 @@ export const useCanvasEvents = ({
             updatePart: { position: { x, y } },
           },
         });
-      }, 50),
+      }, 100),
     [draggingPartId, dispatch]
   );
 
