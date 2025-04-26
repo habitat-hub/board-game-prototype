@@ -5,11 +5,11 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { FaCheck, FaCopy } from 'react-icons/fa';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { FaBoxOpen, FaPenToSquare, FaPlus } from 'react-icons/fa6';
-import { GiWoodenSign } from 'react-icons/gi';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Prototype } from '@/api/types';
 import formatDate from '@/utils/dateFormat';
+import EmptyPrototypeList from '../molecules/EmptyPrototypeList';
 
 type SortKey = 'name' | 'createdAt';
 type SortOrder = 'asc' | 'desc';
@@ -237,28 +237,7 @@ const PrototypeList: React.FC = () => {
   }
 
   if (sortedPrototypes.length === 0) {
-    return (
-      <div className="flex flex-col h-full justify-center items-center relative">
-        <div className="text-wood-light">
-          <GiWoodenSign className="w-[600px] h-[600px]" />
-        </div>
-        <div className="absolute inset-0 flex items-center justify-center flex-col">
-          <p className="text-4xl text-wood-darkest text-center w-full mb-12">
-            最初のプロトタイプを
-            <br />
-            作成しましょう
-          </p>
-          <Link
-            href="/prototypes/create"
-            className="flex items-center justify-center gap-3 bg-gradient-to-r from-header via-header-light to-header text-content py-4 px-8 rounded-full hover:from-header-light hover:via-header hover:to-header-light transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 group text-xl font-bold animate-pulse"
-            title="新規プロトタイプを作成"
-          >
-            <FaPlus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
-            <span>KIBAKOの世界へ飛び込む！</span>
-          </Link>
-        </div>
-      </div>
-    );
+    return <EmptyPrototypeList />;
   }
 
   /**
