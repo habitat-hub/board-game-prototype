@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaCheck, FaPenToSquare, FaUserPlus } from 'react-icons/fa6';
+import { BsDoorOpenFill } from 'react-icons/bs';
+import { FaCheck, FaPenToSquare, FaUserPlus, FaEye } from 'react-icons/fa6';
 import { IoAdd, IoArrowBack, IoTrash } from 'react-icons/io5';
-import { TbCards } from 'react-icons/tb';
+import { TbCards, TbVersions } from 'react-icons/tb';
+import { HiOutlinePencilAlt } from 'react-icons/hi';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Prototype, PrototypeVersion } from '@/api/types';
@@ -292,108 +294,102 @@ const GroupPrototypeList: React.FC = () => {
           className="flex items-center justify-center gap-2 px-4 py-2 text-wood-dark bg-white hover:text-header rounded-lg hover:bg-wood-lightest transition-all duration-200 border border-wood-light shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
         >
           <FaUserPlus className="h-5 w-5" />
-          他のユーザーを招待する
+          他のユーザー招待
         </button>
       </div>
 
       {/* プロトタイプの基本情報 */}
-      <div className="mb-6 overflow-hidden border border-wood-lightest/20 rounded-xl bg-content">
-        <table className="w-full">
-          <tbody>
-            <tr className="border-b border-wood-lightest/20">
-              <th className="px-4 py-3 text-left bg-content-secondary text-wood-darkest w-36">
+      <div className="mb-6 overflow-hidden rounded-xl bg-gradient-to-r from-content via-content to-content-secondary shadow-lg border border-wood-lightest/30">
+        <div className="p-6">
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex-1 bg-white/80 rounded-xl p-5 shadow-inner border border-wood-lightest/40">
+              <h3 className="text-sm uppercase tracking-wide text-wood-dark/70 mb-2 font-medium">
                 プレイヤー人数
-              </th>
-              <td className="px-4 py-3 text-wood-dark">
-                {prototype.edit &&
-                playersEditingId === prototype.edit.prototype.id ? (
-                  <form
-                    className="flex items-center"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      handlePlayersEditComplete();
-                    }}
-                  >
-                    <div className="flex items-center">
-                      <input
-                        type="number"
-                        min="1"
-                        value={editedMinPlayers}
-                        onChange={(e) =>
-                          setEditedMinPlayers(Number(e.target.value))
-                        }
-                        className="w-16 py-1 px-2 border border-wood-light/30 rounded-lg bg-white text-center"
-                        autoFocus
-                      />
-                      <span className="mx-2">〜</span>
-                      <input
-                        type="number"
-                        min="1"
-                        value={editedMaxPlayers}
-                        onChange={(e) =>
-                          setEditedMaxPlayers(Number(e.target.value))
-                        }
-                        className="w-16 py-1 px-2 border border-wood-light/30 rounded-lg bg-white text-center"
-                      />
-                      <span className="ml-1">人</span>
-                    </div>
-                    <button
-                      type="submit"
-                      className="ml-3 p-1.5 text-green-600 hover:text-green-700 rounded-md border border-green-500 hover:bg-green-50 transition-colors"
-                      title="編集完了"
-                    >
-                      <FaCheck className="w-4 h-4" />
-                    </button>
-                  </form>
-                ) : (
+              </h3>
+
+              {prototype.edit &&
+              playersEditingId === prototype.edit.prototype.id ? (
+                <form
+                  className="flex items-center"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handlePlayersEditComplete();
+                  }}
+                >
                   <div className="flex items-center">
-                    <span>
-                      {prototype.edit.prototype.minPlayers ===
-                      prototype.edit.prototype.maxPlayers
-                        ? `${prototype.edit.prototype.minPlayers}人`
-                        : `${prototype.edit.prototype.minPlayers}〜${prototype.edit.prototype.maxPlayers}人`}
-                    </span>
-                    <button
-                      onClick={() =>
-                        prototype.edit &&
-                        handlePlayersEditToggle(
-                          prototype.edit.prototype.id,
-                          prototype.edit.prototype.minPlayers,
-                          prototype.edit.prototype.maxPlayers
-                        )
+                    <input
+                      type="number"
+                      min="1"
+                      value={editedMinPlayers}
+                      onChange={(e) =>
+                        setEditedMinPlayers(Number(e.target.value))
                       }
-                      className="ml-3 p-1.5 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors"
-                      title="プレイヤー人数を編集する"
-                    >
-                      <FaPenToSquare className="w-4 h-4" />
-                    </button>
+                      className="w-16 py-1 px-2 border border-wood-light/30 rounded-lg bg-white text-center"
+                      autoFocus
+                    />
+                    <span className="mx-2">〜</span>
+                    <input
+                      type="number"
+                      min="1"
+                      value={editedMaxPlayers}
+                      onChange={(e) =>
+                        setEditedMaxPlayers(Number(e.target.value))
+                      }
+                      className="w-16 py-1 px-2 border border-wood-light/30 rounded-lg bg-white text-center"
+                    />
+                    <span className="ml-1">人</span>
                   </div>
-                )}
-              </td>
-            </tr>
-            <tr className="border-b border-wood-lightest/20">
-              <th className="px-4 py-3 text-left bg-content-secondary text-wood-darkest w-36">
+                  <button
+                    type="submit"
+                    className="ml-3 p-1.5 text-green-600 hover:text-green-700 rounded-md border border-green-500 hover:bg-green-50 transition-colors"
+                    title="編集完了"
+                  >
+                    <FaCheck className="w-4 h-4" />
+                  </button>
+                </form>
+              ) : (
+                <div className="flex items-center">
+                  <span className="text-2xl font-semibold text-wood-darkest">
+                    {prototype.edit.prototype.minPlayers ===
+                    prototype.edit.prototype.maxPlayers
+                      ? `${prototype.edit.prototype.minPlayers}人`
+                      : `${prototype.edit.prototype.minPlayers}〜${prototype.edit.prototype.maxPlayers}人`}
+                  </span>
+                  <button
+                    onClick={() =>
+                      prototype.edit &&
+                      handlePlayersEditToggle(
+                        prototype.edit.prototype.id,
+                        prototype.edit.prototype.minPlayers,
+                        prototype.edit.prototype.maxPlayers
+                      )
+                    }
+                    className="ml-3 p-1.5 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-all"
+                    title="プレイヤー人数を編集する"
+                  >
+                    <FaPenToSquare className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* 作成日時カード - クリック不可でホバーエフェクトなし */}
+            <div className="flex-1 bg-white/80 rounded-xl p-5 shadow-inner border border-wood-lightest/40">
+              <h3 className="text-sm uppercase tracking-wide text-wood-dark/70 mb-2 font-medium">
                 作成日時
-              </th>
-              <td className="px-4 py-3 text-wood-dark">
+              </h3>
+              <p className="text-2xl font-semibold text-wood-darkest">
                 {formatDate(prototype.edit.prototype.createdAt, true)}
-              </td>
-            </tr>
-            <tr className="border-b border-wood-lightest/20">
-              <th className="px-4 py-3 text-left bg-content-secondary text-wood-darkest w-36">
-                最終更新日時
-              </th>
-              <td className="px-4 py-3 text-wood-dark">
-                {formatDate(prototype.edit.prototype.updatedAt, true)}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
+
       <div className="mb-8">
         <div className="grid grid-cols-1 gap-4">
-          <div className="flex gap-4">
-            {/* 編集するボタン */}
+          {/* プロトタイプ編集ボタン */}
+          <div className="flex flex-col gap-4">
             <button
               onClick={() => {
                 if (!prototype.edit) return;
@@ -401,121 +397,216 @@ const GroupPrototypeList: React.FC = () => {
                   `/prototypes/${prototype.edit.prototype.id}/versions/${prototype.edit.versions[0].id}/edit`
                 );
               }}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-wood-dark bg-white hover:text-header rounded-lg hover:bg-wood-lightest transition-all duration-200 border border-wood-light shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-              title="編集する"
+              className="bg-gradient-to-r from-header/90 to-header-light/90 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-header/20 group w-full"
+              title="プロトタイプ編集"
             >
-              <TbCards className="h-5 w-5" />
-              編集する
-            </button>
-
-            {/* 新バージョンを作成するボタン */}
-            <button
-              onClick={() => {
-                if (!prototype.edit) return;
-                handleCreatePreviewPrototype(prototype.edit.prototype.id);
-              }}
-              disabled={!prototype.edit}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-wood-dark bg-white hover:text-header rounded-lg hover:bg-wood-lightest transition-all duration-200 border border-wood-light shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-              title="新バージョンを作成する"
-            >
-              <IoAdd className="h-5 w-5" />
-              新バージョンを作成する
+              <div className="flex items-center justify-center p-4">
+                <div className="w-12 h-12 rounded-full bg-white/80 flex items-center justify-center mr-4 group-hover:bg-white transition-colors">
+                  <HiOutlinePencilAlt className="h-6 w-6 text-header group-hover:text-header-light transition-colors" />
+                </div>
+                <div className="flex flex-col items-start">
+                  <span className="font-medium text-white group-hover:text-white transition-colors text-lg">
+                    プロトタイプ編集
+                  </span>
+                </div>
+              </div>
             </button>
           </div>
         </div>
       </div>
 
-      {/* プレビュー版 */}
-      {prototype.preview.map(({ prototype, versions }) => (
-        <div key={prototype.id} className="mb-8">
-          <h2 className="text-lg font-medium mb-4 text-wood-darkest">
-            {prototype.name}
-            <span className="text-sm font-medium text-wood-dark ml-2">
-              {prototype.id.substring(0, 6)}
-            </span>
-          </h2>
-          <div className="shadow-xl rounded-2xl overflow-hidden bg-content border border-wood-lightest/20">
-            <div className="bg-content-secondary border-b border-wood-lightest/30">
-              <div className="flex items-center p-4 text-sm font-medium text-wood-dark">
-                <span className="flex-1">バージョン</span>
-                <span className="w-32">作成日</span>
-                <div className="w-32" />
+      {/* プレイルーム */}
+      <div className="mt-12">
+        <div className="bg-wood-lightest/30 rounded-xl p-5 mb-6 border border-wood-light/30 shadow-md">
+          <div className="flex justify-start mb-6 border-b border-wood-light/30 pb-6 w-full">
+            <div
+              onClick={() => {
+                if (!prototype.edit) return;
+                handleCreatePreviewPrototype(prototype.edit.prototype.id);
+              }}
+              className="cursor-pointer w-full"
+            >
+              <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-dashed border-wood-light/60 group w-full">
+                <div className="flex items-center justify-center p-4">
+                  <div className="w-12 h-12 rounded-full bg-wood-lightest/50 flex items-center justify-center mr-4 group-hover:bg-wood-lightest transition-colors">
+                    <TbVersions className="h-6 w-6 text-wood-dark group-hover:text-header transition-colors" />
+                  </div>
+                  <div className="flex flex-col items-start">
+                    <span className="text-sm text-wood-dark/70 group-hover:text-header/80 transition-colors">
+                      新しいバージョン
+                    </span>
+                    <span className="font-medium text-wood-dark group-hover:text-header transition-colors">
+                      プロトタイプバージョン作成
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
-            <ul className="divide-y divide-wood-lightest/20">
-              {versions.map((version) => (
-                <Link
-                  key={version.id}
-                  href={`/prototypes/${version.prototypeId}/versions/${version.id}/play`}
-                >
-                  <li className="hover:bg-content-secondary/50 transition-colors duration-200 flex justify-between items-center p-4">
-                    <div className="flex-1 flex items-center gap-2 text-wood-darkest">
-                      <span className="font-medium">
-                        {version.versionNumber === VERSION_NUMBER.MASTER
-                          ? 'Ver.'
-                          : 'Room'}{' '}
-                        {version.versionNumber}
-                      </span>
-                      {version.versionNumber === VERSION_NUMBER.MASTER && (
-                        <span className="px-2 py-0.5 text-xs bg-content-secondary text-wood-dark rounded-full border border-wood-light/30">
-                          Master
-                        </span>
-                      )}
-                      {version.versionNumber === VERSION_NUMBER.MASTER && (
-                        <span className="px-2 py-0.5 text-xs bg-wood-lightest/30 text-wood-dark rounded-full border border-wood-light/30">
-                          編集不可
-                        </span>
-                      )}
-                    </div>
-                    <span className="w-32 text-sm text-wood">
-                      {formatDate(version.createdAt, true)}
-                    </span>
-                    <div className="w-40 flex gap-2 justify-end">
-                      {version.versionNumber === VERSION_NUMBER.MASTER && (
-                        <>
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handleCreateRoom(version.prototypeId, version.id);
-                            }}
-                            className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-sm text-wood-dark hover:text-header rounded-lg hover:bg-wood-lightest/20 transition-all duration-200 border border-wood-light/20"
-                            title="新しいルームを作成"
-                          >
-                            <IoAdd className="h-4 w-4" />
-                            ルーム
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handleDeletePreview(version.prototypeId);
-                            }}
-                            className="flex items-center justify-center gap-1 px-2 py-1.5 text-sm text-wood-dark hover:text-red-500 rounded-lg hover:bg-red-50 transition-all duration-200 border border-wood-light/20"
-                            title="プレビューを削除"
-                          >
-                            <IoTrash className="h-4 w-4" />
-                          </button>
-                        </>
-                      )}
-                      {version.versionNumber !== VERSION_NUMBER.MASTER && (
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleDeleteRoom(version.prototypeId, version.id);
-                          }}
-                          className="flex items-center justify-center gap-1 px-2 py-1.5 text-sm text-wood-dark hover:text-red-500 rounded-lg hover:bg-red-50 transition-all duration-200 border border-wood-light/20"
-                          title="ルームを削除"
-                        >
-                          <IoTrash className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-                  </li>
-                </Link>
-              ))}
-            </ul>
           </div>
+
+          {prototype.preview.length === 0 ? (
+            <div className="text-center py-8 text-wood-dark">
+              <p className="mb-2">プレイルームがありません</p>
+              <p className="text-xs text-wood-dark/70 italic max-w-md mx-auto">
+                エディターで作成したプロトタイプをプレイ可能な状態で保存するには
+                「プロトタイプバージョン作成」ボタンをクリックしてください
+              </p>
+            </div>
+          ) : (
+            [...prototype.preview]
+              .sort(
+                (a, b) =>
+                  new Date(b.prototype.createdAt).getTime() -
+                  new Date(a.prototype.createdAt).getTime()
+              )
+              .map(({ prototype, versions }) => (
+                <div key={prototype.id} className="mb-8">
+                  <div className="bg-gradient-to-br from-content to-content-secondary rounded-2xl shadow-lg border border-wood-lightest/30 p-5">
+                    <div className="flex justify-between items-center mb-4 pb-3 border-b border-wood-light/30">
+                      <h3 className="font-medium text-wood-darkest">
+                        {formatDate(prototype.createdAt, true)}
+                        に作成したバージョン
+                      </h3>
+                      <div className="flex gap-2">
+                        {versions.some(
+                          (v) => v.versionNumber === VERSION_NUMBER.MASTER
+                        ) && (
+                          <>
+                            <Link
+                              href={`/prototypes/${prototype.id}/versions/${versions.find((v) => v.versionNumber === VERSION_NUMBER.MASTER)?.id}/play`}
+                              className="p-1.5 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-all"
+                              title="プレビュー"
+                            >
+                              <FaEye className="h-4 w-4" />
+                            </Link>
+                            <button
+                              onClick={() => handleDeletePreview(prototype.id)}
+                              className="p-1.5 text-wood hover:text-red-500 rounded-md hover:bg-red-50/20 transition-all"
+                              title="削除する"
+                            >
+                              <IoTrash className="h-4 w-4" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {versions.some(
+                      (v) => v.versionNumber !== VERSION_NUMBER.MASTER
+                    ) ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        {versions.map((version) => {
+                          // Skip rendering master version
+                          if (version.versionNumber === VERSION_NUMBER.MASTER) {
+                            return null;
+                          }
+
+                          return (
+                            <Link
+                              key={version.id}
+                              href={`/prototypes/${version.prototypeId}/versions/${version.id}/play`}
+                            >
+                              <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-wood-light/20 group">
+                                <div className="bg-gradient-to-r from-wood-lightest to-wood-lightest/50 p-3 border-b border-wood-light/20">
+                                  <div className="flex justify-between items-center">
+                                    <h3 className="font-bold text-wood-darkest group-hover:text-header transition-colors">
+                                      プレイルーム
+                                      {version.versionNumber.replace(
+                                        '.0.0',
+                                        ''
+                                      )}
+                                    </h3>
+                                    <button
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleDeleteRoom(
+                                          version.prototypeId,
+                                          version.id
+                                        );
+                                      }}
+                                      className="text-wood-dark hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-red-50"
+                                      title="ルームを削除"
+                                    >
+                                      <IoTrash className="h-4 w-4" />
+                                    </button>
+                                  </div>
+                                </div>
+                                <div className="p-4">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2 text-wood">
+                                      <BsDoorOpenFill className="h-5 w-5 text-wood-dark group-hover:text-header transition-colors" />
+                                      <span className="text-sm font-medium">
+                                        入室
+                                      </span>
+                                    </div>
+                                    <div className="text-xs text-wood-dark">
+                                      {formatDate(version.createdAt, true)}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </Link>
+                          );
+                        })}
+
+                        {/* 新しいルームを作成する空のカード */}
+                        <div
+                          onClick={() => {
+                            const masterVersion = versions.find(
+                              (v) => v.versionNumber === VERSION_NUMBER.MASTER
+                            );
+                            if (masterVersion) {
+                              handleCreateRoom(prototype.id, masterVersion.id);
+                            }
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-dashed border-wood-light/60 group h-full">
+                            <div className="flex flex-col items-center justify-center h-full p-6">
+                              <div className="w-12 h-12 rounded-full bg-wood-lightest/50 flex items-center justify-center mb-2 group-hover:bg-wood-lightest transition-colors">
+                                <IoAdd className="h-6 w-6 text-wood-dark group-hover:text-header transition-colors" />
+                              </div>
+                              <h3 className="font-medium text-wood-dark group-hover:text-header transition-colors">
+                                新しいルーム作成
+                              </h3>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        {/* 新しいルームを作成する空のカード - プレイルームが無い場合 */}
+                        <div
+                          onClick={() => {
+                            const masterVersion = versions.find(
+                              (v) => v.versionNumber === VERSION_NUMBER.MASTER
+                            );
+                            if (masterVersion) {
+                              handleCreateRoom(prototype.id, masterVersion.id);
+                            }
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-dashed border-wood-light/60 group h-full">
+                            <div className="flex flex-col items-center justify-center h-full p-6">
+                              <div className="w-12 h-12 rounded-full bg-wood-lightest/50 flex items-center justify-center mb-2 group-hover:bg-wood-lightest transition-colors">
+                                <IoAdd className="h-6 w-6 text-wood-dark group-hover:text-header transition-colors" />
+                              </div>
+                              <h3 className="font-medium text-wood-dark group-hover:text-header transition-colors">
+                                新しいルーム作成
+                              </h3>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+          )}
         </div>
-      ))}
+      </div>
     </div>
   );
 };
