@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
+import { IoArrowBack } from 'react-icons/io5';
+import { RiLoaderLine } from 'react-icons/ri';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 
@@ -19,6 +21,8 @@ const CreatePrototypeForm: React.FC = () => {
   });
   // エラー
   const [error, setError] = useState<string | null>(null);
+  // 作成中フラグ
+  const [isCreating, setIsCreating] = useState(false);
 
   /**
    * プロトタイプを作成する
@@ -34,6 +38,9 @@ const CreatePrototypeForm: React.FC = () => {
     }
 
     try {
+      // 作成中フラグを立てる
+      setIsCreating(true);
+
       // プロトタイプを作成する
       const newPrototype = await createPrototype({
         name: form.name,
@@ -52,23 +59,35 @@ const CreatePrototypeForm: React.FC = () => {
     } catch (error) {
       console.error('Error creating prototype:', error);
       setError('エラーが発生しました。');
+      // 作成中フラグを戻す
+      setIsCreating(false);
     }
   };
 
   return (
-    <>
+    <div className="max-w-md mx-auto mt-16 relative pb-24">
+      <div className="flex items-center gap-4 mb-8">
+        <Link
+          href="/prototypes"
+          className="p-2 hover:bg-content-secondary rounded-full transition-colors"
+          title="プロトタイプ一覧へ戻る"
+        >
+          <IoArrowBack className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
+        </Link>
+        <h1 className="text-4xl font-bold text-center flex-grow bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
+          プロトタイプ作成
+        </h1>
+      </div>
+
       <form
         onSubmit={handleSubmit}
-        className="max-w-md mx-auto mt-10 p-4 shadow-md rounded-lg bg-content-secondary relative"
+        className="bg-gradient-to-br from-content to-content-secondary rounded-2xl shadow-lg border border-wood-lightest/30 p-6"
       >
-        <h2 className="text-xl font-bold mb-4 text-center">
-          新しいプロトタイプを作成
-        </h2>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         <div className="mb-4">
           <label
             htmlFor="prototypeName"
-            className="block text-wood-darkest mb-2"
+            className="block text-wood-darkest mb-2 font-medium"
           >
             プロトタイプ名
           </label>
@@ -78,12 +97,16 @@ const CreatePrototypeForm: React.FC = () => {
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             placeholder="プロトタイプ名"
-            className="w-full p-2 border bg-content rounded text-wood-darkest"
+            className="w-full p-2 border bg-white rounded-lg text-wood-darkest shadow-inner border-wood-lightest/40"
             required
+            disabled={isCreating}
           />
         </div>
-        <div className="mb-4">
-          <label htmlFor="playerCount" className="block text-wood-darkest mb-2">
+        <div className="mb-6">
+          <label
+            htmlFor="playerCount"
+            className="block text-wood-darkest mb-2 font-medium"
+          >
             プレイヤー人数
           </label>
           <input
@@ -97,26 +120,30 @@ const CreatePrototypeForm: React.FC = () => {
               }
             }}
             placeholder="プレイヤー人数"
-            className="w-full p-2 border bg-content rounded text-wood-darkest"
+            className="w-full p-2 border bg-white rounded-lg text-wood-darkest shadow-inner border-wood-lightest/40"
             required
+            disabled={isCreating}
           />
         </div>
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors"
+          disabled={isCreating}
+          className={`w-full bg-gradient-to-r from-header/90 to-header-light/90 text-white p-3 rounded-xl border border-header/20 font-medium transition-all duration-300 transform 
+            ${
+              isCreating
+                ? 'opacity-80 cursor-not-allowed'
+                : 'hover:shadow-xl hover:-translate-y-1'
+            }`}
         >
-          作成
+          <div className="flex items-center justify-center">
+            {isCreating && (
+              <RiLoaderLine className="w-5 h-5 mr-2 animate-spin" />
+            )}
+            <span>{isCreating ? '作成中...' : '作成'}</span>
+          </div>
         </button>
       </form>
-      <div className="text-center mt-4">
-        <Link
-          href="/prototypes"
-          className="inline-block bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors"
-        >
-          戻る
-        </Link>
-      </div>
-    </>
+    </div>
   );
 };
 
