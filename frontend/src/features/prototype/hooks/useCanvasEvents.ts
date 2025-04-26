@@ -95,6 +95,9 @@ export const useCanvasEvents = ({
    * @param partId - パーツID（パーツからの呼び出し時のみ）
    */
   const onMouseDown = (e: React.MouseEvent, partId?: number) => {
+    // テキスト選択を防止
+    e.preventDefault();
+
     if (partId !== undefined) {
       // パーツのドラッグ開始
       const part = parts.find((part) => part.id === partId);
@@ -125,6 +128,11 @@ export const useCanvasEvents = ({
    * @param e - マウス移動イベント
    */
   const onMouseMove = (e: React.MouseEvent) => {
+    // テキスト選択を防止（ドラッグ中）
+    if (isDraggingCanvas || draggingPartId !== null) {
+      e.preventDefault();
+    }
+
     if (draggingPartId !== null) {
       // パーツのドラッグ処理
       const rect = mainViewRef.current?.getBoundingClientRect();
