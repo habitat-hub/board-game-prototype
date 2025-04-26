@@ -532,8 +532,9 @@ const GroupPrototypeList: React.FC = () => {
             <div className="text-center py-8 text-wood-dark">
               <p className="mb-2">プレイルームがありません</p>
               <p className="text-xs text-wood-dark/70 italic max-w-md mx-auto">
-                エディターで作成したプロトタイプをプレイ可能な状態で保存するには
-                「プロトタイプバージョン作成」ボタンをクリックしてください
+                編集したプロトタイプをプレイできるようにするには
+                <br />
+                「プロトタイプバージョン作成」ボタンを押してください
               </p>
             </div>
           ) : (
