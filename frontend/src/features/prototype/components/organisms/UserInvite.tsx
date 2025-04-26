@@ -27,6 +27,7 @@ const useUserInvite = (groupId: string) => {
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [prototypeName, setPrototypeName] = useState<string>('');
+  const [prototypeOwnerId, setPrototypeOwnerId] = useState<string>('');
 
   // プロトタイプ名を取得
   const fetchPrototypeName = useCallback(async () => {
@@ -36,6 +37,8 @@ const useUserInvite = (groupId: string) => {
       const editPrototype = response.find((p) => p.prototype.type === 'EDIT');
       if (editPrototype) {
         setPrototypeName(editPrototype.prototype.name);
+        // プロトタイプのオーナーIDを保存
+        setPrototypeOwnerId(editPrototype.prototype.userId);
       }
     } catch (error) {
       console.error('Error fetching prototype info:', error);
@@ -130,6 +133,7 @@ const useUserInvite = (groupId: string) => {
     removeInvitedUser,
     inviteUser,
     prototypeName,
+    prototypeOwnerId,
   };
 };
 
@@ -145,6 +149,7 @@ const UserInvite: React.FC = () => {
     removeInvitedUser,
     inviteUser,
     prototypeName,
+    prototypeOwnerId,
   } = useUserInvite(groupId);
 
   return (
@@ -232,14 +237,21 @@ const UserInvite: React.FC = () => {
             <UserCard
               key={user.id}
               user={user}
+              isOwner={user.id === prototypeOwnerId}
               actionButton={
-                <button
-                  onClick={() => removeInvitedUser(user.id)}
-                  className="p-2 text-wood hover:text-red-500 rounded-md hover:bg-wood-lightest/20 transition-colors"
-                  title="プロトタイプから除外する"
-                >
-                  <FaMinus className="h-4 w-4" />
-                </button>
+                user.id === prototypeOwnerId ? (
+                  <span className="inline-block text-sm font-medium px-2 py-1 rounded-md bg-amber-100 text-amber-700 whitespace-nowrap">
+                    オーナー
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => removeInvitedUser(user.id)}
+                    className="p-2 text-wood hover:text-red-500 rounded-md hover:bg-wood-lightest/20 transition-colors"
+                    title="プロトタイプから除外する"
+                  >
+                    <FaMinus className="h-4 w-4" />
+                  </button>
+                )
               }
             />
           ))}
