@@ -201,7 +201,7 @@ export default function Canvas({
     };
   }, [handleKeyDown]);
 
-  // throttle関数はレンダリング間で一貫性を保つためにuseMemoでメモ化
+  // カーソル位置の送信部分
   const throttledMouseMove = useMemo(
     () =>
       throttle((e: MouseEvent) => {
@@ -211,7 +211,19 @@ export default function Canvas({
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
-        // ソケットでカーソル情報を送信
+        // 前回の位置
+        const lastPosition = lastCursorPosition.current;
+
+        // 前回の位置があり、かつ、前回の位置と現在の位置が5px以内の場合は更新しない
+        if (
+          lastPosition &&
+          Math.abs(lastPosition.x - x) <= 5 &&
+          Math.abs(lastPosition.y - y) <= 5
+        ) {
+          return;
+        }
+
+        lastCursorPosition.current = { x, y };
         socket.emit('UPDATE_CURSOR', {
           userId: user?.id || '',
           userName: user?.username || 'Nanashi-san',
@@ -221,23 +233,21 @@ export default function Canvas({
     [socket, user]
   );
 
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      throttledMouseMove(e);
-    },
-    [throttledMouseMove]
-  );
-  // カーソル更新のイベントリスナーを追加
+  // マウス移動イベントの設定
   useEffect(() => {
-    const mainView = mainViewRef.current;
-    if (!mainView) return;
-
-    mainView.addEventListener('mousemove', handleMouseMove);
-
-    return () => {
-      mainView.removeEventListener('mousemove', handleMouseMove);
+    const handleMouseMove = (e: MouseEvent) => {
+      throttledMouseMove(e);
     };
-  }, [handleMouseMove]);
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      throttledMouseMove.cancel(); // throttleのクリーンアップ
+    };
+  }, [throttledMouseMove]);
+
+  // 前回のカーソル位置を保持するためのref
+  const lastCursorPosition = useRef<{ x: number; y: number } | null>(null);
 
   /**
    * マウスダウン時の処理
@@ -374,7 +384,21 @@ export default function Canvas({
             // 自分のカーソルは表示しない
             if (cursor.userId === user?.id) return null;
 
-            return <Cursor key={cursor.userId} cursor={cursor} />;
+            // NOTE: カーソルの位置がズレてるから、微調整
+            const adjustedPosition = {
+              x: cursor.position.x + 85,
+              y: cursor.position.y + 35,
+            };
+
+            return (
+              <Cursor
+                key={cursor.userId}
+                cursor={{
+                  ...cursor,
+                  position: adjustedPosition,
+                }}
+              />
+            );
           })}
         </div>
       </main>

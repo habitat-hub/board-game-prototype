@@ -1,5 +1,5 @@
 import { throttle } from 'lodash';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 
 import { Part } from '@/api/types';
 import { needsParentUpdate } from '@/features/prototype/helpers/partHelper';
@@ -33,9 +33,24 @@ export const useCanvasEvents = ({
    * @param x - パーツのx座標
    * @param y - パーツのy座標
    */
-  const throttledDispatch = useCallback(
-    (x: number, y: number) => {
-      if (draggingPartId !== null) {
+  const throttledUpdate = useMemo(
+    () =>
+      throttle((x: number, y: number) => {
+        if (draggingPartId === null) return;
+
+        // 前回の位置
+        const lastPosition = lastPositions.current.get(draggingPartId);
+
+        // 前回の位置があり、かつ、前回の位置と現在の位置が5px以内の場合は更新しない
+        if (
+          lastPosition &&
+          Math.abs(lastPosition.x - x) <= 5 &&
+          Math.abs(lastPosition.y - y) <= 5
+        ) {
+          return;
+        }
+
+        lastPositions.current.set(draggingPartId, { x, y });
         dispatch({
           type: 'UPDATE_PART',
           payload: {
@@ -43,11 +58,19 @@ export const useCanvasEvents = ({
             updatePart: { position: { x, y } },
           },
         });
-      }
-    },
+      }, 50),
     [draggingPartId, dispatch]
   );
-  const throttledUpdate = throttle(throttledDispatch, 50);
+
+  // 前回の位置を保持するためのref
+  const lastPositions = useRef(new Map<number, { x: number; y: number }>());
+
+  // throttleのクリーンアップ
+  useEffect(() => {
+    return () => {
+      throttledUpdate.cancel();
+    };
+  }, [throttledUpdate]);
 
   /**
    * ズーム操作
