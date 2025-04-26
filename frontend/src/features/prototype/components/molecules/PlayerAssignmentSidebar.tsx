@@ -4,7 +4,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { GoSidebarExpand, GoSidebarCollapse } from 'react-icons/go';
+import {
+  TbLayoutSidebarRightCollapse,
+  TbLayoutSidebarRightExpand,
+} from 'react-icons/tb';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Player, User } from '@/api/types';
@@ -40,13 +43,13 @@ export default function PlayerAssignmentSidebar({
       <div
         className={`fixed h-full right-0 flex flex-col border-l border-gray-200 bg-white transition-all duration-300 ease-in-out ${
           isMinimized
-            ? 'w-12 rounded-xl border top-14 right-4 h-auto translate-x-0'
+            ? 'w-12 rounded-xl border top-14 right-4 h-auto max-h-[48px] translate-x-0'
             : 'w-[240px] translate-x-0'
         }`}
       >
         {isMinimized ? (
           <div className="flex flex-col items-center justify-between gap-2 p-4">
-            <GoSidebarExpand
+            <TbLayoutSidebarRightExpand
               onClick={() => setIsMinimized(false)}
               className="h-5 w-5 cursor-pointer flex-shrink-0"
             />
@@ -54,7 +57,7 @@ export default function PlayerAssignmentSidebar({
         ) : (
           <>
             <div className="flex items-center justify-between p-2 h-16">
-              <GoSidebarCollapse
+              <TbLayoutSidebarRightCollapse
                 onClick={() => setIsMinimized(true)}
                 className="h-5 w-5 cursor-pointer flex-shrink-0"
               />

@@ -14,7 +14,10 @@ import {
   GiStoneBlock,
 } from 'react-icons/gi';
 import { IoArrowBack } from 'react-icons/io5';
-import { PiSidebarSimpleThin } from 'react-icons/pi';
+import {
+  TbLayoutSidebarLeftCollapse,
+  TbLayoutSidebarLeftExpand,
+} from 'react-icons/tb';
 
 import { Part, PartProperty, Player } from '@/api/types';
 import TextIconButton from '@/components/atoms/TextIconButton';
@@ -139,9 +142,9 @@ export default function PartCreateSidebar({
                   </span>
                 )}
               </div>
-              <PiSidebarSimpleThin
+              <TbLayoutSidebarLeftCollapse
                 onClick={() => setIsLeftSidebarMinimized(true)}
-                className="h-5 w-5 cursor-pointer flex-shrink-0"
+                className="h-5 w-5 cursor-pointer flex-shrink-0 text-gray-600 hover:text-blue-500 transition-colors duration-200 hover:scale-110"
               />
             </div>
           </div>
@@ -175,7 +178,7 @@ export default function PartCreateSidebar({
           </div>
         </div>
       ) : (
-        <div className="fixed left-2 top-14 flex h-[48px] w-[250px] items-center justify-between rounded-xl border bg-white p-4">
+        <div className="fixed left-2 top-14 flex h-auto w-[250px] items-center justify-between rounded-xl border bg-white p-4 max-h-[48px]">
           <button
             onClick={() => router.push(`/prototypes/groups/${groupId}`)}
             className="p-1 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
@@ -193,9 +196,9 @@ export default function PartCreateSidebar({
               </span>
             )}
           </div>
-          <PiSidebarSimpleThin
+          <TbLayoutSidebarLeftExpand
             onClick={() => setIsLeftSidebarMinimized(false)}
-            className="h-5 w-5 cursor-pointer flex-shrink-0"
+            className="h-5 w-5 cursor-pointer flex-shrink-0 text-gray-600 hover:text-blue-500 transition-colors duration-200 hover:scale-110"
           />
         </div>
       )}
