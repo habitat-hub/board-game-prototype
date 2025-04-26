@@ -49,18 +49,24 @@ export default function PlayerAssignmentSidebar({
       >
         {isMinimized ? (
           <div className="flex flex-col items-center justify-between gap-2 p-4">
-            <TbLayoutSidebarRightExpand
+            <button
               onClick={() => setIsMinimized(false)}
-              className="h-5 w-5 cursor-pointer flex-shrink-0"
-            />
+              aria-label="サイドバーを展開"
+              className="p-1 rounded-full transition-transform hover:scale-110"
+            >
+              <TbLayoutSidebarRightExpand className="h-5 w-5 flex-shrink-0" />
+            </button>
           </div>
         ) : (
           <>
             <div className="flex items-center justify-between p-2 h-16">
-              <TbLayoutSidebarRightCollapse
+              <button
                 onClick={() => setIsMinimized(true)}
-                className="h-5 w-5 cursor-pointer flex-shrink-0"
-              />
+                aria-label="サイドバーを最小化"
+                className="p-1 rounded-full transition-transform hover:scale-110"
+              >
+                <TbLayoutSidebarRightCollapse className="h-5 w-5 flex-shrink-0" />
+              </button>
             </div>
             <div className="border-b border-gray-200"></div>
             <div className="flex flex-col gap-2 p-4">

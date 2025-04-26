@@ -142,10 +142,13 @@ export default function PartCreateSidebar({
                   </span>
                 )}
               </div>
-              <TbLayoutSidebarLeftCollapse
+              <button
                 onClick={() => setIsLeftSidebarMinimized(true)}
-                className="h-5 w-5 cursor-pointer flex-shrink-0 text-gray-600 hover:text-blue-500 transition-colors duration-200 hover:scale-110"
-              />
+                aria-label="サイドバーを最小化"
+                className="p-1 rounded-full transition-transform hover:scale-110"
+              >
+                <TbLayoutSidebarLeftCollapse className="h-5 w-5 text-gray-600 hover:text-blue-500 transition-colors" />
+              </button>
             </div>
           </div>
           <div className="border-b border-gray-200" />
@@ -196,10 +199,13 @@ export default function PartCreateSidebar({
               </span>
             )}
           </div>
-          <TbLayoutSidebarLeftExpand
+          <button
             onClick={() => setIsLeftSidebarMinimized(false)}
-            className="h-5 w-5 cursor-pointer flex-shrink-0 text-gray-600 hover:text-blue-500 transition-colors duration-200 hover:scale-110"
-          />
+            aria-label="サイドバーを展開"
+            className="p-1 rounded-full transition-transform hover:scale-110"
+          >
+            <TbLayoutSidebarLeftExpand className="h-5 w-5 text-gray-600 hover:text-blue-500 transition-colors" />
+          </button>
         </div>
       )}
     </>

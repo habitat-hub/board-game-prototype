@@ -18,7 +18,7 @@ export default function ZoomOutButton({
   disabled?: boolean;
 }) {
   return (
-    <IconButton onClick={onClick} disabled={disabled}>
+    <IconButton onClick={onClick} disabled={disabled} ariaLabel="縮小する">
       <AiOutlineZoomOut size={size} color={color} />
     </IconButton>
   );
