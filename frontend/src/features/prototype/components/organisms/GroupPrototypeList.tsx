@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaCheck, FaPenToSquare } from 'react-icons/fa6';
+import { FaCheck, FaPenToSquare, FaUserPlus } from 'react-icons/fa6';
 import { IoAdd, IoArrowBack, IoTrash } from 'react-icons/io5';
 import { TbCards } from 'react-icons/tb';
 
@@ -283,6 +283,17 @@ const GroupPrototypeList: React.FC = () => {
             )}
           </div>
         )}
+      </div>
+
+      {/* 他のユーザーを招待するボタン */}
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={() => router.push(`/prototypes/groups/${groupId}/invite`)}
+          className="flex items-center justify-center gap-2 px-4 py-2 text-wood-dark bg-white hover:text-header rounded-lg hover:bg-wood-lightest transition-all duration-200 border border-wood-light shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+        >
+          <FaUserPlus className="h-5 w-5" />
+          他のユーザーを招待する
+        </button>
       </div>
 
       {/* プロトタイプの基本情報 */}
