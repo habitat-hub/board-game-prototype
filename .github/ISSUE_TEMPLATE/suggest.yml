@@ -1,0 +1,51 @@
+name: 💡 提案
+description: 新機能、改善、ドキュメント、開発環境に関する提案
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        提案ありがとうございます。以下の情報を記入してください。
+
+  - type: dropdown
+    id: proposal_type
+    attributes:
+      label: 提案タイプ
+      description: 提案の種類を選択してください（複数選択可）
+      multiple: true
+      options:
+        - 新機能追加
+        - UI/UX改善
+        - リファクタリング
+        - パフォーマンス改善
+        - ドキュメント
+        - 開発環境
+        - その他
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 現状の課題
+      description: この提案に関連する問題や課題を説明してください
+      placeholder: 例）〜の操作が複雑で使いにくい、ドキュメントが不足している など
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 提案内容
+      description: 考えられる解決策や実現したい改善を詳しく説明してください
+      placeholder: できるだけ具体的に記述してください
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 補足情報
+      description: モックアップ、参考事例、代替案、関連リンクなど補足情報があれば記述してください
+    validations:
+      required: false

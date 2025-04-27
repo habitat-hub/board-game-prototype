@@ -10,12 +10,14 @@ import { IoAdd, IoArrowBack, IoTrash } from 'react-icons/io5';
 import { TbVersions } from 'react-icons/tb';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
-import { Prototype, PrototypeVersion } from '@/api/types';
+import { Prototype, PrototypeVersion, User } from '@/api/types';
 import { VERSION_NUMBER } from '@/features/prototype/const';
+import { useUser } from '@/hooks/useUser';
 import formatDate from '@/utils/dateFormat';
 
 const GroupPrototypeList: React.FC = () => {
   const router = useRouter();
+  const { user } = useUser();
   const {
     getPrototypesByGroup,
     createPreview,
@@ -23,6 +25,7 @@ const GroupPrototypeList: React.FC = () => {
     deletePrototype,
     deleteVersion,
     updatePrototype,
+    getAccessUsersByGroup,
   } = usePrototypes();
 
   // グループID
@@ -36,6 +39,9 @@ const GroupPrototypeList: React.FC = () => {
   const [playersEditingId, setPlayersEditingId] = useState<string>('');
   const [editedMinPlayers, setEditedMinPlayers] = useState<number>(4);
   const [editedMaxPlayers, setEditedMaxPlayers] = useState<number>(4);
+
+  // 参加ユーザーのリスト
+  const [accessUsers, setAccessUsers] = useState<User[]>([]);
 
   const [prototype, setPrototype] = useState<{
     // 編集版プロトタイプ
@@ -68,10 +74,23 @@ const GroupPrototypeList: React.FC = () => {
     });
   }, [getPrototypesByGroup, groupId]);
 
+  /**
+   * グループの参加ユーザーを取得する
+   */
+  const fetchAccessUsers = useCallback(async () => {
+    try {
+      const users = await getAccessUsersByGroup(groupId);
+      setAccessUsers(users);
+    } catch (error) {
+      console.error('Error fetching access users:', error);
+    }
+  }, [getAccessUsersByGroup, groupId]);
+
   // プロトタイプを取得する
   useEffect(() => {
     getPrototypeGroups();
-  }, [getPrototypeGroups]);
+    fetchAccessUsers();
+  }, [getPrototypeGroups, fetchAccessUsers]);
 
   /**
    * プレビュー版プロトタイプを作成する
@@ -230,7 +249,7 @@ const GroupPrototypeList: React.FC = () => {
   if (!prototype || !prototype.edit) return null;
 
   return (
-    <div className="max-w-4xl mx-auto mt-16 relative pb-24">
+    <div className="max-w-4xl mx-auto mt-16 relative">
       <div className="flex items-center gap-4 mb-8">
         <button
           onClick={() => router.push('/prototypes')}
@@ -289,13 +308,7 @@ const GroupPrototypeList: React.FC = () => {
 
       {/* 他のユーザーを招待するボタン */}
       <div className="flex justify-end mb-4">
-        <button
-          onClick={() => router.push(`/prototypes/groups/${groupId}/invite`)}
-          className="flex items-center justify-center gap-2 px-4 py-2 text-wood-dark bg-white hover:text-header rounded-lg hover:bg-wood-lightest transition-all duration-200 border border-wood-light shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-        >
-          <FaUserPlus className="h-5 w-5" />
-          他のユーザー招待
-        </button>
+        {/* 既存のボタンを削除し、参加ユーザーエリア内に移動 */}
       </div>
 
       {/* プロトタイプの基本情報 */}
@@ -373,6 +386,70 @@ const GroupPrototypeList: React.FC = () => {
               )}
             </div>
 
+            {/* 参加ユーザーカード */}
+            <div className="flex-1 bg-white/80 rounded-xl p-5 shadow-inner border border-wood-lightest/40">
+              <h3 className="text-sm uppercase tracking-wide text-wood-dark/70 mb-2 font-medium">
+                参加ユーザー
+              </h3>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm text-wood-darkest/70">
+                  {accessUsers.length}人が参加中
+                </span>
+                {prototype.edit &&
+                user?.id === prototype.edit.prototype.userId ? (
+                  <button
+                    onClick={() =>
+                      router.push(`/prototypes/groups/${groupId}/invite`)
+                    }
+                    className="p-1.5 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-all"
+                    title="他のユーザーを招待する"
+                  >
+                    <FaUserPlus className="h-4 w-4" />
+                  </button>
+                ) : (
+                  <div className="relative group">
+                    <button
+                      disabled
+                      className="p-1.5 text-wood-light/50 cursor-not-allowed rounded-md"
+                      title="他のユーザーを招待する"
+                    >
+                      <FaUserPlus className="h-4 w-4" />
+                    </button>
+                    <div className="absolute bottom-full mb-2 right-0 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50">
+                      プロトタイプのオーナーのみが招待できます
+                    </div>
+                  </div>
+                )}
+              </div>
+              {accessUsers.length > 0 ? (
+                <div className="flex flex-wrap gap-2 max-h-[120px] overflow-y-auto pr-2">
+                  {accessUsers.map((accessUser) => (
+                    <div
+                      key={accessUser.id}
+                      className={`px-3 py-1.5 text-sm rounded-full flex items-center gap-1.5 border ${
+                        accessUser.id === prototype.edit?.prototype.userId
+                          ? 'bg-header/10 text-header border-header/30'
+                          : 'bg-wood-lightest/50 text-wood-darkest border-wood-light/30'
+                      }`}
+                    >
+                      <span className="max-w-[120px] truncate">
+                        {accessUser.username}
+                      </span>
+                      {accessUser.id === prototype.edit?.prototype.userId && (
+                        <span className="text-[10px] px-1.5 py-0.5 bg-header/10 text-header rounded-md border border-header/30">
+                          オーナー
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-wood-dark text-sm italic">
+                  ユーザーデータ取得中...
+                </p>
+              )}
+            </div>
+
             {/* 作成日時カード - クリック不可でホバーエフェクトなし */}
             <div className="flex-1 bg-white/80 rounded-xl p-5 shadow-inner border border-wood-lightest/40">
               <h3 className="text-sm uppercase tracking-wide text-wood-dark/70 mb-2 font-medium">
@@ -419,11 +496,12 @@ const GroupPrototypeList: React.FC = () => {
       <div className="mt-12">
         <div className="bg-wood-lightest/30 rounded-xl p-5 mb-6 border border-wood-light/30 shadow-md">
           <div className="flex justify-start mb-6 border-b border-wood-light/30 pb-6 w-full">
-            <div
+            <button
               onClick={() => {
                 if (!prototype.edit) return;
                 handleCreatePreviewPrototype(prototype.edit.prototype.id);
               }}
+              aria-label="プロトタイプバージョン作成"
               className="cursor-pointer w-full"
             >
               <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-dashed border-wood-light/60 group w-full">
@@ -441,15 +519,16 @@ const GroupPrototypeList: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </button>
           </div>
 
           {prototype.preview.length === 0 ? (
             <div className="text-center py-8 text-wood-dark">
               <p className="mb-2">プレイルームがありません</p>
               <p className="text-xs text-wood-dark/70 italic max-w-md mx-auto">
-                エディターで作成したプロトタイプをプレイ可能な状態で保存するには
-                「プロトタイプバージョン作成」ボタンをクリックしてください
+                編集したプロトタイプをプレイできるようにするには
+                <br />
+                「プロトタイプバージョン作成」ボタンを押してください
               </p>
             </div>
           ) : (
@@ -475,17 +554,34 @@ const GroupPrototypeList: React.FC = () => {
                             <Link
                               href={`/prototypes/${prototype.id}/versions/${versions.find((v) => v.versionNumber === VERSION_NUMBER.MASTER)?.id}/play`}
                               className="p-1.5 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-all"
-                              title="プレビュー"
+                              title="バージョンプレビュー"
                             >
                               <FaEye className="h-4 w-4" />
                             </Link>
-                            <button
-                              onClick={() => handleDeletePreview(prototype.id)}
-                              className="p-1.5 text-wood hover:text-red-500 rounded-md hover:bg-red-50/20 transition-all"
-                              title="削除する"
-                            >
-                              <IoTrash className="h-4 w-4" />
-                            </button>
+                            {user?.id === prototype.userId ? (
+                              <button
+                                onClick={() =>
+                                  handleDeletePreview(prototype.id)
+                                }
+                                className="p-1.5 text-wood hover:text-red-500 rounded-md hover:bg-red-50/20 transition-all"
+                                title="バージョン削除"
+                              >
+                                <IoTrash className="h-4 w-4" />
+                              </button>
+                            ) : (
+                              <div className="relative group">
+                                <button
+                                  disabled
+                                  className="p-1.5 text-wood-light/50 cursor-not-allowed rounded-md"
+                                  title="バージョン削除"
+                                >
+                                  <IoTrash className="h-4 w-4" />
+                                </button>
+                                <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50">
+                                  プロトタイプのオーナーのみが削除できます
+                                </div>
+                              </div>
+                            )}
                           </>
                         )}
                       </div>
@@ -551,7 +647,7 @@ const GroupPrototypeList: React.FC = () => {
                         })}
 
                         {/* 新しいルームを作成する空のカード */}
-                        <div
+                        <button
                           onClick={() => {
                             const masterVersion = versions.find(
                               (v) => v.versionNumber === VERSION_NUMBER.MASTER
@@ -560,6 +656,7 @@ const GroupPrototypeList: React.FC = () => {
                               handleCreateRoom(prototype.id, masterVersion.id);
                             }
                           }}
+                          aria-label="新しいルーム作成"
                           className="cursor-pointer"
                         >
                           <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-dashed border-wood-light/60 group h-full">
@@ -572,12 +669,12 @@ const GroupPrototypeList: React.FC = () => {
                               </h3>
                             </div>
                           </div>
-                        </div>
+                        </button>
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         {/* 新しいルームを作成する空のカード - プレイルームが無い場合 */}
-                        <div
+                        <button
                           onClick={() => {
                             const masterVersion = versions.find(
                               (v) => v.versionNumber === VERSION_NUMBER.MASTER
@@ -586,6 +683,7 @@ const GroupPrototypeList: React.FC = () => {
                               handleCreateRoom(prototype.id, masterVersion.id);
                             }
                           }}
+                          aria-label="新しいルーム作成"
                           className="cursor-pointer"
                         >
                           <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-dashed border-wood-light/60 group h-full">
@@ -598,7 +696,7 @@ const GroupPrototypeList: React.FC = () => {
                               </h3>
                             </div>
                           </div>
-                        </div>
+                        </button>
                       </div>
                     )}
                   </div>
