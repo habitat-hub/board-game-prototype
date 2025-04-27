@@ -452,14 +452,30 @@ const PrototypeList: React.FC = () => {
                         <FaBoxOpen className="w-4 h-4" />
                         <span>開く</span>
                       </Link>
-                      <button
-                        onClick={(e) => handleDuplicate(id, e)}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
-                        title="プロトタイプを複製"
-                      >
-                        <FaCopy className="w-4 h-4" />
-                        <span>複製</span>
-                      </button>
+                      {userContext?.user?.id === userId ? (
+                        <button
+                          onClick={(e) => handleDuplicate(id, e)}
+                          className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
+                          title="プロトタイプを複製"
+                        >
+                          <FaCopy className="w-4 h-4" />
+                          <span>複製</span>
+                        </button>
+                      ) : (
+                        <div className="relative group">
+                          <button
+                            disabled
+                            className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood-light/50 cursor-not-allowed rounded-md border border-wood-light/20"
+                            title="プロトタイプを複製"
+                          >
+                            <FaCopy className="w-4 h-4" />
+                            <span>複製</span>
+                          </button>
+                          <div className="absolute bottom-full mb-2 right-0 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50">
+                            プロトタイプのオーナーのみが複製できます
+                          </div>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );
