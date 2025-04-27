@@ -254,8 +254,8 @@
 <polygon fill="none" stroke="#000000" points=".5,-516 .5,-538 95.5,-538 95.5,-516 .5,-516"/>
 <text text-anchor="start" x="5.5" y="-524" font-family="Times,serif" font-size="10.00" fill="#000000">textColor: STRING</text>
 <polygon fill="none" stroke="#000000" points=".5,-494 .5,-516 95.5,-516 95.5,-494 .5,-494"/>
-<text text-anchor="start" x="5.5" y="-503" font-family="Times,serif" font-style="italic" text-decoration="underline" font-size="10.00" fill="#000000">ImageId</text>
-<text text-anchor="start" x="38.815" y="-503" font-family="Times,serif" font-size="10.00" fill="#000000">: UUID</text>
+<text text-anchor="start" x="5.5" y="-503" font-family="Times,serif" font-style="italic" text-decoration="underline" font-size="10.00" fill="#000000">imageId</text>
+<text text-anchor="start" x="38.265" y="-503" font-family="Times,serif" font-size="10.00" fill="#000000">: UUID</text>
 <polygon fill="none" stroke="#000000" points=".5,-472 .5,-494 95.5,-494 95.5,-472 .5,-472"/>
 <text text-anchor="start" x="5.5" y="-480" font-family="Times,serif" font-size="10.00" fill="#000000">createdAt: DATE</text>
 <polygon fill="none" stroke="#000000" points=".5,-450 .5,-472 95.5,-472 95.5,-450 .5,-450"/>
