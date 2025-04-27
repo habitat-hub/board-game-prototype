@@ -8,7 +8,7 @@ import React, {
   useMemo,
   useContext,
 } from 'react';
-import { FaCheck, FaCopy } from 'react-icons/fa';
+import { FaCheck } from 'react-icons/fa';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { FaBoxOpen, FaPenToSquare, FaPlus } from 'react-icons/fa6';
 
@@ -35,8 +35,7 @@ type SortOrder = 'asc' | 'desc';
  * @state isLoading - データ取得中のローディング状態を管理するState。
  */
 const PrototypeList: React.FC = () => {
-  const { getPrototypes, duplicatePrototype, updatePrototype } =
-    usePrototypes();
+  const { getPrototypes, updatePrototype } = usePrototypes();
   // UserContextからユーザー情報を取得
   const userContext = useContext(UserContext);
   // ローディング状態を管理するState
@@ -263,17 +262,6 @@ const PrototypeList: React.FC = () => {
     );
   };
 
-  // プロトタイプを複製する
-  const handleDuplicate = async (prototypeId: string, e: React.MouseEvent) => {
-    e.preventDefault(); // リンククリックのイベントバブリングを防止
-    try {
-      await duplicatePrototype(prototypeId);
-      fetchPrototypes(); // 一覧を更新
-    } catch (error) {
-      console.error('Error duplicating prototype:', error);
-    }
-  };
-
   // ソートアイコン
   const getSortIcon = (key: SortKey) => {
     if (sort.key !== key) return <FaSort className="w-4 h-4" />;
@@ -315,7 +303,7 @@ const PrototypeList: React.FC = () => {
                 </button>
               </th>
               <th className="text-left p-4 w-32">作成者</th>
-              <th className="text-center p-4 w-48">アクション</th>
+              <th className="text-center p-4 w-30"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-wood-lightest/20">
@@ -452,30 +440,6 @@ const PrototypeList: React.FC = () => {
                         <FaBoxOpen className="w-4 h-4" />
                         <span>開く</span>
                       </Link>
-                      {userContext?.user?.id === userId ? (
-                        <button
-                          onClick={(e) => handleDuplicate(id, e)}
-                          className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
-                          title="プロトタイプを複製"
-                        >
-                          <FaCopy className="w-4 h-4" />
-                          <span>複製</span>
-                        </button>
-                      ) : (
-                        <div className="relative group">
-                          <button
-                            disabled
-                            className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood-light/50 cursor-not-allowed rounded-md border border-wood-light/20"
-                            title="プロトタイプを複製"
-                          >
-                            <FaCopy className="w-4 h-4" />
-                            <span>複製</span>
-                          </button>
-                          <div className="absolute bottom-full mb-2 right-0 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50">
-                            プロトタイプのオーナーのみが複製できます
-                          </div>
-                        </div>
-                      )}
                     </td>
                   </tr>
                 );

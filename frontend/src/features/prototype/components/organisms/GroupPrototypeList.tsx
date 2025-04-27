@@ -4,7 +4,13 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
 import { BsDoorOpenFill } from 'react-icons/bs';
-import { FaCheck, FaPenToSquare, FaUserPlus, FaEye } from 'react-icons/fa6';
+import {
+  FaCheck,
+  FaPenToSquare,
+  FaUserPlus,
+  FaEye,
+  FaCopy,
+} from 'react-icons/fa6';
 import { HiOutlinePencilAlt } from 'react-icons/hi';
 import { IoAdd, IoArrowBack, IoTrash } from 'react-icons/io5';
 import { TbVersions } from 'react-icons/tb';
@@ -26,6 +32,7 @@ const GroupPrototypeList: React.FC = () => {
     deleteVersion,
     updatePrototype,
     getAccessUsersByGroup,
+    duplicatePrototype,
   } = usePrototypes();
 
   // グループID
@@ -245,6 +252,19 @@ const GroupPrototypeList: React.FC = () => {
     }
   };
 
+  /**
+   * プロトタイプを複製する
+   * @param prototypeId プロトタイプID
+   */
+  const handleDuplicate = async (prototypeId: string) => {
+    try {
+      await duplicatePrototype(prototypeId);
+      router.push('/prototypes'); // 複製後はプロトタイプ一覧へ
+    } catch (error) {
+      console.error('Error duplicating prototype:', error);
+    }
+  };
+
   // プロトタイプが存在しない場合
   if (!prototype || !prototype.edit) return null;
 
@@ -306,9 +326,34 @@ const GroupPrototypeList: React.FC = () => {
         )}
       </div>
 
-      {/* 他のユーザーを招待するボタン */}
-      <div className="flex justify-end mb-4">
-        {/* 既存のボタンを削除し、参加ユーザーエリア内に移動 */}
+      {/* 複製・招待ボタン */}
+      <div className="flex justify-end mb-4 gap-2">
+        {prototype.edit && user?.id === prototype.edit.prototype.userId ? (
+          <button
+            onClick={() =>
+              prototype.edit && handleDuplicate(prototype.edit.prototype.id)
+            }
+            className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
+            title="プロトタイプを複製"
+          >
+            <FaCopy className="w-4 h-4" />
+            <span>複製</span>
+          </button>
+        ) : (
+          <div className="relative group">
+            <button
+              disabled
+              className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood-light/50 cursor-not-allowed rounded-md border border-wood-light/20"
+              title="プロトタイプを複製"
+            >
+              <FaCopy className="w-4 h-4" />
+              <span>複製</span>
+            </button>
+            <div className="absolute bottom-full mb-2 right-0 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50">
+              プロトタイプのオーナーのみが複製できます
+            </div>
+          </div>
+        )}
       </div>
 
       {/* プロトタイプの基本情報 */}
