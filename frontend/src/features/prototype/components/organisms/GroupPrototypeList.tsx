@@ -505,13 +505,9 @@ const GroupPrototypeList: React.FC = () => {
               </p>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="mb-8">
-        <div className="grid grid-cols-1 gap-4">
           {/* プロトタイプ編集ボタン */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 mt-6">
             <button
               onClick={() => {
                 if (!prototype.edit) return;
