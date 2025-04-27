@@ -359,6 +359,9 @@ const GroupPrototypeList: React.FC = () => {
       {/* プロトタイプの基本情報 */}
       <div className="mb-6 overflow-hidden rounded-xl bg-gradient-to-r from-content via-content to-content-secondary shadow-lg border border-wood-lightest/30">
         <div className="p-6">
+          <h2 className="text-xl font-bold text-wood-darkest mb-4 border-b border-wood-light/30 pb-2">
+            基本情報
+          </h2>
           <div className="flex flex-col md:flex-row gap-6">
             <div className="flex-1 bg-white/80 rounded-xl p-5 shadow-inner border border-wood-lightest/40">
               <h3 className="text-sm uppercase tracking-wide text-wood-dark/70 mb-2 font-medium">
@@ -536,7 +539,10 @@ const GroupPrototypeList: React.FC = () => {
       {/* プレイルーム */}
       <div className="mt-12">
         <div className="bg-wood-lightest/30 rounded-xl p-5 mb-6 border border-wood-light/30 shadow-md">
-          <div className="flex justify-start mb-6 border-b border-wood-light/30 pb-6 w-full">
+          <h2 className="text-xl font-bold text-wood-darkest mb-4 border-b border-wood-light/30 pb-2">
+            プレイルーム
+          </h2>
+          <div className="flex justify-start w-full">
             <button
               onClick={() => {
                 if (!prototype.edit) return;
