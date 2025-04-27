@@ -90,7 +90,7 @@ const UserInvite: React.FC = () => {
                   <button
                     onClick={() => inviteUser(user)}
                     className="p-2 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors"
-                    title="招待する"
+                    title="プロトタイプに招待"
                   >
                     <FaPlus className="h-4 w-4" />
                   </button>
@@ -119,7 +119,7 @@ const UserInvite: React.FC = () => {
                   <button
                     onClick={() => removeInvitedUser(user.id)}
                     className="p-2 text-wood hover:text-red-500 rounded-md hover:bg-wood-lightest/20 transition-colors"
-                    title="プロトタイプから除外する"
+                    title="プロトタイプから除外"
                   >
                     <FaMinus className="h-4 w-4" />
                   </button>
