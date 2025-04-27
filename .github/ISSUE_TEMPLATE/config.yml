@@ -1,4 +1,4 @@
-blank_issues_enabled: false
+blank_issues_enabled: true
 contact_links:
   - name: 質問・相談
     url: https://github.com/habitat-hub/board-game-prototype/discussions
@@ -8,7 +8,7 @@ contact_links:
 defaults:
   - template: "bug_report.yml"
     name: "🐛 バグ報告"
-    about: "バグを報告する"
-  - template: "feature_request.yml"
-    name: "💡 機能リクエスト"
-    about: "新機能のアイデアを提案する"
+    about: "アプリケーションの不具合や予期しない動作の報告"
+  - template: "suggest.yml"
+    name: "💡 提案"
+    about: "新機能、UI/UX改善、リファクタリング、ドキュメント、開発環境、その他の提案"
