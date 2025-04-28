@@ -334,7 +334,7 @@ const GroupPrototypeList: React.FC = () => {
               prototype.edit && handleDuplicate(prototype.edit.prototype.id)
             }
             className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
-            title="プロトタイプを複製"
+            title="プロトタイプ複製"
           >
             <FaCopy className="w-4 h-4" />
             <span>複製</span>
@@ -344,7 +344,7 @@ const GroupPrototypeList: React.FC = () => {
             <button
               disabled
               className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood-light/50 cursor-not-allowed rounded-md border border-wood-light/20"
-              title="プロトタイプを複製"
+              title="プロトタイプ複製"
             >
               <FaCopy className="w-4 h-4" />
               <span>複製</span>
@@ -356,11 +356,11 @@ const GroupPrototypeList: React.FC = () => {
         )}
       </div>
 
-      {/* プロトタイプの基本情報 */}
+      {/* このプロトタイプについて */}
       <div className="mb-6 overflow-hidden rounded-xl bg-gradient-to-r from-content via-content to-content-secondary shadow-lg border border-wood-lightest/30">
         <div className="p-6">
           <h2 className="text-xl font-bold text-wood-darkest mb-4 border-b border-wood-light/30 pb-2">
-            基本情報
+            このプロトタイプについて
           </h2>
           <div className="flex flex-col md:flex-row gap-6">
             <div className="flex-1 bg-white/80 rounded-xl p-5 shadow-inner border border-wood-lightest/40">
@@ -542,7 +542,7 @@ const GroupPrototypeList: React.FC = () => {
           <h2 className="text-xl font-bold text-wood-darkest mb-4 border-b border-wood-light/30 pb-2">
             プレイルーム
           </h2>
-          <div className="flex justify-start w-full">
+          <div className="flex justify-start w-full mb-6">
             <button
               onClick={() => {
                 if (!prototype.edit) return;
@@ -561,8 +561,12 @@ const GroupPrototypeList: React.FC = () => {
                       新しいバージョン
                     </span>
                     <span className="font-medium text-wood-dark group-hover:text-header transition-colors">
-                      プロトタイプバージョン作成
+                      今のプロトタイプを保存
                     </span>
+                    <p className="text-xs mt-1 max-w-md text-wood-dark/70 group-hover:text-header/70 transition-colors">
+                      <span className="inline-block mr-1">💡</span>
+                      プレイルームを作成するには、まず今のプロトタイプを保存します
+                    </p>
                   </div>
                 </div>
               </div>
@@ -571,12 +575,7 @@ const GroupPrototypeList: React.FC = () => {
 
           {prototype.preview.length === 0 ? (
             <div className="text-center py-8 text-wood-dark">
-              <p className="mb-2">プレイルームがありません</p>
-              <p className="text-xs text-wood-dark/70 italic max-w-md mx-auto">
-                編集したプロトタイプをプレイできるようにするには
-                <br />
-                「プロトタイプバージョン作成」ボタンを押してください
-              </p>
+              <p className="mb-2">バージョン・プレイルームがありません</p>
             </div>
           ) : (
             [...prototype.preview]
