@@ -4,7 +4,13 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
 import { BsDoorOpenFill } from 'react-icons/bs';
-import { FaCheck, FaPenToSquare, FaUserPlus, FaEye } from 'react-icons/fa6';
+import {
+  FaCheck,
+  FaPenToSquare,
+  FaUserPlus,
+  FaEye,
+  FaCopy,
+} from 'react-icons/fa6';
 import { HiOutlinePencilAlt } from 'react-icons/hi';
 import { IoAdd, IoArrowBack, IoTrash } from 'react-icons/io5';
 import { TbVersions } from 'react-icons/tb';
@@ -26,6 +32,7 @@ const GroupPrototypeList: React.FC = () => {
     deleteVersion,
     updatePrototype,
     getAccessUsersByGroup,
+    duplicatePrototype,
   } = usePrototypes();
 
   // グループID
@@ -245,6 +252,19 @@ const GroupPrototypeList: React.FC = () => {
     }
   };
 
+  /**
+   * プロトタイプを複製する
+   * @param prototypeId プロトタイプID
+   */
+  const handleDuplicate = async (prototypeId: string) => {
+    try {
+      await duplicatePrototype(prototypeId);
+      router.push('/prototypes'); // 複製後はプロトタイプ一覧へ
+    } catch (error) {
+      console.error('Error duplicating prototype:', error);
+    }
+  };
+
   // プロトタイプが存在しない場合
   if (!prototype || !prototype.edit) return null;
 
@@ -306,14 +326,42 @@ const GroupPrototypeList: React.FC = () => {
         )}
       </div>
 
-      {/* 他のユーザーを招待するボタン */}
-      <div className="flex justify-end mb-4">
-        {/* 既存のボタンを削除し、参加ユーザーエリア内に移動 */}
+      {/* 複製・招待ボタン */}
+      <div className="flex justify-end mb-4 gap-2">
+        {prototype.edit && user?.id === prototype.edit.prototype.userId ? (
+          <button
+            onClick={() =>
+              prototype.edit && handleDuplicate(prototype.edit.prototype.id)
+            }
+            className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
+            title="プロトタイプ複製"
+          >
+            <FaCopy className="w-4 h-4" />
+            <span>複製</span>
+          </button>
+        ) : (
+          <div className="relative group">
+            <button
+              disabled
+              className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood-light/50 cursor-not-allowed rounded-md border border-wood-light/20"
+              title="プロトタイプ複製"
+            >
+              <FaCopy className="w-4 h-4" />
+              <span>複製</span>
+            </button>
+            <div className="absolute bottom-full mb-2 right-0 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50">
+              プロトタイプのオーナーのみが複製できます
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* プロトタイプの基本情報 */}
+      {/* このプロトタイプについて */}
       <div className="mb-6 overflow-hidden rounded-xl bg-gradient-to-r from-content via-content to-content-secondary shadow-lg border border-wood-lightest/30">
         <div className="p-6">
+          <h2 className="text-xl font-bold text-wood-darkest mb-4 border-b border-wood-light/30 pb-2">
+            このプロトタイプについて
+          </h2>
           <div className="flex flex-col md:flex-row gap-6">
             <div className="flex-1 bg-white/80 rounded-xl p-5 shadow-inner border border-wood-lightest/40">
               <h3 className="text-sm uppercase tracking-wide text-wood-dark/70 mb-2 font-medium">
@@ -460,13 +508,9 @@ const GroupPrototypeList: React.FC = () => {
               </p>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="mb-8">
-        <div className="grid grid-cols-1 gap-4">
           {/* プロトタイプ編集ボタン */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 mt-6">
             <button
               onClick={() => {
                 if (!prototype.edit) return;
@@ -495,7 +539,10 @@ const GroupPrototypeList: React.FC = () => {
       {/* プレイルーム */}
       <div className="mt-12">
         <div className="bg-wood-lightest/30 rounded-xl p-5 mb-6 border border-wood-light/30 shadow-md">
-          <div className="flex justify-start mb-6 border-b border-wood-light/30 pb-6 w-full">
+          <h2 className="text-xl font-bold text-wood-darkest mb-4 border-b border-wood-light/30 pb-2">
+            プレイルーム
+          </h2>
+          <div className="flex justify-start w-full mb-6">
             <button
               onClick={() => {
                 if (!prototype.edit) return;
@@ -514,8 +561,12 @@ const GroupPrototypeList: React.FC = () => {
                       新しいバージョン
                     </span>
                     <span className="font-medium text-wood-dark group-hover:text-header transition-colors">
-                      プロトタイプバージョン作成
+                      今のプロトタイプを保存
                     </span>
+                    <p className="text-xs mt-1 max-w-md text-wood-dark/70 group-hover:text-header/70 transition-colors">
+                      <span className="inline-block mr-1">💡</span>
+                      プレイルームを作成するには、まず今のプロトタイプを保存します
+                    </p>
                   </div>
                 </div>
               </div>
@@ -524,12 +575,7 @@ const GroupPrototypeList: React.FC = () => {
 
           {prototype.preview.length === 0 ? (
             <div className="text-center py-8 text-wood-dark">
-              <p className="mb-2">プレイルームがありません</p>
-              <p className="text-xs text-wood-dark/70 italic max-w-md mx-auto">
-                編集したプロトタイプをプレイできるようにするには
-                <br />
-                「プロトタイプバージョン作成」ボタンを押してください
-              </p>
+              <p className="mb-2">バージョン・プレイルームがありません</p>
             </div>
           ) : (
             [...prototype.preview]
