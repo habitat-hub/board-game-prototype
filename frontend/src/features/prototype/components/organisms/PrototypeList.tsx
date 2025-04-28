@@ -1,15 +1,23 @@
 'use client';
 
 import Link from 'next/link';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { FaCheck, FaCopy } from 'react-icons/fa';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useContext,
+} from 'react';
+import { FaCheck } from 'react-icons/fa';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { FaBoxOpen, FaPenToSquare, FaPlus } from 'react-icons/fa6';
-import { GiWoodenSign } from 'react-icons/gi';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Prototype } from '@/api/types';
+import { UserContext } from '@/contexts/UserContext';
 import formatDate from '@/utils/dateFormat';
+
+import EmptyPrototypeList from '../molecules/EmptyPrototypeList';
 
 type SortKey = 'name' | 'createdAt';
 type SortOrder = 'asc' | 'desc';
@@ -27,8 +35,9 @@ type SortOrder = 'asc' | 'desc';
  * @state isLoading - データ取得中のローディング状態を管理するState。
  */
 const PrototypeList: React.FC = () => {
-  const { getPrototypes, duplicatePrototype, updatePrototype } =
-    usePrototypes();
+  const { getPrototypes, updatePrototype } = usePrototypes();
+  // UserContextからユーザー情報を取得
+  const userContext = useContext(UserContext);
   // ローディング状態を管理するState
   const [isLoading, setIsLoading] = useState<boolean>(true);
   // 編集中のプロトタイプのIDを管理するState
@@ -176,16 +185,14 @@ const PrototypeList: React.FC = () => {
     setIsLoading(true);
 
     try {
-      setIsLoading(true); // ローディング開始
       const response = await getPrototypes();
-      setEditPrototypes(response.filter(({ type }) => type === 'EDIT'));
+      const filteredPrototypes = response.filter(({ type }) => type === 'EDIT');
+      setEditPrototypes(filteredPrototypes);
     } catch (error) {
       console.error('Error fetching prototypes:', error);
     } finally {
       setIsLoading(false); // ローディング終了
     }
-
-    setIsLoading(false);
   }, [getPrototypes]);
 
   // プロトタイプの取得
@@ -237,28 +244,7 @@ const PrototypeList: React.FC = () => {
   }
 
   if (sortedPrototypes.length === 0) {
-    return (
-      <div className="flex flex-col h-full justify-center items-center relative">
-        <div className="text-wood-light">
-          <GiWoodenSign className="w-[600px] h-[600px]" />
-        </div>
-        <div className="absolute inset-0 flex items-center justify-center flex-col">
-          <p className="text-4xl text-wood-darkest text-center w-full mb-12">
-            最初のプロトタイプを
-            <br />
-            作成しましょう
-          </p>
-          <Link
-            href="/prototypes/create"
-            className="flex items-center justify-center gap-3 bg-gradient-to-r from-header via-header-light to-header text-content py-4 px-8 rounded-full hover:from-header-light hover:via-header hover:to-header-light transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 group text-xl font-bold animate-pulse"
-            title="新規プロトタイプを作成"
-          >
-            <FaPlus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
-            <span>KIBAKOの世界へ飛び込む！</span>
-          </Link>
-        </div>
-      </div>
-    );
+    return <EmptyPrototypeList />;
   }
 
   /**
@@ -276,17 +262,6 @@ const PrototypeList: React.FC = () => {
     );
   };
 
-  // プロトタイプを複製する
-  const handleDuplicate = async (prototypeId: string, e: React.MouseEvent) => {
-    e.preventDefault(); // リンククリックのイベントバブリングを防止
-    try {
-      await duplicatePrototype(prototypeId);
-      fetchPrototypes(); // 一覧を更新
-    } catch (error) {
-      console.error('Error duplicating prototype:', error);
-    }
-  };
-
   // ソートアイコン
   const getSortIcon = (key: SortKey) => {
     if (sort.key !== key) return <FaSort className="w-4 h-4" />;
@@ -298,7 +273,7 @@ const PrototypeList: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto mt-16 relative pb-24">
+    <div className="max-w-4xl mx-auto mt-16 relative">
       {/* タイトル */}
       <h1 className="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
         プロトタイプ一覧
@@ -327,12 +302,21 @@ const PrototypeList: React.FC = () => {
                   {getSortIcon('createdAt')}
                 </button>
               </th>
-              <th className="text-center p-4 w-48">アクション</th>
+              <th className="text-left p-4 w-32">作成者</th>
+              <th className="text-center p-4 w-30"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-wood-lightest/20">
             {sortedPrototypes.map(
-              ({ id, groupId, name, minPlayers, maxPlayers, createdAt }) => {
+              ({
+                id,
+                groupId,
+                name,
+                minPlayers,
+                maxPlayers,
+                createdAt,
+                userId,
+              }) => {
                 const isNameEditing = nameEditingId === id; // 現在の項目が編集中かどうかを判定
                 const isPlayersEditing = playersEditingId === id; // 現在の項目が編集中かどうかを判定
                 return (
@@ -439,8 +423,13 @@ const PrototypeList: React.FC = () => {
                         </div>
                       )}
                     </td>
-                    <td className="p-4 text-sm text-wood w-32">
+                    <td className="p-4 text-sm text-wood">
                       {formatDate(createdAt)}
+                    </td>
+                    <td className="p-4 text-sm text-wood">
+                      {userContext?.user?.id === userId
+                        ? '自分'
+                        : '他のユーザー'}
                     </td>
                     <td className="p-4 flex justify-center gap-2">
                       <Link
@@ -451,14 +440,6 @@ const PrototypeList: React.FC = () => {
                         <FaBoxOpen className="w-4 h-4" />
                         <span>開く</span>
                       </Link>
-                      <button
-                        onClick={(e) => handleDuplicate(id, e)}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
-                        title="プロトタイプを複製"
-                      >
-                        <FaCopy className="w-4 h-4" />
-                        <span>複製</span>
-                      </button>
                     </td>
                   </tr>
                 );

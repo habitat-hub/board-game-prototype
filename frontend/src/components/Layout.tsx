@@ -111,10 +111,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           height: `calc(100vh - ${showsFooterAndBackgroundImage ? '80px' : '48px'})`,
         }}
       >
-        <div className="max-w-7xl mx-auto h-full">
-          {showsFooterAndBackgroundImage && <WoodenCrateBackground />}
-          {children}
-        </div>
+        {showsFooterAndBackgroundImage && <WoodenCrateBackground />}
+        {children}
       </main>
       {showsFooterAndBackgroundImage && (
         <footer

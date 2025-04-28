@@ -2,19 +2,25 @@ import { useState, useCallback, useEffect } from 'react';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { useUsers } from '@/api/hooks/useUsers';
-import { User } from '@/api/types';
+import { PrototypesGroupsDetailData, User } from '@/api/types';
 
 /**
  * ユーザー招待関連のロジックを管理するカスタムフック
  */
 export const useUserInvite = (groupId: string) => {
   const { searchUsers } = useUsers();
-  const { getAccessUsersByGroup, inviteUserToGroup, deleteUserFromGroup } =
-    usePrototypes();
+  const {
+    getAccessUsersByGroup,
+    inviteUserToGroup,
+    deleteUserFromGroup,
+    getPrototypesByGroup,
+  } = usePrototypes();
 
   const [invitedUsers, setInvitedUsers] = useState<User[]>([]);
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [prototypeName, setPrototypeName] = useState<string>('');
+  const [prototypeOwnerId, setPrototypeOwnerId] = useState<string>('');
 
   // 招待済みユーザーを取得
   const fetchInvitedUsers = useCallback(async () => {
@@ -27,10 +33,25 @@ export const useUserInvite = (groupId: string) => {
     }
   }, [getAccessUsersByGroup, groupId]);
 
-  // 初期化時に招待済みユーザーを取得
+  // プロトタイプ名とオーナーIDを取得
+  const fetchPrototypeInfo = useCallback(async () => {
+    try {
+      const response: PrototypesGroupsDetailData =
+        await getPrototypesByGroup(groupId);
+      if (response && response.length > 0 && response[0].prototype) {
+        setPrototypeName(response[0].prototype.name || '');
+        setPrototypeOwnerId(response[0].prototype.userId || '');
+      }
+    } catch (error) {
+      console.error('Error fetching prototype info:', error);
+    }
+  }, [getPrototypesByGroup, groupId]);
+
+  // 初期化時に招待済みユーザーとプロトタイプ情報を取得
   useEffect(() => {
     fetchInvitedUsers();
-  }, [fetchInvitedUsers]);
+    fetchPrototypeInfo();
+  }, [fetchInvitedUsers, fetchPrototypeInfo]);
 
   // ユーザー検索を実行
   const handleSearch = useCallback(async () => {
@@ -41,7 +62,7 @@ export const useUserInvite = (groupId: string) => {
 
     try {
       const users = await searchUsers({
-        username: encodeURIComponent(searchTerm.trim()),
+        username: searchTerm.trim(),
       });
       // 既に招待済みのユーザーを検索結果から除外
       const filteredUsers = users.filter(
@@ -100,5 +121,7 @@ export const useUserInvite = (groupId: string) => {
     handleSearch,
     removeInvitedUser,
     inviteUser,
+    prototypeName,
+    prototypeOwnerId,
   };
 };
