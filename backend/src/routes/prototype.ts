@@ -696,12 +696,23 @@ router.post(
         return;
       }
 
+      // 複製元のプロトタイプの最初のバージョンを取得
+      const sourceVersion = await PrototypeVersionModel.findOne({
+        where: { prototypeId },
+        order: [['createdAt', 'ASC']],
+      });
+
+      if (!sourceVersion) {
+        res.status(404).json({ error: 'バージョンが見つかりません' });
+        return;
+      }
+
       await createPrototype({
         userId: prototype.userId,
         name: `${prototype.name} - 複製版`,
         type: 'EDIT',
         groupId: null,
-        editPrototypeDefaultVersionId: null,
+        editPrototypeDefaultVersionId: sourceVersion.id,
         minPlayers: prototype.minPlayers,
         maxPlayers: prototype.maxPlayers,
         transaction,
