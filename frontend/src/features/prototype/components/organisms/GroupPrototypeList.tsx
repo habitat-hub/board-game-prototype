@@ -4,19 +4,14 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
 import { BsDoorOpenFill } from 'react-icons/bs';
-import {
-  FaCheck,
-  FaPenToSquare,
-  FaUserPlus,
-  FaEye,
-  FaCopy,
-} from 'react-icons/fa6';
+import { FaCheck, FaPenToSquare, FaEye, FaCopy } from 'react-icons/fa6';
 import { HiOutlinePencilAlt } from 'react-icons/hi';
 import { IoAdd, IoArrowBack, IoTrash } from 'react-icons/io5';
 import { TbVersions } from 'react-icons/tb';
 
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Prototype, PrototypeVersion, User } from '@/api/types';
+import AccessUsersCard from '@/features/prototype/components/molecules/AccessUsersCard';
 import { VERSION_NUMBER } from '@/features/prototype/const';
 import { useUser } from '@/hooks/useUser';
 import formatDate from '@/utils/dateFormat';
@@ -455,63 +450,11 @@ const GroupPrototypeList: React.FC = () => {
           </div>
 
           {/* 参加ユーザーカード */}
-          <div className="flex-1 bg-white/80 rounded-xl p-5 shadow-inner border border-wood-lightest/40">
-            <h3 className="text-sm uppercase tracking-wide text-wood-dark/70 mb-2 font-medium">
-              参加ユーザー
-            </h3>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-wood-darkest/70">
-                {accessUsers.length}人が参加中
-              </span>
-              {prototype.edit &&
-              user?.id === prototype.edit.prototype.userId ? (
-                <button
-                  onClick={() =>
-                    router.push(`/prototypes/groups/${groupId}/invite`)
-                  }
-                  className="p-1.5 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-all"
-                  title="他ユーザー招待"
-                >
-                  <FaUserPlus className="h-4 w-4" />
-                </button>
-              ) : (
-                <button
-                  disabled
-                  className="p-1.5 text-wood-light/50 cursor-not-allowed rounded-md"
-                  title="プロトタイプのオーナーのみが招待できます"
-                >
-                  <FaUserPlus className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-            {accessUsers.length > 0 ? (
-              <div className="flex flex-wrap gap-2 max-h-[120px] overflow-y-auto pr-2">
-                {accessUsers.map((accessUser) => (
-                  <div
-                    key={accessUser.id}
-                    className={`px-3 py-1.5 text-sm rounded-full flex items-center gap-1.5 border ${
-                      accessUser.id === prototype.edit?.prototype.userId
-                        ? 'bg-header/10 text-header border-header/30'
-                        : 'bg-wood-lightest/50 text-wood-darkest border-wood-light/30'
-                    }`}
-                  >
-                    <span className="max-w-[120px] truncate">
-                      {accessUser.username}
-                    </span>
-                    {accessUser.id === prototype.edit?.prototype.userId && (
-                      <span className="text-[10px] px-1.5 py-0.5 bg-header/10 text-header rounded-md border border-header/30">
-                        オーナー
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-wood-dark text-sm italic">
-                ユーザーデータ取得中...
-              </p>
-            )}
-          </div>
+          <AccessUsersCard
+            accessUsers={accessUsers}
+            groupId={groupId}
+            prototypeOwnerId={prototype.edit?.prototype.userId}
+          />
 
           {/* 作成日時カード - クリック不可でホバーエフェクトなし */}
           <div className="flex-1 bg-white/80 rounded-xl p-5 shadow-inner border border-wood-lightest/40">
