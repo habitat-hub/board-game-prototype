@@ -146,7 +146,7 @@ const Part = forwardRef<PartHandle, PartProps>(
           rx={10}
         />
 
-        {/* リサイズハンドル */}
+        {/* リサイズ用のアイコン */}
         {isActive && (
           <g
             style={{
