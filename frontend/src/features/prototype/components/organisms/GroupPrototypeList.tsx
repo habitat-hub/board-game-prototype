@@ -605,8 +605,7 @@ const GroupPrototypeList: React.FC = () => {
                   <div className="bg-gradient-to-br from-content to-content-secondary rounded-2xl shadow-lg border border-wood-lightest/30 p-5">
                     <div className="flex justify-between items-center mb-4 pb-3 border-b border-wood-light/30">
                       <h3 className="font-medium text-wood-darkest">
-                        {formatDate(prototype.createdAt, true)}
-                        に作成したバージョン
+                        {prototype.name}
                       </h3>
                       <div className="flex gap-2">
                         {versions.some(
