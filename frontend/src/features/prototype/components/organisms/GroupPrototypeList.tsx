@@ -361,32 +361,22 @@ const GroupPrototypeList: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <div className="relative group">
-                    <button
-                      disabled
-                      className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/40 text-wood-light/50 cursor-not-allowed rounded-md border border-wood-light/20"
-                      title="プロトタイプ複製"
-                    >
-                      <FaCopy className="w-4 h-4" />
-                      <span>複製</span>
-                    </button>
-                    <div className="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-[100]">
-                      プロトタイプのオーナーのみが複製できます
-                    </div>
-                  </div>
-                  <div className="relative group">
-                    <button
-                      disabled
-                      className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/40 text-wood-light/50 cursor-not-allowed rounded-md border border-wood-light/20"
-                      title="プロトタイプ削除"
-                    >
-                      <IoTrash className="w-4 h-4" />
-                      <span>削除</span>
-                    </button>
-                    <div className="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-[100]">
-                      プロトタイプのオーナーのみが削除できます
-                    </div>
-                  </div>
+                  <button
+                    disabled
+                    className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/40 text-wood-light/50 cursor-not-allowed rounded-md border border-wood-light/20"
+                    title="プロトタイプのオーナーのみが複製できます"
+                  >
+                    <FaCopy className="w-4 h-4" />
+                    <span>複製</span>
+                  </button>
+                  <button
+                    disabled
+                    className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/40 text-wood-light/50 cursor-not-allowed rounded-md border border-wood-light/20"
+                    title="プロトタイプのオーナーのみが削除できます"
+                  >
+                    <IoTrash className="w-4 h-4" />
+                    <span>削除</span>
+                  </button>
                 </>
               )}
             </div>
@@ -485,18 +475,13 @@ const GroupPrototypeList: React.FC = () => {
                   <FaUserPlus className="h-4 w-4" />
                 </button>
               ) : (
-                <div className="relative group">
-                  <button
-                    disabled
-                    className="p-1.5 text-wood-light/50 cursor-not-allowed rounded-md"
-                    title="他ユーザー招待"
-                  >
-                    <FaUserPlus className="h-4 w-4" />
-                  </button>
-                  <div className="absolute bottom-full mb-2 right-0 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50">
-                    プロトタイプのオーナーのみが招待できます
-                  </div>
-                </div>
+                <button
+                  disabled
+                  className="p-1.5 text-wood-light/50 cursor-not-allowed rounded-md"
+                  title="プロトタイプのオーナーのみが招待できます"
+                >
+                  <FaUserPlus className="h-4 w-4" />
+                </button>
               )}
             </div>
             {accessUsers.length > 0 ? (
@@ -677,18 +662,13 @@ const GroupPrototypeList: React.FC = () => {
                                 <IoTrash className="h-4 w-4" />
                               </button>
                             ) : (
-                              <div className="relative group">
-                                <button
-                                  disabled
-                                  className="p-1.5 text-wood-light/50 cursor-not-allowed rounded-md"
-                                  title="バージョン削除"
-                                >
-                                  <IoTrash className="h-4 w-4" />
-                                </button>
-                                <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50">
-                                  プロトタイプのオーナーのみが削除できます
-                                </div>
-                              </div>
+                              <button
+                                disabled
+                                className="p-1.5 text-wood-light/50 cursor-not-allowed rounded-md"
+                                title="プロトタイプのオーナーのみが削除できます"
+                              >
+                                <IoTrash className="h-4 w-4" />
+                              </button>
                             )}
                           </>
                         )}
