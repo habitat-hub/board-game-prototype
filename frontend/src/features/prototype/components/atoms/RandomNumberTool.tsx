@@ -34,7 +34,7 @@ const RandomNumberTool: React.FC<RandomNumberToolProps> = ({ onClose }) => {
    * モーダルの外側をクリックした時の処理
    */
   const handleClickOutside = useCallback(
-    (event: MouseEvent) => {
+    (event: MouseEvent): void => {
       // Refが存在しない、またはRefが存在してもクリックされた要素がRefの要素の場合（この場合モーダルを閉じる処理が走る）
       if (
         !modalRef.current ||
@@ -50,9 +50,9 @@ const RandomNumberTool: React.FC<RandomNumberToolProps> = ({ onClose }) => {
 
   // モーダルの外側をクリックした時の処理を追加
   useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('mousedown', handleClickOutside);
     };
   }, [handleClickOutside]);
 
