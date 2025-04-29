@@ -37,7 +37,9 @@ const DeletePrototypeConfirmation = () => {
       }
     };
 
-    if (user) {
+    if (!user) {
+      router.push('/login'); // 未ログインの場合はログインページへリダイレクト
+    } else {
       fetchPrototype();
     }
   }, [prototypeId, getPrototype, user, router]);
