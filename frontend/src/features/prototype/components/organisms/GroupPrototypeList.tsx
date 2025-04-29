@@ -327,40 +327,40 @@ const GroupPrototypeList: React.FC = () => {
       </div>
 
       {/* このプロトタイプについて */}
-      <div className="mb-6 overflow-hidden rounded-xl bg-gradient-to-r from-content via-content to-content-secondary shadow-lg border border-wood-lightest/30">
-        <div className="p-6">
-          <h2 className="text-xl font-bold text-wood-darkest mb-4 border-b border-wood-light/30 pb-2 flex justify-between items-center">
-            <span>このプロトタイプについて</span>
-            {prototype.edit && (
-              <>
-                {user?.id === prototype.edit.prototype.userId ? (
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() =>
-                        prototype.edit &&
-                        handleDuplicate(prototype.edit.prototype.id)
-                      }
-                      className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/70 text-wood-dark hover:text-header rounded-md hover:bg-white transition-colors border border-wood-light/30"
-                      title="プロトタイプ複製"
-                    >
-                      <FaCopy className="w-4 h-4" />
-                      <span>複製</span>
-                    </button>
-                    <button
-                      onClick={() =>
-                        prototype.edit &&
-                        router.push(
-                          `/prototypes/${prototype.edit.prototype.id}/delete`
-                        )
-                      }
-                      className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/70 text-wood-dark hover:text-red-600 rounded-md hover:bg-white transition-colors border border-wood-light/30"
-                      title="プロトタイプ削除"
-                    >
-                      <IoTrash className="w-4 h-4" />
-                      <span>削除</span>
-                    </button>
-                  </div>
-                ) : (
+      <div className="mb-6 p-6 overflow-visible rounded-xl bg-gradient-to-r from-content via-content to-content-secondary shadow-lg border border-wood-lightest/30">
+        <h2 className="text-xl font-bold text-wood-darkest mb-4 border-b border-wood-light/30 pb-2 flex justify-between items-center">
+          <span>このプロトタイプについて</span>
+          {prototype.edit && (
+            <div className="flex items-center gap-2">
+              {user?.id === prototype.edit.prototype.userId ? (
+                <>
+                  <button
+                    onClick={() =>
+                      prototype.edit &&
+                      handleDuplicate(prototype.edit.prototype.id)
+                    }
+                    className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/70 text-wood-dark hover:text-header rounded-md hover:bg-white transition-colors border border-wood-light/30"
+                    title="プロトタイプ複製"
+                  >
+                    <FaCopy className="w-4 h-4" />
+                    <span>複製</span>
+                  </button>
+                  <button
+                    onClick={() =>
+                      prototype.edit &&
+                      router.push(
+                        `/prototypes/${prototype.edit.prototype.id}/delete`
+                      )
+                    }
+                    className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/70 text-wood-dark hover:text-red-600 rounded-md hover:bg-white transition-colors border border-wood-light/30"
+                    title="プロトタイプ削除"
+                  >
+                    <IoTrash className="w-4 h-4" />
+                    <span>削除</span>
+                  </button>
+                </>
+              ) : (
+                <>
                   <div className="relative group">
                     <button
                       disabled
@@ -370,185 +370,198 @@ const GroupPrototypeList: React.FC = () => {
                       <FaCopy className="w-4 h-4" />
                       <span>複製</span>
                     </button>
-                    <div className="absolute bottom-full mb-2 right-0 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50">
+                    <div className="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-[100]">
                       プロトタイプのオーナーのみが複製できます
                     </div>
                   </div>
-                )}
-              </>
-            )}
-          </h2>
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="flex-1 bg-white/80 rounded-xl p-5 shadow-inner border border-wood-lightest/40">
-              <h3 className="text-sm uppercase tracking-wide text-wood-dark/70 mb-2 font-medium">
-                プレイヤー人数
-              </h3>
-
-              {prototype.edit &&
-              playersEditingId === prototype.edit.prototype.id ? (
-                <form
-                  className="flex items-center"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handlePlayersEditComplete();
-                  }}
-                >
-                  <div className="flex items-center">
-                    <input
-                      type="number"
-                      min="1"
-                      value={editedMinPlayers}
-                      onChange={(e) =>
-                        setEditedMinPlayers(Number(e.target.value))
-                      }
-                      className="w-16 py-1 px-2 border border-wood-light/30 rounded-lg bg-white text-center"
-                      autoFocus
-                    />
-                    <span className="mx-2">〜</span>
-                    <input
-                      type="number"
-                      min="1"
-                      value={editedMaxPlayers}
-                      onChange={(e) =>
-                        setEditedMaxPlayers(Number(e.target.value))
-                      }
-                      className="w-16 py-1 px-2 border border-wood-light/30 rounded-lg bg-white text-center"
-                    />
-                    <span className="ml-1">人</span>
+                  <div className="relative group">
+                    <button
+                      disabled
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/40 text-wood-light/50 cursor-not-allowed rounded-md border border-wood-light/20"
+                      title="プロトタイプ削除"
+                    >
+                      <IoTrash className="w-4 h-4" />
+                      <span>削除</span>
+                    </button>
+                    <div className="absolute bottom-full left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-[100]">
+                      プロトタイプのオーナーのみが削除できます
+                    </div>
                   </div>
-                  <button
-                    type="submit"
-                    className="ml-3 p-1.5 text-green-600 hover:text-green-700 rounded-md border border-green-500 hover:bg-green-50 transition-colors"
-                    title="編集完了"
-                  >
-                    <FaCheck className="w-4 h-4" />
-                  </button>
-                </form>
-              ) : (
-                <div className="flex items-center">
-                  <span className="text-2xl font-semibold text-wood-darkest">
-                    {prototype.edit.prototype.minPlayers ===
-                    prototype.edit.prototype.maxPlayers
-                      ? `${prototype.edit.prototype.minPlayers}人`
-                      : `${prototype.edit.prototype.minPlayers}〜${prototype.edit.prototype.maxPlayers}人`}
-                  </span>
-                  <button
-                    onClick={() =>
-                      prototype.edit &&
-                      handlePlayersEditToggle(
-                        prototype.edit.prototype.id,
-                        prototype.edit.prototype.minPlayers,
-                        prototype.edit.prototype.maxPlayers
-                      )
-                    }
-                    className="ml-3 p-1.5 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-all"
-                    title="プレイヤー人数編集"
-                  >
-                    <FaPenToSquare className="w-4 h-4" />
-                  </button>
-                </div>
+                </>
               )}
             </div>
+          )}
+        </h2>
+        <div className="flex flex-col md:flex-row gap-6">
+          <div className="flex-1 bg-white/80 rounded-xl p-5 shadow-inner border border-wood-lightest/40">
+            <h3 className="text-sm uppercase tracking-wide text-wood-dark/70 mb-2 font-medium">
+              プレイヤー人数
+            </h3>
 
-            {/* 参加ユーザーカード */}
-            <div className="flex-1 bg-white/80 rounded-xl p-5 shadow-inner border border-wood-lightest/40">
-              <h3 className="text-sm uppercase tracking-wide text-wood-dark/70 mb-2 font-medium">
-                参加ユーザー
-              </h3>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm text-wood-darkest/70">
-                  {accessUsers.length}人が参加中
-                </span>
-                {prototype.edit &&
-                user?.id === prototype.edit.prototype.userId ? (
-                  <button
-                    onClick={() =>
-                      router.push(`/prototypes/groups/${groupId}/invite`)
+            {prototype.edit &&
+            playersEditingId === prototype.edit.prototype.id ? (
+              <form
+                className="flex items-center"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handlePlayersEditComplete();
+                }}
+              >
+                <div className="flex items-center">
+                  <input
+                    type="number"
+                    min="1"
+                    value={editedMinPlayers}
+                    onChange={(e) =>
+                      setEditedMinPlayers(Number(e.target.value))
                     }
-                    className="p-1.5 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-all"
+                    className="w-16 py-1 px-2 border border-wood-light/30 rounded-lg bg-white text-center"
+                    autoFocus
+                  />
+                  <span className="mx-2">〜</span>
+                  <input
+                    type="number"
+                    min="1"
+                    value={editedMaxPlayers}
+                    onChange={(e) =>
+                      setEditedMaxPlayers(Number(e.target.value))
+                    }
+                    className="w-16 py-1 px-2 border border-wood-light/30 rounded-lg bg-white text-center"
+                  />
+                  <span className="ml-1">人</span>
+                </div>
+                <button
+                  type="submit"
+                  className="ml-3 p-1.5 text-green-600 hover:text-green-700 rounded-md border border-green-500 hover:bg-green-50 transition-colors"
+                  title="編集完了"
+                >
+                  <FaCheck className="w-4 h-4" />
+                </button>
+              </form>
+            ) : (
+              <div className="flex items-center">
+                <span className="text-2xl font-semibold text-wood-darkest">
+                  {prototype.edit.prototype.minPlayers ===
+                  prototype.edit.prototype.maxPlayers
+                    ? `${prototype.edit.prototype.minPlayers}人`
+                    : `${prototype.edit.prototype.minPlayers}〜${prototype.edit.prototype.maxPlayers}人`}
+                </span>
+                <button
+                  onClick={() =>
+                    prototype.edit &&
+                    handlePlayersEditToggle(
+                      prototype.edit.prototype.id,
+                      prototype.edit.prototype.minPlayers,
+                      prototype.edit.prototype.maxPlayers
+                    )
+                  }
+                  className="ml-3 p-1.5 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-all"
+                  title="プレイヤー人数編集"
+                >
+                  <FaPenToSquare className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* 参加ユーザーカード */}
+          <div className="flex-1 bg-white/80 rounded-xl p-5 shadow-inner border border-wood-lightest/40">
+            <h3 className="text-sm uppercase tracking-wide text-wood-dark/70 mb-2 font-medium">
+              参加ユーザー
+            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-wood-darkest/70">
+                {accessUsers.length}人が参加中
+              </span>
+              {prototype.edit &&
+              user?.id === prototype.edit.prototype.userId ? (
+                <button
+                  onClick={() =>
+                    router.push(`/prototypes/groups/${groupId}/invite`)
+                  }
+                  className="p-1.5 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-all"
+                  title="他ユーザー招待"
+                >
+                  <FaUserPlus className="h-4 w-4" />
+                </button>
+              ) : (
+                <div className="relative group">
+                  <button
+                    disabled
+                    className="p-1.5 text-wood-light/50 cursor-not-allowed rounded-md"
                     title="他ユーザー招待"
                   >
                     <FaUserPlus className="h-4 w-4" />
                   </button>
-                ) : (
-                  <div className="relative group">
-                    <button
-                      disabled
-                      className="p-1.5 text-wood-light/50 cursor-not-allowed rounded-md"
-                      title="他ユーザー招待"
-                    >
-                      <FaUserPlus className="h-4 w-4" />
-                    </button>
-                    <div className="absolute bottom-full mb-2 right-0 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50">
-                      プロトタイプのオーナーのみが招待できます
-                    </div>
+                  <div className="absolute bottom-full mb-2 right-0 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50">
+                    プロトタイプのオーナーのみが招待できます
                   </div>
-                )}
-              </div>
-              {accessUsers.length > 0 ? (
-                <div className="flex flex-wrap gap-2 max-h-[120px] overflow-y-auto pr-2">
-                  {accessUsers.map((accessUser) => (
-                    <div
-                      key={accessUser.id}
-                      className={`px-3 py-1.5 text-sm rounded-full flex items-center gap-1.5 border ${
-                        accessUser.id === prototype.edit?.prototype.userId
-                          ? 'bg-header/10 text-header border-header/30'
-                          : 'bg-wood-lightest/50 text-wood-darkest border-wood-light/30'
-                      }`}
-                    >
-                      <span className="max-w-[120px] truncate">
-                        {accessUser.username}
-                      </span>
-                      {accessUser.id === prototype.edit?.prototype.userId && (
-                        <span className="text-[10px] px-1.5 py-0.5 bg-header/10 text-header rounded-md border border-header/30">
-                          オーナー
-                        </span>
-                      )}
-                    </div>
-                  ))}
                 </div>
-              ) : (
-                <p className="text-wood-dark text-sm italic">
-                  ユーザーデータ取得中...
-                </p>
               )}
             </div>
-
-            {/* 作成日時カード - クリック不可でホバーエフェクトなし */}
-            <div className="flex-1 bg-white/80 rounded-xl p-5 shadow-inner border border-wood-lightest/40">
-              <h3 className="text-sm uppercase tracking-wide text-wood-dark/70 mb-2 font-medium">
-                作成日時
-              </h3>
-              <p className="text-2xl font-semibold text-wood-darkest">
-                {formatDate(prototype.edit.prototype.createdAt, true)}
-              </p>
-            </div>
-          </div>
-
-          {/* プロトタイプ編集ボタン */}
-          <div className="flex flex-col gap-4 mt-6">
-            <button
-              onClick={() => {
-                if (!prototype.edit) return;
-                router.push(
-                  `/prototypes/${prototype.edit.prototype.id}/versions/${prototype.edit.versions[0].id}/edit`
-                );
-              }}
-              className="bg-gradient-to-r from-header/90 to-header-light/90 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-header/20 group w-full"
-              title="プロトタイプ編集"
-            >
-              <div className="flex items-center justify-center p-4">
-                <div className="w-12 h-12 rounded-full bg-white/80 flex items-center justify-center mr-4 group-hover:bg-white transition-colors">
-                  <HiOutlinePencilAlt className="h-6 w-6 text-header group-hover:text-header-light transition-colors" />
-                </div>
-                <div className="flex flex-col items-start">
-                  <span className="font-medium text-white group-hover:text-white transition-colors text-lg">
-                    プロトタイプ編集
-                  </span>
-                </div>
+            {accessUsers.length > 0 ? (
+              <div className="flex flex-wrap gap-2 max-h-[120px] overflow-y-auto pr-2">
+                {accessUsers.map((accessUser) => (
+                  <div
+                    key={accessUser.id}
+                    className={`px-3 py-1.5 text-sm rounded-full flex items-center gap-1.5 border ${
+                      accessUser.id === prototype.edit?.prototype.userId
+                        ? 'bg-header/10 text-header border-header/30'
+                        : 'bg-wood-lightest/50 text-wood-darkest border-wood-light/30'
+                    }`}
+                  >
+                    <span className="max-w-[120px] truncate">
+                      {accessUser.username}
+                    </span>
+                    {accessUser.id === prototype.edit?.prototype.userId && (
+                      <span className="text-[10px] px-1.5 py-0.5 bg-header/10 text-header rounded-md border border-header/30">
+                        オーナー
+                      </span>
+                    )}
+                  </div>
+                ))}
               </div>
-            </button>
+            ) : (
+              <p className="text-wood-dark text-sm italic">
+                ユーザーデータ取得中...
+              </p>
+            )}
           </div>
+
+          {/* 作成日時カード - クリック不可でホバーエフェクトなし */}
+          <div className="flex-1 bg-white/80 rounded-xl p-5 shadow-inner border border-wood-lightest/40">
+            <h3 className="text-sm uppercase tracking-wide text-wood-dark/70 mb-2 font-medium">
+              作成日時
+            </h3>
+            <p className="text-2xl font-semibold text-wood-darkest">
+              {formatDate(prototype.edit.prototype.createdAt, true)}
+            </p>
+          </div>
+        </div>
+
+        {/* プロトタイプ編集ボタン */}
+        <div className="flex flex-col gap-4 mt-6">
+          <button
+            onClick={() => {
+              if (!prototype.edit) return;
+              router.push(
+                `/prototypes/${prototype.edit.prototype.id}/versions/${prototype.edit.versions[0].id}/edit`
+              );
+            }}
+            className="bg-gradient-to-r from-header/90 to-header-light/90 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-header/20 group w-full"
+            title="プロトタイプ編集"
+          >
+            <div className="flex items-center justify-center p-4">
+              <div className="w-12 h-12 rounded-full bg-white/80 flex items-center justify-center mr-4 group-hover:bg-white transition-colors">
+                <HiOutlinePencilAlt className="h-6 w-6 text-header group-hover:text-header-light transition-colors" />
+              </div>
+              <div className="flex flex-col items-start">
+                <span className="font-medium text-white group-hover:text-white transition-colors text-lg">
+                  プロトタイプ編集
+                </span>
+              </div>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -567,7 +580,7 @@ const GroupPrototypeList: React.FC = () => {
               aria-label="プロトタイプバージョン作成"
               className="cursor-pointer w-full"
             >
-              <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-dashed border-wood-light/60 group w-full">
+              <div className="bg-white rounded-xl overflow-visible shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-dashed border-wood-light/60 group w-full">
                 <div className="flex items-center justify-center p-4">
                   <div className="w-12 h-12 rounded-full bg-wood-lightest/50 flex items-center justify-center mr-4 group-hover:bg-wood-lightest transition-colors">
                     <TbVersions className="h-6 w-6 text-wood-dark group-hover:text-header transition-colors" />
