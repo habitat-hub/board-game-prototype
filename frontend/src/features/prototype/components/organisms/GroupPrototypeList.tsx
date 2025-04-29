@@ -326,41 +326,57 @@ const GroupPrototypeList: React.FC = () => {
         )}
       </div>
 
-      {/* 複製・招待ボタン */}
-      <div className="flex justify-end mb-4 gap-2">
-        {prototype.edit && user?.id === prototype.edit.prototype.userId ? (
-          <button
-            onClick={() =>
-              prototype.edit && handleDuplicate(prototype.edit.prototype.id)
-            }
-            className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
-            title="プロトタイプ複製"
-          >
-            <FaCopy className="w-4 h-4" />
-            <span>複製</span>
-          </button>
-        ) : (
-          <div className="relative group">
-            <button
-              disabled
-              className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood-light/50 cursor-not-allowed rounded-md border border-wood-light/20"
-              title="プロトタイプ複製"
-            >
-              <FaCopy className="w-4 h-4" />
-              <span>複製</span>
-            </button>
-            <div className="absolute bottom-full mb-2 right-0 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50">
-              プロトタイプのオーナーのみが複製できます
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* このプロトタイプについて */}
       <div className="mb-6 overflow-hidden rounded-xl bg-gradient-to-r from-content via-content to-content-secondary shadow-lg border border-wood-lightest/30">
         <div className="p-6">
-          <h2 className="text-xl font-bold text-wood-darkest mb-4 border-b border-wood-light/30 pb-2">
-            このプロトタイプについて
+          <h2 className="text-xl font-bold text-wood-darkest mb-4 border-b border-wood-light/30 pb-2 flex justify-between items-center">
+            <span>このプロトタイプについて</span>
+            {prototype.edit && (
+              <>
+                {user?.id === prototype.edit.prototype.userId ? (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() =>
+                        prototype.edit &&
+                        handleDuplicate(prototype.edit.prototype.id)
+                      }
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/70 text-wood-dark hover:text-header rounded-md hover:bg-white transition-colors border border-wood-light/30"
+                      title="プロトタイプ複製"
+                    >
+                      <FaCopy className="w-4 h-4" />
+                      <span>複製</span>
+                    </button>
+                    <button
+                      onClick={() =>
+                        prototype.edit &&
+                        router.push(
+                          `/prototypes/${prototype.edit.prototype.id}/delete`
+                        )
+                      }
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/70 text-wood-dark hover:text-red-600 rounded-md hover:bg-white transition-colors border border-wood-light/30"
+                      title="プロトタイプ削除"
+                    >
+                      <IoTrash className="w-4 h-4" />
+                      <span>削除</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="relative group">
+                    <button
+                      disabled
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/40 text-wood-light/50 cursor-not-allowed rounded-md border border-wood-light/20"
+                      title="プロトタイプ複製"
+                    >
+                      <FaCopy className="w-4 h-4" />
+                      <span>複製</span>
+                    </button>
+                    <div className="absolute bottom-full mb-2 right-0 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50">
+                      プロトタイプのオーナーのみが複製できます
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </h2>
           <div className="flex flex-col md:flex-row gap-6">
             <div className="flex-1 bg-white/80 rounded-xl p-5 shadow-inner border border-wood-lightest/40">
