@@ -604,9 +604,43 @@ const GroupPrototypeList: React.FC = () => {
                 <div key={prototype.id} className="mb-8">
                   <div className="bg-gradient-to-br from-content to-content-secondary rounded-2xl shadow-lg border border-wood-lightest/30 p-5">
                     <div className="flex justify-between items-center mb-4 pb-3 border-b border-wood-light/30">
-                      <h3 className="font-medium text-wood-darkest">
-                        {prototype.name}
-                      </h3>
+                      {nameEditingId === prototype.id ? (
+                        <form
+                          className="flex items-center"
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            handleNameEditComplete();
+                          }}
+                        >
+                          <input
+                            type="text"
+                            value={editedName}
+                            onChange={(e) => setEditedName(e.target.value)}
+                            className="py-2 px-3 border border-wood-light/30 rounded-lg bg-white w-full"
+                            autoFocus
+                          />
+                          <button
+                            type="submit"
+                            className="ml-3 p-1.5 text-green-600 hover:text-green-700 rounded-md border border-green-500 hover:bg-green-50 transition-colors"
+                            title="編集完了"
+                          >
+                            <FaCheck className="w-4 h-4" />
+                          </button>
+                        </form>
+                      ) : (
+                        <h3 className="font-medium text-wood-darkest flex items-center">
+                          <span>{prototype.name}</span>
+                          <button
+                            onClick={() =>
+                              handleNameEditToggle(prototype.id, prototype.name)
+                            }
+                            className="ml-2 p-1.5 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-all"
+                            title="バージョン名編集"
+                          >
+                            <FaPenToSquare className="w-3.5 h-3.5" />
+                          </button>
+                        </h3>
+                      )}
                       <div className="flex gap-2">
                         {versions.some(
                           (v) => v.versionNumber === VERSION_NUMBER.MASTER
