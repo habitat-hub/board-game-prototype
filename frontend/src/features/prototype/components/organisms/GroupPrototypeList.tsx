@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
-import { BsDoorOpenFill } from 'react-icons/bs';
 import { FaCheck, FaPenToSquare, FaEye, FaCopy } from 'react-icons/fa6';
 import { HiOutlinePencilAlt } from 'react-icons/hi';
 import { IoAdd, IoArrowBack, IoTrash } from 'react-icons/io5';
@@ -12,6 +11,7 @@ import { TbVersions } from 'react-icons/tb';
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Prototype, PrototypeVersion, User } from '@/api/types';
 import AccessUsersCard from '@/features/prototype/components/molecules/AccessUsersCard';
+import PlayRoomCard from '@/features/prototype/components/molecules/PlayRoomCard';
 import { VERSION_NUMBER } from '@/features/prototype/const';
 import { useUser } from '@/hooks/useUser';
 import formatDate from '@/utils/dateFormat';
@@ -629,51 +629,11 @@ const GroupPrototypeList: React.FC = () => {
                           }
 
                           return (
-                            <Link
+                            <PlayRoomCard
                               key={version.id}
-                              href={`/prototypes/${version.prototypeId}/versions/${version.id}/play`}
-                            >
-                              <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-wood-light/20 group">
-                                <div className="bg-gradient-to-r from-wood-lightest to-wood-lightest/50 p-3 border-b border-wood-light/20">
-                                  <div className="flex justify-between items-center">
-                                    <h3 className="font-bold text-wood-darkest group-hover:text-header transition-colors">
-                                      プレイルーム
-                                      {version.versionNumber.replace(
-                                        '.0.0',
-                                        ''
-                                      )}
-                                    </h3>
-                                    <button
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        handleDeleteRoom(
-                                          version.prototypeId,
-                                          version.id
-                                        );
-                                      }}
-                                      className="text-wood-dark hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-red-50"
-                                      title="ルームを削除"
-                                    >
-                                      <IoTrash className="h-4 w-4" />
-                                    </button>
-                                  </div>
-                                </div>
-                                <div className="p-4">
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2 text-wood">
-                                      <BsDoorOpenFill className="h-5 w-5 text-wood-dark group-hover:text-header transition-colors" />
-                                      <span className="text-sm font-medium">
-                                        入室
-                                      </span>
-                                    </div>
-                                    <div className="text-xs text-wood-dark">
-                                      {formatDate(version.createdAt, true)}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </Link>
+                              version={version}
+                              onDelete={handleDeleteRoom}
+                            />
                           );
                         })}
 
