@@ -77,14 +77,20 @@ export default function Canvas({
   const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
   // 選択中のパーツ
   const [selectedPartId, setSelectedPartId] = useState<number | null>(null);
-  const { isDraggingCanvas, onWheel, onMouseDown, onMouseMove, onMouseUp } =
-    useCanvasEvents({
-      camera,
-      setCamera,
-      setSelectedPartId,
-      parts,
-      mainViewRef,
-    });
+  const {
+    isDraggingCanvas,
+    onWheel,
+    onCanvasMouseDown,
+    onPartMouseDown,
+    onMouseMove,
+    onMouseUp,
+  } = useCanvasEvents({
+    camera,
+    setCamera,
+    setSelectedPartId,
+    parts,
+    mainViewRef,
+  });
 
   // マスタープレビューかどうか
   const isMasterPreview =
@@ -250,24 +256,27 @@ export default function Canvas({
   const lastCursorPosition = useRef<{ x: number; y: number } | null>(null);
 
   /**
-   * マウスダウン時の処理
+   * キャンバスに関するマウスダウンイベントのハンドラー
+   * @param e - マウスイベント
+   */
+  const handleCanvasMouseDown = (e: React.MouseEvent) => {
+    onCanvasMouseDown(e);
+  };
+
+  /**
+   * パーツに関するマウスダウンイベントのハンドラー
    * @param e - マウスイベント
    * @param partId - パーツID
    */
-  const handleMouseDown = (e: React.MouseEvent, partId?: number) => {
+  const handlePartMouseDown = (e: React.MouseEvent, partId: number) => {
     if (isMasterPreview) return;
 
-    onMouseDown(e, partId);
+    onPartMouseDown(e, partId);
   };
 
   return (
     <div className="flex h-full w-full">
-      <main
-        className={`h-full w-full ${
-          isMasterPreview ? 'pointer-events-none' : ''
-        }`}
-        ref={mainViewRef}
-      >
+      <main className="h-full w-full" ref={mainViewRef}>
         <div
           className="h-full w-full touch-none"
           onMouseMove={onMouseMove}
@@ -278,13 +287,9 @@ export default function Canvas({
             onWheel={onWheel}
             className="h-full w-full"
             onContextMenu={(e) => e.preventDefault()}
-            onMouseDown={(e) => handleMouseDown(e)}
+            onMouseDown={handleCanvasMouseDown}
             style={{
-              cursor: isDraggingCanvas
-                ? 'grabbing'
-                : isMasterPreview
-                  ? 'not-allowed'
-                  : 'grab',
+              cursor: isDraggingCanvas ? 'grabbing' : 'grab',
               width: '2000px',
               height: '2000px',
             }}
@@ -358,7 +363,7 @@ export default function Canvas({
                       players={players}
                       prototypeType={prototypeType}
                       isOtherPlayerCard={otherPlayerCards.includes(part.id)}
-                      onMouseDown={(e) => handleMouseDown(e, part.id)}
+                      onMouseDown={(e) => handlePartMouseDown(e, part.id)}
                       onMoveOrder={({
                         partId,
                         type,

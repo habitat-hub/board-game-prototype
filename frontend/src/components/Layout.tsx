@@ -29,7 +29,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   /**
    * ログアウトボタンの外側をクリックしたらログアウトボタンを非表示にする
    */
-  const handleClickLogoutOutside = (event: MouseEvent) => {
+  const handleClickLogoutOutside = (event: MouseEvent): void => {
     // Refが存在しない、またはRefが存在してもクリックされた要素がRefの要素の場合（この場合ログアウト処理が走る）
     if (
       !logoutRef.current ||
@@ -46,7 +46,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     return () => {
       document.removeEventListener('mousedown', handleClickLogoutOutside);
     };
-  }, [logoutRef]);
+  }, []);
 
   /**
    * ログアウトする
