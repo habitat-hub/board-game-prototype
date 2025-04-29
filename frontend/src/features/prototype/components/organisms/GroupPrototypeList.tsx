@@ -317,7 +317,7 @@ const GroupPrototypeList: React.FC = () => {
                   )
                 }
                 className="ml-3 p-2 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors"
-                title="プロトタイプ名を編集する"
+                title="プロトタイプ名編集"
               >
                 <FaPenToSquare className="w-5 h-5" />
               </button>
@@ -442,7 +442,7 @@ const GroupPrototypeList: React.FC = () => {
                       )
                     }
                     className="ml-3 p-1.5 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-all"
-                    title="プレイヤー人数を編集する"
+                    title="プレイヤー人数編集"
                   >
                     <FaPenToSquare className="w-4 h-4" />
                   </button>
@@ -466,7 +466,7 @@ const GroupPrototypeList: React.FC = () => {
                       router.push(`/prototypes/groups/${groupId}/invite`)
                     }
                     className="p-1.5 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-all"
-                    title="他のユーザーを招待する"
+                    title="他ユーザー招待"
                   >
                     <FaUserPlus className="h-4 w-4" />
                   </button>
@@ -475,7 +475,7 @@ const GroupPrototypeList: React.FC = () => {
                     <button
                       disabled
                       className="p-1.5 text-wood-light/50 cursor-not-allowed rounded-md"
-                      title="他のユーザーを招待する"
+                      title="他ユーザー招待"
                     >
                       <FaUserPlus className="h-4 w-4" />
                     </button>
