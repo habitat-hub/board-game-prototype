@@ -334,17 +334,32 @@ const GroupPrototypeList: React.FC = () => {
             {prototype.edit && (
               <>
                 {user?.id === prototype.edit.prototype.userId ? (
-                  <button
-                    onClick={() =>
-                      prototype.edit &&
-                      handleDuplicate(prototype.edit.prototype.id)
-                    }
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/70 text-wood-dark hover:text-header rounded-md hover:bg-white transition-colors border border-wood-light/30"
-                    title="プロトタイプ複製"
-                  >
-                    <FaCopy className="w-4 h-4" />
-                    <span>複製</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() =>
+                        prototype.edit &&
+                        handleDuplicate(prototype.edit.prototype.id)
+                      }
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/70 text-wood-dark hover:text-header rounded-md hover:bg-white transition-colors border border-wood-light/30"
+                      title="プロトタイプ複製"
+                    >
+                      <FaCopy className="w-4 h-4" />
+                      <span>複製</span>
+                    </button>
+                    <button
+                      onClick={() =>
+                        prototype.edit &&
+                        router.push(
+                          `/prototypes/${prototype.edit.prototype.id}/delete`
+                        )
+                      }
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/70 text-wood-dark hover:text-red-600 rounded-md hover:bg-white transition-colors border border-wood-light/30"
+                      title="プロトタイプ削除"
+                    >
+                      <IoTrash className="w-4 h-4" />
+                      <span>削除</span>
+                    </button>
+                  </div>
                 ) : (
                   <div className="relative group">
                     <button
