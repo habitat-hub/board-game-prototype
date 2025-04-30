@@ -150,10 +150,18 @@ export default function Canvas({
       }
     );
 
+    // ADD_PARTレスポンスのリスナーを追加
+    socket.on('ADD_PART_RESPONSE', ({ partId }: { partId: number }) => {
+      if (partId) {
+        setSelectedPartId(partId);
+      }
+    });
+
     return () => {
       socket.off('FLIP_CARD');
+      socket.off('ADD_PART_RESPONSE');
     };
-  }, [socket]);
+  }, [socket, parts]);
 
   /**
    * パーツを追加
@@ -163,7 +171,6 @@ export default function Canvas({
   const handleAddPart = useCallback(
     ({ part, properties }: AddPartProps) => {
       dispatch({ type: 'ADD_PART', payload: { part, properties } });
-      setSelectedPartId(null);
     },
     [dispatch]
   );

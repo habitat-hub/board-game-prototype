@@ -145,7 +145,14 @@ function handleAddPart(socket: Socket, io: Server) {
         });
 
         await Promise.all(propertyCreationPromises);
+
         await emitUpdatedPartsAndProperties(io, prototypeVersionId);
+
+        // 新しいパーツのIDをクライアントに送信
+        // これによりクライアント側で新パーツをすぐ参照できるようになる
+        // emitUpdatedPartsAndPropertiesの後にemitしないと
+        // パーツを正しく参照できず機能しない
+        socket.emit('ADD_PART_RESPONSE', { partId: newPart.id });
       } catch (error) {
         console.error('パーツの追加に失敗しました。', error);
       }
