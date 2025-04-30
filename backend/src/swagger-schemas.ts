@@ -85,6 +85,47 @@ export const swaggerSchemas = {
             "name"
       ]
 },
+      Image: {
+      "type": "object",
+      "properties": {
+            "id": {
+                  "type": "string",
+                  "format": "uuid"
+            },
+            "displayName": {
+                  "type": "string"
+            },
+            "storagePath": {
+                  "type": "string"
+            },
+            "contentType": {
+                  "type": "string"
+            },
+            "fileSize": {
+                  "type": "integer"
+            },
+            "uploaderUserId": {
+                  "type": "string",
+                  "format": "uuid"
+            },
+            "createdAt": {
+                  "type": "string"
+            },
+            "updatedAt": {
+                  "type": "string"
+            }
+      },
+      "required": [
+            "id",
+            "displayName",
+            "storagePath",
+            "contentType",
+            "fileSize",
+            "uploaderUserId",
+            "createdAt",
+            "updatedAt"
+      ]
+},
       Part: {
       "type": "object",
       "properties": {
@@ -187,8 +228,9 @@ export const swaggerSchemas = {
             "textColor": {
                   "type": "string"
             },
-            "image": {
-                  "type": "string"
+            "imageId": {
+                  "type": "string",
+                  "format": "uuid"
             },
             "createdAt": {
                   "type": "string"
@@ -204,7 +246,6 @@ export const swaggerSchemas = {
             "description",
             "color",
             "textColor",
-            "image",
             "createdAt",
             "updatedAt"
       ]

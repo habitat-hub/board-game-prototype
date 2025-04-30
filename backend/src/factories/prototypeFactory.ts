@@ -190,7 +190,7 @@ export async function createPrototype({
           description: property.description,
           color: property.color,
           textColor: property.textColor,
-          image: property.image,
+          imageId: property.imageId,
         }));
       }
     );
@@ -347,7 +347,7 @@ export const createPrototypeVersion = async (
         description: property.description,
         color: property.color,
         textColor: property.textColor,
-        image: property.image,
+        imageId: property.imageId,
       }));
     }
   );
