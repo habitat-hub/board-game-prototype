@@ -1,4 +1,4 @@
-name: Create Develop to Main PR
+name: Create develop to main PR
 
 on:
   push:
@@ -53,7 +53,7 @@ jobs:
             const { data: pull } = await github.rest.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: 'Develop to Main',
+              title: 'develop to main',
               body: 'Automatically created PR from develop to main branch',
               head: 'develop',
               base: 'main'
