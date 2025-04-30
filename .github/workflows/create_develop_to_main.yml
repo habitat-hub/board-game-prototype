@@ -4,9 +4,17 @@ on:
   push:
     branches:
       - develop
+  workflow_dispatch: # Allow manual triggering for maintenance and debugging
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   create_pr:
+    concurrency:
+      group: 'create-develop-to-main'
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -14,13 +22,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check for existing PR
+      - name: Check if PR exists
         id: check_pr
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          result-encoding: string
           script: |
-            // develop → main のオープンPRを取得
             const { data: pulls } = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -28,11 +36,16 @@ jobs:
               head: `${context.repo.owner}:develop`,
               base: 'main'
             });
-            // true／false を return すると、steps.check_pr.outputs.result に格納される
-            return pulls.length > 0;
+            
+            if (pulls.length > 0) {
+              console.log('PR already exists. Skipping PR creation.');
+              return 'true';
+            }
+            
+            return 'false';
 
       - name: Create Pull Request
-        if: ${{ steps.check_pr.outputs.result == 'false' }}
+        if: steps.check_pr.outputs.result == 'false'
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -45,4 +58,5 @@ jobs:
               head: 'develop',
               base: 'main'
             });
+            
             console.log(`Pull request created: ${pull.html_url}`);
