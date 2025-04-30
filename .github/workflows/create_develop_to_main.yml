@@ -1,0 +1,48 @@
+name: Create Develop to Main PR
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  create_pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Check for existing PR
+        id: check_pr
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // develop → main のオープンPRを取得
+            const { data: pulls } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              head: `${context.repo.owner}:develop`,
+              base: 'main'
+            });
+            // true／false を return すると、steps.check_pr.outputs.result に格納される
+            return pulls.length > 0;
+
+      - name: Create Pull Request
+        if: ${{ steps.check_pr.outputs.result == 'false' }}
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: pull } = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Develop to Main',
+              body: 'Automatically created PR from develop to main branch',
+              head: 'develop',
+              base: 'main'
+            });
+            console.log(`Pull request created: ${pull.html_url}`);
