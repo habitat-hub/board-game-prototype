@@ -226,10 +226,11 @@ const Part = forwardRef<PartHandle, PartProps>(
               strokeWidth: 2,
               transform: `
             translate(${part.position.x - 4}px, ${part.position.y - 4}px)
-            translate(${part.width / 2}px, ${part.height / 2}px)
+            translate(${part.width / 2 + 4}px, ${part.height / 2 + 4}px)
             rotateY(${!isFlippedNeeded && isFlipped ? 180 : 0}deg)
-            translate(${-part.width / 2}px, ${-part.height / 2}px)
+            translate(-${part.width / 2 + 4}px, -${part.height / 2 + 4}px)
           `,
+              transition: isReversing ? 'transform 0.6s' : 'none',
               transformStyle: 'preserve-3d',
             }}
             width={part.width + 8}

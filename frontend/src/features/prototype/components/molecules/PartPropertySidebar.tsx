@@ -169,6 +169,13 @@ export default function PartPropertySidebar({
                 />
               </div>
             </div>
+            {selectedPart.type === 'card' && selectedPart.isReversible && (
+              <div className="flex items-center justify-center mb-2">
+                <span className="text-xs font-medium px-3 py-1 rounded-full bg-blue-100 text-blue-800">
+                  {selectedPart.isFlipped ? '裏面の設定' : '表面の設定'}
+                </span>
+              </div>
+            )}
             <div className="flex flex-col gap-1">
               <p className="text-[9px] font-medium text-gray-500">位置</p>
               <div className="flex w-full gap-2 mb-2">
