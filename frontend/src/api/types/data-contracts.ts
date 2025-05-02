@@ -155,6 +155,21 @@ export interface UserListData {
   username?: string;
 }
 
+export interface ImagesCreatePayload {
+  /**
+   * アップロードする画像ファイル
+   * @format binary
+   */
+  image?: File;
+}
+
+export type ImagesCreateData = Image;
+
+/** @format binary */
+export type ImagesDetailData = File;
+
+export type ImagesDeleteData = any;
+
 export type PrototypesListData = Prototype[];
 
 export interface PrototypesCreatePayload {

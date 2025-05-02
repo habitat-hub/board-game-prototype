@@ -539,6 +539,118 @@
         }
       }
     },
+    "/api/images/upload": {
+      "post": {
+        "tags": [
+          "Images"
+        ],
+        "summary": "画像アップロード",
+        "description": "S3に画像をアップロードし、画像のメタデータを保存します。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "アップロードする画像ファイル"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "画像が正常にアップロードされました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "画像のID"
+                    },
+                    "displayName": {
+                      "type": "string",
+                      "description": "アップロードされた画像の名前"
+                    },
+                    "storagePath": {
+                      "type": "string",
+                      "description": "S3に保存された画像のパス"
+                    },
+                    "contentType": {
+                      "type": "string",
+                      "description": "画像のコンテンツタイプ"
+                    },
+                    "fileSize": {
+                      "type": "integer",
+                      "description": "画像のファイルサイズ（バイト単位）"
+                    },
+                    "uploaderUserId": {
+                      "type": "string",
+                      "description": "アップロードしたユーザーのID"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエストが不正です",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "エラーメッセージ"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証されていません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "エラーメッセージ"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "サーバーエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "エラーメッセージ"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/prototypes": {
       "get": {
         "tags": [
@@ -1356,6 +1468,10 @@
     {
       "name": "Auth",
       "description": "認証関連のAPI"
+    },
+    {
+      "name": "Images",
+      "description": "画像管理API"
     },
     {
       "name": "Prototypes",
