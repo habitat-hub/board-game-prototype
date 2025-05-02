@@ -539,7 +539,7 @@
         }
       }
     },
-    "/api/images/upload": {
+    "/api/images": {
       "post": {
         "tags": [
           "Images"
@@ -570,32 +570,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "description": "画像のID"
-                    },
-                    "displayName": {
-                      "type": "string",
-                      "description": "アップロードされた画像の名前"
-                    },
-                    "storagePath": {
-                      "type": "string",
-                      "description": "S3に保存された画像のパス"
-                    },
-                    "contentType": {
-                      "type": "string",
-                      "description": "画像のコンテンツタイプ"
-                    },
-                    "fileSize": {
-                      "type": "integer",
-                      "description": "画像のファイルサイズ（バイト単位）"
-                    },
-                    "uploaderUserId": {
-                      "type": "string",
-                      "description": "アップロードしたユーザーのID"
-                    }
-                  }
+                  "$ref": "#/components/schemas/Image"
                 }
               }
             }
@@ -605,13 +580,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "description": "エラーメッセージ"
-                    }
-                  }
+                  "$ref": "#/components/schemas/Error400Response"
                 }
               }
             }
@@ -621,13 +590,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "description": "エラーメッセージ"
-                    }
-                  }
+                  "$ref": "#/components/schemas/Error400Response"
                 }
               }
             }
@@ -637,13 +600,113 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "description": "エラーメッセージ"
-                    }
-                  }
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/images/{imageId}": {
+      "get": {
+        "tags": [
+          "Images"
+        ],
+        "summary": "画像取得",
+        "description": "S3から指定された画像を取得し、画像データを直接返します。",
+        "parameters": [
+          {
+            "name": "imageId",
+            "in": "path",
+            "required": true,
+            "description": "取得する画像のID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "画像が正常に取得されました",
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエストが不正です",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "指定された画像が見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "サーバーエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Images"
+        ],
+        "summary": "画像削除",
+        "description": "S3から指定された画像を削除します。",
+        "parameters": [
+          {
+            "name": "imageId",
+            "in": "path",
+            "required": true,
+            "description": "削除する画像のID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "画像が正常に削除されました"
+          },
+          "400": {
+            "description": "リクエストが不正です",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "指定された画像が見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
                 }
               }
             }

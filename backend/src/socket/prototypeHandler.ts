@@ -10,6 +10,7 @@ import {
   shuffleDeck,
 } from '../helpers/prototypeHelper';
 import type { CursorInfo } from '../types/cursor';
+import ImageModel from '../models/Image';
 
 // カーソル情報のマップ
 const cursorMap: Record<string, Record<string, CursorInfo>> = {};
@@ -37,6 +38,10 @@ async function fetchPartsAndProperties(prototypeVersionId: string) {
           model: PartModel,
           required: true, // INNER JOIN
           where: { prototypeVersionId },
+        },
+        {
+          model: ImageModel,
+          required: false, // LEFT JOIN
         },
       ],
     }),
