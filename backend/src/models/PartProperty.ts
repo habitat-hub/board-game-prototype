@@ -88,6 +88,6 @@ PartPropertyModel.belongsTo(ImageModel, {
 ImageModel.hasMany(PartPropertyModel, {
   foreignKey: 'imageId',
   as: 'images',
-})
+});
 
 export default PartPropertyModel;
