@@ -10,6 +10,7 @@ import React, {
 } from 'react';
 import { AiOutlineTool } from 'react-icons/ai';
 
+import { useImages } from '@/api/hooks/useImages';
 import {
   Part as PartType,
   PartProperty as PropertyType,
@@ -28,6 +29,7 @@ import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { AddPartProps, Camera, PartHandle } from '@/features/prototype/type';
 import { CursorInfo } from '@/features/prototype/types/cursor';
 import { useUser } from '@/hooks/useUser';
+import { saveImageToIndexedDb, getImageFromIndexedDb } from '@/utils/db';
 
 interface CanvasProps {
   // プロトタイプ名
@@ -63,9 +65,14 @@ export default function Canvas({
   //   mode: CanvasMode.None,
   // });
 
+  // TODO: IndexedDBに保存した画像のうち、使われていないものはどこかのタイミングで削除したい
+  // 画像クリアのタイミングでリアルタイムに行う必要はない。
+  // 「使われていないもの」の判断基準が難しいので、まずはIndexedDBに保存することを優先する。
+
   const { user } = useUser();
   const { dispatch } = usePartReducer();
   const { socket } = useSocket();
+  const { fetchImage } = useImages();
 
   // メインビューのref
   const mainViewRef = useRef<HTMLDivElement>(null);
@@ -77,6 +84,9 @@ export default function Canvas({
   const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
   // 選択中のパーツ
   const [selectedPartId, setSelectedPartId] = useState<number | null>(null);
+  // 表示対象の画像
+  const [images, setImages] = useState<Record<string, string>[]>([]);
+
   const {
     isDraggingCanvas,
     onWheel,
@@ -154,6 +164,73 @@ export default function Canvas({
       socket.off('FLIP_CARD');
     };
   }, [socket]);
+
+  /**
+   * 画像をIndexedDBから取得し、キャッシュがない場合はS3から取得してIndexedDBに保存
+   */
+  useEffect(() => {
+    const urlsToRevoke: string[] = [];
+    const loadImages = async () => {
+      const newImages: Record<string, string>[] = [];
+
+      // property.imageIdが存在するものだけを抽出し、重複を除去
+      const uniqueImageIds = Array.from(
+        new Set(properties.map((property) => property.imageId).filter(Boolean))
+      ) as string[];
+
+      for (const imageId of uniqueImageIds) {
+        // IndexedDBから画像を取得
+        const cachedImage = await getImageFromIndexedDb(imageId);
+        if (cachedImage) {
+          const url = URL.createObjectURL(cachedImage);
+          newImages.push({ [imageId]: url });
+          urlsToRevoke.push(url);
+        } else {
+          // S3から画像を取得しIndexedDBに保存
+          const s3ImageBlob = await fetchImage(imageId);
+          await saveImageToIndexedDb(imageId, s3ImageBlob);
+          // BlobからURLを生成しステートとして保存
+          const url = URL.createObjectURL(s3ImageBlob);
+          newImages.push({ [imageId]: url });
+          urlsToRevoke.push(url);
+        }
+      }
+      setImages(newImages);
+    };
+
+    loadImages();
+
+    return () => {
+      // 使用後にURLを解放
+      urlsToRevoke.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [fetchImage, properties]);
+
+  /**
+   * propertiesに紐づく画像を取得
+   * @param filteredProperties
+   * @param images
+   * @returns
+   */
+  const getFilteredImages = (
+    filteredProperties: PropertyType[],
+    images: Record<string, string>[]
+  ): Record<string, string>[] => {
+    return filteredProperties.reduce<Record<string, string>[]>(
+      (acc, filteredProperty) => {
+        const imageId = filteredProperty.imageId;
+        if (!imageId) return acc;
+
+        const targetImage = images.find((image) => image[imageId]);
+        if (targetImage) {
+          acc.push({ [imageId]: targetImage[imageId] });
+        }
+
+        return acc;
+      },
+      []
+    );
+  };
 
   /**
    * パーツを追加
@@ -351,15 +428,22 @@ export default function Canvas({
                   if (!partRefs.current[part.id]) {
                     partRefs.current[part.id] = React.createRef<PartHandle>();
                   }
-
+                  // 該当するpropertiesをフィルタリング
+                  const filteredProperties = properties.filter(
+                    (property) => property.partId === part.id
+                  );
+                  // 該当するimagesをフィルタリング
+                  const filteredImages = getFilteredImages(
+                    filteredProperties,
+                    images
+                  );
                   return (
                     <Part
                       key={part.id}
                       ref={partRefs.current[part.id]}
                       part={part}
-                      properties={properties.filter(
-                        (property) => property.partId === part.id
-                      )}
+                      properties={filteredProperties}
+                      images={filteredImages}
                       players={players}
                       prototypeType={prototypeType}
                       isOtherPlayerCard={otherPlayerCards.includes(part.id)}

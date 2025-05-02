@@ -18,6 +18,8 @@ interface PartProps {
   part: PartType;
   // プロパティ
   properties: PropertyType[];
+  // 画像データ
+  images: Record<string, string>[];
   // プレイヤー
   players: Player[];
   // 他のプレイヤーのカードか
@@ -46,6 +48,7 @@ const Part = forwardRef<PartHandle, PartProps>(
       players,
       isOtherPlayerCard = false,
       prototypeType,
+      images,
       onMouseDown,
       onMoveOrder,
       isActive = false,
@@ -74,6 +77,33 @@ const Part = forwardRef<PartHandle, PartProps>(
       const side = part.isFlipped ? 'back' : 'front';
       return properties.find((p) => p.side === side);
     }, [part, properties]);
+
+    // 対象プロパティの画像URLを取得
+    const getImageURL = (
+      targetProperty: PropertyType,
+      images: Record<string, string>[]
+    ): string | null => {
+      const imageId = targetProperty.imageId;
+      if (!imageId) return null;
+
+      const targetImage = images.find((image) => image[imageId]);
+      if (targetImage) {
+        return targetImage[imageId];
+      }
+      return null;
+    };
+
+    // 有効な画像URLの値
+    const validImageURL = targetProperty
+      ? getImageURL(targetProperty, images)
+      : null;
+
+    // 背景パターンのIDを取得
+    const getBgPatternId = (
+      targetProperty: PropertyType | undefined
+    ): string => {
+      return `bgPattern-${targetProperty?.partId}-${targetProperty?.side}`;
+    };
 
     const handleDoubleClick = () => {
       // カードやデッキでない場合
@@ -106,22 +136,24 @@ const Part = forwardRef<PartHandle, PartProps>(
         <title>{targetProperty?.description}</title>
 
         {/* 画像設定その1 */}
-        {/* <defs>
-          <pattern
-            id="bgPattern"
-            patternUnits="userSpaceOnUse"
-            width="150"
-            height="150"
-          >
-            <image
-              href={'/boardgame_icon.png'}
-              x="0"
-              y="0"
-              width="150"
-              height="150"
-            />
-          </pattern>
-        </defs> */}
+        {validImageURL && (
+          <defs>
+            <pattern
+              id={getBgPatternId(targetProperty)}
+              patternUnits="userSpaceOnUse"
+              width={part.width}
+              height={part.height}
+            >
+              <image
+                xlinkHref={validImageURL}
+                x="0"
+                y="0"
+                width={part.width}
+                height={part.height}
+              />
+            </pattern>
+          </defs>
+        )}
         {/* パーツの枠 */}
         <rect
           id={part.id.toString()}
@@ -129,8 +161,9 @@ const Part = forwardRef<PartHandle, PartProps>(
           style={{
             stroke: 'gray',
             strokeDasharray: part.type === 'area' ? '4' : 'none',
-            fill: targetProperty?.color || 'white',
-            // fill: `url(#bgPattern)`, // 画像設定その2
+            fill: validImageURL
+              ? `url(#${getBgPatternId(targetProperty)})`
+              : targetProperty?.color || 'white', // 条件付きで背景を設定
             opacity: part.type === 'area' ? 0.6 : 1,
             transform: `
             translate(${part.position.x}px, ${part.position.y}px)
