@@ -1,4 +1,4 @@
-import { Part, PartProperty } from '@/api/types';
+import { Part, PartProperty, Image } from '@/api/types';
 
 // Partコンポーネントの外部から呼び出せる関数のインターフェース
 export interface PartHandle {
@@ -102,4 +102,9 @@ export interface AddPartProps {
     'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'
   >;
   properties: Omit<PartProperty, 'id' | 'createdAt' | 'updatedAt' | 'partId'>[];
+}
+
+// PartPropertyにImageを追加した型
+export interface PartPropertyWithImage extends PartProperty {
+  Image?: Image; // Imageはオプショナル
 }
