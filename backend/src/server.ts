@@ -24,6 +24,8 @@ import userRoutes from './routes/user';
 import imageRoutes from './routes/image';
 import handlePrototype from './socket/prototypeHandler';
 
+import { errorHandler } from './middlewares/errorHandler';
+
 const app = express();
 const server = http.createServer(app);
 const PORT = 8080;
@@ -165,6 +167,9 @@ app.use('/auth', authRoutes);
 app.use('/api/prototypes', prototypeRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/images', imageRoutes);
+
+// エラーハンドリングミドルウェアの適用
+app.use(errorHandler);
 
 // Socket.io接続
 io.on('connection', (socket: Socket) => {
