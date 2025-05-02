@@ -9,6 +9,10 @@ export const VERSION_NUMBER = {
 // グリッドサイズ
 export const GRID_SIZE = 1;
 
+// プレイヤー数の最小値と最大値
+export const PLAYERS_MIN = 1;
+export const PLAYERS_MAX = 12;
+
 // パーツのデフォルト設定
 export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
   // カード

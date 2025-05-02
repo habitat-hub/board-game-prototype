@@ -12,7 +12,11 @@ import { Prototype, PrototypeVersion, User } from '@/api/types';
 import AccessUsersCard from '@/features/prototype/components/molecules/AccessUsersCard';
 import CreateVersionButton from '@/features/prototype/components/molecules/CreateVersionButton';
 import PlayRoomCard from '@/features/prototype/components/molecules/PlayRoomCard';
-import { VERSION_NUMBER } from '@/features/prototype/const';
+import {
+  VERSION_NUMBER,
+  PLAYERS_MIN,
+  PLAYERS_MAX,
+} from '@/features/prototype/const';
 import { useUser } from '@/hooks/useUser';
 import formatDate from '@/utils/dateFormat';
 
@@ -221,12 +225,19 @@ const GroupPrototypeList: React.FC = () => {
       const prototypeToEdit = prototype.edit.prototype;
 
       // プレイヤー人数のバリデーション
-      if (editedMinPlayers < 1) {
-        alert('最小プレイヤー数は1人以上に設定してください');
+      if (editedMinPlayers < PLAYERS_MIN || editedMinPlayers > PLAYERS_MAX) {
+        alert(
+          `最小プレイヤー数は${PLAYERS_MIN}人以上、${PLAYERS_MAX}人以下に設定してください`
+        );
         return;
       }
-      if (editedMaxPlayers < editedMinPlayers) {
-        alert('最大プレイヤー数は最小プレイヤー数以上に設定してください');
+      if (
+        editedMaxPlayers < editedMinPlayers ||
+        editedMaxPlayers > PLAYERS_MAX
+      ) {
+        alert(
+          `最大プレイヤー数は最小プレイヤー数以上、${PLAYERS_MAX}人以下に設定してください`
+        );
         return;
       }
 
@@ -386,41 +397,45 @@ const GroupPrototypeList: React.FC = () => {
             {prototype.edit &&
             playersEditingId === prototype.edit.prototype.id ? (
               <form
-                className="flex items-center"
+                className="flex items-center gap-2"
                 onSubmit={(e) => {
                   e.preventDefault();
                   handlePlayersEditComplete();
                 }}
               >
-                <div className="flex items-center">
-                  <input
-                    type="number"
-                    min="1"
-                    value={editedMinPlayers}
-                    onChange={(e) =>
-                      setEditedMinPlayers(Number(e.target.value))
-                    }
-                    className="w-16 py-1 px-2 border border-wood-light/30 rounded-lg bg-white text-center"
-                    autoFocus
-                  />
-                  <span className="mx-2">〜</span>
-                  <input
-                    type="number"
-                    min="1"
-                    value={editedMaxPlayers}
-                    onChange={(e) =>
-                      setEditedMaxPlayers(Number(e.target.value))
-                    }
-                    className="w-16 py-1 px-2 border border-wood-light/30 rounded-lg bg-white text-center"
-                  />
-                  <span className="ml-1">人</span>
-                </div>
+                <input
+                  type="number"
+                  value={editedMinPlayers === 0 ? '' : editedMinPlayers}
+                  onChange={(e) =>
+                    setEditedMinPlayers(
+                      e.target.value === '' ? 0 : Number(e.target.value)
+                    )
+                  }
+                  className="w-16 p-1 border border-wood-light rounded"
+                  autoFocus
+                  min={PLAYERS_MIN}
+                  max={PLAYERS_MAX}
+                />
+                <span>~</span>
+                <input
+                  type="number"
+                  value={editedMaxPlayers === 0 ? '' : editedMaxPlayers}
+                  onChange={(e) =>
+                    setEditedMaxPlayers(
+                      e.target.value === '' ? 0 : Number(e.target.value)
+                    )
+                  }
+                  className="w-16 p-1 border border-wood-light rounded"
+                  min={PLAYERS_MIN}
+                  max={PLAYERS_MAX}
+                />
+                <span className="text-wood-dark">人</span>
                 <button
                   type="submit"
-                  className="ml-3 p-1.5 text-green-600 hover:text-green-700 rounded-md border border-green-500 hover:bg-green-50 transition-colors"
+                  className="ml-2 p-1.5 text-green-600 hover:text-green-700 rounded-md border border-green-500 hover:bg-green-50 transition-colors"
                   title="編集完了"
                 >
-                  <FaCheck className="w-4 h-4" />
+                  <FaCheck className="w-3.5 h-3.5" />
                 </button>
               </form>
             ) : (

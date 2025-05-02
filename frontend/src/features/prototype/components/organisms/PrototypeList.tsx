@@ -15,6 +15,7 @@ import { FaBoxOpen, FaPenToSquare, FaPlus } from 'react-icons/fa6';
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Prototype } from '@/api/types';
 import { UserContext } from '@/contexts/UserContext';
+import { PLAYERS_MIN, PLAYERS_MAX } from '@/features/prototype/const';
 import formatDate from '@/utils/dateFormat';
 
 import EmptyPrototypeList from '../molecules/EmptyPrototypeList';
@@ -138,12 +139,16 @@ const PrototypeList: React.FC = () => {
    */
   const handlePlayersEditComplete = async () => {
     // プレイヤー人数のバリデーション
-    if (editedMinPlayers < 1) {
-      alert('最小プレイヤー数は1人以上に設定してください');
+    if (editedMinPlayers < PLAYERS_MIN || editedMinPlayers > PLAYERS_MAX) {
+      alert(
+        `最小プレイヤー数は${PLAYERS_MIN}人以上、${PLAYERS_MAX}人以下に設定してください`
+      );
       return;
     }
-    if (editedMaxPlayers < editedMinPlayers) {
-      alert('最大プレイヤー数は最小プレイヤー数以上に設定してください');
+    if (editedMaxPlayers < editedMinPlayers || editedMaxPlayers > PLAYERS_MAX) {
+      alert(
+        `最大プレイヤー数は最小プレイヤー数以上、${PLAYERS_MAX}人以下に設定してください`
+      );
       return;
     }
 
@@ -374,21 +379,37 @@ const PrototypeList: React.FC = () => {
                         >
                           <input
                             type="number"
-                            value={editedMinPlayers}
+                            value={
+                              editedMinPlayers === 0 ? '' : editedMinPlayers
+                            }
                             onChange={(e) =>
-                              setEditedMinPlayers(Number(e.target.value))
+                              setEditedMinPlayers(
+                                e.target.value === ''
+                                  ? 0
+                                  : Number(e.target.value)
+                              )
                             }
                             className="w-16 p-1 border border-wood-light rounded"
                             autoFocus
+                            min={PLAYERS_MIN}
+                            max={PLAYERS_MAX}
                           />
                           <span>~</span>
                           <input
                             type="number"
-                            value={editedMaxPlayers}
+                            value={
+                              editedMaxPlayers === 0 ? '' : editedMaxPlayers
+                            }
                             onChange={(e) =>
-                              setEditedMaxPlayers(Number(e.target.value))
+                              setEditedMaxPlayers(
+                                e.target.value === ''
+                                  ? 0
+                                  : Number(e.target.value)
+                              )
                             }
                             className="w-16 p-1 border border-wood-light rounded"
+                            min={PLAYERS_MIN}
+                            max={PLAYERS_MAX}
                           />
                           <span className="text-wood-dark">人</span>
                           <button
