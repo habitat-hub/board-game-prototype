@@ -68,7 +68,6 @@ const upload = multer({ storage: multer.memoryStorage() }); // バッファと�
  *             schema:
  *               $ref: '#/components/schemas/Error500Response'
  */
-
 router.post(
   '/',
   upload.single('image'),
