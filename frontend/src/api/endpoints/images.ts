@@ -1,4 +1,5 @@
 import axiosInstance from '@/api/client';
+import { ImagesCreateData, ImagesDeleteData } from '../types';
 
 export const imagesService = {
   /*
@@ -13,14 +14,14 @@ export const imagesService = {
   /*
    * 画像データ更新
    */
-  uploadImage: async (data: FormData): Promise<any> => {
+  uploadImage: async (data: FormData): Promise<ImagesCreateData> => {
     const response = await axiosInstance.post('/api/images', data);
     return response.data;
   },
   /*
    * 画像データ削除
    */
-  deleteImage: async (imageId: string): Promise<any> => {
+  deleteImage: async (imageId: string): Promise<ImagesDeleteData> => {
     const response = await axiosInstance.delete(`/api/images/${imageId}`);
     return response.data;
   },
