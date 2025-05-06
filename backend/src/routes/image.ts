@@ -216,6 +216,8 @@ router.delete(
         throw new NotFoundError('Image not found');
       }
       await deleteImageFromS3(image.storagePath);
+      // 画像のメタデータをDBから削除
+      await image.destroy();
       res.status(204).send();
     } catch (error) {
       next(error);
