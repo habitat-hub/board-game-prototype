@@ -11,7 +11,7 @@ import sequelize from './index';
 class ImageModel extends Model {
   // ID
   public id!: string;
-  // UIに表示する名前（ユーザー編集可）
+  // アップロード時のファイル名（ユーザー編集不可）
   public displayName!: string;
   // S3上の物理ファイル名
   public storagePath!: string;
