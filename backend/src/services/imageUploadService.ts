@@ -1,7 +1,10 @@
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import s3Client from '../config/s3Client';
 import { ValidationError } from '../errors/CustomError';
-import { cleanFileName, formatS3KeyFromFileName } from '../helpers/imageHelper';
+import {
+  cleanFileName,
+  generateS3KeyFromFilename,
+} from '../helpers/imageHelper';
 
 const bucketName = process.env.AWS_S3_BUCKET_NAME!;
 
@@ -25,7 +28,7 @@ export const uploadImageToS3 = async (file: Express.Multer.File) => {
   }
 
   const cleanName = cleanFileName(file.originalname);
-  const key = formatS3KeyFromFileName(cleanName);
+  const key = generateS3KeyFromFilename(cleanName);
   const command = new PutObjectCommand({
     Bucket: bucketName,
     Key: key,

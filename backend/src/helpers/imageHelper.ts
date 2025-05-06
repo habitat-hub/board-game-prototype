@@ -68,6 +68,6 @@ export function splitNameAndExtension(fileName: string): FileNameParts {
  * @param fileName - ファイル名
  * @returns S3キー
  */
-export function formatS3KeyFromFileName(fileName: string) {
+export function generateS3KeyFromFilename(fileName: string) {
   return `uploads/${uuidv4()}-${fileName}`;
 }
