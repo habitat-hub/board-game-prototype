@@ -78,12 +78,9 @@ const Part = forwardRef<PartHandle, PartProps>(
       return properties.find((p) => p.side === side);
     }, [part, properties]);
 
-    // 対象プロパティの画像URLを取得
-    const getImageURL = (
-      targetProperty: PropertyType,
-      images: Record<string, string>[]
-    ): string | null => {
-      const imageId = targetProperty.imageId;
+    // 有効な画像URLの値
+    const validImageURL = useMemo(() => {
+      const imageId = targetProperty?.imageId;
       if (!imageId) return null;
 
       const targetImage = images.find((image) => image[imageId]);
@@ -91,19 +88,10 @@ const Part = forwardRef<PartHandle, PartProps>(
         return targetImage[imageId];
       }
       return null;
-    };
+    }, [targetProperty?.imageId, images]);
 
-    // 有効な画像URLの値
-    const validImageURL = targetProperty
-      ? getImageURL(targetProperty, images)
-      : null;
-
-    // 背景パターンのIDを取得
-    const getBgPatternId = (
-      targetProperty: PropertyType | undefined
-    ): string => {
-      return `bgPattern-${targetProperty?.partId}-${targetProperty?.side}`;
-    };
+    // 背景パターンのID
+    const bgPatternId: string = `bgPattern-${targetProperty?.partId}-${targetProperty?.side}`;
 
     const handleDoubleClick = () => {
       // カードやデッキでない場合
@@ -139,7 +127,7 @@ const Part = forwardRef<PartHandle, PartProps>(
         {validImageURL && (
           <defs>
             <pattern
-              id={getBgPatternId(targetProperty)}
+              id={bgPatternId}
               patternUnits="userSpaceOnUse"
               width={part.width}
               height={part.height}
@@ -162,7 +150,7 @@ const Part = forwardRef<PartHandle, PartProps>(
             stroke: 'gray',
             strokeDasharray: part.type === 'area' ? '4' : 'none',
             fill: validImageURL
-              ? `url(#${getBgPatternId(targetProperty)})`
+              ? `url(#${bgPatternId})`
               : targetProperty?.color || 'white', // 条件付きで背景を設定
             opacity: part.type === 'area' ? 0.6 : 1,
             transform: `
