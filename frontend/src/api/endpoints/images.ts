@@ -1,5 +1,4 @@
 import axiosInstance from '@/api/client';
-import {} from '@/api/types';
 
 export const imagesService = {
   /*
