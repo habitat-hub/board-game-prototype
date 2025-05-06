@@ -81,7 +81,7 @@ router.post(
         throw new UnauthorizedError('Unauthorized');
       }
       const uploadResult = await uploadImageToS3(req.file);
-      const uploaderUserId = (req.user as InstanceType<typeof UserModel>).id;
+      const uploaderUserId = (req.user as UserModel).id;
 
       const image = await ImageModel.create({
         displayName: uploadResult.displayName,
