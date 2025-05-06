@@ -1,4 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
+import {
+  FILE_DEFAULT_NAME,
+  FILE_MAX_NAME_LENGTH,
+} from '../constants/fileConstants';
 
 type FileNameParts = {
   baseName: string;
@@ -38,14 +42,12 @@ export function cleanFileName(originalName: string): string {
  * @returns 調整されたファイル名
  */
 export function trimMaxLength({ baseName, extension }: FileNameParts): string {
-  // 拡張子を含めた最大長が100文字を超えないように調整（拡張子込み）
-  const maxTotalLength = 100;
   // 拡張子を分離
-  const maxBaseLength = maxTotalLength - extension.length;
+  const maxBaseLength = FILE_MAX_NAME_LENGTH - extension.length;
   // baseName を切り詰め（サロゲートペアなどを壊さないように文字単位で）
   const trimmedBase = [...baseName].slice(0, maxBaseLength).join('');
   // ファイル名が空になるのを防ぐ（記号だけだったケース）
-  const finalBase = trimmedBase || 'untitled';
+  const finalBase = trimmedBase || FILE_DEFAULT_NAME;
   return `${finalBase}${extension}`;
 }
 
