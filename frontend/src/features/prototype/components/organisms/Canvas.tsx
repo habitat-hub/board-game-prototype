@@ -169,39 +169,44 @@ export default function Canvas({
    * 画像をIndexedDBから取得し、キャッシュがない場合はS3から取得してIndexedDBに保存
    */
   useEffect(() => {
-    const urlsToRevoke: string[] = [];
-    const loadImages = async () => {
-      const newImages: Record<string, string>[] = [];
+    let urlsToRevoke: string[] = []; // クリーンアップ用のURLリスト
 
+    const loadImages = async () => {
       // property.imageIdが存在するものだけを抽出し、重複を除去
       const uniqueImageIds = Array.from(
         new Set(properties.map((property) => property.imageId).filter(Boolean))
       ) as string[];
 
-      for (const imageId of uniqueImageIds) {
-        // IndexedDBから画像を取得
-        const cachedImage = await getImageFromIndexedDb(imageId);
-        if (cachedImage) {
-          const url = URL.createObjectURL(cachedImage);
-          newImages.push({ [imageId]: url });
-          urlsToRevoke.push(url);
-        } else {
-          // S3から画像を取得しIndexedDBに保存
-          const s3ImageBlob = await fetchImage(imageId);
-          await saveImageToIndexedDb(imageId, s3ImageBlob);
-          // BlobからURLを生成しステートとして保存
-          const url = URL.createObjectURL(s3ImageBlob);
-          newImages.push({ [imageId]: url });
-          urlsToRevoke.push(url);
-        }
-      }
+      // IndexedDBやS3から画像を取得し、URLを生成
+      const imageResults = await Promise.all(
+        uniqueImageIds.map(async (imageId) => {
+          const cachedImage = await getImageFromIndexedDb(imageId);
+          if (cachedImage) {
+            const url = URL.createObjectURL(cachedImage);
+            return { imageId, url };
+          } else {
+            const s3ImageBlob = await fetchImage(imageId);
+            await saveImageToIndexedDb(imageId, s3ImageBlob);
+            const url = URL.createObjectURL(s3ImageBlob);
+            return { imageId, url };
+          }
+        })
+      );
+
+      // 画像データをステートに保存
+      const newImages = imageResults.map(({ imageId, url }) => ({
+        [imageId]: url,
+      }));
       setImages(newImages);
+
+      // クリーンアップ用のURLリストを更新
+      urlsToRevoke = imageResults.map(({ url }) => url);
     };
 
     loadImages();
 
+    // クリーンアップ処理で画像のURLを解放
     return () => {
-      // 使用後にURLを解放
       urlsToRevoke.forEach((url) => URL.revokeObjectURL(url));
     };
   }, [fetchImage, properties]);
