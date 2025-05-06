@@ -3,6 +3,7 @@ import multer from 'multer';
 import { uploadImageToS3 } from '../services/imageUploadService';
 import { fetchImageFromS3 } from '../services/imageFetchService';
 import { deleteImageFromS3 } from '../services/imageDeleteService';
+import { pipeline } from 'stream/promises';
 
 import ImageModel from '../models/Image';
 import UserModel from '../models/User'; // Import UserModel
@@ -157,9 +158,10 @@ router.get(
         throw new NotFoundError('Image not found');
       }
       const imageData = await fetchImageFromS3(image.storagePath);
-      // ストリームをレスポンスにパイプ
       res.set('Content-Type', image.contentType);
-      imageData.pipe(res);
+
+      // pipelineでストリームを処理
+      await pipeline(imageData, res);
     } catch (error) {
       next(error);
     }
