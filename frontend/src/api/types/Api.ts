@@ -88,7 +88,10 @@ export class Api<
    * @request DELETE:/api/images/{imageId}
    */
   imagesDelete = (imageId: string, params: RequestParams = {}) =>
-    this.request<ImagesDeleteData, Error400Response | Error404Response>({
+    this.request<
+      ImagesDeleteData,
+      Error400Response | Error404Response | Error500Response
+    >({
       path: `/api/images/${imageId}`,
       method: 'DELETE',
       ...params,

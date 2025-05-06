@@ -50,19 +50,19 @@ const upload = multer({ storage: multer.memoryStorage() }); // バッファと�
  *               type: object
  *               $ref: '#/components/schemas/Image'
  *       '400':
- *         description: リクエストが不正です
+ *         description: アップロード対象の画像が存在しない、またはサポートされていない画像形式です
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error400Response'
  *       '401':
- *         description: 認証されていません
+ *         description: 認証されていないユーザーです
  *         content:
  *           application/json:
  *             schema:
- *              $ref: '#/components/schemas/Error400Response'
+ *              $ref: '#/components/schemas/Error401Response'
  *       '500':
- *         description: サーバーエラー
+ *         description: 画像のアップロードに失敗しました
  *         content:
  *           application/json:
  *             schema:
@@ -74,10 +74,10 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req || !req.file) {
-        throw new ValidationError('No file uploaded');
+        throw new ValidationError('アップロード対象の画像が存在しません');
       }
       if (!req.user) {
-        throw new UnauthorizedError('Unauthorized');
+        throw new UnauthorizedError('認証されていないユーザーです');
       }
       const uploadResult = await uploadImageToS3(req.file);
       const uploaderUserId = (req.user as UserModel).id;
@@ -120,19 +120,25 @@ router.post(
  *               type: string
  *               format: binary
  *       '400':
- *         description: リクエストが不正です
+ *         description: Image ID が指定されていない、またはリクエストが不正です
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error400Response'
+ *       '401':
+ *         description: 認証されていないユーザーです
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error401Response'
  *       '404':
- *         description: 指定された画像が見つかりません
+ *         description: 指定された画像が存在しません
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error404Response'
  *       '500':
- *         description: サーバーエラー
+ *         description: 画像を取得できませんでした
  *         content:
  *           application/json:
  *             schema:
@@ -144,17 +150,17 @@ router.get(
     const { imageId } = req.params;
     try {
       if (!imageId) {
-        throw new ValidationError('Image ID is required');
+        throw new ValidationError('Image ID が指定されていません');
       }
       // TODO: 画像のアクセス権を確認するロジックを追加(例: ユーザーがその画像にアクセスできるかどうか)
       // ここでは単純にユーザーが認証されているかどうかを確認
       if (!req.user) {
-        throw new UnauthorizedError('Unauthorized');
+        throw new UnauthorizedError('認証されていないユーザーです');
       }
 
       const image = await ImageModel.findByPk(imageId);
       if (!image) {
-        throw new NotFoundError('Image not found');
+        throw new NotFoundError('指定された画像が存在しません');
       }
       const imageData = await fetchImageFromS3(image.storagePath);
       res.set('Content-Type', image.contentType);
@@ -185,17 +191,29 @@ router.get(
  *       '204':
  *         description: 画像が正常に削除されました
  *       '400':
- *         description: リクエストが不正です
+ *         description: Image ID が指定されていない、またはリクエストが不正です
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error400Response'
+ *       '401':
+ *         description: 認証されていないユーザーです
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error401Response'
  *       '404':
- *         description: 指定された画像が見つかりません
+ *         description: 指定された画像が存在しません
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error404Response'
+ *       '500':
+ *         description: 画像を削除できませんでした
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
  */
 router.delete(
   '/:imageId',
@@ -203,16 +221,16 @@ router.delete(
     const { imageId } = req.params;
     try {
       if (!imageId) {
-        throw new ValidationError('Image ID is required');
+        throw new ValidationError('Image ID が指定されていません');
       }
       // TODO: 画像のアクセス権を確認するロジックを追加(例: ユーザーがその画像にアクセスできるかどうか)
       // ここでは単純にユーザーが認証されているかどうかを確認
       if (!req.user) {
-        throw new UnauthorizedError('Unauthorized');
+        throw new UnauthorizedError('認証されていないユーザーです');
       }
       const image = await ImageModel.findByPk(imageId);
       if (!image) {
-        throw new NotFoundError('Image not found');
+        throw new NotFoundError('指定された画像が存在しません');
       }
       await deleteImageFromS3(image.storagePath);
       // 画像のメタデータをDBから削除

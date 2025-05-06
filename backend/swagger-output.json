@@ -576,7 +576,7 @@
             }
           },
           "400": {
-            "description": "リクエストが不正です",
+            "description": "アップロード対象の画像が存在しない、またはサポートされていない画像形式です",
             "content": {
               "application/json": {
                 "schema": {
@@ -586,17 +586,17 @@
             }
           },
           "401": {
-            "description": "認証されていません",
+            "description": "認証されていないユーザーです",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error400Response"
+                  "$ref": "#/components/schemas/Error401Response"
                 }
               }
             }
           },
           "500": {
-            "description": "サーバーエラー",
+            "description": "画像のアップロードに失敗しました",
             "content": {
               "application/json": {
                 "schema": {
@@ -639,7 +639,7 @@
             }
           },
           "400": {
-            "description": "リクエストが不正です",
+            "description": "Image ID が指定されていない、またはリクエストが不正です",
             "content": {
               "application/json": {
                 "schema": {
@@ -648,8 +648,18 @@
               }
             }
           },
+          "401": {
+            "description": "認証されていないユーザーです",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Response"
+                }
+              }
+            }
+          },
           "404": {
-            "description": "指定された画像が見つかりません",
+            "description": "指定された画像が存在しません",
             "content": {
               "application/json": {
                 "schema": {
@@ -659,7 +669,7 @@
             }
           },
           "500": {
-            "description": "サーバーエラー",
+            "description": "画像を取得できませんでした",
             "content": {
               "application/json": {
                 "schema": {
@@ -692,7 +702,7 @@
             "description": "画像が正常に削除されました"
           },
           "400": {
-            "description": "リクエストが不正です",
+            "description": "Image ID が指定されていない、またはリクエストが不正です",
             "content": {
               "application/json": {
                 "schema": {
@@ -701,12 +711,32 @@
               }
             }
           },
+          "401": {
+            "description": "認証されていないユーザーです",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Response"
+                }
+              }
+            }
+          },
           "404": {
-            "description": "指定された画像が見つかりません",
+            "description": "指定された画像が存在しません",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "画像を削除できませんでした",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
                 }
               }
             }
