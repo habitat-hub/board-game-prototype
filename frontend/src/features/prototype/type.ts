@@ -106,7 +106,7 @@ export interface AddPartProps {
 
 // PartPropertyにImageを追加した型
 export interface PartPropertyWithImage extends PartProperty {
-  Image?: Image; // Imageはオプショナル
+  image?: Image; // Imageはオプショナル
 }
 
 // プロパティ更新用の型定義（imageIdにnullを許容）
