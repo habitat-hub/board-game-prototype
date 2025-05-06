@@ -108,3 +108,8 @@ export interface AddPartProps {
 export interface PartPropertyWithImage extends PartProperty {
   Image?: Image; // Imageはオプショナル
 }
+
+// プロパティ更新用の型定義（imageIdにnullを許容）
+export type PartPropertyUpdate = Omit<Partial<PartProperty>, 'imageId'> & {
+  imageId?: string | null;
+};

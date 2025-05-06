@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 
 import { Part, PartProperty } from '@/api/types';
 import { useSocket } from '@/features/prototype/hooks/useSocket';
+import { PartPropertyUpdate } from '@/features/prototype/type';
 
 // パーツのプロパティの型定義(metadataを除いた型)
 type PartPropertiesWithoutMetadata = Omit<
@@ -30,7 +31,7 @@ export type PartAction =
       payload: {
         partId: number;
         updatePart?: Partial<Part>;
-        updateProperties?: Partial<PartProperty>[];
+        updateProperties?: Partial<PartPropertyUpdate>[];
         isFlipped?: boolean;
       };
     }

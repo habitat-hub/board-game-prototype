@@ -16,7 +16,11 @@ import TextIconButton from '@/components/atoms/TextIconButton';
 import TextInput from '@/components/atoms/TextInput';
 import { COLORS, TEXT_COLORS } from '@/features/prototype/const';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
-import { AddPartProps, PartPropertyWithImage } from '@/features/prototype/type';
+import {
+  AddPartProps,
+  PartPropertyUpdate,
+  PartPropertyWithImage,
+} from '@/features/prototype/type';
 import { saveImageToIndexedDb } from '@/utils/db';
 
 export default function PartPropertySidebar({
@@ -139,7 +143,7 @@ export default function PartPropertySidebar({
    * プロパティの値が変化している場合のみ更新処理を呼ぶ
    * @param property - 更新するプロパティ
    */
-  const handleUpdateProperty = (property: Partial<PartProperty>) => {
+  const handleUpdateProperty = (property: Partial<PartPropertyUpdate>) => {
     // 選択中のパーツが存在しない、またはプロパティが存在しない場合
     if (!selectedPart || !currentProperty) return;
 
