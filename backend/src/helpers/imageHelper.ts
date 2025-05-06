@@ -28,7 +28,7 @@ export function cleanFileName(originalName: string): string {
     extension: lowerExtension,
   });
   // 結合
-  return `${sanitizedBase}${lowerExtension}`;
+  return finalName;
 }
 
 /**
