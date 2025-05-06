@@ -20,6 +20,11 @@ export class UnauthorizedError extends CustomError {
   }
 }
 
+export class ForbiddenError extends CustomError {
+  constructor(message: string) {
+    super(message, 403); // 403 Forbidden
+  }
+}
 export class NotFoundError extends CustomError {
   constructor(message: string) {
     super(message, 404); // 404 Not Found
@@ -29,5 +34,11 @@ export class NotFoundError extends CustomError {
 export class InternalServerError extends CustomError {
   constructor(message: string) {
     super(message, 500); // 500 Internal Server Error
+  }
+}
+
+export class ServiceUnavailableError extends CustomError {
+  constructor(message: string) {
+    super(message, 503); // 503 Service Unavailable
   }
 }
