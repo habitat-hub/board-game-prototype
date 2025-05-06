@@ -1,11 +1,6 @@
 import { PutObjectCommand, PutObjectCommandOutput } from '@aws-sdk/client-s3';
 import s3Client from '../config/s3Client';
-import {
-  ValidationError,
-  InternalServerError,
-  ServiceUnavailableError,
-  UnauthorizedError,
-} from '../errors/CustomError';
+import { ValidationError, InternalServerError } from '../errors/CustomError';
 import {
   cleanFileName,
   generateS3KeyFromFilename,
@@ -16,6 +11,7 @@ import {
   IMAGE_MAX_SIZE_MB,
 } from '../constants/fileConstants';
 import ImageModel from '../models/Image';
+import { handleAWSError } from '../utils/awsErrorHandler';
 
 const bucketName = process.env.AWS_S3_BUCKET_NAME!;
 
@@ -69,19 +65,7 @@ export const uploadImageToS3 = async (
     };
   } catch (error: any) {
     // AWS SDKのエラーをハンドリング
-    switch (error.name) {
-      case 'AccessDenied':
-        throw new UnauthorizedError('S3へのアクセスが拒否されました');
-      case 'InvalidBucketName':
-        throw new ValidationError('無効なバケット名です');
-      case 'NetworkingError':
-        throw new InternalServerError('ネットワークエラーが発生しました');
-      case 'ServiceUnavailable':
-        throw new ServiceUnavailableError('S3サービスが一時的に利用できません');
-      default:
-        throw new InternalServerError(
-          `S3へのアップロード中にエラーが発生しました: ${error.message}`
-        );
-    }
+    handleAWSError(error);
+    throw error; // ここに到達することはないが、TypeScriptの型チェックを通すために必要
   }
 };
