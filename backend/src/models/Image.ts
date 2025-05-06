@@ -38,6 +38,7 @@ ImageModel.init(
     storagePath: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
     },
     contentType: {
       type: DataTypes.STRING,
@@ -59,6 +60,12 @@ ImageModel.init(
   {
     sequelize,
     modelName: 'Image',
+    indexes: [
+      {
+        fields: ['storagePath'],
+        unique: true,
+      },
+    ],
   }
 );
 
