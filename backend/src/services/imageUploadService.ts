@@ -8,6 +8,7 @@ import {
 import {
   IMAGE_ALLOWED_MIME_TYPES,
   IMAGE_MAX_SIZE,
+  IMAGE_MAX_SIZE_MB,
 } from '../constants/fileConstants';
 
 const bucketName = process.env.AWS_S3_BUCKET_NAME!;
@@ -20,7 +21,9 @@ const bucketName = process.env.AWS_S3_BUCKET_NAME!;
 export const uploadImageToS3 = async (file: Express.Multer.File) => {
   //最低限のチェック（ファイルサイズ、MIMEタイプ）
   if (file.size > IMAGE_MAX_SIZE) {
-    throw new ValidationError('ファイルサイズが大きすぎます（最大10MBまで）');
+    throw new ValidationError(
+      `ファイルサイズが大きすぎます（最大$${IMAGE_MAX_SIZE_MB}MBまで）`
+    );
   }
 
   if (!IMAGE_ALLOWED_MIME_TYPES.includes(file.mimetype)) {
