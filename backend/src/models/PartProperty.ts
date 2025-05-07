@@ -1,6 +1,7 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
 import PartModel from './Part';
+import ImageModel from './Image';
 
 // パーツの設定値を管理
 class PartPropertyModel extends Model {
@@ -19,7 +20,7 @@ class PartPropertyModel extends Model {
   // テキスト色
   public textColor!: string;
   // 画像
-  public image?: string;
+  public imageId?: string;
 }
 
 PartPropertyModel.init(
@@ -54,8 +55,12 @@ PartPropertyModel.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    image: {
-      type: DataTypes.STRING,
+    imageId: {
+      type: DataTypes.UUID,
+      references: {
+        model: 'Images',
+        key: 'id',
+      },
     },
   },
   {
@@ -73,6 +78,16 @@ PartPropertyModel.belongsTo(PartModel, {
 PartModel.hasMany(PartPropertyModel, {
   foreignKey: 'partId',
   as: 'partProperties',
+});
+
+PartPropertyModel.belongsTo(ImageModel, {
+  foreignKey: 'imageId',
+  onDelete: 'SET NULL',
+});
+
+ImageModel.hasMany(PartPropertyModel, {
+  foreignKey: 'imageId',
+  as: 'images',
 });
 
 export default PartPropertyModel;

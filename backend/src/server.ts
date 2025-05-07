@@ -21,7 +21,10 @@ import UserModel from './models/User';
 import authRoutes from './routes/auth';
 import prototypeRoutes from './routes/prototype';
 import userRoutes from './routes/user';
+import imageRoutes from './routes/image';
 import handlePrototype from './socket/prototypeHandler';
+
+import { errorHandler } from './middlewares/errorHandler';
 
 const app = express();
 const server = http.createServer(app);
@@ -163,6 +166,10 @@ passport.deserializeUser((id: number | number, done) => {
 app.use('/auth', authRoutes);
 app.use('/api/prototypes', prototypeRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/images', imageRoutes);
+
+// エラーハンドリングミドルウェアの適用
+app.use(errorHandler);
 
 // Socket.io接続
 io.on('connection', (socket: Socket) => {

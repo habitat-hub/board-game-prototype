@@ -1,4 +1,4 @@
-import { Part, PartProperty } from '@/api/types';
+import { Part, PartProperty, Image } from '@/api/types';
 
 // Partコンポーネントの外部から呼び出せる関数のインターフェース
 export interface PartHandle {
@@ -103,3 +103,13 @@ export interface AddPartProps {
   >;
   properties: Omit<PartProperty, 'id' | 'createdAt' | 'updatedAt' | 'partId'>[];
 }
+
+// PartPropertyにImageを追加した型
+export interface PartPropertyWithImage extends PartProperty {
+  image?: Image; // Imageはオプショナル
+}
+
+// プロパティ更新用の型定義（imageIdにnullを許容）
+export type PartPropertyUpdate = Omit<Partial<PartProperty>, 'imageId'> & {
+  imageId?: string | null;
+};

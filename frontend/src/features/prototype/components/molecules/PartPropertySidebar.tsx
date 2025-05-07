@@ -4,9 +4,11 @@
 
 'use client';
 
-import React, { useMemo } from 'react';
-import { FaRegCopy, FaRegTrashAlt } from 'react-icons/fa';
+import axios from 'axios';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { FaRegCopy, FaRegTrashAlt, FaImage } from 'react-icons/fa';
 
+import { useImages } from '@/api/hooks/useImages';
 import { Part, PartProperty, Player } from '@/api/types';
 import Dropdown from '@/components/atoms/Dropdown';
 import NumberInput from '@/components/atoms/NumberInput';
@@ -14,7 +16,12 @@ import TextIconButton from '@/components/atoms/TextIconButton';
 import TextInput from '@/components/atoms/TextInput';
 import { COLORS, TEXT_COLORS } from '@/features/prototype/const';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
-import { AddPartProps } from '@/features/prototype/type';
+import {
+  AddPartProps,
+  PartPropertyUpdate,
+  PartPropertyWithImage,
+} from '@/features/prototype/type';
+import { saveImageToIndexedDb } from '@/utils/db';
 
 export default function PartPropertySidebar({
   players,
@@ -31,13 +38,18 @@ export default function PartPropertySidebar({
   // パーツ
   parts: Part[];
   // パーツのプロパティ
-  properties: PartProperty[];
+  properties: PartPropertyWithImage[];
   // パーツを追加時の処理
   onAddPart: ({ part, properties }: AddPartProps) => void;
   // パーツを削除時の処理
   onDeletePart: () => void;
 }) {
+  const [uploadedImage, setUploadedImage] = useState<{
+    displayName: string;
+  } | null>(null); // アップロードした画像の情報を管理
+
   const { dispatch } = usePartReducer();
+  const { uploadImage } = useImages();
   // 選択中のパーツ、プロパティ
   const { selectedPart, selectedPartProperties } = useMemo(() => {
     return {
@@ -58,6 +70,19 @@ export default function PartPropertySidebar({
     );
   }, [selectedPart, selectedPartProperties]);
 
+  useEffect(() => {
+    // 選択中のプロパティの画像情報を取得
+    if (currentProperty?.image) {
+      setUploadedImage(() => {
+        if (!currentProperty.image) return null;
+        return {
+          displayName: currentProperty.image.displayName,
+        };
+      });
+    } else {
+      setUploadedImage(null);
+    }
+  }, [currentProperty]);
   /**
    * パーツを複製する
    */
@@ -100,14 +125,14 @@ export default function PartPropertySidebar({
       PartProperty,
       'id' | 'partId' | 'createdAt' | 'updatedAt'
     >[] = selectedPartProperties.map(
-      ({ side, name, description, color, image, textColor }) => {
+      ({ side, name, description, color, imageId, textColor }) => {
         return {
           side,
           name,
           description,
           color,
           textColor,
-          image,
+          imageId,
         };
       }
     );
@@ -118,7 +143,7 @@ export default function PartPropertySidebar({
    * プロパティの値が変化している場合のみ更新処理を呼ぶ
    * @param property - 更新するプロパティ
    */
-  const handleUpdateProperty = (property: Partial<PartProperty>) => {
+  const handleUpdateProperty = (property: Partial<PartPropertyUpdate>) => {
     // 選択中のパーツが存在しない、またはプロパティが存在しない場合
     if (!selectedPart || !currentProperty) return;
 
@@ -136,6 +161,66 @@ export default function PartPropertySidebar({
         updateProperties: [updatedProperty],
       },
     });
+  };
+
+  // ファイル入力要素を参照
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ファイルアップロードボタンがクリックされた時の処理
+  const handleFileUploadClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click(); // ファイル選択ダイアログを開く
+    }
+  };
+
+  // ファイルクリアボタンがクリックされた時の処理
+  const handleFileClearClick = () => {
+    // 他のパーツで画像を使用している可能性があるのでここで画像の削除はできない
+    // imageIdの紐付けのみクリアする
+    setUploadedImage(null); // アップロードした画像をクリア
+    handleUpdateProperty({ imageId: null }); // プロパティから画像IDを削除
+  };
+
+  /**
+   * 画像をアップロードする
+   * - ファイル選択ダイアログで選択された画像を取得し、アップロードする
+   * - アップロードが成功した場合、IndexedDBに画像を保存し、プロパティを更新する
+   * @param event - イベント
+   */
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const image = event.target?.files ? event.target.files[0] : null;
+    if (!image) return;
+
+    const formData = new FormData();
+    formData.append('image', image);
+
+    try {
+      const response = await uploadImage(formData);
+      if (response.id) {
+        // IndexedDBに画像を保存
+        await saveImageToIndexedDb(response.id, image);
+        // アップロードした画像の情報を状態に保存(今後の拡張を考慮して、オブジェクトで管理)
+        setUploadedImage({
+          displayName: response.displayName,
+        });
+        // プロパティを更新
+        handleUpdateProperty({ imageId: response.id });
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        // Axiosエラーの場合の処理
+        console.error('Axios Error:', {
+          message: error.message,
+          status: error.response?.status,
+          data: error.response?.data,
+        });
+      } else {
+        // その他のエラーの場合の処理
+        console.error('Unexpected Error:', error);
+      }
+    }
   };
 
   return (
@@ -307,6 +392,48 @@ export default function PartPropertySidebar({
                   <span className="text-sm text-gray-600">
                     カスタムカラーを選択
                   </span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <p className="text-[9px] font-medium text-gray-500">画像</p>
+                <div className="flex items-center w-full px-2 mb-2 gap-2">
+                  {uploadedImage ? (
+                    <>
+                      {/* アップロードした画像のdisplayNameを表示 */}
+                      <span
+                        className="text-xs text-gray-700 truncate w-1/2"
+                        title={uploadedImage.displayName}
+                      >
+                        {uploadedImage.displayName}
+                      </span>
+                      {/* 画像クリアボタン */}
+                      <button
+                        onClick={handleFileClearClick}
+                        className="flex items-center justify-center w-6 h-6 text-red-600 bg-red-100 border border-red-300 rounded hover:bg-red-200"
+                        title="画像をクリア"
+                      >
+                        <FaRegTrashAlt className="h-3 w-3" />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      {/* 画像アップロード */}
+                      <TextIconButton
+                        text="アップロード"
+                        icon={<FaImage className="h-3 w-3" />}
+                        isSelected={false}
+                        onClick={handleFileUploadClick}
+                      />
+                    </>
+                  )}
+                  {/* 非表示のファイル入力要素。画像アップロードボタンのクリックでこの要素がクリックされ、ファイル選択ダイアログが開く */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={handleImageUpload}
+                  />
                 </div>
               </div>
             </div>
