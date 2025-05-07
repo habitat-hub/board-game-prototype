@@ -15,7 +15,6 @@ import { FaBoxOpen, FaPenToSquare, FaPlus } from 'react-icons/fa6';
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Prototype } from '@/api/types';
 import { UserContext } from '@/contexts/UserContext';
-import { PLAYERS_MIN, PLAYERS_MAX } from '@/features/prototype/const';
 import formatDate from '@/utils/dateFormat';
 
 import EmptyPrototypeList from '../molecules/EmptyPrototypeList';
@@ -27,10 +26,7 @@ type SortOrder = 'asc' | 'desc';
  * PrototypeListコンポーネントで使用される各種Stateの説明:
  *
  * @state nameEditingId - 現在プロトタイプ名を編集中のIDを管理するState。
- * @state playersEditingId - 現在プレイヤー人数を編集中のIDを管理するState。
  * @state editedName - 編集中のプロトタイプの名前を保持するState。
- * @state editedMinPlayers - 編集中のプロトタイプの最小プレイヤー数を保持するState。
- * @state editedMaxPlayers - 編集中のプロトタイプの最大プレイヤー数を保持するState。
  * @state editPrototypes - 編集可能なプロトタイプのリストを保持するState。
  * @state sort - プロトタイプのソート条件（キーと順序）を管理するState。
  * @state isLoading - データ取得中のローディング状態を管理するState。
@@ -43,13 +39,8 @@ const PrototypeList: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   // 編集中のプロトタイプのIDを管理するState
   const [nameEditingId, setNameEditingId] = useState<string>('');
-  const [playersEditingId, setPlayersEditingId] = useState<string>('');
   // 編集中のプロトタイプの名前を保持するState
   const [editedName, setEditedName] = useState<string>('');
-  // 編集中のプロトタイプの最小プレイヤー数を保持するState
-  const [editedMinPlayers, setEditedMinPlayers] = useState<number>(0);
-  // 編集中のプロトタイプの最大プレイヤー数を保持するState
-  const [editedMaxPlayers, setEditedMaxPlayers] = useState<number>(0);
   // 編集用プロトタイプ
   const [editPrototypes, setEditPrototypes] = useState<Prototype[]>([]);
   // ソート
@@ -78,28 +69,6 @@ const PrototypeList: React.FC = () => {
   };
 
   /**
-   * プレイヤー人数の編集モードを切り替える関数
-   * @param id プロトタイプID
-   * @param minPlayers 最小プレイヤー数
-   * @param maxPlayers 最大プレイヤー数
-   */
-  const handlePlayersEditToggle = (
-    id: string,
-    minPlayers: number,
-    maxPlayers: number
-  ) => {
-    if (playersEditingId === id) {
-      // 同じ項目を再度押した場合は編集モードを解除
-      setPlayersEditingId('');
-    } else {
-      // 編集モードにする
-      setPlayersEditingId(id);
-      setEditedMinPlayers(minPlayers);
-      setEditedMaxPlayers(maxPlayers);
-    }
-  };
-
-  /**
    * プロトタイプ名の編集を完了する処理
    */
   const handleNameEditComplete = async () => {
@@ -116,8 +85,6 @@ const PrototypeList: React.FC = () => {
       // 名前だけを更新
       await updatePrototype(nameEditingId, {
         name: editedName,
-        minPlayers: prototype.minPlayers,
-        maxPlayers: prototype.maxPlayers,
       });
 
       // ローカルの状態を更新
@@ -131,55 +98,6 @@ const PrototypeList: React.FC = () => {
     } finally {
       // 編集モードを解除
       setNameEditingId('');
-    }
-  };
-
-  /**
-   * プレイヤー人数の編集を完了する処理
-   */
-  const handlePlayersEditComplete = async () => {
-    // プレイヤー人数のバリデーション
-    if (editedMinPlayers < PLAYERS_MIN || editedMinPlayers > PLAYERS_MAX) {
-      alert(
-        `最小プレイヤー数は${PLAYERS_MIN}人以上、${PLAYERS_MAX}人以下に設定してください`
-      );
-      return;
-    }
-    if (editedMaxPlayers < editedMinPlayers || editedMaxPlayers > PLAYERS_MAX) {
-      alert(
-        `最大プレイヤー数は最小プレイヤー数以上、${PLAYERS_MAX}人以下に設定してください`
-      );
-      return;
-    }
-
-    try {
-      const prototype = editPrototypes.find((p) => p.id === playersEditingId);
-      if (!prototype) return;
-
-      // プレイヤー人数だけを更新
-      await updatePrototype(playersEditingId, {
-        name: prototype.name,
-        minPlayers: editedMinPlayers,
-        maxPlayers: editedMaxPlayers,
-      });
-
-      // ローカルの状態を更新
-      setEditPrototypes((currentPrototypes) =>
-        currentPrototypes.map((p) =>
-          p.id === playersEditingId
-            ? {
-                ...p,
-                minPlayers: editedMinPlayers,
-                maxPlayers: editedMaxPlayers,
-              }
-            : p
-        )
-      );
-    } catch (error) {
-      console.error('Error updating player count:', error);
-    } finally {
-      // 編集モードを解除
-      setPlayersEditingId('');
     }
   };
 
@@ -323,7 +241,6 @@ const PrototypeList: React.FC = () => {
                 userId,
               }) => {
                 const isNameEditing = nameEditingId === id; // 現在の項目が編集中かどうかを判定
-                const isPlayersEditing = playersEditingId === id; // 現在の項目が編集中かどうかを判定
                 return (
                   <tr key={id}>
                     <td className="p-4">
@@ -369,80 +286,14 @@ const PrototypeList: React.FC = () => {
                       )}
                     </td>
                     <td className="p-4">
-                      {isPlayersEditing ? (
-                        <form
-                          className="flex items-center gap-2"
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            handlePlayersEditComplete();
-                          }}
-                        >
-                          <input
-                            type="number"
-                            value={
-                              editedMinPlayers === 0 ? '' : editedMinPlayers
-                            }
-                            onChange={(e) =>
-                              setEditedMinPlayers(
-                                e.target.value === ''
-                                  ? 0
-                                  : Number(e.target.value)
-                              )
-                            }
-                            className="w-16 p-1 border border-wood-light rounded"
-                            autoFocus
-                            min={PLAYERS_MIN}
-                            max={PLAYERS_MAX}
-                          />
-                          <span>~</span>
-                          <input
-                            type="number"
-                            value={
-                              editedMaxPlayers === 0 ? '' : editedMaxPlayers
-                            }
-                            onChange={(e) =>
-                              setEditedMaxPlayers(
-                                e.target.value === ''
-                                  ? 0
-                                  : Number(e.target.value)
-                              )
-                            }
-                            className="w-16 p-1 border border-wood-light rounded"
-                            min={PLAYERS_MIN}
-                            max={PLAYERS_MAX}
-                          />
-                          <span className="text-wood-dark">人</span>
-                          <button
-                            type="submit"
-                            className="ml-2 p-1.5 text-green-600 hover:text-green-700 rounded-md border border-green-500 hover:bg-green-50 transition-colors"
-                            title="編集完了"
-                          >
-                            <FaCheck className="w-3.5 h-3.5" />
-                          </button>
-                        </form>
-                      ) : (
-                        <div className="flex items-center">
-                          <span className="text-wood-dark">
-                            {minPlayers !== maxPlayers
-                              ? `${minPlayers} ~ ${maxPlayers}`
-                              : `${minPlayers}`}
-                          </span>
-                          <span className="text-wood-dark">人</span>
-                          <button
-                            onClick={() =>
-                              handlePlayersEditToggle(
-                                id,
-                                minPlayers,
-                                maxPlayers
-                              )
-                            }
-                            className="ml-2 p-1 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors"
-                            title="プレイヤー人数を編集"
-                          >
-                            <FaPenToSquare className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
+                      <div className="flex items-center">
+                        <span className="text-wood-dark">
+                          {minPlayers !== maxPlayers
+                            ? `${minPlayers} ~ ${maxPlayers}`
+                            : `${minPlayers}`}
+                        </span>
+                        <span className="text-wood-dark">人</span>
+                      </div>
                     </td>
                     <td className="p-4 text-sm text-wood">
                       {formatDate(createdAt)}
