@@ -87,6 +87,47 @@
           "name"
         ]
       },
+      "Image": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "storagePath": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "fileSize": {
+            "type": "integer"
+          },
+          "uploaderUserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "displayName",
+          "storagePath",
+          "contentType",
+          "fileSize",
+          "uploaderUserId",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
       "Part": {
         "type": "object",
         "properties": {
@@ -189,8 +230,9 @@
           "textColor": {
             "type": "string"
           },
-          "image": {
-            "type": "string"
+          "imageId": {
+            "type": "string",
+            "format": "uuid"
           },
           "createdAt": {
             "type": "string"
@@ -206,7 +248,6 @@
           "description",
           "color",
           "textColor",
-          "image",
           "createdAt",
           "updatedAt"
         ]
@@ -491,6 +532,211 @@
                       "type": "string"
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/images": {
+      "post": {
+        "tags": [
+          "Images"
+        ],
+        "summary": "画像アップロード",
+        "description": "S3に画像をアップロードし、画像のメタデータを保存します。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "アップロードする画像ファイル"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "画像が正常にアップロードされました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Image"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "アップロード対象の画像が存在しない、またはサポートされていない画像形式です",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証されていないユーザーです",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "画像のアップロードに失敗しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/images/{imageId}": {
+      "get": {
+        "tags": [
+          "Images"
+        ],
+        "summary": "画像取得",
+        "description": "S3から指定された画像を取得し、画像データを直接返します。",
+        "parameters": [
+          {
+            "name": "imageId",
+            "in": "path",
+            "required": true,
+            "description": "取得する画像のID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "画像が正常に取得されました",
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Image ID が指定されていない、またはリクエストが不正です",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証されていないユーザーです",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "指定された画像が存在しません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "画像を取得できませんでした",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Images"
+        ],
+        "summary": "画像削除",
+        "description": "S3から指定された画像を削除します。",
+        "parameters": [
+          {
+            "name": "imageId",
+            "in": "path",
+            "required": true,
+            "description": "削除する画像のID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "画像が正常に削除されました"
+          },
+          "400": {
+            "description": "Image ID が指定されていない、またはリクエストが不正です",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証されていないユーザーです",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "指定された画像が存在しません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "画像を削除できませんでした",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
                 }
               }
             }
@@ -1315,6 +1561,10 @@
     {
       "name": "Auth",
       "description": "認証関連のAPI"
+    },
+    {
+      "name": "Images",
+      "description": "画像管理API"
     },
     {
       "name": "Prototypes",

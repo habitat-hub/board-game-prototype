@@ -14,6 +14,10 @@ import {
   Error400Response,
   Error404Response,
   Error500Response,
+  ImagesCreateData,
+  ImagesCreatePayload,
+  ImagesDeleteData,
+  ImagesDetailData,
   PrototypesCreateData,
   PrototypesCreatePayload,
   PrototypesDeleteData,
@@ -40,6 +44,58 @@ import { ContentType, HttpClient, RequestParams } from "./http-client";
 export class Api<
   SecurityDataType = unknown,
 > extends HttpClient<SecurityDataType> {
+  /**
+   * @description S3に画像をアップロードし、画像のメタデータを保存します。
+   *
+   * @tags Images
+   * @name ImagesCreate
+   * @summary 画像アップロード
+   * @request POST:/api/images
+   */
+  imagesCreate = (data: ImagesCreatePayload, params: RequestParams = {}) =>
+    this.request<ImagesCreateData, Error400Response | Error500Response>({
+      path: `/api/images`,
+      method: 'POST',
+      body: data,
+      type: ContentType.FormData,
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description S3から指定された画像を取得し、画像データを直接返します。
+   *
+   * @tags Images
+   * @name ImagesDetail
+   * @summary 画像取得
+   * @request GET:/api/images/{imageId}
+   */
+  imagesDetail = (imageId: string, params: RequestParams = {}) =>
+    this.request<
+      ImagesDetailData,
+      Error400Response | Error404Response | Error500Response
+    >({
+      path: `/api/images/${imageId}`,
+      method: 'GET',
+      format: 'blob',
+      ...params,
+    });
+  /**
+   * @description S3から指定された画像を削除します。
+   *
+   * @tags Images
+   * @name ImagesDelete
+   * @summary 画像削除
+   * @request DELETE:/api/images/{imageId}
+   */
+  imagesDelete = (imageId: string, params: RequestParams = {}) =>
+    this.request<
+      ImagesDeleteData,
+      Error400Response | Error404Response | Error500Response
+    >({
+      path: `/api/images/${imageId}`,
+      method: 'DELETE',
+      ...params,
+    });
   /**
    * @description ユーザーがアクセス可能なプロトタイプの一覧を取得します。
    *

@@ -41,6 +41,19 @@ export interface Access {
   name: string;
 }
 
+export interface Image {
+  /** @format uuid */
+  id: string;
+  displayName: string;
+  storagePath: string;
+  contentType: string;
+  fileSize: number;
+  /** @format uuid */
+  uploaderUserId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Part {
   id: number;
   type: "token" | "card" | "hand" | "deck" | "area";
@@ -68,7 +81,8 @@ export interface PartProperty {
   description: string;
   color: string;
   textColor: string;
-  image: string;
+  /** @format uuid */
+  imageId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -140,6 +154,21 @@ export interface UserListData {
   id?: string;
   username?: string;
 }
+
+export interface ImagesCreatePayload {
+  /**
+   * アップロードする画像ファイル
+   * @format binary
+   */
+  image?: File;
+}
+
+export type ImagesCreateData = Image;
+
+/** @format binary */
+export type ImagesDetailData = File;
+
+export type ImagesDeleteData = any;
 
 export type PrototypesListData = Prototype[];
 
