@@ -1,4 +1,5 @@
 import axiosInstance from '@/api/client';
+
 import { ImagesCreateData, ImagesDeleteData } from '../types';
 
 export const imagesService = {
