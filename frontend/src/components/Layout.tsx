@@ -4,10 +4,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import { GiWoodenCrate } from 'react-icons/gi';
 
 import { useAuth } from '@/api/hooks/useAuth';
+import MenuItem from '@/components/atoms/MenuItem';
 import { WoodenCrateBackground } from '@/features/prototype/components/atoms/WoodenCrateBackground';
 import { useUser } from '@/hooks/useUser';
+
 // フッターを非表示にしたいURLパターン
 const hideFooterPattern = /^\/prototypes\/[a-f0-9-]+\/versions\/[a-f0-9-]+\//;
+// フィードバックフォームのURL
+const FEEDBACK_FORM_URL = 'https://forms.gle/XjMV2WgFRCJg7cHj7';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -29,7 +33,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   /**
    * ログアウトボタンの外側をクリックしたらログアウトボタンを非表示にする
    */
-  const handleClickLogoutOutside = (event: MouseEvent) => {
+  const handleClickLogoutOutside = (event: MouseEvent): void => {
     // Refが存在しない、またはRefが存在してもクリックされた要素がRefの要素の場合（この場合ログアウト処理が走る）
     if (
       !logoutRef.current ||
@@ -46,7 +50,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     return () => {
       document.removeEventListener('mousedown', handleClickLogoutOutside);
     };
-  }, [logoutRef]);
+  }, []);
 
   /**
    * ログアウトする
@@ -94,13 +98,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {user.username}
             </button>
             {showLogout && (
-              <button
-                onClick={handleLogout}
-                className="absolute right-0 mt-2 bg-header-light text-wood-lightest p-2 rounded shadow-lg whitespace-nowrap hover:bg-header hover:text-wood-light transition-all duration-200"
-                style={{ minWidth: '80px', top: '100%' }}
-              >
-                ログアウト
-              </button>
+              <div className="absolute right-0 top-full w-32 flex flex-col mt-2 shadow-md rounded-lg overflow-hidden bg-content border border-wood-lightest/20">
+                <MenuItem href={FEEDBACK_FORM_URL} text="フィードバック" />
+                <MenuItem onClick={handleLogout} text="ログアウト" />
+              </div>
             )}
           </div>
         )}

@@ -12,7 +12,7 @@ import {
 import type { CursorInfo } from '../types/cursor';
 
 // カーソル情報のマップ
-const cursorMap: Record<string, CursorInfo> = {};
+const cursorMap: Record<string, Record<string, CursorInfo>> = {};
 
 // socket.dataの型定義
 interface SocketData {
@@ -100,7 +100,7 @@ function handleJoinPrototype(socket: Socket) {
         socket.emit('UPDATE_PLAYERS', players);
         socket.emit('UPDATE_PARTS', partsAndProperties);
         socket.emit('UPDATE_CURSORS', {
-          cursors: cursorMap,
+          cursors: cursorMap[prototypeVersionId] || {},
         });
       } catch (error) {
         console.error('プロトタイプの参加に失敗しました。', error);
@@ -145,7 +145,14 @@ function handleAddPart(socket: Socket, io: Server) {
         });
 
         await Promise.all(propertyCreationPromises);
+
         await emitUpdatedPartsAndProperties(io, prototypeVersionId);
+
+        // 新しいパーツのIDをクライアントに送信
+        // これによりクライアント側で新パーツをすぐ参照できるようになる
+        // emitUpdatedPartsAndPropertiesの後にemitしないと
+        // パーツを正しく参照できず機能しない
+        socket.emit('ADD_PART_RESPONSE', { partId: newPart.id });
       } catch (error) {
         console.error('パーツの追加に失敗しました。', error);
       }
@@ -443,9 +450,15 @@ function handleUpdateCursor(socket: Socket, io: Server) {
 
     if (!prototypeVersionId || !cursorInfo.userId) return;
 
-    cursorMap[cursorInfo.userId] = cursorInfo;
+    // プロトタイプごとのカーソル情報を初期化
+    if (!cursorMap[prototypeVersionId]) {
+      cursorMap[prototypeVersionId] = {};
+    }
+
+    cursorMap[prototypeVersionId][cursorInfo.userId] = cursorInfo;
+
     io.to(prototypeVersionId).emit('UPDATE_CURSORS', {
-      cursors: cursorMap,
+      cursors: cursorMap[prototypeVersionId],
     });
   });
 }
@@ -464,9 +477,9 @@ export default function handlePrototype(socket: Socket, io: Server) {
   socket.on('disconnect', () => {
     const { prototypeVersionId, userId } = socket.data as SocketData;
     if (prototypeVersionId && userId) {
-      delete cursorMap[userId];
+      delete cursorMap[prototypeVersionId]?.[userId];
       io.to(prototypeVersionId).emit('UPDATE_CURSORS', {
-        cursors: cursorMap,
+        cursors: cursorMap[prototypeVersionId] || {},
       });
     }
   });

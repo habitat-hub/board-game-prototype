@@ -785,9 +785,14 @@ router.post(
         return;
       }
 
+      // 現在の日時をフォーマットして名前に追加
+      const now = new Date();
+      const formattedDate = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const previewName = `${formattedDate}に作成したバージョン`;
+
       const previewPrototype = await createPrototype({
         userId: editPrototype.userId,
-        name: `${editPrototype.name} - プレビュー版`,
+        name: previewName,
         type: 'PREVIEW',
         groupId: editPrototype.groupId,
         editPrototypeDefaultVersionId: editPrototypeDefaultVersion.id,

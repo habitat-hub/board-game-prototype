@@ -146,6 +146,28 @@ const Part = forwardRef<PartHandle, PartProps>(
           rx={10}
         />
 
+        {/* リサイズ用のアイコン */}
+        {isActive && (
+          <g
+            style={{
+              transform: `translate(${part.position.x}px, ${part.position.y}px)`,
+            }}
+          >
+            {/* 右下 */}
+            <rect
+              data-resize-direction="southEast"
+              x={part.width - 8}
+              y={part.height - 8}
+              width="16"
+              height="16"
+              fill="white"
+              stroke="#94a3b8"
+              strokeWidth="1"
+              className="cursor-se-resize"
+            />
+          </g>
+        )}
+
         {/* パーツの情報オーバーレイ */}
         <foreignObject
           x={part.position.x}
@@ -204,10 +226,11 @@ const Part = forwardRef<PartHandle, PartProps>(
               strokeWidth: 2,
               transform: `
             translate(${part.position.x - 4}px, ${part.position.y - 4}px)
-            translate(${part.width / 2}px, ${part.height / 2}px)
+            translate(${part.width / 2 + 4}px, ${part.height / 2 + 4}px)
             rotateY(${!isFlippedNeeded && isFlipped ? 180 : 0}deg)
-            translate(${-part.width / 2}px, ${-part.height / 2}px)
+            translate(-${part.width / 2 + 4}px, -${part.height / 2 + 4}px)
           `,
+              transition: isReversing ? 'transform 0.6s' : 'none',
               transformStyle: 'preserve-3d',
             }}
             width={part.width + 8}
