@@ -72,11 +72,11 @@ export default function PartPropertySidebar({
 
   useEffect(() => {
     // 選択中のプロパティの画像情報を取得
-    if (currentProperty?.image) {
+    if (currentProperty?.Image) {
       setUploadedImage(() => {
-        if (!currentProperty.image) return null;
+        if (!currentProperty.Image) return null;
         return {
-          displayName: currentProperty.image.displayName,
+          displayName: currentProperty.Image.displayName,
         };
       });
     } else {
