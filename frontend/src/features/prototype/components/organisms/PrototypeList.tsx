@@ -85,8 +85,6 @@ const PrototypeList: React.FC = () => {
       // 名前だけを更新
       await updatePrototype(nameEditingId, {
         name: editedName,
-        minPlayers: prototype.minPlayers,
-        maxPlayers: prototype.maxPlayers,
       });
 
       // ローカルの状態を更新
