@@ -10,16 +10,24 @@ type MenuItemPropsBase = {
 type ClickableMenuItemProps = MenuItemPropsBase & {
   onClick: () => void;
   href?: never;
+  openInNewTab?: never;
 };
 
 type LinkMenuItemProps = MenuItemPropsBase & {
   onClick?: never;
   href: string;
+  // 新しいタブで開くかどうか（デフォルトはtrue）
+  openInNewTab?: boolean;
 };
 
 type MenuItemProps = ClickableMenuItemProps | LinkMenuItemProps;
 
-const MenuItem: React.FC<MenuItemProps> = ({ onClick, href, text }) => {
+const MenuItem: React.FC<MenuItemProps> = ({
+  onClick,
+  href,
+  text,
+  openInNewTab = true,
+}) => {
   const baseClasses =
     'block w-full text-center bg-header-light text-wood-lightest p-2 whitespace-nowrap hover:bg-header hover:text-wood-light transition-all duration-200';
 
@@ -27,8 +35,8 @@ const MenuItem: React.FC<MenuItemProps> = ({ onClick, href, text }) => {
     return (
       <a
         href={href}
-        target="_blank"
-        rel="noopener noreferrer"
+        target={openInNewTab ? '_blank' : undefined}
+        rel={openInNewTab ? 'noopener noreferrer' : undefined}
         className={baseClasses}
       >
         {text}
