@@ -8,7 +8,7 @@ import { IoArrowBack } from 'react-icons/io5';
 import { useUsers } from '@/api/hooks/useUsers';
 import { useUser } from '@/hooks/useUser';
 
-import ProfileSkeleton from './ProfileSkeleton';
+import ProfileEditSkeleton from './ProfileEditSkeleton';
 
 const ProfileEdit: React.FC = () => {
   const router = useRouter();
@@ -90,7 +90,7 @@ const ProfileEdit: React.FC = () => {
 
   // ページ読み込み中のスケルトン表示
   if (isPageLoading) {
-    return <ProfileSkeleton />;
+    return <ProfileEditSkeleton />;
   }
 
   return (

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ProfileSkeleton: React.FC = () => {
+const ProfileEditSkeleton: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto mt-16 relative">
       <div className="flex items-center gap-4 mb-8">
@@ -28,4 +28,4 @@ const ProfileSkeleton: React.FC = () => {
   );
 };
 
-export default ProfileSkeleton;
+export default ProfileEditSkeleton;
