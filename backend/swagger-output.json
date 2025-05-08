@@ -1556,7 +1556,7 @@
         }
       }
     },
-    "/api/users/{id}": {
+    "/api/users/{userId}": {
       "put": {
         "tags": [
           "Users"
@@ -1565,7 +1565,7 @@
         "description": "ユーザー名を更新します。",
         "parameters": [
           {
-            "name": "id",
+            "name": "userId",
             "in": "path",
             "required": true,
             "description": "更新するユーザーのID",

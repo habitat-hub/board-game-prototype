@@ -79,13 +79,13 @@ router.get(
 
 /**
  * @swagger
- * /api/users/{id}:
+ * /api/users/{userId}:
  *   put:
  *     tags: [Users]
  *     summary: ユーザー情報更新
  *     description: ユーザー名を更新します。
  *     parameters:
- *       - name: id
+ *       - name: userId
  *         in: path
  *         required: true
  *         description: 更新するユーザーのID

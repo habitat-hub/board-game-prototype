@@ -389,15 +389,15 @@ export class Api<
    * @tags Users
    * @name UsersUpdate
    * @summary ユーザー情報更新
-   * @request PUT:/api/users/{id}
+   * @request PUT:/api/users/{userId}
    */
   usersUpdate = (
-    id: string,
+    userId: string,
     data: UsersUpdatePayload,
     params: RequestParams = {}
   ) =>
     this.request<UsersUpdateData, void>({
-      path: `/api/users/${id}`,
+      path: `/api/users/${userId}`,
       method: 'PUT',
       body: data,
       type: ContentType.Json,
