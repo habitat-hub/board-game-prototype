@@ -18,7 +18,7 @@ const checkUserAccess = (req: Request, res: Response, next: NextFunction) => {
   const userId = req.params.userId;
   const currentUserId = (req.user as UserModel).id;
 
-  if (currentUserId !== userId) {
+  if (String(currentUserId) !== String(userId)) {
     return next(
       new UnauthorizedError('自分自身のプロフィールのみ更新可能です')
     );
