@@ -173,13 +173,9 @@ const GroupPrototypeList: React.FC = () => {
         return;
       }
 
-      const prototypeToEdit = prototype.edit.prototype;
-
       // プロトタイプ名を更新
       await updatePrototype(nameEditingId, {
         name: editedName,
-        minPlayers: prototypeToEdit.minPlayers,
-        maxPlayers: prototypeToEdit.maxPlayers,
       });
 
       // 一覧を更新
