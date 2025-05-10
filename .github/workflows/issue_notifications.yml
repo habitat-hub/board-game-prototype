@@ -16,10 +16,11 @@ jobs:
           NUMBER: ${{ github.event.issue.number }}
           TITLE: ${{ github.event.issue.title }}
           URL: ${{ github.event.issue.html_url }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const axios = require('axios');
+            const core = require('@actions/core');
             
             try {
               // 通知タイプに応じて文言と色を切り替え
@@ -49,5 +50,5 @@ jobs:
               console.log('Discord notification sent successfully');
             } catch (error) {
               console.error('Failed to send Discord notification:', error);
-              process.exit(1);
+              core.setFailed(error.message);
             }
