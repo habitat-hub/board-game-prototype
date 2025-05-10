@@ -38,6 +38,8 @@ import {
   PrototypesVersionsListData,
   UsersSearchListData,
   UsersSearchListParams,
+  UsersUpdateData,
+  UsersUpdatePayload,
 } from './data-contracts';
 import { ContentType, HttpClient, RequestParams } from './http-client';
 
@@ -378,6 +380,27 @@ export class Api<
       path: `/api/users/search`,
       method: 'GET',
       query: query,
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description ユーザー名を更新します。
+   *
+   * @tags Users
+   * @name UsersUpdate
+   * @summary ユーザー情報更新
+   * @request PUT:/api/users/{userId}
+   */
+  usersUpdate = (
+    userId: string,
+    data: UsersUpdatePayload,
+    params: RequestParams = {}
+  ) =>
+    this.request<UsersUpdateData, void>({
+      path: `/api/users/${userId}`,
+      method: 'PUT',
+      body: data,
+      type: ContentType.Json,
       format: 'json',
       ...params,
     });

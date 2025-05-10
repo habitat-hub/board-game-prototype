@@ -98,7 +98,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {user.username}
             </button>
             {showLogout && (
-              <div className="absolute right-0 top-full w-32 flex flex-col mt-2 shadow-md rounded-lg overflow-hidden bg-content border border-wood-lightest/20">
+              <div className="absolute right-0 top-full w-40 flex flex-col mt-2 shadow-md rounded-lg overflow-hidden bg-content border border-wood-lightest/20">
+                <MenuItem
+                  href="/profile/edit"
+                  text="プロフィール編集"
+                  openInNewTab={false}
+                />
                 <MenuItem href={FEEDBACK_FORM_URL} text="フィードバック" />
                 <MenuItem onClick={handleLogout} text="ログアウト" />
               </div>

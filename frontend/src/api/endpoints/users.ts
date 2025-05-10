@@ -1,5 +1,10 @@
 import axiosInstance from '@/api/client';
-import { UsersSearchListData, UsersSearchListParams } from '@/api/types';
+import {
+  UsersSearchListData,
+  UsersSearchListParams,
+  User,
+  UsersUpdatePayload,
+} from '@/api/types';
 
 export const usersService = {
   /**
@@ -11,6 +16,17 @@ export const usersService = {
     const response = await axiosInstance.get('/api/users/search', {
       params: query,
     });
+    return response.data;
+  },
+
+  /**
+   * ユーザー情報を更新する
+   */
+  updateUser: async (
+    userId: string,
+    data: UsersUpdatePayload
+  ): Promise<User> => {
+    const response = await axiosInstance.put(`/api/users/${userId}`, data);
     return response.data;
   },
 };

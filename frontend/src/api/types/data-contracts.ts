@@ -230,3 +230,10 @@ export interface UsersSearchListParams {
 }
 
 export type UsersSearchListData = User[];
+
+export interface UsersUpdatePayload {
+  /** 新しいユーザー名 */
+  username: string;
+}
+
+export type UsersUpdateData = User;
