@@ -106,13 +106,7 @@ export interface AddPartProps {
 
 // PartPropertyにImageを追加した型
 export interface PartPropertyWithImage extends PartProperty {
-  /**
-   * Imageはバックエンドから取得したデータに基づいており、
-   * Sequelizeの関連付けで生成されるプロパティ名が大文字の"Image"となっているため、
-   * そのまま大文字で定義している。
-   * データ構造の一貫性を保つため、ここでは変換せずに使用している。
-   */
-  Image?: Image; // Imageはオプショナル
+  image?: Image; // Imageはオプショナル
 }
 
 // プロパティ更新用の型定義（imageIdにnullを許容）

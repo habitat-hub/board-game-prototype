@@ -72,11 +72,11 @@ export default function PartPropertySidebar({
 
   useEffect(() => {
     // 選択中のプロパティの画像情報を取得
-    if (currentProperty?.Image) {
+    if (currentProperty?.image) {
       setUploadedImage(() => {
-        if (!currentProperty.Image) return null;
+        if (!currentProperty.image) return null;
         return {
-          displayName: currentProperty.Image.displayName,
+          displayName: currentProperty.image.displayName,
         };
       });
     } else {
@@ -272,7 +272,9 @@ export default function PartPropertySidebar({
                       type: 'UPDATE_PART',
                       payload: {
                         partId: selectedPart.id,
-                        updatePart: { position: { x: number, y: selectedPart.position.y} },
+                        updatePart: {
+                          position: { x: number, y: selectedPart.position.y },
+                        },
                       },
                     });
                   }}
@@ -286,7 +288,9 @@ export default function PartPropertySidebar({
                       type: 'UPDATE_PART',
                       payload: {
                         partId: selectedPart.id,
-                        updatePart: { position: { x: selectedPart.position.x, y: number } },
+                        updatePart: {
+                          position: { x: selectedPart.position.x, y: number },
+                        },
                       },
                     });
                   }}
