@@ -3,7 +3,13 @@
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaCheck, FaPenToSquare, FaEye, FaCopy } from 'react-icons/fa6';
+import {
+  FaCheck,
+  FaPenToSquare,
+  FaEye,
+  FaCopy,
+  FaUsers,
+} from 'react-icons/fa6';
 import { HiOutlinePencilAlt } from 'react-icons/hi';
 import { IoAdd, IoArrowBack, IoTrash } from 'react-icons/io5';
 
@@ -436,6 +442,7 @@ const GroupPrototypeList: React.FC = () => {
               </form>
             ) : (
               <div className="flex items-center">
+                <FaUsers className="h-4 w-4 mr-2 text-wood-dark" />
                 <span className="text-2xl font-semibold text-wood-darkest">
                   {prototype.edit.prototype.minPlayers ===
                   prototype.edit.prototype.maxPlayers
@@ -571,7 +578,16 @@ const GroupPrototypeList: React.FC = () => {
                           </button>
                         </h3>
                       )}
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 items-center">
+                        {/* プレイヤー人数表示 */}
+                        <div className="text-sm text-wood-dark bg-wood-lightest/70 px-2 py-0.5 rounded-md border border-wood-light/20 flex items-center">
+                          <FaUsers className="h-3 w-3 mr-1" />
+                          <span>
+                            {prototype.minPlayers === prototype.maxPlayers
+                              ? `${prototype.minPlayers}人`
+                              : `${prototype.minPlayers}〜${prototype.maxPlayers}人`}
+                          </span>
+                        </div>
                         {versions.some(
                           (v) => v.versionNumber === VERSION_NUMBER.MASTER
                         ) && (
@@ -622,6 +638,7 @@ const GroupPrototypeList: React.FC = () => {
                               key={version.id}
                               version={version}
                               onDelete={handleDeleteRoom}
+                              prototype={prototype}
                             />
                           );
                         })}
