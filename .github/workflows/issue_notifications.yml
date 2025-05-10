@@ -1,0 +1,53 @@
+# .github/workflows/issue_notifications.yml
+name: Issue Notifications
+
+on:
+  issues:
+    types: [opened, closed]
+
+jobs:
+  notify-discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send notification to Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          ACTION: ${{ github.event.action }}
+          NUMBER: ${{ github.event.issue.number }}
+          TITLE: ${{ github.event.issue.title }}
+          URL: ${{ github.event.issue.html_url }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const axios = require('axios');
+            
+            try {
+              // 通知タイプに応じて文言と色を切り替え
+              const content = process.env.ACTION === 'opened' 
+                ? ':sparkles: New issue created'
+                : ':lock: Issue closed';
+              
+              const color = process.env.ACTION === 'opened'
+                ? 3066993  // 緑
+                : 15158332; // 赤
+              
+              // Discord 向けペイロードを作成
+              const payload = {
+                content: content,
+                embeds: [{
+                  title: `#${process.env.NUMBER} ${process.env.TITLE}`,
+                  url: process.env.URL,
+                  color: color
+                }]
+              };
+              
+              // Discord webhook に POST リクエストを送信
+              await axios.post(process.env.DISCORD_WEBHOOK_URL, payload, {
+                headers: { 'Content-Type': 'application/json' }
+              });
+              
+              console.log('Discord notification sent successfully');
+            } catch (error) {
+              console.error('Failed to send Discord notification:', error);
+              process.exit(1);
+            }
