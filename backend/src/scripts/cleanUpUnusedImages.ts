@@ -21,9 +21,12 @@ async function cleanUpUnusedImages() {
         Name: ${image.displayName} \n
         File Size: ${image.fileSize} \n
         Uploader User ID: ${image.uploaderUserId}`);
-
-    await deleteImageFromS3(image.storagePath);
-    await ImageModel.destroy({ where: { id: image.id } });
+    try {
+      await deleteImageFromS3(image.storagePath);
+      await ImageModel.destroy({ where: { id: image.id } });
+    } catch (error) {
+      console.error(`Failed to delete image ${image.id}`);
+    }
   }
 
   console.log(`Cleaned up ${unusedImages.length} unused images.`);
