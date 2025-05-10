@@ -38,10 +38,12 @@ async function fetchPartsAndProperties(prototypeVersionId: string) {
           model: PartModel,
           required: true, // INNER JOIN
           where: { prototypeVersionId },
+          as: 'part',
         },
         {
           model: ImageModel,
           required: false, // LEFT JOIN
+          as: 'image',
         },
       ],
     }),

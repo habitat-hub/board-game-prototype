@@ -3,17 +3,23 @@
 import Link from 'next/link';
 import React from 'react';
 import { BsDoorOpenFill } from 'react-icons/bs';
+import { FaUsers } from 'react-icons/fa';
 import { IoTrash } from 'react-icons/io5';
 
-import { PrototypeVersion } from '@/api/types';
+import { Prototype, PrototypeVersion } from '@/api/types';
 import formatDate from '@/utils/dateFormat';
 
 interface PlayRoomCardProps {
   version: PrototypeVersion;
-  onDelete: (prototypeId: string, versionId: string) => Promise<void>;
+  onDelete: (prototypeId: string, prototypeVersionId: string) => Promise<void>;
+  prototype?: Prototype; // プロトタイプ情報（プレイヤー数を表示するため）
 }
 
-const PlayRoomCard: React.FC<PlayRoomCardProps> = ({ version, onDelete }) => {
+const PlayRoomCard: React.FC<PlayRoomCardProps> = ({
+  version,
+  onDelete,
+  prototype,
+}) => {
   return (
     <Link
       href={`/prototypes/${version.prototypeId}/versions/${version.id}/play`}
@@ -48,6 +54,18 @@ const PlayRoomCard: React.FC<PlayRoomCardProps> = ({ version, onDelete }) => {
               {formatDate(version.createdAt, true)}
             </div>
           </div>
+
+          {/* プレイヤー人数情報 */}
+          {prototype && (
+            <div className="flex items-center gap-1 mt-2 text-xs text-wood-dark">
+              <FaUsers className="h-3 w-3" />
+              <span>
+                {prototype.minPlayers === prototype.maxPlayers
+                  ? `${prototype.minPlayers}人`
+                  : `${prototype.minPlayers}〜${prototype.maxPlayers}人`}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </Link>
