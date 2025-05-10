@@ -56,7 +56,7 @@ export interface Image {
 
 export interface Part {
   id: number;
-  type: "token" | "card" | "hand" | "deck" | "area";
+  type: 'token' | 'card' | 'hand' | 'deck' | 'area';
   /** @format uuid */
   prototypeVersionId: string;
   parentId?: number;
@@ -76,7 +76,7 @@ export interface Part {
 
 export interface PartProperty {
   partId: number;
-  side: "front" | "back";
+  side: 'front' | 'back';
   name: string;
   description: string;
   color: string;
@@ -105,7 +105,7 @@ export interface Prototype {
   /** @format uuid */
   userId: string;
   name: string;
-  type: "EDIT" | "PREVIEW";
+  type: 'EDIT' | 'PREVIEW';
   /** @format uuid */
   masterPrototypeId?: string;
   /** @format uuid */

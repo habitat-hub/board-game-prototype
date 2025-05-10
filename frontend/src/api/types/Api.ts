@@ -38,8 +38,8 @@ import {
   PrototypesVersionsListData,
   UsersSearchListData,
   UsersSearchListParams,
-} from "./data-contracts";
-import { ContentType, HttpClient, RequestParams } from "./http-client";
+} from './data-contracts';
+import { ContentType, HttpClient, RequestParams } from './http-client';
 
 export class Api<
   SecurityDataType = unknown,
@@ -107,8 +107,8 @@ export class Api<
   prototypesList = (params: RequestParams = {}) =>
     this.request<PrototypesListData, any>({
       path: `/api/prototypes`,
-      method: "GET",
-      format: "json",
+      method: 'GET',
+      format: 'json',
       ...params,
     });
   /**
@@ -121,14 +121,14 @@ export class Api<
    */
   prototypesCreate = (
     data: PrototypesCreatePayload,
-    params: RequestParams = {},
+    params: RequestParams = {}
   ) =>
     this.request<PrototypesCreateData, Error400Response | Error500Response>({
       path: `/api/prototypes`,
-      method: "POST",
+      method: 'POST',
       body: data,
       type: ContentType.Json,
-      format: "json",
+      format: 'json',
       ...params,
     });
   /**
@@ -142,8 +142,8 @@ export class Api<
   prototypesDetail = (prototypeId: string, params: RequestParams = {}) =>
     this.request<PrototypesDetailData, Error404Response>({
       path: `/api/prototypes/${prototypeId}`,
-      method: "GET",
-      format: "json",
+      method: 'GET',
+      format: 'json',
       ...params,
     });
   /**
@@ -157,14 +157,14 @@ export class Api<
   prototypesUpdate = (
     prototypeId: string,
     data: PrototypesUpdatePayload,
-    params: RequestParams = {},
+    params: RequestParams = {}
   ) =>
     this.request<PrototypesUpdateData, Error404Response>({
       path: `/api/prototypes/${prototypeId}`,
-      method: "PUT",
+      method: 'PUT',
       body: data,
       type: ContentType.Json,
-      format: "json",
+      format: 'json',
       ...params,
     });
   /**
@@ -178,8 +178,8 @@ export class Api<
   prototypesDelete = (prototypeId: string, params: RequestParams = {}) =>
     this.request<PrototypesDeleteData, Error404Response>({
       path: `/api/prototypes/${prototypeId}`,
-      method: "DELETE",
-      format: "json",
+      method: 'DELETE',
+      format: 'json',
       ...params,
     });
   /**
@@ -193,8 +193,8 @@ export class Api<
   prototypesVersionsList = (prototypeId: string, params: RequestParams = {}) =>
     this.request<PrototypesVersionsListData, Error404Response>({
       path: `/api/prototypes/${prototypeId}/versions`,
-      method: "GET",
-      format: "json",
+      method: 'GET',
+      format: 'json',
       ...params,
     });
   /**
@@ -208,8 +208,8 @@ export class Api<
   prototypesGroupsDetail = (groupId: string, params: RequestParams = {}) =>
     this.request<PrototypesGroupsDetailData, any>({
       path: `/api/prototypes/groups/${groupId}`,
-      method: "GET",
-      format: "json",
+      method: 'GET',
+      format: 'json',
       ...params,
     });
   /**
@@ -222,12 +222,12 @@ export class Api<
    */
   prototypesGroupsAccessUsersList = (
     groupId: string,
-    params: RequestParams = {},
+    params: RequestParams = {}
   ) =>
     this.request<PrototypesGroupsAccessUsersListData, any>({
       path: `/api/prototypes/groups/${groupId}/accessUsers`,
-      method: "GET",
-      format: "json",
+      method: 'GET',
+      format: 'json',
       ...params,
     });
   /**
@@ -241,17 +241,17 @@ export class Api<
   prototypesGroupsInviteCreate = (
     groupId: string,
     data: PrototypesGroupsInviteCreatePayload,
-    params: RequestParams = {},
+    params: RequestParams = {}
   ) =>
     this.request<
       PrototypesGroupsInviteCreateData,
       Error400Response | Error404Response | Error500Response
     >({
       path: `/api/prototypes/groups/${groupId}/invite`,
-      method: "POST",
+      method: 'POST',
       body: data,
       type: ContentType.Json,
-      format: "json",
+      format: 'json',
       ...params,
     });
   /**
@@ -265,15 +265,15 @@ export class Api<
   prototypesGroupsInviteDelete = (
     groupId: string,
     guestId: string,
-    params: RequestParams = {},
+    params: RequestParams = {}
   ) =>
     this.request<
       PrototypesGroupsInviteDeleteData,
       Error400Response | Error404Response | Error500Response
     >({
       path: `/api/prototypes/groups/${groupId}/invite/${guestId}`,
-      method: "DELETE",
-      format: "json",
+      method: 'DELETE',
+      format: 'json',
       ...params,
     });
   /**
@@ -286,15 +286,15 @@ export class Api<
    */
   prototypesDuplicateCreate = (
     prototypeId: string,
-    params: RequestParams = {},
+    params: RequestParams = {}
   ) =>
     this.request<
       PrototypesDuplicateCreateData,
       Error404Response | Error500Response
     >({
       path: `/api/prototypes/${prototypeId}/duplicate`,
-      method: "POST",
-      format: "json",
+      method: 'POST',
+      format: 'json',
       ...params,
     });
   /**
@@ -311,8 +311,8 @@ export class Api<
       Error404Response | Error500Response
     >({
       path: `/api/prototypes/${prototypeId}/preview`,
-      method: "POST",
-      format: "json",
+      method: 'POST',
+      format: 'json',
       ...params,
     });
   /**
@@ -327,17 +327,17 @@ export class Api<
     prototypeId: string,
     prototypeVersionId: string,
     data: PrototypesVersionsCreatePayload,
-    params: RequestParams = {},
+    params: RequestParams = {}
   ) =>
     this.request<
       PrototypesVersionsCreateData,
       Error400Response | Error404Response | Error500Response
     >({
       path: `/api/prototypes/${prototypeId}/versions/${prototypeVersionId}`,
-      method: "POST",
+      method: 'POST',
       body: data,
       type: ContentType.Json,
-      format: "json",
+      format: 'json',
       ...params,
     });
   /**
@@ -351,15 +351,15 @@ export class Api<
   prototypesVersionsDelete = (
     prototypeId: string,
     prototypeVersionId: string,
-    params: RequestParams = {},
+    params: RequestParams = {}
   ) =>
     this.request<
       PrototypesVersionsDeleteData,
       Error400Response | Error404Response | Error500Response
     >({
       path: `/api/prototypes/${prototypeId}/versions/${prototypeVersionId}`,
-      method: "DELETE",
-      format: "json",
+      method: 'DELETE',
+      format: 'json',
       ...params,
     });
   /**
@@ -372,13 +372,13 @@ export class Api<
    */
   usersSearchList = (
     query: UsersSearchListParams,
-    params: RequestParams = {},
+    params: RequestParams = {}
   ) =>
     this.request<UsersSearchListData, any>({
       path: `/api/users/search`,
-      method: "GET",
+      method: 'GET',
       query: query,
-      format: "json",
+      format: 'json',
       ...params,
     });
 }
