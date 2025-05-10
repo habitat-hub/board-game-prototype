@@ -272,7 +272,9 @@ export default function PartPropertySidebar({
                       type: 'UPDATE_PART',
                       payload: {
                         partId: selectedPart.id,
-                        updatePart: { position: { x: number, y: selectedPart.position.y} },
+                        updatePart: {
+                          position: { x: number, y: selectedPart.position.y },
+                        },
                       },
                     });
                   }}
@@ -286,7 +288,9 @@ export default function PartPropertySidebar({
                       type: 'UPDATE_PART',
                       payload: {
                         partId: selectedPart.id,
-                        updatePart: { position: { x: selectedPart.position.x, y: number } },
+                        updatePart: {
+                          position: { x: selectedPart.position.x, y: number },
+                        },
                       },
                     });
                   }}

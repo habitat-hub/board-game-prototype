@@ -73,6 +73,7 @@ PartPropertyModel.init(
 PartPropertyModel.belongsTo(PartModel, {
   foreignKey: 'partId',
   onDelete: 'CASCADE',
+  as: 'part',
 });
 
 PartModel.hasMany(PartPropertyModel, {
@@ -83,6 +84,7 @@ PartModel.hasMany(PartPropertyModel, {
 PartPropertyModel.belongsTo(ImageModel, {
   foreignKey: 'imageId',
   onDelete: 'SET NULL',
+  as: 'image',
 });
 
 ImageModel.hasMany(PartPropertyModel, {
