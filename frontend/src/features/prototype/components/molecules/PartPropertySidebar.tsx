@@ -6,7 +6,7 @@
 
 import axios from 'axios';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { FaRegCopy, FaRegTrashAlt, FaImage } from 'react-icons/fa';
+import { FaRegCopy, FaRegTrashAlt, FaImage, FaSpinner } from 'react-icons/fa';
 
 import { useImages } from '@/api/hooks/useImages';
 import { Part, PartProperty, Player } from '@/api/types';
@@ -47,6 +47,7 @@ export default function PartPropertySidebar({
   const [uploadedImage, setUploadedImage] = useState<{
     displayName: string;
   } | null>(null); // アップロードした画像の情報を管理
+  const [isUploading, setIsUploading] = useState(false); // ローディング状態を管理
 
   const { dispatch } = usePartReducer();
   const { uploadImage } = useImages();
@@ -196,6 +197,7 @@ export default function PartPropertySidebar({
     const formData = new FormData();
     formData.append('image', image);
 
+    setIsUploading(true); // ローディング開始
     try {
       const response = await uploadImage(formData);
       if (response.id) {
@@ -220,6 +222,8 @@ export default function PartPropertySidebar({
         // その他のエラーの場合の処理
         console.error('Unexpected Error:', error);
       }
+    } finally {
+      setIsUploading(false); // ローディング終了
     }
   };
 
@@ -424,9 +428,16 @@ export default function PartPropertySidebar({
                       {/* 画像アップロード */}
                       <TextIconButton
                         text="アップロード"
-                        icon={<FaImage className="h-3 w-3" />}
+                        icon={
+                          isUploading ? (
+                            <FaSpinner className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <FaImage className="h-3 w-3" />
+                          )
+                        }
                         isSelected={false}
                         onClick={handleFileUploadClick}
+                        disabled={isUploading}
                       />
                     </>
                   )}
