@@ -19,7 +19,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const axios = require('axios');
+            const { HttpClient } = require('@actions/http-client');
             const core = require('@actions/core');
             
             try {
@@ -43,9 +43,8 @@ jobs:
               };
               
               // Discord webhook に POST リクエストを送信
-              await axios.post(process.env.DISCORD_WEBHOOK_URL, payload, {
-                headers: { 'Content-Type': 'application/json' }
-              });
+              const http = new HttpClient();
+              await http.postJson(process.env.DISCORD_WEBHOOK_URL, payload);
               
               console.log('Discord notification sent successfully');
             } catch (error) {
