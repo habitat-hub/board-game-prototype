@@ -43,7 +43,7 @@ const LandingPage: React.FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
-        className="py-8 md:py-10 bg-gradient-to-r from-amber-600 to-amber-800 relative overflow-hidden rounded-3xl mx-4 md:mx-6 shadow-lg"
+        className="py-12 md:py-16 bg-gradient-to-r from-amber-600 to-amber-800 relative overflow-hidden rounded-3xl mx-4 md:mx-6 shadow-xl"
       >
         {/* ドットパターンの背景アニメーション - より大きく明るいドット */}
         <div className="absolute inset-0">
@@ -112,7 +112,7 @@ const LandingPage: React.FC = () => {
             className="text-center"
           >
             <motion.h2
-              className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight"
+              className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-6"
               animate={{ y: [0, -5, 0] }}
               transition={{ duration: 5, repeat: Infinity }}
             >
@@ -135,18 +135,17 @@ const LandingPage: React.FC = () => {
                 また遊ぶ
               </motion.span>
             </motion.h2>
-            <motion.p
-              className="mt-3 md:mt-4 text-xl md:text-2xl text-white font-medium"
+
+            <motion.div
+              className="max-w-3xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.8 }}
             >
-              ボドゲづくりは
-              <span className="font-bold text-amber-200 drop-shadow-md">
-                KIBAKO
-              </span>
-              で
-            </motion.p>
+              <p className="mt-4 md:mt-6 text-xl md:text-3xl text-white font-medium">
+                ボドゲづくりはKIBAKOで
+              </p>
+            </motion.div>
           </motion.div>
         </div>
       </motion.div>
@@ -482,7 +481,7 @@ const LandingPage: React.FC = () => {
               initial={{ y: 30, opacity: 0 }}
               whileInView={{ y: 0, opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+              transition={{ duration: 0.8 }}
               className="text-xl text-amber-200 mb-10"
             >
               KIBAKOで創造力を解き放ち、あなたのゲームアイデアをプレイ可能な試作品に変えましょう。
@@ -491,7 +490,7 @@ const LandingPage: React.FC = () => {
               initial={{ y: 30, opacity: 0 }}
               whileInView={{ y: 0, opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.4 }}
+              transition={{ duration: 0.8 }}
             >
               <Link href="/">
                 <motion.div
