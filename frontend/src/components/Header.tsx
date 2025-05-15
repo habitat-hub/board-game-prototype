@@ -5,7 +5,11 @@ import { GiWoodenCrate } from 'react-icons/gi';
 
 import HeaderRightMenu from '@/components/HeaderRightMenu';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  height: number;
+}
+
+const Header: React.FC<HeaderProps> = ({ height }) => {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -23,7 +27,7 @@ const Header: React.FC = () => {
   return (
     <header
       className="bg-gradient-to-r from-amber-600 to-amber-800 text-white p-4 flex justify-between items-center shadow-md"
-      style={{ height: '60px' }}
+      style={{ height: `${height}px` }}
     >
       <button
         onClick={goToPrototypes}

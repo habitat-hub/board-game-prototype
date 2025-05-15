@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
 
@@ -68,12 +69,12 @@ const HeaderRightMenu: React.FC<HeaderRightMenuProps> = ({ pathname }) => {
 
       {showLogout && (
         <div className="absolute right-0 top-full w-48 flex flex-col mt-2 shadow-xl rounded-lg overflow-hidden bg-amber-50 border border-amber-200 z-50">
-          <a
+          <Link
             href="/profile/edit"
             className="block w-full text-amber-900 p-2.5 text-left hover:bg-amber-100 transition-colors duration-200"
           >
             プロフィール編集
-          </a>
+          </Link>
           <a
             href={FEEDBACK_FORM_URL}
             target="_blank"
