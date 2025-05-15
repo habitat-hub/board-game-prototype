@@ -9,6 +9,8 @@ import {
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 
+import CatchCopyCard from './CatchCopyCard'; // Import the CatchCopyCard component
+
 const LandingPage: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const { scrollYProgress } = useScroll();
@@ -111,40 +113,97 @@ const LandingPage: React.FC = () => {
             transition={{ duration: 0.8 }}
             className="text-center"
           >
-            <motion.h2
-              className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-6"
-              animate={{ y: [0, -5, 0] }}
-              transition={{ duration: 5, repeat: Infinity }}
-            >
-              <motion.span
-                className="inline-block"
-                whileHover={{ scale: 1.05 }}
-              >
-                試して
-              </motion.span>{' '}
-              <motion.span
-                className="inline-block"
-                whileHover={{ scale: 1.05 }}
-              >
-                直して
-              </motion.span>{' '}
-              <motion.span
-                className="inline-block"
-                whileHover={{ scale: 1.05 }}
-              >
-                また遊ぶ
-              </motion.span>
-            </motion.h2>
+            <div className="mb-6 flex flex-wrap justify-center items-center">
+              {/* 実験フラスコアイコン - 実験・試すことを表現 */}
+              <CatchCopyCard
+                text="試して"
+                frontColor="#d97706"
+                backColor="#9a3412" // より濃い色に変更 (amber-900に近い)
+                delay={0.2}
+                icon={
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-12 w-12"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="white"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                    />
+                  </svg>
+                }
+              />
+
+              {/* レンチアイコン - 修正・調整を表現 */}
+              <CatchCopyCard
+                text="直して"
+                frontColor="#b45309"
+                backColor="#78350f" // より濃い色に変更 (amber-900)
+                delay={0.4}
+                icon={
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-12 w-12"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="white"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                }
+              />
+
+              {/* リフレッシュ/リピートアイコン - 繰り返しプレイを表現 */}
+              <CatchCopyCard
+                text="また遊ぶ"
+                frontColor="#92400e"
+                backColor="#854d0e" // より濃い色に変更 (amber-800)
+                delay={0.6}
+                icon={
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-12 w-12"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="white"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                }
+              />
+            </div>
 
             <motion.div
               className="max-w-3xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.8 }}
+              transition={{ delay: 0.8, duration: 0.8 }}
             >
-              <p className="mt-4 md:mt-6 text-xl md:text-3xl text-white font-medium">
-                ボドゲづくりはKIBAKOで
-              </p>
+              <Link href="/">
+                <p className="mt-12 md:mt-16 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white font-bold tracking-wide hover:text-amber-100 cursor-pointer transition-colors">
+                  ボドゲづくりは<span className="text-amber-300">KIBAKO</span>で
+                </p>
+              </Link>
             </motion.div>
           </motion.div>
         </div>
