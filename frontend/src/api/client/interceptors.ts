@@ -5,7 +5,7 @@ export const setupResponseInterceptor = (instance: AxiosInstance) => {
     (response) => response,
     (error) => {
       if (error.response?.status === 401) {
-        window.location.replace('/');
+        window.location.replace('/about');
       }
       if (error.response?.status === 403) {
         window.location.replace('/prototypes');
