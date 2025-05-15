@@ -1,14 +1,15 @@
 import { AxiosInstance } from 'axios';
+import Router from 'next/router';
 
 export const setupResponseInterceptor = (instance: AxiosInstance) => {
   instance.interceptors.response.use(
     (response) => response,
     (error) => {
       if (error.response?.status === 401) {
-        window.location.replace('/');
+        Router.push('/about');
       }
       if (error.response?.status === 403) {
-        window.location.replace('/prototypes');
+        Router.push('/prototypes');
       }
       return Promise.reject(error);
     }
