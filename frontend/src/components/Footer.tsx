@@ -11,7 +11,7 @@ const Footer: React.FC<FooterProps> = ({ height }) => {
       className="bg-gradient-to-r from-amber-600 to-amber-800 text-white p-2 text-center text-sm"
       style={{ height: `${height}px` }}
     >
-      &copy; 2024 Code-Son All rights reserved.
+      &copy; 2025 Habitat Hub. All rights reserved.
     </footer>
   );
 };
