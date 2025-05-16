@@ -379,8 +379,8 @@ export default function Canvas({
             onMouseDown={handleCanvasMouseDown}
             style={{
               cursor: isDraggingCanvas ? 'grabbing' : 'grab',
-              width: '2000px',
-              height: '2000px',
+              width: '10000px',
+              height: '10000px',
             }}
           >
             {/* 非表示エリアの背景 */}
@@ -417,8 +417,8 @@ export default function Canvas({
             <rect
               x="0"
               y="0"
-              width="2000"
-              height="2000"
+              width="10000"
+              height="10000"
               fill="#ffffff"
               stroke="#94a3b8"
               strokeWidth="1"
@@ -513,6 +513,7 @@ export default function Canvas({
         }}
         canZoomIn={camera.zoom < 1}
         canZoomOut={camera.zoom > 0.4}
+        zoomLevel={camera.zoom}
       />
       {/* サイドバー */}
       {prototypeType === 'EDIT' && (
