@@ -1,34 +1,51 @@
 'use client';
 
-import Image from 'next/image';
 import React from 'react';
+import { FaGoogle } from 'react-icons/fa';
+import { GiWoodenCrate } from 'react-icons/gi';
 
 function Login() {
   return (
-    <div className="flex items-center justify-center h-full relative overflow-hidden">
-      <div className="p-10 rounded border border-gray-300 shadow-md w-1/3 min-w-[450px] text-center min-h-[450px] flex flex-col bg-white relative z-10">
-        <h1 className="text-3xl font-bold mb-8 mt-10">KIBAKO</h1>
-        <p className="text-gray-600 mb-12">
-          ボードゲームプロトタイプの作成アプリ
-        </p>
-        <h3 className="text-xl font-semibold mb-6">ソーシャルIDでログイン</h3>
-        <div className="flex justify-center">
-          <button
-            className="flex items-center justify-center bg-white border border-gray-300 rounded shadow-sm py-3 px-6 hover:bg-gray-50"
-            onClick={() => {
-              window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
-            }}
-          >
-            <Image
-              src="https://developers.google.com/identity/images/g-logo.png"
-              alt="Googleでログイン"
-              width={24}
-              height={24}
-              className="mr-3"
-            />
-            <span className="text-gray-700 font-medium">Googleでログイン</span>
-          </button>
+    <div className="flex items-center justify-center relative overflow-hidden py-16">
+      {/* 中央のログインカード */}
+      <div className="p-8 rounded-lg border border-amber-200 shadow-xl w-1/3 min-w-[450px] text-center flex flex-col bg-white relative z-10 backdrop-blur-sm bg-opacity-95 m-auto">
+        {/* ロゴ部分 */}
+        <div className="flex flex-col items-center mb-8 mt-4">
+          <div className="flex items-center gap-3 mb-3">
+            <GiWoodenCrate className="text-5xl drop-shadow-lg transform -rotate-6 text-amber-600" />
+            <h1 className="text-4xl font-bold tracking-wider text-amber-800">
+              KIBAKO
+            </h1>
+          </div>
+          <div className="h-1 w-24 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full mb-4"></div>
+          <p className="text-gray-700">
+            ボードゲームの試作品をテストプレイできるサービス
+          </p>
         </div>
+
+        {/* ログイン部分 */}
+        <div className="bg-amber-50 p-6 rounded-lg border border-amber-100 mt-1 mb-6">
+          <h3 className="text-xl font-semibold mb-6 text-amber-800">
+            ソーシャルIDでログイン
+          </h3>
+          <div className="flex justify-center">
+            <button
+              className="flex items-center justify-center bg-white border border-gray-200 rounded-lg shadow-sm py-4 px-8 hover:bg-amber-50 hover:border-amber-300 transition-all duration-300 transform hover:-translate-y-1"
+              onClick={() => {
+                window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+              }}
+            >
+              <FaGoogle className="text-[#4285F4] mr-3 text-xl" />
+              <span className="text-gray-700 font-medium">
+                Googleでログイン
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <p className="text-amber-700 mt-3 mb-1 text-sm">
+          KIBAKOでボードゲームのアイデアを形にしよう
+        </p>
       </div>
     </div>
   );
