@@ -3,7 +3,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
 import { GiWoodenCrate } from 'react-icons/gi';
 
-import HeaderRightMenu from '@/components/HeaderRightMenu';
+import HeaderRightMenu from '@/components/molecules/HeaderRightMenu';
 
 interface HeaderProps {
   height: number;

@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import * as UAParser from 'ua-parser-js';
 
 import './globals.css';
-import Header from '@/components/Header';
+import Header from '@/components/organisms/Header';
 import { UserProvider } from '@/contexts/UserContext';
 import { WoodenCrateBackground } from '@/features/prototype/components/atoms/WoodenCrateBackground';
 

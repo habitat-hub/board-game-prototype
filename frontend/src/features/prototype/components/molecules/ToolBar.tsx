@@ -1,5 +1,5 @@
-import ZoomInButton from '@/components/atoms/ZoomInButton';
-import ZoomOutButton from '@/components/atoms/ZoomOutButton';
+import ZoomInButton from '@/features/prototype/components/atoms/ZoomInButton';
+import ZoomOutButton from '@/features/prototype/components/atoms/ZoomOutButton';
 
 export default function ToolsBar({
   zoomIn,
