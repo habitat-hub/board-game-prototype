@@ -21,7 +21,7 @@ export default function RootLayout({
   );
 
   // ヘッダーの高さ定数
-  const HEADER_HEIGHT_PX = 60;
+  const HEADER_HEIGHT_PX = 80;
 
   return (
     <html lang="ja">
@@ -30,7 +30,9 @@ export default function RootLayout({
           <>
             {!isCanvas && <WoodenCrateBackground />}
             {!isCanvas && <Header height={HEADER_HEIGHT_PX} />}
-            {children}
+            <main style={{ paddingTop: isCanvas ? 0 : HEADER_HEIGHT_PX }}>
+              {children}
+            </main>
           </>
         </UserProvider>
       </body>
