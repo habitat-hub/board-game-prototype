@@ -12,7 +12,7 @@ interface UseCanvasEventsProps {
   setCamera: React.Dispatch<React.SetStateAction<Camera>>;
   setSelectedPartId: React.Dispatch<React.SetStateAction<number | null>>;
   parts: Part[];
-  mainViewRef: React.RefObject<HTMLDivElement>;
+  canvasContainerRef: React.RefObject<HTMLDivElement>;
 }
 
 export const useCanvasEvents = ({
@@ -20,7 +20,7 @@ export const useCanvasEvents = ({
   setCamera,
   setSelectedPartId,
   parts,
-  mainViewRef,
+  canvasContainerRef,
 }: UseCanvasEventsProps) => {
   const { dispatch } = usePartReducer();
 
@@ -142,7 +142,7 @@ export const useCanvasEvents = ({
     e.stopPropagation();
 
     const part = parts.find((part) => part.id === partId);
-    const rect = mainViewRef.current?.getBoundingClientRect();
+    const rect = canvasContainerRef.current?.getBoundingClientRect();
     // パーツが見つからない場合
     if (!rect || !part) return;
 
@@ -194,7 +194,7 @@ export const useCanvasEvents = ({
     // パーツの移動中
     if (movingPart) {
       // パーツのドラッグ処理
-      const rect = mainViewRef.current?.getBoundingClientRect();
+      const rect = canvasContainerRef.current?.getBoundingClientRect();
       if (!rect) return;
 
       // マウス位置からパーツの新しい位置を計算
@@ -267,7 +267,7 @@ export const useCanvasEvents = ({
       return;
     }
 
-    const rect = mainViewRef.current?.getBoundingClientRect();
+    const rect = canvasContainerRef.current?.getBoundingClientRect();
     // パーツが見つからない場合
     if (!rect) {
       cleanUp();

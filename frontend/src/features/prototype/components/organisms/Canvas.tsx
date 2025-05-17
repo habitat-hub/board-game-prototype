@@ -74,8 +74,8 @@ export default function Canvas({
   const { socket } = useSocket();
   const { fetchImage } = useImages();
 
-  // メインビューのref
-  const mainViewRef = useRef<HTMLDivElement>(null);
+  // キャンバスコンテナのref
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
   // パーツのref
   const partRefs = useRef<{ [key: number]: React.RefObject<PartHandle> }>({});
   // カメラ
@@ -99,7 +99,7 @@ export default function Canvas({
     setCamera,
     setSelectedPartId,
     parts,
-    mainViewRef,
+    canvasContainerRef,
   });
 
   // ズームイン関数
@@ -326,9 +326,9 @@ export default function Canvas({
   const throttledMouseMove = useMemo(
     () =>
       throttle((e: MouseEvent) => {
-        if (!mainViewRef.current) return;
+        if (!canvasContainerRef.current) return;
 
-        const rect = mainViewRef.current.getBoundingClientRect();
+        const rect = canvasContainerRef.current.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
@@ -391,7 +391,7 @@ export default function Canvas({
 
   return (
     <div className="flex h-full w-full">
-      <main className="h-full w-full" ref={mainViewRef}>
+      <div className="h-full w-full" ref={canvasContainerRef}>
         <div
           className="h-full w-full touch-none"
           onMouseMove={onMouseMove}
@@ -528,7 +528,7 @@ export default function Canvas({
             );
           })}
         </div>
-      </main>
+      </div>
       {/* ツールバー */}
       <ToolsBar
         zoomIn={handleZoomIn}
