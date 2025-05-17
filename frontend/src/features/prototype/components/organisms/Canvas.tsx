@@ -79,7 +79,7 @@ export default function Canvas({
   // パーツのref
   const partRefs = useRef<{ [key: number]: React.RefObject<PartHandle> }>({});
   // カメラ
-  const [camera, setCamera] = useState<Camera>({ x: -250, y: -750, zoom: 0.6 });
+  const [camera, setCamera] = useState<Camera>({ x: -250, y: -750, zoom: 0.1 });
   // 乱数ツールを開いているか
   const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
   // 選択中のパーツ
@@ -101,6 +101,32 @@ export default function Canvas({
     parts,
     mainViewRef,
   });
+
+  // ズームイン関数
+  const handleZoomIn = useCallback(() => {
+    setCamera((camera) => {
+      // 現在の拡大率を10%刻みで次のレベルに
+      const currentPercentage = Math.round(camera.zoom * 100);
+      // 切り上げではなく、単純に10%加算する
+      const nextLevel = Math.min(currentPercentage + 10, 100);
+      const newZoom = nextLevel / 100;
+      return { ...camera, zoom: newZoom };
+    });
+  }, []);
+
+  // ズームアウト関数
+  const handleZoomOut = useCallback(() => {
+    setCamera((camera) => {
+      // 現在の拡大率を10%刻みで切り下げて次のレベルに
+      const currentPercentage = camera.zoom * 100;
+      const nextLevel = Math.max(
+        Math.floor(currentPercentage / 10 - 0.1) * 10,
+        10
+      );
+      const newZoom = nextLevel / 100;
+      return { ...camera, zoom: newZoom };
+    });
+  }, []);
 
   // マスタープレビューかどうか
   const isMasterPreview =
@@ -505,14 +531,10 @@ export default function Canvas({
       </main>
       {/* ツールバー */}
       <ToolsBar
-        zoomIn={() => {
-          setCamera((camera) => ({ ...camera, zoom: camera.zoom + 0.1 }));
-        }}
-        zoomOut={() => {
-          setCamera((camera) => ({ ...camera, zoom: camera.zoom - 0.1 }));
-        }}
+        zoomIn={handleZoomIn}
+        zoomOut={handleZoomOut}
         canZoomIn={camera.zoom < 1}
-        canZoomOut={camera.zoom > 0.4}
+        canZoomOut={camera.zoom > 0.1}
         zoomLevel={camera.zoom}
       />
       {/* サイドバー */}

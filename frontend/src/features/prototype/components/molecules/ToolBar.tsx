@@ -26,9 +26,11 @@ export default function ToolsBar({
     <div className="fixed bottom-4 left-1/2 z-[10000] flex -translate-x-1/2 items-center justify-center rounded-lg bg-gray-300 p-1">
       <div className="flex items-center justify-center gap-3">
         <div className="flex items-center justify-center">
-          <ZoomInButton onClick={zoomIn} disabled={!canZoomIn} />
-          <div className="mx-1 text-sm font-medium text-gray-700">{zoomPercentage}%</div>
           <ZoomOutButton onClick={zoomOut} disabled={!canZoomOut} />
+          <div className="mx-2 px-2 text-sm font-medium text-gray-700 bg-white rounded-md min-w-[45px] text-center">
+            {zoomPercentage}%
+          </div>
+          <ZoomInButton onClick={zoomIn} disabled={!canZoomIn} />
         </div>
       </div>
     </div>

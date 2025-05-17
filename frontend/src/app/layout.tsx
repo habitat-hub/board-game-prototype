@@ -1,28 +1,37 @@
-import type { Metadata } from 'next';
+'use client';
+
+import { usePathname } from 'next/navigation';
+import React from 'react';
 
 import './globals.css';
-import Layout from '@/components/Layout';
+import Header from '@/components/Header';
 import { UserProvider } from '@/contexts/UserContext';
-
-export const metadata: Metadata = {
-  title: {
-    template: '%s | KIBAKO',
-    default: 'KIBAKO',
-  },
-  description: '気軽にボードゲームを作ろう',
-  icons: [{ rel: 'icon', url: '/favicon.ico' }],
-};
+import { WoodenCrateBackground } from '@/features/prototype/components/atoms/WoodenCrateBackground';
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+
+  // 背景画像を表示するか
+  const isCanvas = /^\/prototypes\/[a-f0-9-]+\/versions\/[a-f0-9-]+\//.test(
+    pathname
+  );
+
+  // ヘッダーの高さ定数
+  const HEADER_HEIGHT_PX = 60;
+
   return (
     <html lang="ja">
       <body>
         <UserProvider>
-          <Layout>{children}</Layout>
+          <>
+            {!isCanvas && <WoodenCrateBackground />}
+            {!isCanvas && <Header height={HEADER_HEIGHT_PX} />}
+            {children}
+          </>
         </UserProvider>
       </body>
     </html>
