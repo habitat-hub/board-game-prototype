@@ -347,7 +347,7 @@ export default function Canvas({
         lastCursorPosition.current = { x, y };
         socket.emit('UPDATE_CURSOR', {
           userId: user?.id || '',
-          userName: user?.username || 'Nanashi-san',
+          userName: user?.username || 'unknown',
           position: { x, y },
         });
       }, 100),
