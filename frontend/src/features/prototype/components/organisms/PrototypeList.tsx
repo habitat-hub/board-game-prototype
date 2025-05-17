@@ -18,6 +18,7 @@ import { UserContext } from '@/contexts/UserContext';
 import formatDate from '@/utils/dateFormat';
 
 import EmptyPrototypeList from '../molecules/EmptyPrototypeList';
+import PrototypeListSkeleton from '../molecules/PrototypeListSkeleton';
 
 type SortKey = 'name' | 'createdAt';
 type SortOrder = 'asc' | 'desc';
@@ -159,11 +160,7 @@ const PrototypeList: React.FC = () => {
   );
 
   if (isLoading) {
-    return (
-      <div className="flex flex-col h-full justify-center items-center">
-        <p className="text-2xl text-wood-darkest">Loading...</p>
-      </div>
-    );
+    return <PrototypeListSkeleton />;
   }
 
   if (sortedPrototypes.length === 0) {
