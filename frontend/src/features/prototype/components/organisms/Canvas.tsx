@@ -10,7 +10,6 @@ import React, {
 } from 'react';
 import { AiOutlineTool } from 'react-icons/ai';
 
-import { useImages } from '@/api/hooks/useImages';
 import {
   Part as PartType,
   PartProperty as PropertyType,
@@ -24,29 +23,21 @@ import PreviewSidebars from '@/features/prototype/components/molecules/PreviewSi
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
 import { VERSION_NUMBER } from '@/features/prototype/const';
 import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
+import { useImageLoader } from '@/features/prototype/hooks/useImageLoader';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { AddPartProps, Camera, PartHandle } from '@/features/prototype/type';
 import { CursorInfo } from '@/features/prototype/types/cursor';
 import { useUser } from '@/hooks/useUser';
-import { saveImageToIndexedDb, getImageFromIndexedDb } from '@/utils/db';
 
 interface CanvasProps {
-  // プロトタイプ名
   prototypeName: string;
-  // プロトタイプバージョン番号
   prototypeVersionNumber?: string;
-  // グループID
   groupId: string;
-  // パーツ
   parts: PartType[];
-  // パーツのプロパティ
   properties: PropertyType[];
-  // プレイヤー
   players: Player[];
-  // カーソル
   cursors: Record<string, CursorInfo>;
-  // プロトタイプの種類
   prototypeType: 'EDIT' | 'PREVIEW';
 }
 
@@ -72,20 +63,15 @@ export default function Canvas({
   const { user } = useUser();
   const { dispatch } = usePartReducer();
   const { socket } = useSocket();
-  const { fetchImage } = useImages();
 
-  // キャンバスコンテナのref
   const canvasContainerRef = useRef<HTMLDivElement>(null);
-  // パーツのref
   const partRefs = useRef<{ [key: number]: React.RefObject<PartHandle> }>({});
-  // カメラ
-  const [camera, setCamera] = useState<Camera>({ x: -250, y: -750, zoom: 0.1 });
-  // 乱数ツールを開いているか
+  const [camera, setCamera] = useState<Camera>({ x: -250, y: -750, zoom: 0.6 });
   const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
-  // 選択中のパーツ
   const [selectedPartId, setSelectedPartId] = useState<number | null>(null);
-  // 表示対象の画像
-  const [images, setImages] = useState<Record<string, string>[]>([]);
+
+  // 画像ローダーカスタムフック
+  const { getFilteredImages } = useImageLoader(properties);
 
   const {
     isDraggingCanvas,
@@ -102,29 +88,17 @@ export default function Canvas({
     canvasContainerRef,
   });
 
-  // ズームイン関数
   const handleZoomIn = useCallback(() => {
-    setCamera((camera) => {
-      // 現在の拡大率を10%刻みで次のレベルに
-      const currentPercentage = Math.round(camera.zoom * 100);
-      // 切り上げではなく、単純に10%加算する
-      const nextLevel = Math.min(currentPercentage + 10, 100);
-      const newZoom = nextLevel / 100;
-      return { ...camera, zoom: newZoom };
+    setCamera((prev) => {
+      const newZoom = Math.min((Math.round(prev.zoom * 10) + 1) / 10, 1);
+      return { ...prev, zoom: newZoom };
     });
   }, []);
 
-  // ズームアウト関数
   const handleZoomOut = useCallback(() => {
-    setCamera((camera) => {
-      // 現在の拡大率を10%刻みで切り下げて次のレベルに
-      const currentPercentage = camera.zoom * 100;
-      const nextLevel = Math.max(
-        Math.floor(currentPercentage / 10 - 0.1) * 10,
-        10
-      );
-      const newZoom = nextLevel / 100;
-      return { ...camera, zoom: newZoom };
+    setCamera((prev) => {
+      const newZoom = Math.max((Math.round(prev.zoom * 10) - 1) / 10, 0.1);
+      return { ...prev, zoom: newZoom };
     });
   }, []);
 
@@ -199,83 +173,6 @@ export default function Canvas({
     };
   }, [socket, parts]);
 
-  /**
-   * 画像をIndexedDBから取得し、キャッシュがない場合はS3から取得してIndexedDBに保存
-   */
-  useEffect(() => {
-    let urlsToRevoke: string[] = []; // クリーンアップ用のURLリスト
-
-    const loadImages = async () => {
-      // property.imageIdが存在するものだけを抽出し、重複を除去
-      const uniqueImageIds = Array.from(
-        new Set(properties.map((property) => property.imageId).filter(Boolean))
-      ) as string[];
-
-      // IndexedDBやS3から画像を取得し、URLを生成
-      const imageResults = await Promise.all(
-        uniqueImageIds.map(async (imageId) => {
-          const cachedImage = await getImageFromIndexedDb(imageId);
-          if (cachedImage) {
-            const url = URL.createObjectURL(cachedImage);
-            return { imageId, url };
-          } else {
-            const s3ImageBlob = await fetchImage(imageId);
-            await saveImageToIndexedDb(imageId, s3ImageBlob);
-            const url = URL.createObjectURL(s3ImageBlob);
-            return { imageId, url };
-          }
-        })
-      );
-
-      // 画像データをステートに保存
-      const newImages = imageResults.map(({ imageId, url }) => ({
-        [imageId]: url,
-      }));
-      setImages(newImages);
-
-      // クリーンアップ用のURLリストを更新
-      urlsToRevoke = imageResults.map(({ url }) => url);
-    };
-
-    loadImages();
-
-    // クリーンアップ処理で画像のURLを解放
-    return () => {
-      urlsToRevoke.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, [fetchImage, properties]);
-
-  /**
-   * propertiesに紐づく画像を取得
-   * @param filteredProperties
-   * @param images
-   * @returns
-   */
-  const getFilteredImages = (
-    filteredProperties: PropertyType[],
-    images: Record<string, string>[]
-  ): Record<string, string>[] => {
-    return filteredProperties.reduce<Record<string, string>[]>(
-      (acc, filteredProperty) => {
-        const imageId = filteredProperty.imageId;
-        if (!imageId) return acc;
-
-        const targetImage = images.find((image) => image[imageId]);
-        if (targetImage) {
-          acc.push({ [imageId]: targetImage[imageId] });
-        }
-
-        return acc;
-      },
-      []
-    );
-  };
-
-  /**
-   * パーツを追加
-   * @param part - パーツ
-   * @param properties - パーツのプロパティ
-   */
   const handleAddPart = useCallback(
     ({ part, properties }: AddPartProps) => {
       dispatch({ type: 'ADD_PART', payload: { part, properties } });
@@ -283,9 +180,6 @@ export default function Canvas({
     [dispatch]
   );
 
-  /**
-   * パーツを削除
-   */
   const handleDeletePart = useCallback(() => {
     if (!selectedPartId) return;
 
@@ -294,33 +188,25 @@ export default function Canvas({
   }, [dispatch, selectedPartId]);
 
   /**
-   * キーボードイベントのハンドラー
-   * @param e - キーボードイベント
+   * キーボードイベントの設定 (Backspaceでパーツ削除)
    */
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      // 入力要素にフォーカスがある場合は処理をスキップ
-      if (
-        document.activeElement?.tagName === 'INPUT' ||
-        document.activeElement?.tagName === 'TEXTAREA' ||
-        document.activeElement?.tagName === 'SELECT'
-      ) {
-        return;
-      }
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // 入力要素にフォーカスがある場合や選択パーツがない場合はスキップ
+      const isFormElement = ['INPUT', 'TEXTAREA', 'SELECT'].includes(
+        document.activeElement?.tagName || ''
+      );
+
+      if (isFormElement || !selectedPartId) return;
 
       if (e.key === 'Backspace') {
         handleDeletePart();
       }
-    },
-    [handleDeletePart]
-  );
-  // キーボードイベントの登録
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [handleKeyDown]);
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleDeletePart, selectedPartId]);
 
   // カーソル位置の送信部分
   const throttledMouseMove = useMemo(
@@ -332,10 +218,8 @@ export default function Canvas({
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
-        // 前回の位置
+        // 前回の位置と現在の位置が20px以内なら更新しない
         const lastPosition = lastCursorPosition.current;
-
-        // 前回の位置があり、かつ、前回の位置と現在の位置が5px以内の場合は更新しない
         if (
           lastPosition &&
           Math.abs(lastPosition.x - x) <= 20 &&
@@ -354,181 +238,160 @@ export default function Canvas({
     [socket, user]
   );
 
-  // マウス移動イベントの設定
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      throttledMouseMove(e);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      throttledMouseMove.cancel(); // throttleのクリーンアップ
-    };
-  }, [throttledMouseMove]);
-
   // 前回のカーソル位置を保持するためのref
   const lastCursorPosition = useRef<{ x: number; y: number } | null>(null);
 
-  /**
-   * キャンバスに関するマウスダウンイベントのハンドラー
-   * @param e - マウスイベント
-   */
+  // マウス移動イベントの設定
+  useEffect(() => {
+    window.addEventListener('mousemove', throttledMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', throttledMouseMove);
+      throttledMouseMove.cancel();
+    };
+  }, [throttledMouseMove]);
+
+  // マスタープレビュー時以外はパーツ選択を可能に
+  const handlePartMouseDown = (e: React.MouseEvent, partId: number) => {
+    if (!isMasterPreview) {
+      onPartMouseDown(e, partId);
+    }
+  };
+
+  // キャンバスのマウスダウンイベント
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
     onCanvasMouseDown(e);
   };
 
-  /**
-   * パーツに関するマウスダウンイベントのハンドラー
-   * @param e - マウスイベント
-   * @param partId - パーツID
-   */
-  const handlePartMouseDown = (e: React.MouseEvent, partId: number) => {
-    if (isMasterPreview) return;
-
-    onPartMouseDown(e, partId);
-  };
-
   return (
-    <div className="flex h-full w-full">
-      <div className="h-full w-full" ref={canvasContainerRef}>
-        <div
-          className="h-full w-full touch-none"
-          onMouseMove={onMouseMove}
-          onMouseUp={onMouseUp}
-          onMouseLeave={onMouseUp}
+    <div
+      className="flex h-screen w-screen touch-none"
+      ref={canvasContainerRef}
+      onMouseMove={onMouseMove}
+      onMouseUp={onMouseUp}
+      onMouseLeave={onMouseUp}
+    >
+      <svg
+        onWheel={onWheel}
+        className="h-full w-full"
+        onContextMenu={(e) => e.preventDefault()}
+        onMouseDown={handleCanvasMouseDown}
+        style={{
+          cursor: isDraggingCanvas ? 'grabbing' : 'grab',
+        }}
+      >
+        {/* 非表示エリアの背景 */}
+        <rect
+          x="-100000"
+          y="-100000"
+          width="200000"
+          height="200000"
+          fill="#e2e8f0"
+          opacity="0.7"
+        />
+        {/* 非表示エリアの斜線 */}
+        <pattern
+          id="diagonalHatch"
+          patternUnits="userSpaceOnUse"
+          width="10"
+          height="10"
         >
-          <svg
-            onWheel={onWheel}
-            className="h-full w-full"
-            onContextMenu={(e) => e.preventDefault()}
-            onMouseDown={handleCanvasMouseDown}
-            style={{
-              cursor: isDraggingCanvas ? 'grabbing' : 'grab',
-              width: '10000px',
-              height: '10000px',
+          <path
+            d="M-1,1 l2,-2 M0,10 l10,-10 M9,11 l2,-2"
+            stroke="#94a3b8"
+            strokeWidth="1"
+          />
+        </pattern>
+        <rect
+          x="-100000"
+          y="-100000"
+          width="200000"
+          height="200000"
+          fill="url(#diagonalHatch)"
+          opacity="0.3"
+        />
+        {/* 表示可能エリアの背景 */}
+        <rect
+          x="0"
+          y="0"
+          width="2000"
+          height="2000"
+          fill="#ffffff"
+          stroke="#94a3b8"
+          strokeWidth="1"
+          strokeDasharray="4"
+          style={{
+            transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom})`,
+            transformOrigin: 'center center',
+          }}
+        />
+        <g
+          style={{
+            transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom})`,
+            transformOrigin: 'center center',
+          }}
+        >
+          {[...parts]
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .map((part) => {
+              if (!partRefs.current[part.id]) {
+                partRefs.current[part.id] = React.createRef<PartHandle>();
+              }
+              const filteredProperties = properties.filter(
+                (property) => property.partId === part.id
+              );
+              const filteredImages = getFilteredImages(filteredProperties);
+              return (
+                <Part
+                  key={part.id}
+                  ref={partRefs.current[part.id]}
+                  part={part}
+                  properties={filteredProperties}
+                  images={filteredImages}
+                  players={players}
+                  prototypeType={prototypeType}
+                  isOtherPlayerCard={otherPlayerCards.includes(part.id)}
+                  onMouseDown={(e) => handlePartMouseDown(e, part.id)}
+                  onMoveOrder={({
+                    partId,
+                    type,
+                  }: {
+                    partId: number;
+                    type: 'front' | 'back' | 'backmost' | 'frontmost';
+                  }) => {
+                    if (isMasterPreview) return;
+
+                    dispatch({
+                      type: 'CHANGE_ORDER',
+                      payload: { partId, type },
+                    });
+                  }}
+                  isActive={selectedPartId === part.id}
+                />
+              );
+            })}
+        </g>
+      </svg>
+
+      {/* カーソルを表示 */}
+      {Object.values(cursors).map((cursor) => {
+        if (cursor.userId === user?.id) return null;
+
+        const adjustedPosition = {
+          x: cursor.position.x + 85,
+          y: cursor.position.y + 35,
+        };
+
+        return (
+          <Cursor
+            key={cursor.userId}
+            cursor={{
+              ...cursor,
+              position: adjustedPosition,
             }}
-          >
-            {/* 非表示エリアの背景 */}
-            <rect
-              x="-100000"
-              y="-100000"
-              width="200000"
-              height="200000"
-              fill="#e2e8f0"
-              opacity="0.7"
-            />
-            {/* 非表示エリアの斜線 */}
-            <pattern
-              id="diagonalHatch"
-              patternUnits="userSpaceOnUse"
-              width="10"
-              height="10"
-            >
-              <path
-                d="M-1,1 l2,-2 M0,10 l10,-10 M9,11 l2,-2"
-                stroke="#94a3b8"
-                strokeWidth="1"
-              />
-            </pattern>
-            <rect
-              x="-100000"
-              y="-100000"
-              width="200000"
-              height="200000"
-              fill="url(#diagonalHatch)"
-              opacity="0.3"
-            />
-            {/* 表示可能エリアの背景 */}
-            <rect
-              x="0"
-              y="0"
-              width="10000"
-              height="10000"
-              fill="#ffffff"
-              stroke="#94a3b8"
-              strokeWidth="1"
-              strokeDasharray="4"
-              style={{
-                transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom})`,
-                transformOrigin: 'center center',
-              }}
-            />
-            <g
-              style={{
-                transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom})`,
-                transformOrigin: 'center center',
-              }}
-            >
-              {[...parts]
-                .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-                .map((part) => {
-                  if (!partRefs.current[part.id]) {
-                    partRefs.current[part.id] = React.createRef<PartHandle>();
-                  }
-                  // 該当するpropertiesをフィルタリング
-                  const filteredProperties = properties.filter(
-                    (property) => property.partId === part.id
-                  );
-                  // 該当するimagesをフィルタリング
-                  const filteredImages = getFilteredImages(
-                    filteredProperties,
-                    images
-                  );
-                  return (
-                    <Part
-                      key={part.id}
-                      ref={partRefs.current[part.id]}
-                      part={part}
-                      properties={filteredProperties}
-                      images={filteredImages}
-                      players={players}
-                      prototypeType={prototypeType}
-                      isOtherPlayerCard={otherPlayerCards.includes(part.id)}
-                      onMouseDown={(e) => handlePartMouseDown(e, part.id)}
-                      onMoveOrder={({
-                        partId,
-                        type,
-                      }: {
-                        partId: number;
-                        type: 'front' | 'back' | 'backmost' | 'frontmost';
-                      }) => {
-                        if (isMasterPreview) return;
+          />
+        );
+      })}
 
-                        dispatch({
-                          type: 'CHANGE_ORDER',
-                          payload: { partId, type },
-                        });
-                      }}
-                      isActive={selectedPartId === part.id}
-                    />
-                  );
-                })}
-            </g>
-          </svg>
-          {/* カーソルを表示 */}
-          {Object.values(cursors).map((cursor) => {
-            // 自分のカーソルは表示しない
-            if (cursor.userId === user?.id) return null;
-
-            // NOTE: カーソルの位置がズレてるから、微調整
-            const adjustedPosition = {
-              x: cursor.position.x + 85,
-              y: cursor.position.y + 35,
-            };
-
-            return (
-              <Cursor
-                key={cursor.userId}
-                cursor={{
-                  ...cursor,
-                  position: adjustedPosition,
-                }}
-              />
-            );
-          })}
-        </div>
-      </div>
       {/* ツールバー */}
       <ToolsBar
         zoomIn={handleZoomIn}
@@ -537,6 +400,7 @@ export default function Canvas({
         canZoomOut={camera.zoom > 0.1}
         zoomLevel={camera.zoom}
       />
+
       {/* サイドバー */}
       {prototypeType === 'EDIT' && (
         <EditSidebars
@@ -551,6 +415,7 @@ export default function Canvas({
           onDeletePart={handleDeletePart}
         />
       )}
+
       {prototypeType === 'PREVIEW' && (
         <PreviewSidebars
           prototypeName={prototypeName}
@@ -559,6 +424,7 @@ export default function Canvas({
           players={players}
         />
       )}
+
       {/* 乱数ツールボタン */}
       <button
         onClick={() => setIsRandomToolOpen(!isRandomToolOpen)}
@@ -567,6 +433,7 @@ export default function Canvas({
       >
         <AiOutlineTool size={30} />
       </button>
+
       {/* 乱数計算UI */}
       {isRandomToolOpen && (
         <RandomNumberTool onClose={() => setIsRandomToolOpen(false)} />
