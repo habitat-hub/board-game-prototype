@@ -201,46 +201,30 @@ export default function Canvas({
           cursor: isDraggingCanvas ? 'grabbing' : 'grab',
         }}
       >
-        {/* 非表示エリアの背景 */}
+        {/* 全体の背景 */}
         <rect
           x="-100000"
           y="-100000"
           width="200000"
           height="200000"
-          fill="#e2e8f0"
-          opacity="0.7"
-        />
-        {/* 非表示エリアの斜線 */}
-        <pattern
-          id="diagonalHatch"
-          patternUnits="userSpaceOnUse"
-          width="10"
-          height="10"
-        >
-          <path
-            d="M-1,1 l2,-2 M0,10 l10,-10 M9,11 l2,-2"
-            stroke="#94a3b8"
-            strokeWidth="1"
-          />
-        </pattern>
-        <rect
-          x="-100000"
-          y="-100000"
-          width="200000"
-          height="200000"
-          fill="url(#diagonalHatch)"
-          opacity="0.3"
-        />
-        {/* 表示可能エリアの背景 */}
-        <rect
-          x="0"
-          y="0"
-          width="2000"
-          height="2000"
           fill="#ffffff"
-          stroke="#94a3b8"
-          strokeWidth="1"
-          strokeDasharray="4"
+        />
+        {/* グリッドパターン */}
+        <pattern
+          id="grid"
+          width="50"
+          height="50"
+          patternUnits="userSpaceOnUse"
+        >
+          <rect width="50" height="50" fill="none" stroke="#e2e8f0" strokeWidth="1" />
+        </pattern>
+        {/* 全体にグリッドを適用 */}
+        <rect
+          x="-100000"
+          y="-100000"
+          width="200000"
+          height="200000"
+          fill="url(#grid)"
           style={{
             transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom})`,
             transformOrigin: 'center center',
