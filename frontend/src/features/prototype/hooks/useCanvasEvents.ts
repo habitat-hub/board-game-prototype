@@ -103,14 +103,16 @@ export const useCanvasEvents = ({
    */
   const onWheel = useCallback(
     (e: React.WheelEvent) => {
-      // TODO: スクロールの上限を決める
+      // マウスホイールを使った移動（パン）の実装
+      // deltaX, deltaYの値をズームレベルで調整して、ズームレベルに応じた適切な移動量にする
+      const scaleFactor = 1 / camera.zoom;
       setCamera((camera) => ({
-        x: camera.x - e.deltaX,
-        y: camera.y - e.deltaY,
+        x: camera.x - e.deltaX * scaleFactor * 0.5,
+        y: camera.y - e.deltaY * scaleFactor * 0.5,
         zoom: camera.zoom,
       }));
     },
-    [setCamera]
+    [setCamera, camera.zoom]
   );
 
   /**
