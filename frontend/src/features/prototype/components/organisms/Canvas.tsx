@@ -210,13 +210,14 @@ export default function Canvas({
           fill="#ffffff"
         />
         {/* グリッドパターン */}
-        <pattern
-          id="grid"
-          width="50"
-          height="50"
-          patternUnits="userSpaceOnUse"
-        >
-          <rect width="50" height="50" fill="none" stroke="#e2e8f0" strokeWidth="1" />
+        <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+          <rect
+            width="50"
+            height="50"
+            fill="none"
+            stroke="#e2e8f0"
+            strokeWidth="1"
+          />
         </pattern>
         {/* 全体にグリッドを適用 */}
         <rect
