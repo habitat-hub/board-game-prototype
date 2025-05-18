@@ -24,6 +24,7 @@ import { VERSION_NUMBER } from '@/features/prototype/const';
 import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
 import { useCursorSync } from '@/features/prototype/hooks/useCursorSync';
 import { useImageLoader } from '@/features/prototype/hooks/useImageLoader';
+import { usePartDisplay } from '@/features/prototype/hooks/usePartDisplay';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { AddPartProps, Camera, PartHandle } from '@/features/prototype/type';
@@ -51,15 +52,6 @@ export default function Canvas({
   cursors,
   prototypeType,
 }: CanvasProps) {
-  // TODO: キャンバスの状態(パーツ選択中とか、パーツ作成中とか)を管理できるようにしたい（あった方が便利そう）
-  // const [canvasState, setState] = useState<CanvasState>({
-  //   mode: CanvasMode.None,
-  // });
-
-  // TODO: IndexedDBに保存した画像のうち、使われていないものはどこかのタイミングで削除したい
-  // 画像クリアのタイミングでリアルタイムに行う必要はない。
-  // 「使われていないもの」の判断基準が難しいので、まずはIndexedDBに保存することを優先する。
-
   const { user } = useUser();
   const { dispatch } = usePartReducer();
   const { socket } = useSocket();
@@ -94,6 +86,9 @@ export default function Canvas({
   const [camera, setCamera] = useState<Camera>({ x: -250, y: -750, zoom: 0.6 });
   const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
   const [selectedPartId, setSelectedPartId] = useState<number | null>(null);
+
+  // パーツ表示関連のカスタムフック
+  const { sortedParts, isOtherPlayerCard } = usePartDisplay(parts, players);
 
   // カーソル同期のカスタムフックを使用
   useCursorSync({
@@ -138,34 +133,6 @@ export default function Canvas({
   const isMasterPreview =
     prototypeType === 'PREVIEW' &&
     prototypeVersionNumber === VERSION_NUMBER.MASTER;
-
-  // 他のプレイヤーのカード
-  const otherPlayerCards = useMemo(() => {
-    if (!user) return [];
-
-    // 自分以外が設定されているプレイヤー
-    const playerIds = players
-      .filter((player) => player.userId !== user.id)
-      .map((player) => player.id);
-    // 自分以外がオーナーの手札
-    const otherPlayerHandIds = parts
-      .filter(
-        (part) =>
-          part.type === 'hand' &&
-          part.ownerId != null &&
-          playerIds.includes(part.ownerId)
-      )
-      .map((part) => part.id);
-    // 自分以外がオーナーのカード
-    return parts
-      .filter(
-        (part) =>
-          part.type === 'card' &&
-          part.parentId != null &&
-          otherPlayerHandIds.includes(part.parentId)
-      )
-      .map((part) => part.id);
-  }, [parts, players, user]);
 
   // 選択したパーツが更新されたら、最新化
   useEffect(() => {
@@ -320,42 +287,40 @@ export default function Canvas({
             transformOrigin: 'center center',
           }}
         >
-          {[...parts]
-            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-            .map((part) => {
-              const filteredProperties = properties.filter(
-                (property) => property.partId === part.id
-              );
-              const filteredImages = getFilteredImages(filteredProperties);
-              return (
-                <Part
-                  key={part.id}
-                  ref={partRefs[part.id]}
-                  part={part}
-                  properties={filteredProperties}
-                  images={filteredImages}
-                  players={players}
-                  prototypeType={prototypeType}
-                  isOtherPlayerCard={otherPlayerCards.includes(part.id)}
-                  onMouseDown={(e) => handlePartMouseDown(e, part.id)}
-                  onMoveOrder={({
-                    partId,
-                    type,
-                  }: {
-                    partId: number;
-                    type: 'front' | 'back' | 'backmost' | 'frontmost';
-                  }) => {
-                    if (isMasterPreview) return;
+          {sortedParts.map((part) => {
+            const filteredProperties = properties.filter(
+              (property) => property.partId === part.id
+            );
+            const filteredImages = getFilteredImages(filteredProperties);
+            return (
+              <Part
+                key={part.id}
+                ref={partRefs[part.id]}
+                part={part}
+                properties={filteredProperties}
+                images={filteredImages}
+                players={players}
+                prototypeType={prototypeType}
+                isOtherPlayerCard={isOtherPlayerCard(part.id)}
+                onMouseDown={(e) => handlePartMouseDown(e, part.id)}
+                onMoveOrder={({
+                  partId,
+                  type,
+                }: {
+                  partId: number;
+                  type: 'front' | 'back' | 'backmost' | 'frontmost';
+                }) => {
+                  if (isMasterPreview) return;
 
-                    dispatch({
-                      type: 'CHANGE_ORDER',
-                      payload: { partId, type },
-                    });
-                  }}
-                  isActive={selectedPartId === part.id}
-                />
-              );
-            })}
+                  dispatch({
+                    type: 'CHANGE_ORDER',
+                    payload: { partId, type },
+                  });
+                }}
+                isActive={selectedPartId === part.id}
+              />
+            );
+          })}
         </g>
       </svg>
 
