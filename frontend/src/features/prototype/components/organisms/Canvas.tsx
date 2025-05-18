@@ -86,7 +86,7 @@ export default function Canvas({
     return refs;
   }, [parts]);
 
-  const [camera, setCamera] = useState<Camera>({ x: -250, y: -750, zoom: 0.6 });
+  const [camera, setCamera] = useState<Camera>({ x: 0, y: -250, zoom: 0.4 });
   const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
 
   // パーツ表示関連のカスタムフック
