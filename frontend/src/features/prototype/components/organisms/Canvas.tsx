@@ -26,6 +26,7 @@ import { useCursorSync } from '@/features/prototype/hooks/useCursorSync';
 import { useImageLoader } from '@/features/prototype/hooks/useImageLoader';
 import { usePartDisplay } from '@/features/prototype/hooks/usePartDisplay';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
+import { usePartSelection } from '@/features/prototype/hooks/usePartSelection';
 import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { AddPartProps, Camera, PartHandle } from '@/features/prototype/type';
 import { CursorInfo } from '@/features/prototype/types/cursor';
@@ -55,6 +56,8 @@ export default function Canvas({
   const { user } = useUser();
   const { dispatch } = usePartReducer();
   const { socket } = useSocket();
+  const { selectedPartId, setSelectedPartId, handleDeletePart } =
+    usePartSelection({ parts });
 
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   // パーツの参照を部品配列に基づいてメモ化
@@ -85,7 +88,6 @@ export default function Canvas({
 
   const [camera, setCamera] = useState<Camera>({ x: -250, y: -750, zoom: 0.6 });
   const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
-  const [selectedPartId, setSelectedPartId] = useState<number | null>(null);
 
   // パーツ表示関連のカスタムフック
   const { sortedParts, isOtherPlayerCard } = usePartDisplay(parts, players);
@@ -134,15 +136,6 @@ export default function Canvas({
     prototypeType === 'PREVIEW' &&
     prototypeVersionNumber === VERSION_NUMBER.MASTER;
 
-  // 選択したパーツが更新されたら、最新化
-  useEffect(() => {
-    const selectedPart = parts.find((part) => part.id === selectedPartId);
-    if (selectedPart) return;
-
-    // 選択中のパーツが存在しない場合は、選択中のパーツを解除
-    setSelectedPartId(null);
-  }, [parts, selectedPartId]);
-
   // ソケットイベントの定義
   useEffect(() => {
     socket.on(
@@ -170,7 +163,7 @@ export default function Canvas({
       socket.off('FLIP_CARD');
       socket.off('ADD_PART_RESPONSE');
     };
-  }, [socket, parts, partRefs]);
+  }, [socket, parts, partRefs, setSelectedPartId]);
 
   const handleAddPart = useCallback(
     ({ part, properties }: AddPartProps) => {
@@ -178,34 +171,6 @@ export default function Canvas({
     },
     [dispatch]
   );
-
-  const handleDeletePart = useCallback(() => {
-    if (!selectedPartId) return;
-
-    dispatch({ type: 'DELETE_PART', payload: { partId: selectedPartId } });
-    setSelectedPartId(null);
-  }, [dispatch, selectedPartId]);
-
-  /**
-   * キーボードイベントの設定 (Backspaceでパーツ削除)
-   */
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // 入力要素にフォーカスがある場合や選択パーツがない場合はスキップ
-      const isFormElement = ['INPUT', 'TEXTAREA', 'SELECT'].includes(
-        document.activeElement?.tagName || ''
-      );
-
-      if (isFormElement || !selectedPartId) return;
-
-      if (e.key === 'Backspace') {
-        handleDeletePart();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleDeletePart, selectedPartId]);
 
   // マスタープレビュー時以外はパーツ選択を可能に
   const handlePartMouseDown = (e: React.MouseEvent, partId: number) => {
