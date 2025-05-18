@@ -1,6 +1,5 @@
 'use client';
 
-import { throttle } from 'lodash';
 import React, {
   useCallback,
   useEffect,
@@ -23,6 +22,7 @@ import PreviewSidebars from '@/features/prototype/components/molecules/PreviewSi
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
 import { VERSION_NUMBER } from '@/features/prototype/const';
 import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
+import { useCursorSync } from '@/features/prototype/hooks/useCursorSync';
 import { useImageLoader } from '@/features/prototype/hooks/useImageLoader';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { useSocket } from '@/features/prototype/hooks/useSocket';
@@ -65,10 +65,42 @@ export default function Canvas({
   const { socket } = useSocket();
 
   const canvasContainerRef = useRef<HTMLDivElement>(null);
-  const partRefs = useRef<{ [key: number]: React.RefObject<PartHandle> }>({});
+  // パーツの参照を部品配列に基づいてメモ化
+  const partRefsContainer = useRef<{
+    [key: number]: React.RefObject<PartHandle>;
+  }>({});
+  const partRefs = useMemo(() => {
+    const refs = partRefsContainer.current;
+
+    // 存在しないパーツの参照を削除
+    const currentPartIds = new Set(parts.map((part) => part.id));
+    Object.keys(refs).forEach((id) => {
+      const numId = Number(id);
+      if (!currentPartIds.has(numId)) {
+        delete refs[numId];
+      }
+    });
+
+    // 新しいパーツの参照を作成
+    parts.forEach((part) => {
+      if (!refs[part.id]) {
+        refs[part.id] = React.createRef<PartHandle>();
+      }
+    });
+
+    return refs;
+  }, [parts]);
+
   const [camera, setCamera] = useState<Camera>({ x: -250, y: -750, zoom: 0.6 });
   const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
   const [selectedPartId, setSelectedPartId] = useState<number | null>(null);
+
+  // カーソル同期のカスタムフックを使用
+  useCursorSync({
+    containerRef: canvasContainerRef,
+    socket,
+    user,
+  });
 
   // 画像ローダーカスタムフック
   const { getFilteredImages } = useImageLoader(properties);
@@ -156,7 +188,7 @@ export default function Canvas({
         isNextFlipped: boolean;
       }) => {
         // 該当するパーツのreverseCard関数を呼び出し
-        partRefs.current[cardId]?.current?.reverseCard(isNextFlipped, false);
+        partRefs[cardId]?.current?.reverseCard(isNextFlipped, false);
       }
     );
 
@@ -171,7 +203,7 @@ export default function Canvas({
       socket.off('FLIP_CARD');
       socket.off('ADD_PART_RESPONSE');
     };
-  }, [socket, parts]);
+  }, [socket, parts, partRefs]);
 
   const handleAddPart = useCallback(
     ({ part, properties }: AddPartProps) => {
@@ -207,48 +239,6 @@ export default function Canvas({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleDeletePart, selectedPartId]);
-
-  // カーソル位置の送信部分
-  const throttledMouseMove = useMemo(
-    () =>
-      throttle((e: MouseEvent) => {
-        if (!canvasContainerRef.current) return;
-
-        const rect = canvasContainerRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        // 前回の位置と現在の位置が20px以内なら更新しない
-        const lastPosition = lastCursorPosition.current;
-        if (
-          lastPosition &&
-          Math.abs(lastPosition.x - x) <= 20 &&
-          Math.abs(lastPosition.y - y) <= 20
-        ) {
-          return;
-        }
-
-        lastCursorPosition.current = { x, y };
-        socket.emit('UPDATE_CURSOR', {
-          userId: user?.id || '',
-          userName: user?.username || 'unknown',
-          position: { x, y },
-        });
-      }, 100),
-    [socket, user]
-  );
-
-  // 前回のカーソル位置を保持するためのref
-  const lastCursorPosition = useRef<{ x: number; y: number } | null>(null);
-
-  // マウス移動イベントの設定
-  useEffect(() => {
-    window.addEventListener('mousemove', throttledMouseMove);
-    return () => {
-      window.removeEventListener('mousemove', throttledMouseMove);
-      throttledMouseMove.cancel();
-    };
-  }, [throttledMouseMove]);
 
   // マスタープレビュー時以外はパーツ選択を可能に
   const handlePartMouseDown = (e: React.MouseEvent, partId: number) => {
@@ -333,9 +323,6 @@ export default function Canvas({
           {[...parts]
             .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
             .map((part) => {
-              if (!partRefs.current[part.id]) {
-                partRefs.current[part.id] = React.createRef<PartHandle>();
-              }
               const filteredProperties = properties.filter(
                 (property) => property.partId === part.id
               );
@@ -343,7 +330,7 @@ export default function Canvas({
               return (
                 <Part
                   key={part.id}
-                  ref={partRefs.current[part.id]}
+                  ref={partRefs[part.id]}
                   part={part}
                   properties={filteredProperties}
                   images={filteredImages}
