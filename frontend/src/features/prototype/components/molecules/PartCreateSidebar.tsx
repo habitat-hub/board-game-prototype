@@ -81,18 +81,23 @@ export default function PartCreateSidebar({
       originalPartId: undefined,
     };
 
-    // カードパーツか
-    const isCard = partType === 'card';
-    // カードパーツの場合
-    if (isCard) {
-      newPart.isReversible =
-        'isReversible' in partConfig && partConfig.isReversible;
-      newPart.isFlipped = false;
-    }
-    // 手札パーツの場合
-    if (partType === 'hand') {
-      newPart.ownerId = players[0].id;
-    }
+    // パーツタイプ別の設定を適用
+    const typeSpecificConfigs = {
+      card: () => {
+        newPart.isReversible =
+          'isReversible' in partConfig && partConfig.isReversible;
+        newPart.isFlipped = false;
+      },
+      hand: () => {
+        newPart.ownerId = players[0].id;
+      },
+      token: () => {},
+      deck: () => {},
+      area: () => {},
+    };
+
+    // パーツタイプに応じた処理を実行
+    typeSpecificConfigs[partType]();
 
     // パーツの共通プロパティ
     const commonProperties = {
@@ -102,16 +107,18 @@ export default function PartCreateSidebar({
       textColor: partConfig.textColor,
       image: '',
     };
-    // パーツのプロパティ
+
+    // カードの場合は表裏両方のプロパティを作成、それ以外は表面のみ
     const newPartProperties: Omit<
       PartProperty,
       'id' | 'partId' | 'createdAt' | 'updatedAt'
-    >[] = isCard
-      ? [
-          { side: 'front', ...commonProperties },
-          { side: 'back', ...commonProperties },
-        ]
-      : [{ side: 'front', ...commonProperties }];
+    >[] =
+      partType === 'card'
+        ? [
+            { side: 'front', ...commonProperties },
+            { side: 'back', ...commonProperties },
+          ]
+        : [{ side: 'front', ...commonProperties }];
 
     onAddPart({ part: newPart, properties: newPartProperties });
   };
