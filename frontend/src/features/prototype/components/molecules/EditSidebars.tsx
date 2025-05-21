@@ -15,6 +15,7 @@ export default function EditSidebars({
   groupId,
   players,
   selectedPartId,
+  selectedPartIds,
   parts,
   properties,
   onAddPart,
@@ -30,6 +31,8 @@ export default function EditSidebars({
   players: Player[];
   // 選択中のパーツID
   selectedPartId: number | null;
+  // 複数選択中のパーツID配列
+  selectedPartIds: number[];
   // パーツ
   parts: Part[];
   // パーツのプロパティ
@@ -39,6 +42,9 @@ export default function EditSidebars({
   // パーツを削除時の処理
   onDeletePart: () => void;
 }) {
+  // 複数選択されているかどうか（2つ以上のパーツが選択されている場合）
+  const isMultipleSelection = selectedPartIds.length > 1;
+
   return (
     <>
       {/* Left Sidebar */}
@@ -50,7 +56,8 @@ export default function EditSidebars({
         onAddPart={onAddPart}
       />
 
-      {/* Right Sidebar */}
+      {/* Right Sidebar - 複数選択時は非表示 */}
+      {!isMultipleSelection && (
       <PartPropertySidebar
         players={players}
         selectedPartId={selectedPartId}
@@ -59,6 +66,7 @@ export default function EditSidebars({
         onAddPart={onAddPart}
         onDeletePart={onDeletePart}
       />
+      )}
     </>
   );
 }
