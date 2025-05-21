@@ -6,8 +6,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { BiArea } from 'react-icons/bi';
 import { AiFillQuestionCircle } from 'react-icons/ai';
+import { BiArea } from 'react-icons/bi';
 import {
   Gi3dMeeple,
   GiCard10Clubs,
