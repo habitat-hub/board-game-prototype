@@ -87,8 +87,11 @@ export default function Canvas({
   // 表示対象の画像
   const [images, setImages] = useState<Record<string, string>[]>([]);
 
+  // 複数選択中のパーツID配列
+  const [selectedPartIds, setSelectedPartIds] = useState<number[]>([]);
   const {
     isDraggingCanvas,
+    relatedDraggingPartIds,
     onWheel,
     onCanvasMouseDown,
     onPartMouseDown,
@@ -98,6 +101,9 @@ export default function Canvas({
     camera,
     setCamera,
     setSelectedPartId,
+    selectedPartId,
+    selectedPartIds,
+    setSelectedPartIds,
     parts,
     mainViewRef,
   });
@@ -142,6 +148,7 @@ export default function Canvas({
 
     // 選択中のパーツが存在しない場合は、選択中のパーツを解除
     setSelectedPartId(null);
+    setSelectedPartIds([]);
   }, [parts, selectedPartId]);
 
   // ソケットイベントの定義
@@ -163,7 +170,9 @@ export default function Canvas({
     // ADD_PARTレスポンスのリスナーを追加
     socket.on('ADD_PART_RESPONSE', ({ partId }: { partId: number }) => {
       if (partId) {
+        // 新しいパーツが追加された場合は、既存の選択をクリアして新しいパーツのみを選択
         setSelectedPartId(partId);
+        setSelectedPartIds([partId]);
       }
     });
 
@@ -252,6 +261,9 @@ export default function Canvas({
    */
   const handleAddPart = useCallback(
     ({ part, properties }: AddPartProps) => {
+      // パーツ追加前に既存の選択をクリアする準備
+      // 注意: dispatch後のADD_PART_RESPONSEイベントで新しいパーツが選択される
+      setSelectedPartIds([]);
       dispatch({ type: 'ADD_PART', payload: { part, properties } });
     },
     [dispatch]
@@ -474,7 +486,11 @@ export default function Canvas({
                           payload: { partId, type },
                         });
                       }}
-                      isActive={selectedPartId === part.id}
+                      isActive={
+                        selectedPartId === part.id || 
+                        selectedPartIds.includes(part.id) ||
+                        relatedDraggingPartIds.includes(part.id)
+                      }
                     />
                   );
                 })}
@@ -522,6 +538,7 @@ export default function Canvas({
           groupId={groupId}
           players={players}
           selectedPartId={selectedPartId}
+          selectedPartIds={selectedPartIds}
           parts={parts}
           properties={properties}
           onAddPart={handleAddPart}

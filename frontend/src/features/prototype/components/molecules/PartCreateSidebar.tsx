@@ -6,6 +6,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { AiFillQuestionCircle } from 'react-icons/ai';
 import { BiArea } from 'react-icons/bi';
 import {
   Gi3dMeeple,
@@ -21,6 +22,7 @@ import {
 
 import { Part, PartProperty, Player } from '@/api/types';
 import TextIconButton from '@/components/atoms/TextIconButton';
+import Tooltip from '@/components/atoms/Tooltip';
 import { PART_DEFAULT_CONFIG } from '@/features/prototype/const';
 import { AddPartProps } from '@/features/prototype/type';
 
@@ -153,7 +155,14 @@ export default function PartCreateSidebar({
           </div>
           <div className="border-b border-gray-200" />
           <div className="flex flex-col gap-1 p-4">
-            <span className="mb-2 text-xs font-medium">パーツ</span>
+            <div className="mb-2 text-xs font-medium flex items-center">
+              <span className="text-gray-600">パーツ</span>
+              <Tooltip text="Shift+クリックで複数のパーツを選択できます。選択したパーツはShift+ドラッグでまとめて移動できます。">
+                <span className="ml-1 cursor-help flex items-center">
+                  <AiFillQuestionCircle className="h-3.5 w-3.5 text-gray-600" />
+                </span>
+              </Tooltip>
+            </div>
             {Object.values(PART_DEFAULT_CONFIG).map((part) => {
               const icon =
                 part.type === 'card' ? (
