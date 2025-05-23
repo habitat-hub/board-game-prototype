@@ -27,15 +27,12 @@ const PART_DEFAULT_POSITION = {
 
 export default function PartCreateSidebar({
   prototypeName,
-  prototypeVersionNumber,
   groupId,
   players,
   onAddPart,
 }: {
   // プロトタイプ名
   prototypeName: string;
-  // プロトタイプバージョン番号
-  prototypeVersionNumber?: string;
   // グループID
   groupId: string;
   // プレイヤー
