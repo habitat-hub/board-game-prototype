@@ -20,16 +20,14 @@ function useRandomPosition(width: string, height: string) {
       const boardElement = document.querySelector('.game-board-area');
       if (boardElement) {
         const boardRect = boardElement.getBoundingClientRect();
-        // サイズ文字列から実際のピクセルサイズを推測
-        // Tailwindのクラスからおおよそのピクセルサイズを推測
-        // w-16は約64px、h-24は約96px、w-12/h-12は約48px
-        let pieceWidth = 64; // デフォルト値
-        let pieceHeight = 64;
 
-        if (width.includes('w-16')) pieceWidth = 64;
-        if (width.includes('w-12')) pieceWidth = 48;
-        if (height.includes('h-24')) pieceHeight = 96;
-        if (height.includes('h-12')) pieceHeight = 48;
+        // より堅牢な方法：実際の要素のサイズを取得する
+        const pieceElement = document.querySelector(`.${width}.${height}`);
+        const pieceRect = pieceElement?.getBoundingClientRect();
+
+        // 要素が見つからない場合のフォールバック値
+        const pieceWidth = pieceRect?.width || 64;
+        const pieceHeight = pieceRect?.height || 64;
 
         // ボードの余白を考慮
         const buffer = 10;
