@@ -8,8 +8,11 @@ import {
 } from 'framer-motion';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
+import { GiWoodenCrate } from 'react-icons/gi';
 
-import CatchCopyCard from './CatchCopyCard'; // Import the CatchCopyCard component
+import CatchCopyCard from './CatchCopyCard';
+import FloatingActionButton from './FloatingActionButton';
+import MiniGameBoard from './MiniGameBoard';
 
 const LandingPage: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -39,13 +42,90 @@ const LandingPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-amber-100 overflow-x-hidden pt-6 md:pt-8">
-      {/* キャッチコピーセクション（最上部に配置） */}
+    <div className="overflow-x-hidden relative">
+      <FloatingActionButton />
+      {/* KIBAKOロゴアニメーション（最上部に配置） */}
+      <motion.div
+        className="w-full py-16 flex flex-col items-center justify-center overflow-hidden relative"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+      >
+        <motion.div
+          className="relative"
+          initial={{ scale: 0.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{
+            type: 'spring',
+            stiffness: 260,
+            damping: 20,
+            delay: 0.3,
+          }}
+        >
+          {/* アイコン背景のグローエフェクト */}
+          <motion.div
+            className="absolute inset-0 bg-amber-400 rounded-full blur-xl"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1.2, opacity: 0.3 }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              repeatType: 'reverse',
+            }}
+          />
+
+          {/* メインアイコン */}
+          <motion.div
+            className="relative z-10 bg-gradient-to-br from-amber-500 to-amber-700 p-6 rounded-full shadow-2xl"
+            whileHover={{
+              rotate: [-5, 5, -5, 5, 0],
+              transition: { duration: 0.5 },
+            }}
+          >
+            <GiWoodenCrate className="text-6xl md:text-7xl lg:text-8xl text-white drop-shadow-lg" />
+          </motion.div>
+        </motion.div>
+
+        {/* KIBAKO タイトルテキスト */}
+        <motion.h1
+          className="text-5xl md:text-6xl lg:text-7xl font-bold mt-6 text-amber-800 tracking-wider"
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{
+            type: 'spring',
+            stiffness: 100,
+            damping: 10,
+            delay: 0.7,
+          }}
+        >
+          KIBAKO
+        </motion.h1>
+
+        {/* タグライン */}
+        <motion.p
+          className="text-xl text-amber-600 mt-4 font-medium tracking-wide"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2, duration: 1 }}
+        >
+          ボードゲーム試作品をカンタンに
+        </motion.p>
+
+        {/* 装飾ライン */}
+        <motion.div
+          className="h-1 w-24 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full mt-6"
+          initial={{ width: 0, opacity: 0 }}
+          animate={{ width: '6rem', opacity: 1 }}
+          transition={{ delay: 1.5, duration: 0.8 }}
+        />
+      </motion.div>
+
+      {/* キャッチコピーセクション */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
-        className="py-12 md:py-16 bg-gradient-to-r from-amber-600 to-amber-800 relative overflow-hidden rounded-3xl mx-4 md:mx-6 shadow-xl"
+        className="mt-4 py-12 md:py-16 bg-gradient-to-r from-amber-600 to-amber-800 relative overflow-hidden rounded-3xl mx-2 md:mx-4 lg:mx-6 shadow-xl"
       >
         {/* ドットパターンの背景アニメーション - より大きく明るいドット */}
         <div className="absolute inset-0">
@@ -192,19 +272,6 @@ const LandingPage: React.FC = () => {
                 }
               />
             </div>
-
-            <motion.div
-              className="max-w-3xl mx-auto"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8, duration: 0.8 }}
-            >
-              <Link href="/">
-                <p className="mt-12 md:mt-16 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white font-bold tracking-wide hover:text-amber-100 cursor-pointer transition-colors">
-                  ボドゲづくりは<span className="text-amber-300">KIBAKO</span>で
-                </p>
-              </Link>
-            </motion.div>
           </motion.div>
         </div>
       </motion.div>
@@ -212,11 +279,12 @@ const LandingPage: React.FC = () => {
       {/* アニメーションするヒーローセクション */}
       <motion.div
         animate={{ opacity: 1, y: 0 }}
-        initial={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: 20 }}
+        transition={{ duration: 0.6 }}
         className="relative"
       >
         <div className="absolute inset-0 bg-amber-600 opacity-5 -skew-y-6 transform origin-top-left z-0 rounded-3xl"></div>
-        <div className="container mx-auto px-4 py-12 md:py-24 relative z-10">
+        <div className="container-fluid w-full max-w-[1800px] mx-auto px-4 py-12 md:py-24 relative z-10">
           <AnimatePresence>
             {isLoaded && (
               <motion.div
@@ -226,16 +294,16 @@ const LandingPage: React.FC = () => {
                 className="flex flex-col md:flex-row items-center justify-between"
               >
                 <motion.div
-                  initial={{ x: -100, opacity: 0 }}
+                  initial={{ x: -50, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.8 }}
-                  className="md:w-1/2 mb-10 md:mb-0"
+                  transition={{ delay: 0.4, duration: 0.8 }}
+                  className="w-full md:w-1/3 flex flex-col justify-center items-center text-center"
                 >
                   <motion.h1
                     initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.4, duration: 0.8 }}
-                    className="text-5xl md:text-6xl font-bold text-amber-900 mb-6 relative"
+                    className="text-4xl md:text-5xl lg:text-6xl font-bold text-amber-900 mb-6 relative"
                   >
                     <span className="relative inline-block">
                       KIBAKO
@@ -252,7 +320,7 @@ const LandingPage: React.FC = () => {
                     initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.6, duration: 0.8 }}
-                    className="text-xl md:text-2xl font-medium text-amber-800 mb-8"
+                    className="text-xl md:text-2xl font-medium text-amber-800 mb-6"
                   >
                     ボードゲームテストプレイアプリ
                   </motion.h2>
@@ -274,74 +342,40 @@ const LandingPage: React.FC = () => {
                     initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 1, duration: 0.8 }}
-                    className="flex flex-col sm:flex-row gap-4"
+                    className="flex flex-col sm:flex-row gap-4 justify-center"
                   >
                     <Link href="/">
                       <motion.div
-                        whileHover={{ scale: 1.05 }}
+                        className="flex items-center gap-2 px-6 py-4 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-full font-bold shadow-lg hover:shadow-amber-300/50"
+                        whileHover={{
+                          scale: 1.05,
+                          boxShadow: '0 10px 25px rgba(245, 158, 11, 0.3)',
+                        }}
                         whileTap={{ scale: 0.95 }}
-                        className="px-8 py-3 bg-amber-600 text-white rounded-2xl font-medium hover:bg-amber-700 transition text-center shadow-md"
                       >
-                        今すぐ始める
+                        <GiWoodenCrate className="text-xl" />
+                        <span>今すぐ始める</span>
+                        <motion.div
+                          animate={{ x: [0, 5, 0] }}
+                          transition={{ repeat: Infinity, duration: 1.5 }}
+                          className="ml-1"
+                        >
+                          →
+                        </motion.div>
                       </motion.div>
                     </Link>
                   </motion.div>
                 </motion.div>
 
                 <motion.div
-                  initial={{ x: 100, opacity: 0 }}
+                  initial={{ x: 50, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.5, duration: 0.8 }}
-                  className="md:w-1/2"
+                  className="w-full md:w-2/3"
                 >
                   <div className="rounded-3xl shadow-xl bg-amber-50 p-4 relative">
-                    {/* ゲームボード画像のアニメーション効果 */}
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      transition={{
-                        type: 'spring',
-                        stiffness: 400,
-                        damping: 10,
-                      }}
-                      className="w-full h-64 bg-amber-100 rounded-2xl flex items-center justify-center overflow-hidden relative"
-                    >
-                      <motion.div
-                        className="absolute inset-0 bg-amber-600 opacity-5"
-                        animate={{
-                          backgroundPosition: ['0% 0%', '100% 100%'],
-                        }}
-                        transition={{
-                          duration: 20,
-                          ease: 'linear',
-                          repeat: Infinity,
-                          repeatType: 'reverse',
-                        }}
-                      />
-
-                      {/* 模擬的なゲームボード要素 */}
-                      <div className="relative w-4/5 h-4/5 flex">
-                        <motion.div
-                          animate={{ rotate: [0, 5, 0, -5, 0] }}
-                          transition={{ duration: 10, repeat: Infinity }}
-                          className="absolute top-5 left-5 w-20 h-32 bg-amber-200 rounded-2xl shadow-md"
-                        />
-                        <motion.div
-                          animate={{ y: [0, -10, 0] }}
-                          transition={{ duration: 5, repeat: Infinity }}
-                          className="absolute top-12 right-10 w-16 h-16 bg-rose-300 rounded-full shadow-md"
-                        />
-                        <motion.div
-                          animate={{ x: [0, 10, 0, -10, 0] }}
-                          transition={{ duration: 7, repeat: Infinity }}
-                          className="absolute bottom-5 left-10 w-24 h-16 bg-amber-300 rounded-2xl shadow-md"
-                        />
-                        <motion.div className="absolute inset-0 flex items-center justify-center">
-                          <p className="text-amber-800 font-medium">
-                            ゲームボードのイメージ
-                          </p>
-                        </motion.div>
-                      </div>
-                    </motion.div>
+                    {/* インタラクティブなゲームボード */}
+                    <MiniGameBoard className="shadow-inner border border-amber-200" />
                   </div>
                 </motion.div>
               </motion.div>
@@ -355,7 +389,7 @@ const LandingPage: React.FC = () => {
         style={{ opacity: featuresOpacity, y: featuresY }}
         className="bg-amber-50 py-16 rounded-t-3xl rounded-b-3xl"
       >
-        <div className="container mx-auto px-4">
+        <div className="container-fluid max-w-[1800px] mx-auto px-4">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -445,7 +479,7 @@ const LandingPage: React.FC = () => {
       {/* 使い方セクション */}
       <div className="py-16 relative">
         <div className="absolute inset-0 bg-amber-200 opacity-30 transform -skew-y-3 origin-top z-0 rounded-3xl"></div>
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container-fluid max-w-[1800px] mx-auto px-4 relative z-10">
           <motion.h2
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -525,7 +559,7 @@ const LandingPage: React.FC = () => {
           <div className="absolute top-1/2 left-1/3 w-20 h-20 bg-amber-50 rounded-full"></div>
         </motion.div>
 
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container-fluid max-w-[1800px] mx-auto px-4 relative z-10">
           <div className="text-center">
             <motion.h2
               initial={{ y: 30, opacity: 0 }}
@@ -553,11 +587,22 @@ const LandingPage: React.FC = () => {
             >
               <Link href="/">
                 <motion.div
-                  whileHover={{ scale: 1.05 }}
+                  className="inline-flex items-center gap-2 px-6 py-4 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-full font-bold shadow-lg hover:shadow-amber-300/50"
+                  whileHover={{
+                    scale: 1.05,
+                    boxShadow: '0 10px 25px rgba(245, 158, 11, 0.3)',
+                  }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-8 py-3 bg-amber-600 text-white rounded-2xl font-medium hover:bg-amber-700 transition text-center shadow-md"
                 >
-                  今すぐ始める
+                  <GiWoodenCrate className="text-xl" />
+                  <span>今すぐ始める</span>
+                  <motion.div
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                    className="ml-1"
+                  >
+                    →
+                  </motion.div>
                 </motion.div>
               </Link>
             </motion.div>

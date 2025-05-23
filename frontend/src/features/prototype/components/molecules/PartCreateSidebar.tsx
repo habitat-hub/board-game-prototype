@@ -13,11 +13,7 @@ import {
   GiPokerHand,
   GiStoneBlock,
 } from 'react-icons/gi';
-import { IoArrowBack } from 'react-icons/io5';
-import {
-  TbLayoutSidebarLeftCollapse,
-  TbLayoutSidebarLeftExpand,
-} from 'react-icons/tb';
+import { IoArrowBack, IoMenu } from 'react-icons/io5';
 
 import { Part, PartProperty, Player } from '@/api/types';
 import TextIconButton from '@/components/atoms/TextIconButton';
@@ -31,15 +27,12 @@ const PART_DEFAULT_POSITION = {
 
 export default function PartCreateSidebar({
   prototypeName,
-  prototypeVersionNumber,
   groupId,
   players,
   onAddPart,
 }: {
   // プロトタイプ名
   prototypeName: string;
-  // プロトタイプバージョン番号
-  prototypeVersionNumber?: string;
   // グループID
   groupId: string;
   // プレイヤー
@@ -81,18 +74,23 @@ export default function PartCreateSidebar({
       originalPartId: undefined,
     };
 
-    // カードパーツか
-    const isCard = partType === 'card';
-    // カードパーツの場合
-    if (isCard) {
-      newPart.isReversible =
-        'isReversible' in partConfig && partConfig.isReversible;
-      newPart.isFlipped = false;
-    }
-    // 手札パーツの場合
-    if (partType === 'hand') {
-      newPart.ownerId = players[0].id;
-    }
+    // パーツタイプ別の設定を適用
+    const typeSpecificConfigs = {
+      card: () => {
+        newPart.isReversible =
+          'isReversible' in partConfig && partConfig.isReversible;
+        newPart.isFlipped = false;
+      },
+      hand: () => {
+        newPart.ownerId = players[0].id;
+      },
+      token: () => {},
+      deck: () => {},
+      area: () => {},
+    };
+
+    // パーツタイプに応じた処理を実行
+    typeSpecificConfigs[partType]();
 
     // パーツの共通プロパティ
     const commonProperties = {
@@ -102,16 +100,18 @@ export default function PartCreateSidebar({
       textColor: partConfig.textColor,
       image: '',
     };
-    // パーツのプロパティ
+
+    // カードの場合は表裏両方のプロパティを作成、それ以外は表面のみ
     const newPartProperties: Omit<
       PartProperty,
       'id' | 'partId' | 'createdAt' | 'updatedAt'
-    >[] = isCard
-      ? [
-          { side: 'front', ...commonProperties },
-          { side: 'back', ...commonProperties },
-        ]
-      : [{ side: 'front', ...commonProperties }];
+    >[] =
+      partType === 'card'
+        ? [
+            { side: 'front', ...commonProperties },
+            { side: 'back', ...commonProperties },
+          ]
+        : [{ side: 'front', ...commonProperties }];
 
     onAddPart({ part: newPart, properties: newPartProperties });
   };
@@ -119,53 +119,48 @@ export default function PartCreateSidebar({
   return (
     <>
       {!isLeftSidebarMinimized ? (
-        <div className="fixed left-0 flex h-full w-[240px] flex-col border-r border-gray-200 bg-white">
-          <div className="p-4">
-            <div className="flex justify-between items-center">
-              <button
-                onClick={() => router.push(`/prototypes/groups/${groupId}`)}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                title="戻る"
+        <div className="fixed left-2 top-4 flex flex-col rounded-xl border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary shadow-md overflow-auto w-[240px] max-h-[90vh]">
+          <div className="flex h-[48px] items-center justify-between p-4">
+            <button
+              onClick={() => router.push(`/prototypes/groups/${groupId}`)}
+              className="p-2 hover:bg-wood-lightest/20 rounded-full transition-colors flex-shrink-0"
+              title="戻る"
+            >
+              <IoArrowBack className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
+            </button>
+            <div className="flex items-center gap-1 flex-grow ml-2 min-w-0">
+              <h2
+                className="text-xs font-medium truncate text-wood-darkest"
+                title={prototypeName}
               >
-                <IoArrowBack className="h-5 w-5 text-gray-600" />
-              </button>
-              <div className="flex items-center gap-2 flex-grow ml-2 min-w-0">
-                <h2
-                  className="text-sm font-medium truncate"
-                  title={prototypeName}
-                >
-                  {prototypeName}
-                </h2>
-                {prototypeVersionNumber && (
-                  <span className="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-600 rounded-md min-w-1 border border-blue-600 flex-shrink-0">
-                    v{prototypeVersionNumber}
-                  </span>
-                )}
-              </div>
-              <button
-                onClick={() => setIsLeftSidebarMinimized(true)}
-                aria-label="サイドバーを最小化"
-                className="p-1 rounded-full transition-transform hover:scale-110"
-              >
-                <TbLayoutSidebarLeftCollapse className="h-5 w-5 text-gray-600 hover:text-blue-500 transition-colors" />
-              </button>
+                {prototypeName}
+              </h2>
             </div>
+            <button
+              onClick={() => setIsLeftSidebarMinimized(true)}
+              aria-label="サイドバーを最小化"
+              className="p-2 rounded-full transition-transform hover:scale-110"
+            >
+              <IoMenu className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
+            </button>
           </div>
-          <div className="border-b border-gray-200" />
-          <div className="flex flex-col gap-1 p-4">
-            <span className="mb-2 text-xs font-medium">パーツ</span>
+          <div className="border-b border-wood-light/30" />
+          <div className="flex flex-col gap-2 p-4 overflow-y-auto">
+            <span className="mb-2 text-xs font-medium uppercase tracking-wide text-wood-dark/70">
+              パーツ
+            </span>
             {Object.values(PART_DEFAULT_CONFIG).map((part) => {
               const icon =
                 part.type === 'card' ? (
-                  <GiCard10Clubs className="h-4 w-4 text-gray-500" />
+                  <GiCard10Clubs className="h-4 w-4 text-wood-dark" />
                 ) : part.type === 'token' ? (
-                  <Gi3dMeeple className="h-4 w-4 text-gray-500" />
+                  <Gi3dMeeple className="h-4 w-4 text-wood-dark" />
                 ) : part.type === 'hand' ? (
-                  <GiPokerHand className="h-4 w-4 text-gray-500" />
+                  <GiPokerHand className="h-4 w-4 text-wood-dark" />
                 ) : part.type === 'deck' ? (
-                  <GiStoneBlock className="h-4 w-4 text-gray-500" />
+                  <GiStoneBlock className="h-4 w-4 text-wood-dark" />
                 ) : part.type === 'area' ? (
-                  <BiArea className="h-4 w-4 text-gray-500" />
+                  <BiArea className="h-4 w-4 text-wood-dark" />
                 ) : null;
 
               return (
@@ -181,30 +176,28 @@ export default function PartCreateSidebar({
           </div>
         </div>
       ) : (
-        <div className="fixed left-2 top-14 flex h-auto w-[250px] items-center justify-between rounded-xl border bg-white p-4 max-h-[48px]">
+        <div className="fixed left-2 top-4 flex h-[48px] items-center justify-between rounded-xl border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary p-4 shadow-md w-[240px]">
           <button
             onClick={() => router.push(`/prototypes/groups/${groupId}`)}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
+            className="p-2 hover:bg-wood-lightest/20 rounded-full transition-colors flex-shrink-0"
             title="戻る"
           >
-            <IoArrowBack className="h-5 w-5 text-gray-600" />
+            <IoArrowBack className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
           </button>
-          <div className="flex items-center gap-2 flex-grow ml-2 min-w-0">
-            <h2 className="text-sm font-medium truncate" title={prototypeName}>
+          <div className="flex items-center gap-1 flex-grow ml-2 min-w-0">
+            <h2
+              className="text-xs font-medium truncate text-wood-darkest"
+              title={prototypeName}
+            >
               {prototypeName}
             </h2>
-            {prototypeVersionNumber && (
-              <span className="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-600 rounded-md min-w-1 border border-blue-600 flex-shrink-0">
-                v{prototypeVersionNumber}
-              </span>
-            )}
           </div>
           <button
             onClick={() => setIsLeftSidebarMinimized(false)}
             aria-label="サイドバーを展開"
-            className="p-1 rounded-full transition-transform hover:scale-110"
+            className="p-2 rounded-full transition-transform hover:scale-110"
           >
-            <TbLayoutSidebarLeftExpand className="h-5 w-5 text-gray-600 hover:text-blue-500 transition-colors" />
+            <IoMenu className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
           </button>
         </div>
       )}

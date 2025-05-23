@@ -1,17 +1,12 @@
-import type { Metadata } from 'next';
+import React from 'react';
 
-import './globals.css';
-import Layout from '@/components/Layout';
+import ClientLayout from '@/components/layouts/ClientLayout';
 import { UserProvider } from '@/contexts/UserContext';
 
-export const metadata: Metadata = {
-  title: {
-    template: '%s | KIBAKO',
-    default: 'KIBAKO',
-  },
-  description: '気軽にボードゲームを作ろう',
-  icons: [{ rel: 'icon', url: '/favicon.ico' }],
-};
+import './globals.css';
+import { metadata } from './metadata';
+
+export { metadata };
 
 export default function RootLayout({
   children,
@@ -22,7 +17,7 @@ export default function RootLayout({
     <html lang="ja">
       <body>
         <UserProvider>
-          <Layout>{children}</Layout>
+          <ClientLayout>{children}</ClientLayout>
         </UserProvider>
       </body>
     </html>
