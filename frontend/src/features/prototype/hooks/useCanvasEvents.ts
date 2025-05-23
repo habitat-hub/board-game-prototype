@@ -12,7 +12,7 @@ interface UseCanvasEventsProps {
   setCamera: React.Dispatch<React.SetStateAction<Camera>>;
   setSelectedPartId: React.Dispatch<React.SetStateAction<number | null>>;
   parts: Part[];
-  canvasContainerRef: React.RefObject<HTMLDivElement>;
+  mainViewRef: React.RefObject<HTMLDivElement>;
 }
 
 export const useCanvasEvents = ({
@@ -20,7 +20,7 @@ export const useCanvasEvents = ({
   setCamera,
   setSelectedPartId,
   parts,
-  canvasContainerRef,
+  mainViewRef,
 }: UseCanvasEventsProps) => {
   const { dispatch } = usePartReducer();
 
@@ -103,16 +103,14 @@ export const useCanvasEvents = ({
    */
   const onWheel = useCallback(
     (e: React.WheelEvent) => {
-      // マウスホイールを使った移動（パン）の実装
-      // deltaX, deltaYの値をズームレベルで調整して、ズームレベルに応じた適切な移動量にする
-      const scaleFactor = 1 / camera.zoom;
+      // TODO: スクロールの上限を決める
       setCamera((camera) => ({
-        x: camera.x - e.deltaX * scaleFactor * 0.5,
-        y: camera.y - e.deltaY * scaleFactor * 0.5,
+        x: camera.x - e.deltaX,
+        y: camera.y - e.deltaY,
         zoom: camera.zoom,
       }));
     },
-    [setCamera, camera.zoom]
+    [setCamera]
   );
 
   /**
@@ -144,7 +142,7 @@ export const useCanvasEvents = ({
     e.stopPropagation();
 
     const part = parts.find((part) => part.id === partId);
-    const rect = canvasContainerRef.current?.getBoundingClientRect();
+    const rect = mainViewRef.current?.getBoundingClientRect();
     // パーツが見つからない場合
     if (!rect || !part) return;
 
@@ -196,7 +194,7 @@ export const useCanvasEvents = ({
     // パーツの移動中
     if (movingPart) {
       // パーツのドラッグ処理
-      const rect = canvasContainerRef.current?.getBoundingClientRect();
+      const rect = mainViewRef.current?.getBoundingClientRect();
       if (!rect) return;
 
       // マウス位置からパーツの新しい位置を計算
@@ -269,7 +267,7 @@ export const useCanvasEvents = ({
       return;
     }
 
-    const rect = canvasContainerRef.current?.getBoundingClientRect();
+    const rect = mainViewRef.current?.getBoundingClientRect();
     // パーツが見つからない場合
     if (!rect) {
       cleanUp();
