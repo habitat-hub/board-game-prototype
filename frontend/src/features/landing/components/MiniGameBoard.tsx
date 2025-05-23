@@ -261,7 +261,7 @@ const CardComponent: React.FC<{
   const handleDragEnd = () => {
     if (onDragEnd) {
       const newZIndex = onDragEnd(); // 親コンポーネントのzIndexカウンターを更新し、新しい値を取得
-      setCurrentZIndex(newZIndex || currentZIndex + 1); // 新しいzIndexを設定
+      setCurrentZIndex(newZIndex ?? currentZIndex + 1);
     }
   };
 
@@ -368,7 +368,7 @@ const TokenComponent: React.FC<{
   const handleDragEnd = () => {
     if (onDragEnd) {
       const newZIndex = onDragEnd(); // 親コンポーネントのzIndexカウンターを更新し、新しい値を取得
-      setCurrentZIndex(newZIndex || currentZIndex + 1); // 新しいzIndexを設定
+      setCurrentZIndex(newZIndex ?? currentZIndex + 1);
     }
   };
 
