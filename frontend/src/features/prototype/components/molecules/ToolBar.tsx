@@ -24,9 +24,6 @@ export default function ToolsBar({
   const zoomValue = zoomLevel || 1.0;
   const zoomPercentage = Math.floor(zoomValue * 100);
 
-  // 開発用：値のログ出力
-  console.log('Zoom level:', zoomLevel, 'Zoom percentage:', zoomPercentage);
-
   return (
     <div className="fixed bottom-4 left-1/2 z-[10000] flex -translate-x-1/2 items-center justify-center rounded-lg bg-gray-300 p-1">
       <div className="flex items-center justify-center gap-3">
