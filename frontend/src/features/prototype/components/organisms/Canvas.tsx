@@ -543,7 +543,6 @@ export default function Canvas({
       {prototypeType === 'EDIT' && (
         <EditSidebars
           prototypeName={prototypeName}
-          prototypeVersionNumber={prototypeVersionNumber}
           groupId={groupId}
           players={players}
           selectedPartId={selectedPartId}
