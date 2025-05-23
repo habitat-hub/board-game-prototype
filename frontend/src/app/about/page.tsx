@@ -9,12 +9,7 @@ export const metadata: Metadata = {
 };
 
 const AboutPage: React.FC = () => {
-  // LandingPageは既に独自のレイアウトを持っているため、直接レンダリングします
-  return (
-    <>
-      <LandingPage />
-    </>
-  );
+  return <LandingPage />;
 };
 
 export default AboutPage;
