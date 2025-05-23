@@ -60,39 +60,44 @@ export const useCanvasEvents = ({
   const lastPositions = useRef(new Map<number, { x: number; y: number }>());
 
   // 複数パーツ選択時、ドラッグ中のパーツとその他の選択されたパーツを全て更新する
-  const updateMultiSelectedPartsPositions = useCallback((x: number, y: number, shiftKey: boolean) => {
-    if (!movingPart || !movingPart.isMultiSelect || !shiftKey) return;
+  const updateMultiSelectedPartsPositions = useCallback(
+    (x: number, y: number, shiftKey: boolean) => {
+      if (!movingPart || !movingPart.isMultiSelect || !shiftKey) return;
 
-    // ドラッグされたことを記録
-    if (!movingPart.wasDragged) {
-      setMovingPart({
-        ...movingPart,
-        wasDragged: true
-      });
-    }
-
-    const deltaX = x - movingPart.startX;
-    const deltaY = y - movingPart.startY;
-
-    // 全ての選択されたパーツの位置を個別に更新
-    movingPart.partsInitialPositions.forEach((initialPos, partId) => {
-      // ドラッグ中のパーツ自体は更新しない（別途更新されるため）
-      if (partId === movingPart.partId) {
-        return;
+      // ドラッグされたことを記録
+      if (!movingPart.wasDragged) {
+        setMovingPart({
+          ...movingPart,
+          wasDragged: true,
+        });
       }
 
-      const newX = Math.round((initialPos.x + deltaX) / GRID_SIZE) * GRID_SIZE;
-      const newY = Math.round((initialPos.y + deltaY) / GRID_SIZE) * GRID_SIZE;
-      
-      dispatch({
-        type: 'UPDATE_PART',
-        payload: {
-          partId,
-          updatePart: { position: { x: newX, y: newY } },
-        },
+      const deltaX = x - movingPart.startX;
+      const deltaY = y - movingPart.startY;
+
+      // 全ての選択されたパーツの位置を個別に更新
+      movingPart.partsInitialPositions.forEach((initialPos, partId) => {
+        // ドラッグ中のパーツ自体は更新しない（別途更新されるため）
+        if (partId === movingPart.partId) {
+          return;
+        }
+
+        const newX =
+          Math.round((initialPos.x + deltaX) / GRID_SIZE) * GRID_SIZE;
+        const newY =
+          Math.round((initialPos.y + deltaY) / GRID_SIZE) * GRID_SIZE;
+
+        dispatch({
+          type: 'UPDATE_PART',
+          payload: {
+            partId,
+            updatePart: { position: { x: newX, y: newY } },
+          },
+        });
       });
-    });
-  }, [dispatch, movingPart]);
+    },
+    [dispatch, movingPart]
+  );
 
   /**
    * パーツの位置を更新するためのthrottledなdispatch関数
@@ -155,12 +160,27 @@ export const useCanvasEvents = ({
    */
   const onWheel = useCallback(
     (e: React.WheelEvent) => {
-      // TODO: スクロールの上限を決める
-      setCamera((camera) => ({
-        x: camera.x - e.deltaX,
-        y: camera.y - e.deltaY,
-        zoom: camera.zoom,
-      }));
+      if (e.ctrlKey || e.metaKey) {
+        // CtrlキーまたはCommandキーが押されている場合はズーム操作
+        e.preventDefault();
+        const delta = e.deltaY * -0.01; // ホイールの回転方向に合わせて調整
+
+        setCamera((camera) => {
+          // 新しいズーム値を計算（範囲制限付き）
+          const newZoom = Math.max(0.4, Math.min(1.0, camera.zoom + delta));
+          return {
+            ...camera,
+            zoom: newZoom,
+          };
+        });
+      } else {
+        // 通常のスクロール操作
+        setCamera((camera) => ({
+          x: camera.x - e.deltaX,
+          y: camera.y - e.deltaY,
+          zoom: camera.zoom,
+        }));
+      }
     },
     [setCamera]
   );
@@ -208,12 +228,12 @@ export const useCanvasEvents = ({
     if (e.shiftKey) {
       // 現在のパーツが選択されているかどうかを確認
       const isPartSelected = selectedPartIds.includes(partId);
-      
+
       if (isPartSelected) {
         // すでに選択されているパーツの場合は選択リストから削除
-        const newSelectedIds = selectedPartIds.filter(id => id !== partId);
+        const newSelectedIds = selectedPartIds.filter((id) => id !== partId);
         setSelectedPartIds(newSelectedIds);
-        
+
         // 選択中のパーツが選択解除された場合は、別のパーツを主選択に設定
         if (partId === selectedPartId) {
           if (newSelectedIds.length > 0) {
@@ -226,8 +246,8 @@ export const useCanvasEvents = ({
         }
       } else {
         // 新しく選択する場合は追加
-        setSelectedPartIds(prev => [...prev, partId]);
-        
+        setSelectedPartIds((prev) => [...prev, partId]);
+
         // まだ主選択パーツがない場合はこのパーツを主選択に
         if (selectedPartId === null) {
           setSelectedPartId(partId);
@@ -260,24 +280,30 @@ export const useCanvasEvents = ({
 
     // 選択されたパーツの初期位置を記録
     const partsInitialPositions = new Map<number, Point>();
-    
+
     // Shiftキーが押されている場合のみ、複数選択モードを有効にする
     const isMultiSelect = e.shiftKey && selectedPartIds.length > 0;
-    
+
     if (isMultiSelect) {
       // 選択リストを更新した後で現在の選択されたパーツをすべて取得
       // 注意: selectedPartIds.includes(partId)をチェックしない（選択解除直後も含めるため）
       const currentSelectedIds = selectedPartIds;
-      
+
       // 選択されたパーツすべての初期位置を記録
-      currentSelectedIds.forEach(id => {
-        const selectedPart = parts.find(p => p.id === id);
+      currentSelectedIds.forEach((id) => {
+        const selectedPart = parts.find((p) => p.id === id);
         if (selectedPart) {
-          partsInitialPositions.set(id, { x: selectedPart.position.x, y: selectedPart.position.y });
+          partsInitialPositions.set(id, {
+            x: selectedPart.position.x,
+            y: selectedPart.position.y,
+          });
         }
       });
     } else {
-      partsInitialPositions.set(partId, { x: part.position.x, y: part.position.y });
+      partsInitialPositions.set(partId, {
+        x: part.position.x,
+        y: part.position.y,
+      });
     }
 
     // パーツの移動
@@ -290,7 +316,7 @@ export const useCanvasEvents = ({
       offset: { x, y },
       isMultiSelect,
       partsInitialPositions,
-      wasDragged: false // 初期状態ではドラッグされていない
+      wasDragged: false, // 初期状態ではドラッグされていない
     });
   };
 
@@ -426,7 +452,7 @@ export const useCanvasEvents = ({
 
     // 前の親パーツを取得
     const previousParent = parts.find((p) => p.id === targetPart.parentId);
-    
+
     // カードの裏返し処理
     handleCardFlip(targetPart, previousParent, parentPart);
 
@@ -436,7 +462,12 @@ export const useCanvasEvents = ({
   /**
    * 選択状態の更新処理
    */
-  const updateSelectionState = (currentPartId: number, isShiftKey: boolean, isMultiSelect: boolean, wasDragged: boolean) => {
+  const updateSelectionState = (
+    currentPartId: number,
+    isShiftKey: boolean,
+    isMultiSelect: boolean,
+    wasDragged: boolean
+  ) => {
     // ドラッグ操作がない場合は選択状態を変更しない
     if (!wasDragged) {
       return;
@@ -445,7 +476,7 @@ export const useCanvasEvents = ({
     if (isShiftKey && isMultiSelect) {
       // 現在のパーツが選択リストにない場合は追加
       if (!selectedPartIds.includes(currentPartId)) {
-        setSelectedPartIds(prev => [...prev, currentPartId]);
+        setSelectedPartIds((prev) => [...prev, currentPartId]);
       }
     } else {
       // 単一選択の場合は、現在のパーツのみを選択
@@ -513,10 +544,13 @@ export const useCanvasEvents = ({
 
   // キャンバスのドラッグ中かどうか
   const isDraggingCanvas = movingCanvas !== null;
-  
+
   // Shift+ドラッグ中の関連パーツID群
-  const relatedDraggingPartIds = 
-    (movingPart && movingPart.isMultiSelect && Array.from(movingPart.partsInitialPositions.keys())) || [];
+  const relatedDraggingPartIds =
+    (movingPart &&
+      movingPart.isMultiSelect &&
+      Array.from(movingPart.partsInitialPositions.keys())) ||
+    [];
 
   return {
     isDraggingCanvas,

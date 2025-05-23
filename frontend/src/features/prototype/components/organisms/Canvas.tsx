@@ -79,7 +79,7 @@ export default function Canvas({
   // パーツのref
   const partRefs = useRef<{ [key: number]: React.RefObject<PartHandle> }>({});
   // カメラ
-  const [camera, setCamera] = useState<Camera>({ x: -250, y: -750, zoom: 0.6 });
+  const [camera, setCamera] = useState<Camera>({ x: -200, y: -500, zoom: 0.5 });
   // 乱数ツールを開いているか
   const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
   // 選択中のパーツ
@@ -487,7 +487,7 @@ export default function Canvas({
                         });
                       }}
                       isActive={
-                        selectedPartId === part.id || 
+                        selectedPartId === part.id ||
                         selectedPartIds.includes(part.id) ||
                         relatedDraggingPartIds.includes(part.id)
                       }
@@ -522,19 +522,27 @@ export default function Canvas({
       {/* ツールバー */}
       <ToolsBar
         zoomIn={() => {
-          setCamera((camera) => ({ ...camera, zoom: camera.zoom + 0.1 }));
+          setCamera((camera) => {
+            // 最大値を1.0（100%）に制限
+            const newZoom = camera.zoom + 0.1;
+            return { ...camera, zoom: newZoom > 1.0 ? 1.0 : newZoom };
+          });
         }}
         zoomOut={() => {
-          setCamera((camera) => ({ ...camera, zoom: camera.zoom - 0.1 }));
+          setCamera((camera) => {
+            // 最小値を0.4（40%）に制限
+            const newZoom = camera.zoom - 0.1;
+            return { ...camera, zoom: newZoom < 0.4 ? 0.4 : newZoom };
+          });
         }}
         canZoomIn={camera.zoom < 1}
         canZoomOut={camera.zoom > 0.4}
+        zoomLevel={camera.zoom}
       />
       {/* サイドバー */}
       {prototypeType === 'EDIT' && (
         <EditSidebars
           prototypeName={prototypeName}
-          prototypeVersionNumber={prototypeVersionNumber}
           groupId={groupId}
           players={players}
           selectedPartId={selectedPartId}

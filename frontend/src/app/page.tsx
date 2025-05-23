@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Login from '@/features/prototype/components/organisms/Login';
+import Login from '@/components/molecules/Login';
 
 function Home() {
   return <Login />;
