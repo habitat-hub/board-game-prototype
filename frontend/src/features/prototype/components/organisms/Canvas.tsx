@@ -545,7 +545,6 @@ export default function Canvas({
           prototypeName={prototypeName}
           groupId={groupId}
           players={players}
-          selectedPartId={selectedPartId}
           selectedPartIds={selectedPartIds}
           parts={parts}
           properties={properties}

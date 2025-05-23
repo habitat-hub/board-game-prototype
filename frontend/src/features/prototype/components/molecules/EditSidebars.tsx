@@ -14,7 +14,6 @@ export default function EditSidebars({
   prototypeName,
   groupId,
   players,
-  selectedPartId,
   selectedPartIds,
   parts,
   properties,
@@ -27,8 +26,6 @@ export default function EditSidebars({
   groupId: string;
   // プレイヤー
   players: Player[];
-  // 選択中のパーツID
-  selectedPartId: number | null;
   // 複数選択中のパーツID配列
   selectedPartIds: number[];
   // パーツ
@@ -40,9 +37,6 @@ export default function EditSidebars({
   // パーツを削除時の処理
   onDeletePart: () => void;
 }) {
-  // 複数選択されているかどうか（2つ以上のパーツが選択されている場合）
-  const isMultipleSelection = selectedPartIds.length > 1;
-
   return (
     <>
       {/* Left Sidebar */}
@@ -62,11 +56,6 @@ export default function EditSidebars({
             description: '複数のパーツを選択できます',
           },
           {
-            id: 'multi-drag',
-            key: 'Shift + ドラッグ',
-            description: '選択中の複数パーツをまとめて移動できます',
-          },
-          {
             id: 'delete',
             key: 'Delete / Backspace',
             description: '選択中のパーツを削除します',
@@ -74,11 +63,11 @@ export default function EditSidebars({
         ]}
       />
 
-      {/* Right Sidebar - 複数選択時は非表示 */}
-      {!isMultipleSelection && (
+      {/* Right Sidebar */}
+      {selectedPartIds.length === 1 && (
         <PartPropertySidebar
           players={players}
-          selectedPartId={selectedPartId}
+          selectedPartId={selectedPartIds[0]}
           parts={parts}
           properties={properties}
           onAddPart={onAddPart}
