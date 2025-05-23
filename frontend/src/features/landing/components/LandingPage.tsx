@@ -272,15 +272,6 @@ const LandingPage: React.FC = () => {
                 }
               />
             </div>
-
-            <motion.div
-              className="max-w-3xl mx-auto"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8, duration: 0.8 }}
-            >
-              {/* キャッチコピーを削除 */}
-            </motion.div>
           </motion.div>
         </div>
       </motion.div>
