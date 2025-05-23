@@ -1,7 +1,15 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import React, { useState, useEffect } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  createContext,
+  useContext,
+  useCallback,
+  useMemo,
+} from 'react';
 import {
   GiCardRandom,
   GiDiamonds,
@@ -11,23 +19,93 @@ import {
   GiSpades,
 } from 'react-icons/gi';
 
+// ゲームボード要素の参照を共有するためのContext
+const GameBoardContext = createContext<React.RefObject<HTMLDivElement> | null>(
+  null
+);
+
+// ゲームピース要素の参照を動的に管理するためのContext
+type GamePieceRefMap = Map<string, React.RefObject<HTMLDivElement>>;
+interface GamePieceContextType {
+  refs: GamePieceRefMap;
+  registerRef: (
+    id: string,
+    width: string,
+    height: string
+  ) => React.RefObject<HTMLDivElement>;
+}
+
+const GamePieceContext = createContext<GamePieceContextType | null>(null);
+
+// ピース要素のRefMapを提供するカスタムProvider
+const GamePieceProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const pieceRefs = useRef<GamePieceRefMap>(new Map());
+
+  const registerRef = useCallback(
+    (id: string, width: string, height: string) => {
+      // 既に存在する場合はそれを返す
+      const existingKey = `${id}-${width}-${height}`;
+      if (pieceRefs.current.has(existingKey)) {
+        return pieceRefs.current.get(existingKey)!;
+      }
+
+      // 新しいrefを作成して登録
+      const newRef = React.createRef<HTMLDivElement>();
+      pieceRefs.current.set(existingKey, newRef);
+      return newRef;
+    },
+    []
+  );
+
+  const contextValue = useMemo(
+    () => ({
+      refs: pieceRefs.current,
+      registerRef,
+    }),
+    [registerRef]
+  );
+
+  return (
+    <GamePieceContext.Provider value={contextValue}>
+      {children}
+    </GamePieceContext.Provider>
+  );
+};
+
 // ボード内のランダムな位置を生成するカスタムフック
-function useRandomPosition(width: string, height: string) {
+function useRandomPosition(id: string, width: string, height: string) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const boardRef = useContext(GameBoardContext);
+  const piecesContext = useContext(GamePieceContext);
+
+  // このピース用のrefを登録
+  const pieceRef = piecesContext?.registerRef(id, width, height);
 
   useEffect(() => {
     const calculateRandomPosition = () => {
-      const boardElement = document.querySelector('.game-board-area');
+      const boardElement = boardRef?.current;
       if (boardElement) {
         const boardRect = boardElement.getBoundingClientRect();
 
-        // より堅牢な方法：実際の要素のサイズを取得する
-        const pieceElement = document.querySelector(`.${width}.${height}`);
-        const pieceRect = pieceElement?.getBoundingClientRect();
+        // pieceRefが設定されている場合はそれを使用する、まだ設定されていない場合は従来の方法でサイズを取得
+        let pieceWidth = 64; // デフォルト値
+        let pieceHeight = 64; // デフォルト値
 
-        // 要素が見つからない場合のフォールバック値
-        const pieceWidth = pieceRect?.width || 64;
-        const pieceHeight = pieceRect?.height || 64;
+        if (pieceRef?.current) {
+          const pieceRect = pieceRef.current.getBoundingClientRect();
+          pieceWidth = pieceRect.width;
+          pieceHeight = pieceRect.height;
+        } else {
+          // ピースがまだレンダリングされていない場合のフォールバック
+          const pieceElements = boardElement.querySelectorAll(
+            `.${width}.${height}`
+          );
+          const pieceRect = pieceElements[0]?.getBoundingClientRect();
+          pieceWidth = pieceRect?.width || pieceWidth;
+          pieceHeight = pieceRect?.height || pieceHeight;
+        }
 
         // ボードの余白を考慮
         const buffer = 10;
@@ -50,12 +128,13 @@ function useRandomPosition(width: string, height: string) {
     const timer = setTimeout(calculateRandomPosition, 100);
 
     return () => clearTimeout(timer);
-  }, [width, height]);
+  }, [width, height, boardRef, pieceRef]);
 
   return position;
 }
 
 interface DraggableGamePieceProps {
+  id: string; // ピースを識別するためのユニークID
   children: React.ReactNode;
   initialX: number;
   initialY: number;
@@ -68,6 +147,7 @@ interface DraggableGamePieceProps {
 }
 
 const DraggableGamePiece: React.FC<DraggableGamePieceProps> = ({
+  id,
   children,
   initialX,
   initialY,
@@ -79,7 +159,11 @@ const DraggableGamePiece: React.FC<DraggableGamePieceProps> = ({
   zIndex = 10,
 }) => {
   // ランダム初期位置の計算（オプション）
-  const randomPosition = useRandomPosition(width, height);
+  const randomPosition = useRandomPosition(id, width, height);
+
+  // GamePieceContextから参照を取得
+  const piecesContext = useContext(GamePieceContext);
+  const pieceRef = piecesContext?.registerRef(id, width, height);
 
   // useRandomInitialPositionがtrueの場合はランダム位置を使用、そうでなければ指定された初期位置を使用
   const startX = useRandomInitialPosition ? randomPosition.x : initialX;
@@ -101,29 +185,35 @@ const DraggableGamePiece: React.FC<DraggableGamePieceProps> = ({
     }
   }, [useRandomInitialPosition, randomPosition]);
 
+  // ボード参照の取得
+  const boardRef = useContext(GameBoardContext);
+
   // コンポーネントマウント時とウィンドウリサイズ時にボード境界を計算
   React.useEffect(() => {
     const calculateBoundaries = () => {
-      const boardElement = document.querySelector('.game-board-area');
+      const boardElement = boardRef?.current;
       if (boardElement) {
         const boardRect = boardElement.getBoundingClientRect();
-        const pieceElement = document.querySelector(`.${width}.${height}`);
-        const pieceRect = pieceElement?.getBoundingClientRect();
 
-        if (pieceRect) {
-          const pieceWidth = pieceRect.width;
-          const pieceHeight = pieceRect.height;
+        // pieceRefを使ってピースの寸法を取得
+        let pieceWidth = 64; // デフォルト値
+        let pieceHeight = 64; // デフォルト値
 
-          // ボード内に少し余白を持たせて、見た目上完全にはみ出さないようにする
-          const buffer = 5; // 5pxの余白
-
-          setBoardBounds({
-            left: buffer,
-            top: buffer,
-            right: boardRect.width - pieceWidth - buffer,
-            bottom: boardRect.height - pieceHeight - buffer,
-          });
+        if (pieceRef?.current) {
+          const pieceRect = pieceRef.current.getBoundingClientRect();
+          pieceWidth = pieceRect.width;
+          pieceHeight = pieceRect.height;
         }
+
+        // ボード内に少し余白を持たせて、見た目上完全にはみ出さないようにする
+        const buffer = 5; // 5pxの余白
+
+        setBoardBounds({
+          left: buffer,
+          top: buffer,
+          right: boardRect.width - pieceWidth - buffer,
+          bottom: boardRect.height - pieceHeight - buffer,
+        });
       }
     };
 
@@ -135,7 +225,7 @@ const DraggableGamePiece: React.FC<DraggableGamePieceProps> = ({
       clearTimeout(timer);
       window.removeEventListener('resize', calculateBoundaries);
     };
-  }, [width, height]);
+  }, [width, height, boardRef, pieceRef]);
 
   // ドラッグ機能
   const handleDrag = (e: React.DragEvent) => {
@@ -197,6 +287,7 @@ const DraggableGamePiece: React.FC<DraggableGamePieceProps> = ({
 
   return (
     <div
+      ref={pieceRef}
       className={`absolute cursor-move flex items-center justify-center ${width} ${height} rounded-lg`}
       style={{
         backgroundColor: color,
@@ -230,6 +321,7 @@ const DraggableGamePiece: React.FC<DraggableGamePieceProps> = ({
 };
 
 const CardComponent: React.FC<{
+  id?: string;
   initialX: number;
   initialY: number;
   color: string;
@@ -240,6 +332,7 @@ const CardComponent: React.FC<{
   onDragEnd?: () => number;
   zIndex?: number;
 }> = ({
+  id = `card-${Math.random().toString(36).substr(2, 9)}`,
   initialX,
   initialY,
   color,
@@ -300,6 +393,7 @@ const CardComponent: React.FC<{
 
   return (
     <DraggableGamePiece
+      id={id}
       initialX={initialX}
       initialY={initialY}
       color={color}
@@ -341,6 +435,7 @@ const CardComponent: React.FC<{
 };
 
 const TokenComponent: React.FC<{
+  id?: string;
   initialX: number;
   initialY: number;
   color: string;
@@ -350,6 +445,7 @@ const TokenComponent: React.FC<{
   onDragEnd?: () => number;
   zIndex?: number;
 }> = ({
+  id = `token-${Math.random().toString(36).substr(2, 9)}`,
   initialX,
   initialY,
   color,
@@ -389,6 +485,7 @@ const TokenComponent: React.FC<{
 
   return (
     <DraggableGamePiece
+      id={id}
       initialX={initialX}
       initialY={initialY}
       color={color}
@@ -433,6 +530,9 @@ const MiniGameBoard: React.FC<MiniGameBoardProps> = ({ className = '' }) => {
   // グローバルなzIndexカウンター（各コンポーネントがこれを基準に独自のzIndexを管理）
   const zIndexRef = React.useRef(20); // 初期値を設定
 
+  // ゲームボード要素への参照
+  const boardRef = useRef<HTMLDivElement>(null);
+
   // ドラッグ後にzIndexを更新するための関数
   const updateZIndex = () => {
     zIndexRef.current += 1;
@@ -440,98 +540,109 @@ const MiniGameBoard: React.FC<MiniGameBoardProps> = ({ className = '' }) => {
   };
 
   return (
-    <div
-      style={{ maxWidth: '1440px' }}
-      className={`relative w-full md:w-[95%] lg:w-[98%] xl:w-full mx-auto h-96 md:h-[28rem] lg:h-[32rem] xl:h-[40rem] bg-amber-100 rounded-2xl flex items-center justify-center overflow-hidden game-board-area ${className}`}
-    >
-      {/* ボードの装飾パターン - より洗練された格子パターン */}
-      <div className="absolute inset-0 bg-amber-600 opacity-5">
-        <div className="absolute inset-0 grid grid-cols-8 grid-rows-5">
-          {Array.from({ length: 40 }).map((_, i) => (
-            <div key={i} className="border border-amber-500/10" />
-          ))}
+    <GameBoardContext.Provider value={boardRef}>
+      <GamePieceProvider>
+        <div
+          ref={boardRef}
+          style={{ maxWidth: '1440px' }}
+          className={`relative w-full md:w-[95%] lg:w-[98%] xl:w-full mx-auto h-96 md:h-[28rem] lg:h-[32rem] xl:h-[40rem] bg-amber-100 rounded-2xl flex items-center justify-center overflow-hidden game-board-area ${className}`}
+        >
+          {/* ボードの装飾パターン - より洗練された格子パターン */}
+          <div className="absolute inset-0 bg-amber-600 opacity-5">
+            <div className="absolute inset-0 grid grid-cols-8 grid-rows-5">
+              {Array.from({ length: 40 }).map((_, i) => (
+                <div key={i} className="border border-amber-500/10" />
+              ))}
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-200/10 to-amber-600/5" />
+          </div>
+
+          {/* ゲームボード上の要素 */}
+          <div className="relative w-full h-full">
+            {/* 中央に配置したゲームパーツ */}
+
+            {/* カード - 4種類（ランダム配置） */}
+            <CardComponent
+              id="card-spade"
+              initialX={0}
+              initialY={0}
+              useRandomInitialPosition={true}
+              color="#ffe4b5"
+              textColor="text-amber-800"
+              cardType="spade"
+              title="スペード"
+              onDragEnd={updateZIndex}
+              zIndex={10}
+            />
+            <CardComponent
+              id="card-diamond"
+              initialX={0}
+              initialY={0}
+              useRandomInitialPosition={true}
+              color="#e6ccb2"
+              textColor="text-red-900"
+              cardType="diamond"
+              title="ダイヤ"
+              onDragEnd={updateZIndex}
+              zIndex={11}
+            />
+            <CardComponent
+              id="card-heart"
+              initialX={0}
+              initialY={0}
+              useRandomInitialPosition={true}
+              color="#b5d8ff"
+              textColor="text-blue-900"
+              cardType="heart"
+              title="ハート"
+              onDragEnd={updateZIndex}
+              zIndex={12}
+            />
+            <CardComponent
+              id="card-club"
+              initialX={0}
+              initialY={0}
+              useRandomInitialPosition={true}
+              color="#d8ffb5"
+              textColor="text-green-900"
+              cardType="club"
+              title="クローバー"
+              onDragEnd={updateZIndex}
+              zIndex={13}
+            />
+
+            {/* トークン - 2種類（ランダム配置） */}
+            <TokenComponent
+              id="token-orange"
+              initialX={0}
+              initialY={0}
+              useRandomInitialPosition={true}
+              color="#f8b878"
+              shape="square"
+              label="キューブ"
+              onDragEnd={updateZIndex}
+              zIndex={14}
+            />
+            <TokenComponent
+              id="token-blue"
+              initialX={0}
+              initialY={0}
+              useRandomInitialPosition={true}
+              color="#78b8f8"
+              shape="square"
+              label="キューブ"
+              onDragEnd={updateZIndex}
+              zIndex={15}
+            />
+
+            {/* 操作説明 */}
+            <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 bg-amber-800/70 text-white text-xs px-2 py-1 rounded-full">
+              パーツはドラッグできます
+            </div>
+          </div>
         </div>
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-200/10 to-amber-600/5" />
-      </div>
-
-      {/* ゲームボード上の要素 */}
-      <div className="relative w-full h-full">
-        {/* 中央に配置したゲームパーツ */}
-
-        {/* カード - 4種類（ランダム配置） */}
-        <CardComponent
-          initialX={0}
-          initialY={0}
-          useRandomInitialPosition={true}
-          color="#ffe4b5"
-          textColor="text-amber-800"
-          cardType="spade"
-          title="スペード"
-          onDragEnd={updateZIndex}
-          zIndex={10}
-        />
-        <CardComponent
-          initialX={0}
-          initialY={0}
-          useRandomInitialPosition={true}
-          color="#e6ccb2"
-          textColor="text-red-900"
-          cardType="diamond"
-          title="ダイヤ"
-          onDragEnd={updateZIndex}
-          zIndex={11}
-        />
-        <CardComponent
-          initialX={0}
-          initialY={0}
-          useRandomInitialPosition={true}
-          color="#b5d8ff"
-          textColor="text-blue-900"
-          cardType="heart"
-          title="ハート"
-          onDragEnd={updateZIndex}
-          zIndex={12}
-        />
-        <CardComponent
-          initialX={0}
-          initialY={0}
-          useRandomInitialPosition={true}
-          color="#d8ffb5"
-          textColor="text-green-900"
-          cardType="club"
-          title="クローバー"
-          onDragEnd={updateZIndex}
-          zIndex={13}
-        />
-
-        {/* トークン - 2種類（ランダム配置） */}
-        <TokenComponent
-          initialX={0}
-          initialY={0}
-          useRandomInitialPosition={true}
-          color="#f8b878"
-          shape="square"
-          label="キューブ"
-          onDragEnd={updateZIndex}
-          zIndex={14}
-        />
-        <TokenComponent
-          initialX={0}
-          initialY={0}
-          useRandomInitialPosition={true}
-          color="#78b8f8"
-          shape="square"
-          label="キューブ"
-          onDragEnd={updateZIndex}
-          zIndex={15}
-        />
-
-        {/* 操作説明 */}
-        <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 bg-amber-800/70 text-white text-xs px-2 py-1 rounded-full">
-          パーツはドラッグできます
-        </div>
-      </div>
-    </div>
+      </GamePieceProvider>
+    </GameBoardContext.Provider>
   );
 };
 
