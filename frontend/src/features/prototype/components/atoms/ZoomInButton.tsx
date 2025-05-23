@@ -1,6 +1,6 @@
 import { AiOutlineZoomIn } from 'react-icons/ai';
 
-import IconButton from '../../../../components/atoms/IconButton';
+import IconButton from '@/components/atoms/IconButton';
 
 export default function ZoomInButton({
   onClick,
