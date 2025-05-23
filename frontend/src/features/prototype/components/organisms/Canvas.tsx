@@ -79,7 +79,7 @@ export default function Canvas({
   // パーツのref
   const partRefs = useRef<{ [key: number]: React.RefObject<PartHandle> }>({});
   // カメラ
-  const [camera, setCamera] = useState<Camera>({ x: -250, y: -750, zoom: 0.6 });
+  const [camera, setCamera] = useState<Camera>({ x: -200, y: -500, zoom: 0.5 });
   // 乱数ツールを開いているか
   const [isRandomToolOpen, setIsRandomToolOpen] = useState(false);
   // 選択中のパーツ
