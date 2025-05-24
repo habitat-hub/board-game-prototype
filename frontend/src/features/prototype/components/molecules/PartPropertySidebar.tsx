@@ -230,9 +230,7 @@ export default function PartPropertySidebar({
   return (
     <>
       {selectedPart && (
-        <div
-          className={`fixed h-full right-0 flex w-[240px] flex-col border-l border-gray-200 bg-white`}
-        >
+        <div className="fixed h-full top-0 right-0 flex w-[240px] flex-col border-l border-gray-200 bg-white">
           <div className="border-b border-gray-200"></div>
           <div className="flex flex-col gap-2 p-4">
             <span className="mb-2 text-[11px] font-medium">共通</span>

@@ -20,11 +20,6 @@ import TextIconButton from '@/components/atoms/TextIconButton';
 import { PART_DEFAULT_CONFIG } from '@/features/prototype/const';
 import { AddPartProps } from '@/features/prototype/type';
 
-const PART_DEFAULT_POSITION = {
-  X: 1000,
-  Y: 1000,
-};
-
 export default function PartCreateSidebar({
   prototypeName,
   groupId,
@@ -67,7 +62,7 @@ export default function PartCreateSidebar({
     > = {
       type: partType,
       parentId: undefined,
-      position: { x: PART_DEFAULT_POSITION.X, y: PART_DEFAULT_POSITION.Y },
+      position: { x: 0, y: 0 }, // 仮の位置（GameBoardのhandleAddPartで上書きされる）
       width: partConfig.width,
       height: partConfig.height,
       configurableTypeAsChild: partConfig.configurableTypeAsChild,
