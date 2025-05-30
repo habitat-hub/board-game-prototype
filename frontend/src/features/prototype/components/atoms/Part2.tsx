@@ -25,6 +25,10 @@ interface Part2Props {
   onDragEnd?: (e: Konva.KonvaEventObject<DragEvent>, partId: number) => void;
   onClick?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
   onDblClick?: (partId: number) => void;
+  onContextMenu?: (
+    e: Konva.KonvaEventObject<PointerEvent>,
+    partId: number
+  ) => void;
   isActive: boolean;
 }
 
@@ -42,6 +46,7 @@ const Part2 = forwardRef<PartHandle, Part2Props>(
       onDragEnd,
       onClick,
       onDblClick,
+      onContextMenu,
       isActive = false,
     },
     ref
@@ -59,15 +64,17 @@ const Part2 = forwardRef<PartHandle, Part2Props>(
     useEffect(() => {
       if (!groupRef.current || prototypeType !== 'PREVIEW') return;
 
+      const currentGroup = groupRef.current;
+
       // ドラッグ開始時のハンドラーを追加（PREVIEWモードのみ）
-      groupRef.current.on('dragstart', () => {
+      currentGroup.on('dragstart', () => {
         // ドラッグ中のノードを最前面に移動
-        groupRef.current?.moveToTop();
+        currentGroup.moveToTop();
       });
 
       return () => {
         // クリーンアップ
-        groupRef.current?.off('dragstart');
+        currentGroup.off('dragstart');
       };
     }, [prototypeType]);
 
@@ -170,6 +177,14 @@ const Part2 = forwardRef<PartHandle, Part2Props>(
     // 中央を軸にして反転させるための設定
     const offsetX = part.width / 2;
 
+    // コンテキストメニュー用ハンドラー
+    const handleContextMenu = (e: Konva.KonvaEventObject<PointerEvent>) => {
+      e.evt.preventDefault();
+      if (onContextMenu) {
+        onContextMenu(e, part.id);
+      }
+    };
+
     return (
       <Group
         ref={groupRef}
@@ -186,6 +201,7 @@ const Part2 = forwardRef<PartHandle, Part2Props>(
         onDragEnd={(e) => onDragEnd && onDragEnd(e, part.id)}
         onClick={(e) => onClick && onClick(e)}
         onDblClick={handleDoubleClick}
+        onContextMenu={handleContextMenu}
       >
         {/* パーツの背景 */}
         <Rect
@@ -294,7 +310,6 @@ const Part2 = forwardRef<PartHandle, Part2Props>(
     );
   }
 );
-
 Part2.displayName = 'Part2';
 
 export default Part2;
