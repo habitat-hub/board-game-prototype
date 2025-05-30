@@ -19,6 +19,7 @@ import {
 } from '@/api/types';
 import DebugInfo from '@/features/prototype/components/atoms/DebugInfo';
 import GridLines from '@/features/prototype/components/atoms/GridLines';
+import { KonvaPartContextMenu } from '@/features/prototype/components/atoms/KonvaPartContextMenu';
 import Part2 from '@/features/prototype/components/atoms/Part2';
 import EditSidebars from '@/features/prototype/components/molecules/EditSidebars';
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
@@ -62,6 +63,13 @@ export default function GameBoard({
   const { fetchImage } = useImages();
   const { dispatch } = usePartReducer();
   const [images, setImages] = useState<Record<string, string>[]>([]);
+
+  // コンテキストメニューの状態管理
+  const [showContextMenu, setShowContextMenu] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+  const [contextMenuPartId, setContextMenuPartId] = useState<number | null>(
+    null
+  );
 
   // マスタープレビューかどうか
   const isMasterPreview =
@@ -208,6 +216,57 @@ export default function GameBoard({
       return [partId];
     });
   };
+
+  // パーツのコンテキストメニュー表示ハンドラー
+  const handlePartContextMenu = (
+    e: Konva.KonvaEventObject<PointerEvent>,
+    partId: number
+  ) => {
+    e.cancelBubble = true;
+    e.evt.preventDefault();
+
+    // マウス位置を取得してメニュー位置を設定
+    const stage = stageRef.current;
+    if (stage) {
+      const pointerPosition = stage.getPointerPosition();
+      if (pointerPosition) {
+        // ポインター位置をカメラスケールで調整（カメラグループ内の実際の位置に変換）
+        // +5 はメニューがポインターから少し右下にオフセットされるようにするための調整値
+        const adjustedX = (pointerPosition.x + camera.x + 5) / camera.scale;
+        const adjustedY = (pointerPosition.y + camera.y + 5) / camera.scale;
+
+        setMenuPosition({
+          x: adjustedX,
+          y: adjustedY,
+        });
+      }
+    }
+
+    // メニューを表示するパーツIDを設定
+    setContextMenuPartId(partId);
+    setShowContextMenu(true);
+  };
+
+  // 順序変更のディスパッチ関数（socket通信用）
+  const handleChangePartOrder = useCallback(
+    (type: 'front' | 'back' | 'frontmost' | 'backmost') => {
+      if (contextMenuPartId === null) return;
+      dispatch({
+        type: 'CHANGE_ORDER',
+        payload: { partId: contextMenuPartId, type },
+      });
+
+      // コンテキストメニューを閉じる
+      setShowContextMenu(false);
+    },
+    [contextMenuPartId, dispatch]
+  );
+
+  // コンテキストメニューを閉じるための処理
+  const handleCloseContextMenu = useCallback(() => {
+    setShowContextMenu(false);
+    setContextMenuPartId(null);
+  }, []);
 
   // パーツのドラッグ開始時に選択状態を維持し、元位置を記録
   const handlePartDragStart = (
@@ -603,6 +662,21 @@ export default function GameBoard({
     );
   };
 
+  // Stage全体のクリックイベントハンドラー
+  const handleStageClick = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent>) => {
+      // コンテキストメニューが表示されている場合のみ処理
+      if (showContextMenu) {
+        // クリックがコンテキストメニュー内でなければ閉じる
+        // e.target.name()がコンテキストメニューのコンポーネント名ではない場合
+        if (!e.target.hasName('context-menu-component')) {
+          handleCloseContextMenu();
+        }
+      }
+    },
+    [showContextMenu, handleCloseContextMenu]
+  );
+
   return (
     <DebugModeProvider>
       <Stage
@@ -610,6 +684,7 @@ export default function GameBoard({
         height={viewportSize.height}
         ref={stageRef}
         onWheel={handleWheel}
+        onClick={handleStageClick} // Stage全体のクリックイベントを追加
       >
         <Layer>
           {/* カメラグループ: パン/ズームを有効化 */}
@@ -679,9 +754,22 @@ export default function GameBoard({
                     }
                     onDragMove={(e) => handlePartDragMove(e, part.id)}
                     onDragEnd={(e, partId) => handlePartDragEnd(e, partId)}
+                    onContextMenu={(e) => handlePartContextMenu(e, part.id)} // 追加
                   />
                 );
               })}
+
+            {/* コンテキストメニュー - カメラのスケールと位置を考慮してメニュー位置を設定 */}
+            {showContextMenu && contextMenuPartId !== null && (
+              <Group>
+                <KonvaPartContextMenu
+                  visible={true}
+                  position={menuPosition}
+                  onClose={handleCloseContextMenu}
+                  onChangeOrder={handleChangePartOrder}
+                />
+              </Group>
+            )}
           </Group>
         </Layer>
       </Stage>
