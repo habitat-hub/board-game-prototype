@@ -677,14 +677,12 @@ export default function GameBoard({
 
             {/* コンテキストメニュー - カメラのスケールと位置を考慮してメニュー位置を設定 */}
             {showContextMenu && contextMenuPartId !== null && (
-              <Group>
-                <KonvaPartContextMenu
-                  visible={true}
-                  position={menuPosition}
-                  onClose={handleCloseContextMenu}
-                  onChangeOrder={handleChangePartOrder}
-                />
-              </Group>
+              <KonvaPartContextMenu
+                visible={true}
+                position={menuPosition}
+                onClose={handleCloseContextMenu}
+                onChangeOrder={handleChangePartOrder}
+              />
             )}
           </Group>
         </Layer>
