@@ -573,10 +573,12 @@ export default function GameBoard({
     []
   );
 
-  // 画像IDからURLを取得して配列で返す関数
-  const getFilteredImages = useCallback(
-    (filteredProperties: PropertyType[]): Record<string, string>[] => {
-      return filteredProperties.reduce<Record<string, string>[]>(
+  // 画像IDからURLを取得して配列で返す関数をuseMemoで事前計算
+  const filteredImagesMap = useMemo(() => {
+    const map: Record<number, Record<string, string>[]> = {};
+    parts.forEach((part) => {
+      const partProperties = properties.filter((p) => p.partId === part.id);
+      map[part.id] = partProperties.reduce<Record<string, string>[]>(
         (acc, filteredProperty) => {
           const imageId = filteredProperty.imageId;
           if (!imageId) return acc;
@@ -588,9 +590,9 @@ export default function GameBoard({
         },
         []
       );
-    },
-    [images]
-  );
+    });
+    return map;
+  }, [parts, properties, images]);
 
   return (
     <DebugModeProvider>
@@ -635,7 +637,8 @@ export default function GameBoard({
                 const partProperties = properties.filter(
                   (p) => p.partId === part.id
                 );
-                const filteredImages = getFilteredImages(partProperties);
+                // const filteredImages = getFilteredImages(partProperties);
+                const filteredImages = filteredImagesMap[part.id] || [];
                 const isActive = selectedPartIds.includes(part.id);
                 return (
                   <Part2
