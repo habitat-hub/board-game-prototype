@@ -574,22 +574,23 @@ export default function GameBoard({
   );
 
   // 画像IDからURLを取得して配列で返す関数
-  function getFilteredImages(
-    filteredProperties: PropertyType[]
-  ): Record<string, string>[] {
-    return filteredProperties.reduce<Record<string, string>[]>(
-      (acc, filteredProperty) => {
-        const imageId = filteredProperty.imageId;
-        if (!imageId) return acc;
-        const url = images[imageId];
-        if (url) {
-          acc.push({ [imageId]: url });
-        }
-        return acc;
-      },
-      []
-    );
-  }
+  const getFilteredImages = useCallback(
+    (filteredProperties: PropertyType[]): Record<string, string>[] => {
+      return filteredProperties.reduce<Record<string, string>[]>(
+        (acc, filteredProperty) => {
+          const imageId = filteredProperty.imageId;
+          if (!imageId) return acc;
+          const url = images[imageId];
+          if (url) {
+            acc.push({ [imageId]: url });
+          }
+          return acc;
+        },
+        []
+      );
+    },
+    [images]
+  );
 
   return (
     <DebugModeProvider>
