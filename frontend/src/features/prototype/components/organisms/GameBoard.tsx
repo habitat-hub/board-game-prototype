@@ -61,7 +61,7 @@ export default function GameBoard({
   });
   const { fetchImage } = useImages();
   const { dispatch } = usePartReducer();
-  const [images, setImages] = useState<Record<string, string>[]>([]);
+  const [images, setImages] = useState<Record<string, string>>({});
 
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
@@ -525,9 +525,10 @@ export default function GameBoard({
         })
       );
 
-      const newImages = imageResults.map(({ imageId, url }) => ({
-        [imageId]: url,
-      }));
+      const newImages: Record<string, string> = {};
+      imageResults.forEach(({ imageId, url }) => {
+        newImages[imageId] = url;
+      });
       setImages(newImages);
 
       urlsToRevoke = imageResults.map(({ url }) => url);
@@ -539,34 +540,6 @@ export default function GameBoard({
       urlsToRevoke.forEach((url) => URL.revokeObjectURL(url));
     };
   }, [fetchImage, properties]);
-
-  // 画像IDからURLを取得するヘルパー関数
-  const getImageUrlById = useCallback(
-    (imageId: string): string | undefined => {
-      for (const img of images) {
-        if (img[imageId]) return img[imageId];
-      }
-      return undefined;
-    },
-    [images]
-  );
-
-  const getFilteredImages = (
-    filteredProperties: PropertyType[]
-  ): Record<string, string>[] => {
-    return filteredProperties.reduce<Record<string, string>[]>(
-      (acc, filteredProperty) => {
-        const imageId = filteredProperty.imageId;
-        if (!imageId) return acc;
-        const url = getImageUrlById(imageId);
-        if (url) {
-          acc.push({ [imageId]: url });
-        }
-        return acc;
-      },
-      []
-    );
-  };
 
   // Stage全体のクリックイベントハンドラー
   const handleStageClick = useCallback(
@@ -599,6 +572,24 @@ export default function GameBoard({
     },
     []
   );
+
+  // 画像IDからURLを取得して配列で返す関数
+  function getFilteredImages(
+    filteredProperties: PropertyType[]
+  ): Record<string, string>[] {
+    return filteredProperties.reduce<Record<string, string>[]>(
+      (acc, filteredProperty) => {
+        const imageId = filteredProperty.imageId;
+        if (!imageId) return acc;
+        const url = images[imageId];
+        if (url) {
+          acc.push({ [imageId]: url });
+        }
+        return acc;
+      },
+      []
+    );
+  }
 
   return (
     <DebugModeProvider>
