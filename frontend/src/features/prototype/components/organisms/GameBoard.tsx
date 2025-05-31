@@ -754,7 +754,7 @@ export default function GameBoard({
                     }
                     onDragMove={(e) => handlePartDragMove(e, part.id)}
                     onDragEnd={(e, partId) => handlePartDragEnd(e, partId)}
-                    onContextMenu={(e) => handlePartContextMenu(e, part.id)} // 追加
+                    onContextMenu={(e) => handlePartContextMenu(e, part.id)}
                   />
                 );
               })}
