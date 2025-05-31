@@ -572,20 +572,26 @@ export default function GameBoard({
     };
   }, [fetchImage, properties]);
 
+  // 画像IDからURLを取得するヘルパー関数
+  const getImageUrlById = useCallback(
+    (imageId: string): string | undefined => {
+      const found = images.find((img) => img[imageId]);
+      return found ? found[imageId] : undefined;
+    },
+    [images]
+  );
+
   const getFilteredImages = (
-    filteredProperties: PropertyType[],
-    images: Record<string, string>[]
+    filteredProperties: PropertyType[]
   ): Record<string, string>[] => {
     return filteredProperties.reduce<Record<string, string>[]>(
       (acc, filteredProperty) => {
         const imageId = filteredProperty.imageId;
         if (!imageId) return acc;
-
-        const targetImage = images.find((image) => image[imageId]);
-        if (targetImage) {
-          acc.push({ [imageId]: targetImage[imageId] });
+        const url = getImageUrlById(imageId);
+        if (url) {
+          acc.push({ [imageId]: url });
         }
-
         return acc;
       },
       []
@@ -647,10 +653,7 @@ export default function GameBoard({
                 const partProperties = properties.filter(
                   (p) => p.partId === part.id
                 );
-                const filteredImages = getFilteredImages(
-                  partProperties,
-                  images
-                );
+                const filteredImages = getFilteredImages(partProperties);
                 const isActive = selectedPartIds.includes(part.id);
                 return (
                   <Part2
