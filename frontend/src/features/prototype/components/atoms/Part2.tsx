@@ -130,20 +130,15 @@ const Part2 = forwardRef<PartHandle, Part2Props>(
       return properties.find((p) => p.side === side);
     }, [isFlipped, properties]);
 
-    // 有効な画像URLの値
-    const validImageURL = useMemo(() => {
-      const imageId = targetProperty?.imageId;
-      if (!imageId) {
-        return null;
-      }
-
+    // 有効な画像URLの値を取得する関数
+    const getValidImageURL = (imageId?: string | null) => {
+      if (!imageId) return null;
       const targetImage = images.find((image) => image[imageId]);
-      if (targetImage) {
-        return targetImage[imageId];
-      }
+      return targetImage ? targetImage[imageId] : null;
+    };
 
-      return null;
-    }, [targetProperty?.imageId, images]);
+    // 有効な画像URLの値
+    const validImageURL = getValidImageURL(targetProperty?.imageId);
 
     // 画像をロード
     const [image] = useImage(validImageURL || '');
