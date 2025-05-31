@@ -724,6 +724,7 @@ export default function GameBoard({
                   partProperties,
                   images
                 );
+                const isActive = selectedPartIds.includes(part.id);
                 return (
                   <Part2
                     key={part.id}
@@ -732,7 +733,7 @@ export default function GameBoard({
                     players={players}
                     images={filteredImages}
                     prototypeType={prototypeType}
-                    isActive={selectedPartIds.includes(part.id)}
+                    isActive={isActive}
                     onClick={(e) => handlePartClick(e, part.id)}
                     onDragStart={(e) =>
                       isMasterPreview ? null : handlePartDragStart(e, part.id)
