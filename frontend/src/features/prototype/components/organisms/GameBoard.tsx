@@ -543,8 +543,10 @@ export default function GameBoard({
   // 画像IDからURLを取得するヘルパー関数
   const getImageUrlById = useCallback(
     (imageId: string): string | undefined => {
-      const found = images.find((img) => img[imageId]);
-      return found ? found[imageId] : undefined;
+      for (const img of images) {
+        if (img[imageId]) return img[imageId];
+      }
+      return undefined;
     },
     [images]
   );
