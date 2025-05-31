@@ -715,22 +715,7 @@ export default function GameBoard({
 
             {/* パーツの表示（orderが大きいほど後で描画=前面に表示） */}
             {[...parts]
-              .sort((a, b) => {
-                // 数値型のorderを持つ場合はその値でソート
-                // 持たない場合は0としてソート
-                const orderA = typeof a.order === 'number' ? a.order : 0;
-                const orderB = typeof b.order === 'number' ? b.order : 0;
-
-                // orderが同じ場合は、updatedAtで比較（新しいものが前面に来るように降順）
-                if (orderA === orderB) {
-                  // 新しい日付の方が大きな値になるため、降順にするにはb - a
-                  return (
-                    new Date(b.updatedAt).getTime() -
-                    new Date(a.updatedAt).getTime()
-                  );
-                }
-                return orderA - orderB; // 昇順でソート（小さい値から大きい値へ）
-              })
+              .sort((a, b) => a.order - b.order)
               .map((part) => {
                 const partProperties = properties.filter(
                   (p) => p.partId === part.id
