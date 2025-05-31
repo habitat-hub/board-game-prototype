@@ -36,28 +36,3 @@ body:
       description: 本来期待される動作を記述してください
     validations:
       required: false
-
-  - type: dropdown
-    id: environment
-    attributes:
-      label: 発生環境
-      description: 問題が発生した環境を選択してください（複数選択可）
-      multiple: true
-      options:
-        - ブラウザ：Chrome
-        - ブラウザ：Firefox
-        - ブラウザ：Safari
-        - ブラウザ：Edge
-        - 環境：本番
-        - 環境：開発
-        - 環境：ローカル
-    validations:
-      required: false
-
-  - type: textarea
-    id: additional
-    attributes:
-      label: 追加情報
-      description: ログ、エラーメッセージ、スクリーンショットなど、問題の理解に役立つ追加情報
-    validations:
-      required: false

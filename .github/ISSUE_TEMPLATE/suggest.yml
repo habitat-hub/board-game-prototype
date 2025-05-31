@@ -7,23 +7,6 @@ body:
       value: |
         提案ありがとうございます。以下の情報を記入してください。
 
-  - type: dropdown
-    id: proposal_type
-    attributes:
-      label: 提案タイプ
-      description: 提案の種類を選択してください（複数選択可）
-      multiple: true
-      options:
-        - 新機能追加
-        - UI/UX改善
-        - リファクタリング
-        - パフォーマンス改善
-        - ドキュメント
-        - 開発環境
-        - その他
-    validations:
-      required: false
-
   - type: textarea
     id: description
     attributes:
@@ -41,11 +24,3 @@ body:
       placeholder: できるだけ具体的に記述してください
     validations:
       required: true
-
-  - type: textarea
-    id: additional
-    attributes:
-      label: 補足情報
-      description: モックアップ、参考事例、代替案、関連リンクなど補足情報があれば記述してください
-    validations:
-      required: false
