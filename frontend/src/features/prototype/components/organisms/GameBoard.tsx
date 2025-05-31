@@ -292,22 +292,6 @@ export default function GameBoard({
     const stage = stageRef.current;
     if (!stage) return;
 
-    const constrainWithinCanvas = (
-      partObject: PartType,
-      baseX: number,
-      baseY: number,
-      deltaX: number,
-      deltaY: number
-    ) => {
-      const newX = baseX + deltaX;
-      const newY = baseY + deltaY;
-
-      return {
-        x: Math.max(0, Math.min(CANVAS_SIZE - partObject.width, newX)),
-        y: Math.max(0, Math.min(CANVAS_SIZE - partObject.height, newY)),
-      };
-    };
-
     const constrainedPos = constrainWithinCanvas(
       targetPart,
       orig.x,
@@ -367,22 +351,6 @@ export default function GameBoard({
     const offsetX = targetPart.width / 2;
     const dx = position.x - offsetX - orig.x;
     const dy = position.y - orig.y;
-
-    const constrainWithinCanvas = (
-      partObject: PartType,
-      baseX: number,
-      baseY: number,
-      deltaX: number,
-      deltaY: number
-    ) => {
-      const newX = baseX + deltaX;
-      const newY = baseY + deltaY;
-
-      return {
-        x: Math.max(0, Math.min(CANVAS_SIZE - partObject.width, newX)),
-        y: Math.max(0, Math.min(CANVAS_SIZE - partObject.height, newY)),
-      };
-    };
 
     const constrainedPos = constrainWithinCanvas(
       targetPart,
@@ -609,6 +577,22 @@ export default function GameBoard({
     },
     [showContextMenu, handleCloseContextMenu]
   );
+
+  const constrainWithinCanvas = (
+    partObject: PartType,
+    baseX: number,
+    baseY: number,
+    deltaX: number,
+    deltaY: number
+  ) => {
+    const newX = baseX + deltaX;
+    const newY = baseY + deltaY;
+
+    return {
+      x: Math.max(0, Math.min(CANVAS_SIZE - partObject.width, newX)),
+      y: Math.max(0, Math.min(CANVAS_SIZE - partObject.height, newY)),
+    };
+  };
 
   return (
     <DebugModeProvider>
