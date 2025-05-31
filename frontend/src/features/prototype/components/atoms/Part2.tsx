@@ -18,14 +18,13 @@ interface Part2Props {
   properties: PropertyType[];
   images: Record<string, string>[];
   players: Player[];
-  isOtherPlayerCard?: boolean;
+  isOtherPlayerCard: boolean;
   prototypeType: 'EDIT' | 'PREVIEW';
-  onDragStart?: (e: Konva.KonvaEventObject<DragEvent>) => void;
-  onDragMove?: (e: Konva.KonvaEventObject<DragEvent>, partId: number) => void;
-  onDragEnd?: (e: Konva.KonvaEventObject<DragEvent>, partId: number) => void;
-  onClick?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
-  onDblClick?: (partId: number) => void;
-  onContextMenu?: (
+  onDragStart: (e: Konva.KonvaEventObject<DragEvent>) => void;
+  onDragMove: (e: Konva.KonvaEventObject<DragEvent>, partId: number) => void;
+  onDragEnd: (e: Konva.KonvaEventObject<DragEvent>, partId: number) => void;
+  onClick: (e: Konva.KonvaEventObject<MouseEvent>) => void;
+  onContextMenu: (
     e: Konva.KonvaEventObject<PointerEvent>,
     partId: number
   ) => void;
@@ -45,7 +44,6 @@ const Part2 = forwardRef<PartHandle, Part2Props>(
       onDragMove,
       onDragEnd,
       onClick,
-      onDblClick,
       onContextMenu,
       isActive = false,
     },
@@ -147,25 +145,17 @@ const Part2 = forwardRef<PartHandle, Part2Props>(
     const imageLoaded = !!image && validImageURL;
 
     const handleDoubleClick = () => {
-      // カードやデッキでない場合
-      if (!isCard && !isDeck) return;
+      const isInteractivePart = isCard || isDeck;
+      if (!isInteractivePart) return;
 
-      // デッキの場合
       if (isDeck) {
         shuffleDeck();
         return;
       }
 
-      // カードの場合
-      // 裏向き固定の場合
-      if (isFlippedNeeded) return;
-
-      // onDblClick があれば呼び出す
-      if (onDblClick) {
-        onDblClick(part.id);
-      } else {
-        // なければ通常のカード反転処理
+      if (isCard && isFlippedNeeded) {
         reverseCard(!isFlipped, true);
+        return;
       }
     };
 
@@ -175,9 +165,7 @@ const Part2 = forwardRef<PartHandle, Part2Props>(
     // コンテキストメニュー用ハンドラー
     const handleContextMenu = (e: Konva.KonvaEventObject<PointerEvent>) => {
       e.evt.preventDefault();
-      if (onContextMenu) {
-        onContextMenu(e, part.id);
-      }
+      onContextMenu(e, part.id);
     };
 
     return (
@@ -191,10 +179,10 @@ const Part2 = forwardRef<PartHandle, Part2Props>(
         offsetX={offsetX}
         draggable
         scaleX={scaleX}
-        onDragStart={(e) => onDragStart && onDragStart(e)}
-        onDragMove={(e) => onDragMove && onDragMove(e, part.id)}
-        onDragEnd={(e) => onDragEnd && onDragEnd(e, part.id)}
-        onClick={(e) => onClick && onClick(e)}
+        onDragStart={onDragStart}
+        onDragMove={(e) => onDragMove(e, part.id)}
+        onDragEnd={(e) => onDragEnd(e, part.id)}
+        onClick={onClick}
         onDblClick={handleDoubleClick}
         onContextMenu={handleContextMenu}
       >

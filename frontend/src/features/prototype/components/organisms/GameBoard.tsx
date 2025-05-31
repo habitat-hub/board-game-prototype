@@ -637,7 +637,6 @@ export default function GameBoard({
                 const partProperties = properties.filter(
                   (p) => p.partId === part.id
                 );
-                // const filteredImages = getFilteredImages(partProperties);
                 const filteredImages = filteredImagesMap[part.id] || [];
                 const isActive = selectedPartIds.includes(part.id);
                 return (
@@ -649,9 +648,12 @@ export default function GameBoard({
                     images={filteredImages}
                     prototypeType={prototypeType}
                     isActive={isActive}
+                    isOtherPlayerCard={false}
                     onClick={(e) => handlePartClick(e, part.id)}
                     onDragStart={(e) =>
-                      isMasterPreview ? null : handlePartDragStart(e, part.id)
+                      isMasterPreview
+                        ? undefined
+                        : handlePartDragStart(e, part.id)
                     }
                     onDragMove={(e) => handlePartDragMove(e, part.id)}
                     onDragEnd={(e, partId) => handlePartDragEnd(e, partId)}
