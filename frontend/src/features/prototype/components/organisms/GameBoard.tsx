@@ -578,21 +578,25 @@ export default function GameBoard({
     [showContextMenu, handleCloseContextMenu]
   );
 
-  const constrainWithinCanvas = (
-    partObject: PartType,
-    baseX: number,
-    baseY: number,
-    deltaX: number,
-    deltaY: number
-  ) => {
-    const newX = baseX + deltaX;
-    const newY = baseY + deltaY;
+  // パーツの位置をキャンバス内に制限する関数
+  const constrainWithinCanvas = useCallback(
+    (
+      partObject: PartType,
+      baseX: number,
+      baseY: number,
+      deltaX: number,
+      deltaY: number
+    ) => {
+      const newX = baseX + deltaX;
+      const newY = baseY + deltaY;
 
-    return {
-      x: Math.max(0, Math.min(CANVAS_SIZE - partObject.width, newX)),
-      y: Math.max(0, Math.min(CANVAS_SIZE - partObject.height, newY)),
-    };
-  };
+      return {
+        x: Math.max(0, Math.min(CANVAS_SIZE - partObject.width, newX)),
+        y: Math.max(0, Math.min(CANVAS_SIZE - partObject.height, newY)),
+      };
+    },
+    []
+  );
 
   return (
     <DebugModeProvider>
