@@ -195,6 +195,10 @@ export default function GameBoard({
     partId: number
   ) => {
     e.cancelBubble = true;
+    // 左クリックのみContextMenuを閉じる
+    if ((e.evt as MouseEvent).button === 0) {
+      handleCloseContextMenu();
+    }
     const isShift = (e.evt as MouseEvent).shiftKey;
     setSelectedPartIds((prev) => {
       if (isShift) {
