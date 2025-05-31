@@ -190,6 +190,9 @@ export default function GameBoard({
     {}
   );
 
+  const toggleIdInArray = (arr: number[], id: number) =>
+    arr.includes(id) ? arr.filter((v) => v !== id) : [...arr, id];
+
   const handlePartClick = (
     e: Konva.KonvaEventObject<MouseEvent>,
     partId: number
@@ -200,16 +203,9 @@ export default function GameBoard({
       handleCloseContextMenu();
     }
     const isShift = (e.evt as MouseEvent).shiftKey;
-    setSelectedPartIds((prev) => {
-      if (isShift) {
-        if (prev.includes(partId)) {
-          return prev.filter((id) => id !== partId);
-        } else {
-          return [...prev, partId];
-        }
-      }
-      return [partId];
-    });
+    setSelectedPartIds((prev) =>
+      isShift ? toggleIdInArray(prev, partId) : [partId]
+    );
   };
 
   const handlePartContextMenu = (
