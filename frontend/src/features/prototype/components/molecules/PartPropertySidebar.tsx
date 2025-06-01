@@ -6,7 +6,14 @@
 
 import axios from 'axios';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { BiArea } from 'react-icons/bi';
 import { FaRegCopy, FaRegTrashAlt, FaImage, FaSpinner } from 'react-icons/fa';
+import {
+  Gi3dMeeple,
+  GiCard10Clubs,
+  GiPokerHand,
+  GiStoneBlock,
+} from 'react-icons/gi';
 
 import { useImages } from '@/api/hooks/useImages';
 import { Part, PartProperty, Player } from '@/api/types';
@@ -230,11 +237,24 @@ export default function PartPropertySidebar({
   return (
     <>
       {selectedPart && (
-        <div className="fixed top-4 right-4 flex w-[240px] flex-col rounded-lg shadow-lg border border-gray-200 bg-white max-h-[calc(100vh-32px)] overflow-y-auto">
-          <div className="border-b border-gray-200 rounded-t-lg bg-gray-50 py-2 px-4">
-            <span className="text-[12px] font-medium text-gray-700">
-              プロパティ編集
-            </span>
+        <div className="fixed top-4 right-4 flex w-[240px] flex-col rounded-lg shadow-lg border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary max-h-[calc(100vh-32px)] overflow-y-auto">
+          <div className="border-b border-wood-lightest/60 rounded-t-lg bg-gradient-to-r from-wood-light/30 to-wood-light/20 py-2 px-4">
+            <div className="flex items-center">
+              {selectedPart.type === 'card' ? (
+                <GiCard10Clubs className="h-4 w-4 text-wood-dark mr-2" />
+              ) : selectedPart.type === 'token' ? (
+                <Gi3dMeeple className="h-4 w-4 text-wood-dark mr-2" />
+              ) : selectedPart.type === 'hand' ? (
+                <GiPokerHand className="h-4 w-4 text-wood-dark mr-2" />
+              ) : selectedPart.type === 'deck' ? (
+                <GiStoneBlock className="h-4 w-4 text-wood-dark mr-2" />
+              ) : selectedPart.type === 'area' ? (
+                <BiArea className="h-4 w-4 text-wood-dark mr-2" />
+              ) : null}
+              <span className="text-[12px] font-medium text-wood-darkest">
+                プロパティ編集
+              </span>
+            </div>
           </div>
           <div className="flex flex-col gap-2 p-4">
             <span className="mb-2 text-[11px] font-medium">共通</span>
@@ -268,7 +288,7 @@ export default function PartPropertySidebar({
               </div>
             )}
             <div className="flex flex-col gap-1">
-              <p className="text-[9px] font-medium text-gray-500">位置</p>
+              <p className="text-[9px] font-medium text-wood-dark">位置</p>
               <div className="flex w-full gap-2 mb-2">
                 <NumberInput
                   key={`${selectedPart.id}-x-${selectedPart.position.x}`}
@@ -303,7 +323,7 @@ export default function PartPropertySidebar({
                   icon={<>Y</>}
                 />
               </div>
-              <p className="text-[9px] font-medium text-gray-500">サイズ</p>
+              <p className="text-[9px] font-medium text-wood-dark">サイズ</p>
               <div className="flex w-full gap-2 mb-2">
                 <NumberInput
                   key={`${selectedPart.id}-width-${selectedPart.width}`}
@@ -334,7 +354,7 @@ export default function PartPropertySidebar({
                   icon={<>H</>}
                 />
               </div>
-              <p className="text-[9px] font-medium text-gray-500">名前</p>
+              <p className="text-[9px] font-medium text-wood-dark">名前</p>
               <div className="flex w-full mb-2">
                 <TextInput
                   key={`${selectedPart.id}-name-${currentProperty?.name}`}
@@ -343,7 +363,7 @@ export default function PartPropertySidebar({
                   icon={<>T</>}
                 />
               </div>
-              <p className="text-[9px] font-medium text-gray-500">説明</p>
+              <p className="text-[9px] font-medium text-wood-dark">説明</p>
               <div className="flex w-full mb-2">
                 <TextInput
                   key={`${selectedPart.id}-description-${currentProperty?.description}`}
@@ -355,7 +375,9 @@ export default function PartPropertySidebar({
                   multiline
                 />
               </div>
-              <p className="text-[9px] font-medium text-gray-500">テキスト色</p>
+              <p className="text-[9px] font-medium text-wood-dark">
+                テキスト色
+              </p>
               <div className="w-full mb-2 px-4">
                 <div className="grid grid-cols-4 gap-2">
                   {TEXT_COLORS.map((textColor) => (
@@ -373,7 +395,7 @@ export default function PartPropertySidebar({
                   ))}
                 </div>
               </div>
-              <p className="text-[9px] font-medium text-gray-500">背景色</p>
+              <p className="text-[9px] font-medium text-wood-dark">背景色</p>
               <div className="w-full mb-2 px-4">
                 <div className="grid grid-cols-4 gap-2">
                   {COLORS.map((color) => (
