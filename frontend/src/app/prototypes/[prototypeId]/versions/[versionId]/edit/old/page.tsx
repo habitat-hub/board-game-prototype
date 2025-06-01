@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import PrototypeEdit2 from '@/features/prototype/components/organisms/PrototypeEdit2';
+import PrototypeEditOld from '@/features/prototype/components/organisms/PrototypeEditOld';
 
 export const metadata: Metadata = {
   title: 'プロトタイプ編集',
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 
 export const runtime = 'edge';
 export default function Page() {
-  return <PrototypeEdit2 />;
+  return <PrototypeEditOld />;
 }
