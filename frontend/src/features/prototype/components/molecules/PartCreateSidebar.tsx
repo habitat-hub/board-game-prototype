@@ -114,7 +114,7 @@ export default function PartCreateSidebar({
   return (
     <>
       {!isLeftSidebarMinimized ? (
-        <div className="fixed left-2 top-4 flex flex-col rounded-xl border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary shadow-md overflow-auto w-[240px] max-h-[90vh]">
+        <div className="fixed left-4 top-4 flex flex-col rounded-xl border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary shadow-md overflow-auto w-[240px] max-h-[90vh]">
           <div className="flex h-[48px] items-center justify-between p-4">
             <button
               onClick={() => router.push(`/prototypes/groups/${groupId}`)}
@@ -171,7 +171,7 @@ export default function PartCreateSidebar({
           </div>
         </div>
       ) : (
-        <div className="fixed left-2 top-4 flex h-[48px] items-center justify-between rounded-xl border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary p-4 shadow-md w-[240px]">
+        <div className="fixed left-4 top-4 flex h-[48px] items-center justify-between rounded-xl border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary p-4 shadow-md w-[240px]">
           <button
             onClick={() => router.push(`/prototypes/groups/${groupId}`)}
             className="p-2 hover:bg-wood-lightest/20 rounded-full transition-colors flex-shrink-0"
