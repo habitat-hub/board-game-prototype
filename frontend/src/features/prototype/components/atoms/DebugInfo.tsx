@@ -46,8 +46,8 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
     <div
       style={{
         position: 'fixed',
-        bottom: '0.5rem',
-        left: '0.5rem',
+        bottom: '1rem',
+        left: '1rem',
         background: 'rgba(0, 0, 0, 0.7)',
         color: 'white',
         padding: '10px',

@@ -230,7 +230,7 @@ export default function PartPropertySidebar({
   return (
     <>
       {selectedPart && (
-        <div className="fixed top-2 right-2 flex w-[240px] flex-col rounded-lg shadow-lg border border-gray-200 bg-white max-h-[calc(100vh-32px)] overflow-y-auto">
+        <div className="fixed top-4 right-4 flex w-[240px] flex-col rounded-lg shadow-lg border border-gray-200 bg-white max-h-[calc(100vh-32px)] overflow-y-auto">
           <div className="border-b border-gray-200 rounded-t-lg bg-gray-50 py-2 px-4">
             <span className="text-[12px] font-medium text-gray-700">
               プロパティ編集
