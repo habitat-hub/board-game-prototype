@@ -153,7 +153,7 @@ const Part2 = forwardRef<PartHandle, Part2Props>(
         return;
       }
 
-      if (isCard && isFlippedNeeded) {
+      if (isCard && !isFlippedNeeded) {
         reverseCard(!isFlipped, true);
         return;
       }
