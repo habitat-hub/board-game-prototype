@@ -12,7 +12,7 @@ import {
   Prototype,
   PrototypeVersion,
 } from '@/api/types';
-import GameBoard from '@/features/prototype/components/organisms/GameBoard';
+import Canvas from '@/features/prototype/components/organisms/Canvas';
 import { PrototypeVersionIdProvider } from '@/features/prototype/contexts/PrototypeVersionIdContext';
 import { SocketProvider } from '@/features/prototype/contexts/SocketContext';
 import { CursorInfo } from '@/features/prototype/types/cursor';
@@ -20,7 +20,7 @@ import { useUser } from '@/hooks/useUser';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
-const PrototypePlay: React.FC = () => {
+export default function PrototypeEditOld() {
   const router = useRouter();
   const { getPrototypeVersions } = usePrototypes();
   const { user } = useUser();
@@ -47,7 +47,7 @@ const PrototypePlay: React.FC = () => {
   // カーソル
   const [cursors, setCursors] = useState<Record<string, CursorInfo>>({});
 
-  // socket通信
+  // socket通信の設定
   useEffect(() => {
     // サーバーに接続した後、特定のプロトタイプに参加
     socket.emit('JOIN_PROTOTYPE', {
@@ -55,18 +55,18 @@ const PrototypePlay: React.FC = () => {
       userId: user?.id || '',
     });
 
-    // 更新パーツの受信
+    // 更新されたパーツを受信
     socket.on('UPDATE_PARTS', ({ parts, properties }) => {
       setParts(parts);
       setProperties(properties);
     });
 
-    // 更新プレイヤーの受信
+    // 更新されたプレイヤーを受信
     socket.on('UPDATE_PLAYERS', (players: Player[]) => {
       setPlayers(players.sort((a, b) => a.id - b.id));
     });
 
-    // 更新カーソルの受信
+    // 更新されたカーソルを受信
     socket.on('UPDATE_CURSORS', ({ cursors }) => {
       setCursors(cursors);
     });
@@ -84,8 +84,8 @@ const PrototypePlay: React.FC = () => {
       .then((response) => {
         const { prototype, versions } = response;
 
-        // プレビュー版でない場合
-        if (prototype.type !== 'PREVIEW') {
+        // プロトタイプのタイプが編集版でない場合
+        if (prototype.type !== 'EDIT') {
           router.replace(`/prototypes/groups/${prototype.groupId}`);
           return;
         }
@@ -95,7 +95,7 @@ const PrototypePlay: React.FC = () => {
       .catch((error) => console.error('Error fetching prototypes:', error));
   }, [getPrototypeVersions, prototypeId, router]);
 
-  // プロトタイプバージョン番号
+  // バージョン番号
   const versionNumber = useMemo(() => {
     return prototype?.versions.find((version) => version.id === versionId)
       ?.versionNumber;
@@ -107,7 +107,7 @@ const PrototypePlay: React.FC = () => {
   return (
     <SocketProvider socket={socket}>
       <PrototypeVersionIdProvider prototypeVersionId={versionId}>
-        <GameBoard
+        <Canvas
           prototypeName={prototype.name}
           parts={parts}
           properties={properties}
@@ -115,11 +115,9 @@ const PrototypePlay: React.FC = () => {
           cursors={cursors}
           prototypeVersionNumber={versionNumber}
           groupId={prototype.groupId}
-          prototypeType="PREVIEW"
+          prototypeType="EDIT"
         />
       </PrototypeVersionIdProvider>
     </SocketProvider>
   );
-};
-
-export default PrototypePlay;
+}
