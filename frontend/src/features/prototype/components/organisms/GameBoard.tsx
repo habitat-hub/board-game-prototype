@@ -21,6 +21,7 @@ import GridLines from '@/features/prototype/components/atoms/GridLines';
 import { KonvaPartContextMenu } from '@/features/prototype/components/atoms/KonvaPartContextMenu';
 import Part2 from '@/features/prototype/components/atoms/Part2';
 import EditSidebars from '@/features/prototype/components/molecules/EditSidebars';
+import PreviewSidebars from '@/features/prototype/components/molecules/PreviewSidebars';
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
@@ -687,7 +688,14 @@ export default function GameBoard({
           onDeletePart={handleDeletePart}
         />
       )}
-
+      {prototypeType === 'PREVIEW' && (
+        <PreviewSidebars
+          prototypeName={prototypeName}
+          prototypeVersionNumber={prototypeVersionNumber}
+          groupId={groupId}
+          players={players}
+        />
+      )}
       <ToolsBar
         zoomIn={handleZoomIn}
         zoomOut={handleZoomOut}
