@@ -114,13 +114,13 @@ export default function PreviewSidebars({
         <>
           <div className="border-b border-wood-light/30" />
           <div className="flex flex-col gap-2 p-4">
-            <span className="mb-2 text-[11px] font-medium">
+            <span className="mb-2 text-xs font-medium uppercase tracking-wide text-wood-dark/70">
               プレイヤー割り当て
             </span>
             <div className="flex flex-col gap-1">
               {players.map((player) => (
                 <div key={player.id}>
-                  <p className="text-[9px] font-medium text-gray-500 mb-1">
+                  <p className="text-[9px] font-medium text-wood-dark mb-1">
                     {player.playerName}
                   </p>
                   <div className="flex w-full mb-2">
