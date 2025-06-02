@@ -20,6 +20,48 @@ import TextIconButton from '@/components/atoms/TextIconButton';
 import { PART_DEFAULT_CONFIG } from '@/features/prototype/const';
 import { AddPartProps } from '@/features/prototype/type';
 
+// サイドバーヘッダーコンポーネント
+function SidebarHeader({
+  prototypeName,
+  groupId,
+  isMinimized,
+  onToggle,
+}: {
+  prototypeName: string;
+  groupId: string;
+  isMinimized: boolean;
+  onToggle: () => void;
+}) {
+  const router = useRouter();
+
+  return (
+    <div className="flex h-[48px] items-center justify-between p-4">
+      <button
+        onClick={() => router.push(`/prototypes/groups/${groupId}`)}
+        className="p-2 hover:bg-wood-lightest/20 rounded-full transition-colors flex-shrink-0"
+        title="戻る"
+      >
+        <IoArrowBack className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
+      </button>
+      <div className="flex items-center gap-1 flex-grow ml-2 min-w-0">
+        <h2
+          className="text-xs font-medium truncate text-wood-darkest"
+          title={prototypeName}
+        >
+          {prototypeName}
+        </h2>
+      </div>
+      <button
+        onClick={onToggle}
+        aria-label={isMinimized ? 'サイドバーを展開' : 'サイドバーを最小化'}
+        className="p-2 rounded-full transition-transform hover:scale-110"
+      >
+        <IoMenu className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
+      </button>
+    </div>
+  );
+}
+
 export default function PartCreateSidebar({
   prototypeName,
   groupId,
@@ -35,7 +77,6 @@ export default function PartCreateSidebar({
   // パーツを追加時の処理
   onAddPart: ({ part, properties }: AddPartProps) => void;
 }) {
-  const router = useRouter();
   // 左サイドバーが最小化されているか
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
 
@@ -111,34 +152,25 @@ export default function PartCreateSidebar({
     onAddPart({ part: newPart, properties: newPartProperties });
   };
 
+  const toggleSidebar = () => {
+    setIsLeftSidebarMinimized(!isLeftSidebarMinimized);
+  };
+
   return (
-    <>
-      {!isLeftSidebarMinimized ? (
-        <div className="fixed left-4 top-4 flex flex-col rounded-xl border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary shadow-md overflow-auto w-[240px] max-h-[90vh]">
-          <div className="flex h-[48px] items-center justify-between p-4">
-            <button
-              onClick={() => router.push(`/prototypes/groups/${groupId}`)}
-              className="p-2 hover:bg-wood-lightest/20 rounded-full transition-colors flex-shrink-0"
-              title="戻る"
-            >
-              <IoArrowBack className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
-            </button>
-            <div className="flex items-center gap-1 flex-grow ml-2 min-w-0">
-              <h2
-                className="text-xs font-medium truncate text-wood-darkest"
-                title={prototypeName}
-              >
-                {prototypeName}
-              </h2>
-            </div>
-            <button
-              onClick={() => setIsLeftSidebarMinimized(true)}
-              aria-label="サイドバーを最小化"
-              className="p-2 rounded-full transition-transform hover:scale-110"
-            >
-              <IoMenu className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
-            </button>
-          </div>
+    <div
+      className={`fixed left-4 top-4 flex flex-col rounded-xl border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary shadow-md w-[240px] ${
+        !isLeftSidebarMinimized ? 'overflow-auto max-h-[90vh]' : 'h-[48px]'
+      }`}
+    >
+      <SidebarHeader
+        prototypeName={prototypeName}
+        groupId={groupId}
+        isMinimized={isLeftSidebarMinimized}
+        onToggle={toggleSidebar}
+      />
+
+      {!isLeftSidebarMinimized && (
+        <>
           <div className="border-b border-wood-light/30" />
           <div className="flex flex-col gap-2 p-4 overflow-y-auto">
             <span className="mb-2 text-xs font-medium uppercase tracking-wide text-wood-dark/70">
@@ -169,33 +201,8 @@ export default function PartCreateSidebar({
               );
             })}
           </div>
-        </div>
-      ) : (
-        <div className="fixed left-4 top-4 flex h-[48px] items-center justify-between rounded-xl border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary p-4 shadow-md w-[240px]">
-          <button
-            onClick={() => router.push(`/prototypes/groups/${groupId}`)}
-            className="p-2 hover:bg-wood-lightest/20 rounded-full transition-colors flex-shrink-0"
-            title="戻る"
-          >
-            <IoArrowBack className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
-          </button>
-          <div className="flex items-center gap-1 flex-grow ml-2 min-w-0">
-            <h2
-              className="text-xs font-medium truncate text-wood-darkest"
-              title={prototypeName}
-            >
-              {prototypeName}
-            </h2>
-          </div>
-          <button
-            onClick={() => setIsLeftSidebarMinimized(false)}
-            aria-label="サイドバーを展開"
-            className="p-2 rounded-full transition-transform hover:scale-110"
-          >
-            <IoMenu className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
-          </button>
-        </div>
+        </>
       )}
-    </>
+    </div>
   );
 }

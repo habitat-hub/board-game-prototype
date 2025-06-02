@@ -21,7 +21,9 @@ import GridLines from '@/features/prototype/components/atoms/GridLines';
 import { KonvaPartContextMenu } from '@/features/prototype/components/atoms/KonvaPartContextMenu';
 import Part2 from '@/features/prototype/components/atoms/Part2';
 import EditSidebars from '@/features/prototype/components/molecules/EditSidebars';
+import PreviewSidebars from '@/features/prototype/components/molecules/PreviewSidebars';
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
+import { VERSION_NUMBER } from '@/features/prototype/const';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { AddPartProps } from '@/features/prototype/type';
@@ -70,7 +72,8 @@ export default function GameBoard({
   );
 
   const isMasterPreview =
-    prototypeType === 'PREVIEW' && prototypeVersionNumber === 'MASTER';
+    prototypeType === 'PREVIEW' &&
+    prototypeVersionNumber === VERSION_NUMBER.MASTER;
 
   const canvasSize = useMemo(
     () => ({
@@ -257,6 +260,7 @@ export default function GameBoard({
     e: Konva.KonvaEventObject<DragEvent>,
     partId: number
   ) => {
+    if (isMasterPreview) return;
     e.cancelBubble = true;
     const newSelected = selectedPartIds.includes(partId)
       ? selectedPartIds
@@ -650,11 +654,7 @@ export default function GameBoard({
                     isActive={isActive}
                     isOtherPlayerCard={false}
                     onClick={(e) => handlePartClick(e, part.id)}
-                    onDragStart={(e) =>
-                      isMasterPreview
-                        ? undefined
-                        : handlePartDragStart(e, part.id)
-                    }
+                    onDragStart={(e) => handlePartDragStart(e, part.id)}
                     onDragMove={(e) => handlePartDragMove(e, part.id)}
                     onDragEnd={(e, partId) => handlePartDragEnd(e, partId)}
                     onContextMenu={(e) => handlePartContextMenu(e, part.id)}
@@ -687,7 +687,14 @@ export default function GameBoard({
           onDeletePart={handleDeletePart}
         />
       )}
-
+      {prototypeType === 'PREVIEW' && (
+        <PreviewSidebars
+          prototypeName={prototypeName}
+          prototypeVersionNumber={prototypeVersionNumber}
+          groupId={groupId}
+          players={players}
+        />
+      )}
       <ToolsBar
         zoomIn={handleZoomIn}
         zoomOut={handleZoomOut}
