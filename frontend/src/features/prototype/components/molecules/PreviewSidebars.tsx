@@ -116,9 +116,19 @@ export default function PreviewSidebars({
         <>
           <div className="border-b border-wood-light/30" />
           <div className="flex flex-col gap-2 p-4">
-            <span className="mb-2 text-xs font-medium uppercase tracking-wide text-wood-dark/70">
-              プレイヤー割り当て
-            </span>
+            <div className="flex flex-col items-start justify-between mb-2">
+              <span className="text-xs font-medium uppercase tracking-wide text-wood-dark/70">
+                プレイヤー割り当て
+              </span>
+              <details className="text-xs">
+                <summary className="cursor-pointer text-wood-dark/60 hover:text-wood-dark">
+                  詳細
+                </summary>
+                <div className="p-2 mt-1 bg-wood-lightest/20 rounded-md text-wood-dark/80">
+                  手札のプレイヤー番号とユーザーを紐づけます。
+                </div>
+              </details>
+            </div>
             <div className="flex flex-col gap-1">
               {players.map((player) => (
                 <div key={player.id}>
