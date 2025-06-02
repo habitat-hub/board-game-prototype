@@ -47,7 +47,9 @@ function SidebarHeader({
         </h2>
         {prototypeVersionNumber && (
           <span className="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-600 rounded-md min-w-1 border border-blue-600 flex-shrink-0">
-            v{prototypeVersionNumber}
+            {prototypeVersionNumber === 'MASTER'
+              ? 'プレビュー'
+              : `プレイルーム${prototypeVersionNumber.replace('.0.0', '')}`}
           </span>
         )}
       </div>
