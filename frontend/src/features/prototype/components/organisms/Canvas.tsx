@@ -556,6 +556,7 @@ export default function Canvas({
         <PreviewSidebars
           prototypeName={prototypeName}
           prototypeVersionNumber={prototypeVersionNumber}
+          isMasterPreview={isMasterPreview}
           groupId={groupId}
           players={players}
         />

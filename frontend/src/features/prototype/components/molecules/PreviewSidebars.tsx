@@ -17,12 +17,14 @@ import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 function SidebarHeader({
   prototypeName,
   prototypeVersionNumber,
+  isMasterPreview,
   groupId,
   isMinimized,
   onToggle,
 }: {
   prototypeName: string;
   prototypeVersionNumber?: string;
+  isMasterPreview: boolean;
   groupId: string;
   isMinimized: boolean;
   onToggle: () => void;
@@ -30,7 +32,7 @@ function SidebarHeader({
   const router = useRouter();
 
   return (
-    <div className="flex h-[48px] items-center justify-between p-4">
+    <div className="flex h-[48px] items-center justify-between px-2 py-4">
       <button
         onClick={() => router.push(`/prototypes/groups/${groupId}`)}
         className="p-2 hover:bg-wood-lightest/20 rounded-full transition-colors flex-shrink-0"
@@ -47,19 +49,21 @@ function SidebarHeader({
         </h2>
         {prototypeVersionNumber && (
           <span className="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-600 rounded-md min-w-1 border border-blue-600 flex-shrink-0">
-            {prototypeVersionNumber === 'MASTER'
+            {isMasterPreview
               ? 'プレビュー'
               : `プレイルーム${prototypeVersionNumber.replace('.0.0', '')}`}
           </span>
         )}
       </div>
-      <button
-        onClick={onToggle}
-        aria-label={isMinimized ? 'サイドバーを展開' : 'サイドバーを最小化'}
-        className="p-2 rounded-full transition-transform hover:scale-110"
-      >
-        <IoMenu className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
-      </button>
+      {!isMasterPreview && (
+        <button
+          onClick={onToggle}
+          aria-label={isMinimized ? 'サイドバーを展開' : 'サイドバーを最小化'}
+          className="p-2 rounded-full transition-transform hover:scale-110"
+        >
+          <IoMenu className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
+        </button>
+      )}
     </div>
   );
 }
@@ -67,6 +71,7 @@ function SidebarHeader({
 export default function PreviewSidebars({
   prototypeName,
   prototypeVersionNumber,
+  isMasterPreview,
   groupId,
   players,
 }: {
@@ -74,6 +79,8 @@ export default function PreviewSidebars({
   prototypeName: string;
   // プロトタイプバージョン番号
   prototypeVersionNumber?: string;
+  // プロトタイプのグループ
+  isMasterPreview: boolean;
   // グループID
   groupId: string;
   // プレイヤー
@@ -107,12 +114,13 @@ export default function PreviewSidebars({
       <SidebarHeader
         prototypeName={prototypeName}
         prototypeVersionNumber={prototypeVersionNumber}
+        isMasterPreview={isMasterPreview}
         groupId={groupId}
         isMinimized={isLeftSidebarMinimized}
         onToggle={toggleSidebar}
       />
 
-      {!isLeftSidebarMinimized && (
+      {!isLeftSidebarMinimized && !isMasterPreview && (
         <>
           <div className="border-b border-wood-light/30" />
           <div className="flex flex-col gap-2 p-4">
