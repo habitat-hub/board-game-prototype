@@ -297,7 +297,7 @@ export default function LeftSidebar({
 
   return (
     <div
-      className={`fixed left-4 top-4 flex flex-col rounded-xl border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary shadow-md w-[240px] ${
+      className={`fixed left-4 top-4 flex flex-col rounded-xl border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary shadow-md w-[18rem] ${
         !isLeftSidebarMinimized ? 'overflow-auto max-h-[90vh]' : 'h-[48px]'
       }`}
     >
