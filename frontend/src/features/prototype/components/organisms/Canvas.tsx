@@ -19,8 +19,10 @@ import {
 import Part from '@/features/prototype/components/atoms/Part';
 import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumberTool';
 import { Cursor } from '@/features/prototype/components/Cursor';
-import EditSidebars from '@/features/prototype/components/molecules/EditSidebars';
+import PartCreateSidebar from '@/features/prototype/components/molecules/PartCreateSidebar';
+import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
 import PreviewSidebars from '@/features/prototype/components/molecules/PreviewSidebars';
+import ShortcutHelpPanel from '@/features/prototype/components/molecules/ShortcutHelpPanel';
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
 import { VERSION_NUMBER } from '@/features/prototype/const';
 import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
@@ -541,16 +543,43 @@ export default function Canvas({
       />
       {/* サイドバー */}
       {prototypeType === 'EDIT' && (
-        <EditSidebars
-          prototypeName={prototypeName}
-          groupId={groupId}
-          players={players}
-          selectedPartIds={selectedPartIds}
-          parts={parts}
-          properties={properties}
-          onAddPart={handleAddPart}
-          onDeletePart={handleDeletePart}
-        />
+        <>
+          {/* Left Sidebar */}
+          <PartCreateSidebar
+            prototypeName={prototypeName}
+            groupId={groupId}
+            players={players}
+            onAddPart={handleAddPart}
+          />
+
+          {/* ショートカットヘルプパネル */}
+          <ShortcutHelpPanel
+            shortcuts={[
+              {
+                id: 'multi-select',
+                key: 'Shift + クリック',
+                description: '複数のパーツを選択できます',
+              },
+              {
+                id: 'delete',
+                key: 'Delete / Backspace',
+                description: '選択中のパーツを削除します',
+              },
+            ]}
+          />
+
+          {/* Right Sidebar */}
+          {selectedPartIds.length === 1 && (
+            <PartPropertySidebar
+              players={players}
+              selectedPartId={selectedPartIds[0]}
+              parts={parts}
+              properties={properties}
+              onAddPart={handleAddPart}
+              onDeletePart={handleDeletePart}
+            />
+          )}
+        </>
       )}
       {prototypeType === 'PREVIEW' && (
         <PreviewSidebars
