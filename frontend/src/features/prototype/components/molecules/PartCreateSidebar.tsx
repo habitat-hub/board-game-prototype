@@ -35,7 +35,7 @@ function SidebarHeader({
   const router = useRouter();
 
   return (
-    <div className="flex h-[48px] items-center justify-between p-4">
+    <div className="flex h-[48px] items-center justify-between px-2 py-4">
       <button
         onClick={() => router.push(`/prototypes/groups/${groupId}`)}
         className="p-2 hover:bg-wood-lightest/20 rounded-full transition-colors flex-shrink-0"

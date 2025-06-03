@@ -15,7 +15,8 @@ interface DebugInfoProps {
   };
   // Prototype info
   prototypeName: string;
-  prototypeVersionNumber?: string;
+  prototypeVersionNumber: string;
+  isMasterPreview: boolean;
   groupId: string;
   prototypeType: 'EDIT' | 'PREVIEW';
   // Data
@@ -30,6 +31,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
   camera,
   prototypeName,
   prototypeVersionNumber,
+  isMasterPreview,
   groupId,
   prototypeType,
   parts,
@@ -66,6 +68,32 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
           paddingBottom: '4px',
         }}
       >
+        <strong>Current Status</strong>
+      </div>
+      <div
+        style={{
+          fontWeight: 'bold',
+          color: selectedPartIds.length ? '#ffcc00' : 'white',
+          marginBottom: '5px',
+        }}
+      >
+        Selected Parts: {selectedPartIds.length}
+      </div>
+      {selectedPartIds.length > 0 && (
+        <div
+          style={{ marginLeft: '10px', fontSize: '12px', marginBottom: '5px' }}
+        >
+          IDs: {selectedPartIds.join(', ')}
+        </div>
+      )}
+      <div
+        style={{
+          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+          marginTop: '12px',
+          marginBottom: '8px',
+          paddingBottom: '4px',
+        }}
+      >
         <strong>Camera</strong>
       </div>
       <div>X: {Math.round(camera.x)}</div>
@@ -86,6 +114,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
       <div>Version: {prototypeVersionNumber || 'N/A'}</div>
       <div>Group ID: {groupId}</div>
       <div>Type: {prototypeType}</div>
+      <div>Is Master Preview: {isMasterPreview ? 'Yes' : 'No'}</div>
 
       <div
         style={{
@@ -116,12 +145,6 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
         </div>
       )}
       <div>Cursors: {Object.keys(cursors).length}</div>
-      <div>Selected: {selectedPartIds.length}</div>
-      {selectedPartIds.length > 0 && (
-        <div style={{ marginLeft: '10px', fontSize: '12px' }}>
-          IDs: {selectedPartIds.join(', ')}
-        </div>
-      )}
 
       <div
         style={{

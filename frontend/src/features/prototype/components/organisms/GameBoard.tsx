@@ -691,6 +691,7 @@ export default function GameBoard({
         <PreviewSidebars
           prototypeName={prototypeName}
           prototypeVersionNumber={prototypeVersionNumber}
+          isMasterPreview={isMasterPreview}
           groupId={groupId}
           players={players}
         />
@@ -706,7 +707,8 @@ export default function GameBoard({
       <DebugInfo
         camera={camera}
         prototypeName={prototypeName}
-        prototypeVersionNumber={prototypeVersionNumber}
+        prototypeVersionNumber={prototypeVersionNumber ?? ''}
+        isMasterPreview={isMasterPreview}
         groupId={groupId}
         prototypeType={prototypeType}
         parts={parts}
