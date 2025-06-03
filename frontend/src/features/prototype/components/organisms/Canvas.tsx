@@ -21,7 +21,7 @@ import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumber
 import { Cursor } from '@/features/prototype/components/Cursor';
 import PartCreateSidebar from '@/features/prototype/components/molecules/PartCreateSidebar';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
-import PreviewSidebars from '@/features/prototype/components/molecules/PreviewSidebars';
+import PreviewSidebar from '@/features/prototype/components/molecules/PreviewSidebar';
 import ShortcutHelpPanel from '@/features/prototype/components/molecules/ShortcutHelpPanel';
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
 import { VERSION_NUMBER } from '@/features/prototype/const';
@@ -582,7 +582,7 @@ export default function Canvas({
         </>
       )}
       {prototypeType === 'PREVIEW' && (
-        <PreviewSidebars
+        <PreviewSidebar
           prototypeName={prototypeName}
           prototypeVersionNumber={prototypeVersionNumber}
           isMasterPreview={isMasterPreview}

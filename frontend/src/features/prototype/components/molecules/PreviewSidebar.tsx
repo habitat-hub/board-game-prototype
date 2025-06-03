@@ -68,7 +68,7 @@ function SidebarHeader({
   );
 }
 
-export default function PreviewSidebars({
+export default function PreviewSidebar({
   prototypeName,
   prototypeVersionNumber,
   isMasterPreview,
