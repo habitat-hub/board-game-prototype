@@ -15,9 +15,8 @@ interface DebugInfoProps {
   };
   // Prototype info
   prototypeName: string;
-  prototypeVersionNumber?: string;
-  prototypeVersion?: string;
-  isMasterPreview?: boolean;
+  prototypeVersionNumber: string;
+  isMasterPreview: boolean;
   groupId: string;
   prototypeType: 'EDIT' | 'PREVIEW';
   // Data
@@ -32,7 +31,6 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
   camera,
   prototypeName,
   prototypeVersionNumber,
-  prototypeVersion,
   isMasterPreview,
   groupId,
   prototypeType,
@@ -88,12 +86,6 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
           IDs: {selectedPartIds.join(', ')}
         </div>
       )}
-      <div>Prototype: {prototypeName}</div>
-      <div>Version: {prototypeVersionNumber || 'N/A'}</div>
-      {prototypeVersion && <div>Version Detail: {prototypeVersion}</div>}
-      <div>Is Master Preview: {isMasterPreview ? 'Yes' : 'No'}</div>
-      <div>Type: {prototypeType}</div>
-
       <div
         style={{
           borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
@@ -120,7 +112,6 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
       </div>
       <div>Name: {prototypeName}</div>
       <div>Version: {prototypeVersionNumber || 'N/A'}</div>
-      {prototypeVersion && <div>Version Detail: {prototypeVersion}</div>}
       <div>Group ID: {groupId}</div>
       <div>Type: {prototypeType}</div>
       <div>Is Master Preview: {isMasterPreview ? 'Yes' : 'No'}</div>

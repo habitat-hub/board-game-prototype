@@ -706,7 +706,8 @@ export default function GameBoard({
       <DebugInfo
         camera={camera}
         prototypeName={prototypeName}
-        prototypeVersionNumber={prototypeVersionNumber}
+        prototypeVersionNumber={prototypeVersionNumber ?? ''}
+        isMasterPreview={isMasterPreview}
         groupId={groupId}
         prototypeType={prototypeType}
         parts={parts}
