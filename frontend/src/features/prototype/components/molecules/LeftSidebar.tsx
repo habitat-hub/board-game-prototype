@@ -23,63 +23,6 @@ import { PART_DEFAULT_CONFIG } from '@/features/prototype/const';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { AddPartProps } from '@/features/prototype/type';
 
-// 左サイドバーのヘッダーコンポーネント
-function LeftSidebarHeader({
-  prototypeName,
-  prototypeVersionNumber,
-  prototypeType,
-  isMasterPreview,
-  groupId,
-  isMinimized,
-  onToggle,
-}: {
-  prototypeName: string;
-  prototypeVersionNumber?: string;
-  prototypeType: 'PREVIEW' | 'EDIT';
-  isMasterPreview: boolean;
-  groupId: string;
-  isMinimized: boolean;
-  onToggle: () => void;
-}) {
-  const router = useRouter();
-
-  return (
-    <div className="flex h-[48px] items-center justify-between px-2 py-4">
-      <button
-        onClick={() => router.push(`/prototypes/groups/${groupId}`)}
-        className="p-2 hover:bg-wood-lightest/20 rounded-full transition-colors flex-shrink-0"
-        title="戻る"
-      >
-        <IoArrowBack className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
-      </button>
-      <div className="flex items-center gap-1 flex-grow ml-2 min-w-0">
-        <h2
-          className="text-xs font-medium truncate text-wood-darkest"
-          title={prototypeName}
-        >
-          {prototypeName}
-        </h2>
-        {prototypeVersionNumber && prototypeType === 'PREVIEW' && (
-          <span className="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-600 rounded-md min-w-1 border border-blue-600 flex-shrink-0">
-            {isMasterPreview
-              ? 'プレビュー'
-              : `プレイルーム${prototypeVersionNumber.replace('.0.0', '')}`}
-          </span>
-        )}
-      </div>
-      {(prototypeType === 'EDIT' || !isMasterPreview) && (
-        <button
-          onClick={onToggle}
-          aria-label={isMinimized ? 'サイドバーを展開' : 'サイドバーを最小化'}
-          className="p-2 rounded-full transition-transform hover:scale-110"
-        >
-          <IoMenu className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
-        </button>
-      )}
-    </div>
-  );
-}
-
 export default function LeftSidebar({
   prototypeName,
   prototypeVersionNumber,
@@ -106,11 +49,67 @@ export default function LeftSidebar({
 }) {
   const { dispatch } = usePartReducer();
   const { getAccessUsersByGroup } = usePrototypes();
+  const router = useRouter();
 
   // 左サイドバーが最小化されているか
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
   // グループにアクセス可能なユーザー（プレビューモード時のみ使用）
   const [accessibleUsers, setAccessibleUsers] = useState<User[]>([]);
+
+  // 左サイドバーのヘッダーコンポーネント
+  const LeftSidebarHeader = ({
+    prototypeName,
+    prototypeVersionNumber,
+    prototypeType,
+    isMasterPreview,
+    groupId,
+    isMinimized,
+    onToggle,
+  }: {
+    prototypeName: string;
+    prototypeVersionNumber?: string;
+    prototypeType: 'PREVIEW' | 'EDIT';
+    isMasterPreview: boolean;
+    groupId: string;
+    isMinimized: boolean;
+    onToggle: () => void;
+  }) => {
+    return (
+      <div className="flex h-[48px] items-center justify-between px-2 py-4">
+        <button
+          onClick={() => router.push(`/prototypes/groups/${groupId}`)}
+          className="p-2 hover:bg-wood-lightest/20 rounded-full transition-colors flex-shrink-0"
+          title="戻る"
+        >
+          <IoArrowBack className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
+        </button>
+        <div className="flex items-center gap-1 flex-grow ml-2 min-w-0">
+          <h2
+            className="text-xs font-medium truncate text-wood-darkest"
+            title={prototypeName}
+          >
+            {prototypeName}
+          </h2>
+          {prototypeVersionNumber && prototypeType === 'PREVIEW' && (
+            <span className="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-600 rounded-md min-w-1 border border-blue-600 flex-shrink-0">
+              {isMasterPreview
+                ? 'プレビュー'
+                : `プレイルーム${prototypeVersionNumber.replace('.0.0', '')}`}
+            </span>
+          )}
+        </div>
+        {(prototypeType === 'EDIT' || !isMasterPreview) && (
+          <button
+            onClick={onToggle}
+            aria-label={isMinimized ? 'サイドバーを展開' : 'サイドバーを最小化'}
+            className="p-2 rounded-full transition-transform hover:scale-110"
+          >
+            <IoMenu className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
+          </button>
+        )}
+      </div>
+    );
+  };
 
   // グループにアクセス可能なユーザーを取得（プレビューモード時のみ）
   useEffect(() => {
