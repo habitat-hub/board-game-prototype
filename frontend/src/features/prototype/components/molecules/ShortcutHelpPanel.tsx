@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { IoClose, IoInformationCircleOutline } from 'react-icons/io5';
 
 type ShortcutInfo = {
@@ -22,6 +22,23 @@ export default function ShortcutHelpPanel({
 }: ShortcutHelpPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  // キーボードショートカットのハンドラを追加
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Shift + ? (Shift + / キー)でショートカットメニューを開閉
+      if (event.shiftKey && event.key === '?') {
+        setIsExpanded((prev) => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    // クリーンアップ関数
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   return (
     <div className="fixed left-[20rem] top-[1.75rem] z-50">
       <div className="relative">
@@ -33,7 +50,7 @@ export default function ShortcutHelpPanel({
               ? 'ショートカットヘルプを閉じる'
               : 'ショートカットヘルプを開く'
           }
-          title="ショートカット情報"
+          title="ショートカット情報 (Shift+?)"
         >
           <IoInformationCircleOutline className="h-4 w-4 text-white" />
         </button>
@@ -67,6 +84,14 @@ export default function ShortcutHelpPanel({
                   </tr>
                 </thead>
                 <tbody>
+                  <tr className="border-b border-wood-light/10">
+                    <td className="py-1.5 px-2 font-medium text-wood-dark">
+                      Shift + ?
+                    </td>
+                    <td className="py-1.5 px-2 text-wood-darkest">
+                      ショートカットヘルプを開閉する
+                    </td>
+                  </tr>
                   {shortcuts.map((shortcut) => (
                     <tr
                       key={shortcut.id}
