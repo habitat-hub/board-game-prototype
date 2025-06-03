@@ -19,9 +19,8 @@ import {
 import Part from '@/features/prototype/components/atoms/Part';
 import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumberTool';
 import { Cursor } from '@/features/prototype/components/Cursor';
-import PartCreateSidebar from '@/features/prototype/components/molecules/PartCreateSidebar';
+import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
-import PreviewSidebar from '@/features/prototype/components/molecules/PreviewSidebar';
 import ShortcutHelpPanel from '@/features/prototype/components/molecules/ShortcutHelpPanel';
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
 import { VERSION_NUMBER } from '@/features/prototype/const';
@@ -541,17 +540,19 @@ export default function Canvas({
         canZoomOut={camera.zoom > 0.4}
         zoomLevel={camera.zoom}
       />
-      {/* サイドバー */}
+      {/* 左サイドバー */}
+      <LeftSidebar
+        prototypeName={prototypeName}
+        prototypeVersionNumber={prototypeVersionNumber}
+        prototypeType={prototypeType}
+        isMasterPreview={isMasterPreview}
+        groupId={groupId}
+        players={players}
+        onAddPart={handleAddPart}
+      />
+
       {prototypeType === 'EDIT' && (
         <>
-          {/* Left Sidebar */}
-          <PartCreateSidebar
-            prototypeName={prototypeName}
-            groupId={groupId}
-            players={players}
-            onAddPart={handleAddPart}
-          />
-
           {/* ショートカットヘルプパネル */}
           <ShortcutHelpPanel
             shortcuts={[
@@ -568,7 +569,7 @@ export default function Canvas({
             ]}
           />
 
-          {/* Right Sidebar */}
+          {/* プロパティサイドバー */}
           {selectedPartIds.length === 1 && (
             <PartPropertySidebar
               players={players}
@@ -580,15 +581,6 @@ export default function Canvas({
             />
           )}
         </>
-      )}
-      {prototypeType === 'PREVIEW' && (
-        <PreviewSidebar
-          prototypeName={prototypeName}
-          prototypeVersionNumber={prototypeVersionNumber}
-          isMasterPreview={isMasterPreview}
-          groupId={groupId}
-          players={players}
-        />
       )}
       {/* 乱数ツールボタン */}
       <button

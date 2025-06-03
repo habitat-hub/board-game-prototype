@@ -20,9 +20,8 @@ import DebugInfo from '@/features/prototype/components/atoms/DebugInfo';
 import GridLines from '@/features/prototype/components/atoms/GridLines';
 import { KonvaPartContextMenu } from '@/features/prototype/components/atoms/KonvaPartContextMenu';
 import Part2 from '@/features/prototype/components/atoms/Part2';
-import PartCreateSidebar from '@/features/prototype/components/molecules/PartCreateSidebar';
+import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
-import PreviewSidebar from '@/features/prototype/components/molecules/PreviewSidebar';
 import ShortcutHelpPanel from '@/features/prototype/components/molecules/ShortcutHelpPanel';
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
 import { VERSION_NUMBER } from '@/features/prototype/const';
@@ -677,33 +676,34 @@ export default function GameBoard({
         </Layer>
       </Stage>
 
+      <LeftSidebar
+        prototypeName={prototypeName}
+        prototypeVersionNumber={prototypeVersionNumber}
+        prototypeType={prototypeType}
+        isMasterPreview={isMasterPreview}
+        groupId={groupId}
+        players={players}
+        onAddPart={handleAddPart}
+      />
+      {/* ショートカットヘルプパネル */}
+      <ShortcutHelpPanel
+        shortcuts={[
+          {
+            id: 'multi-select',
+            key: 'Shift + クリック',
+            description: '複数のパーツを選択できます',
+          },
+          {
+            id: 'delete',
+            key: 'Delete / Backspace',
+            description: '選択中のパーツを削除します',
+          },
+        ]}
+      />
+
       {prototypeType === 'EDIT' && (
         <>
-          {/* Left Sidebar */}
-          <PartCreateSidebar
-            prototypeName={prototypeName}
-            groupId={groupId}
-            players={players}
-            onAddPart={handleAddPart}
-          />
-
-          {/* ショートカットヘルプパネル */}
-          <ShortcutHelpPanel
-            shortcuts={[
-              {
-                id: 'multi-select',
-                key: 'Shift + クリック',
-                description: '複数のパーツを選択できます',
-              },
-              {
-                id: 'delete',
-                key: 'Delete / Backspace',
-                description: '選択中のパーツを削除します',
-              },
-            ]}
-          />
-
-          {/* Right Sidebar */}
+          {/* プロパティサイドバー */}
           {selectedPartIds.length === 1 && (
             <PartPropertySidebar
               players={players}
@@ -715,15 +715,6 @@ export default function GameBoard({
             />
           )}
         </>
-      )}
-      {prototypeType === 'PREVIEW' && (
-        <PreviewSidebar
-          prototypeName={prototypeName}
-          prototypeVersionNumber={prototypeVersionNumber}
-          isMasterPreview={isMasterPreview}
-          groupId={groupId}
-          players={players}
-        />
       )}
       <ToolsBar
         zoomIn={handleZoomIn}
