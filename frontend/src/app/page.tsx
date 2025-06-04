@@ -1,9 +1,9 @@
 import React from 'react';
 
-import Login from '@/components/molecules/Login';
+import About from '@/features/about/components/templates/About';
 
 function Home() {
-  return <Login />;
+  return <About />;
 }
 
 export default Home;
