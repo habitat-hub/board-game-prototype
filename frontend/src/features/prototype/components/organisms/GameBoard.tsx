@@ -20,8 +20,9 @@ import DebugInfo from '@/features/prototype/components/atoms/DebugInfo';
 import GridLines from '@/features/prototype/components/atoms/GridLines';
 import { KonvaPartContextMenu } from '@/features/prototype/components/atoms/KonvaPartContextMenu';
 import Part2 from '@/features/prototype/components/atoms/Part2';
-import EditSidebars from '@/features/prototype/components/molecules/EditSidebars';
-import PreviewSidebars from '@/features/prototype/components/molecules/PreviewSidebars';
+import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
+import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
+import ShortcutHelpPanel from '@/features/prototype/components/molecules/ShortcutHelpPanel';
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
 import { VERSION_NUMBER } from '@/features/prototype/const';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
@@ -675,26 +676,45 @@ export default function GameBoard({
         </Layer>
       </Stage>
 
+      <LeftSidebar
+        prototypeName={prototypeName}
+        prototypeVersionNumber={prototypeVersionNumber}
+        prototypeType={prototypeType}
+        isMasterPreview={isMasterPreview}
+        groupId={groupId}
+        players={players}
+        onAddPart={handleAddPart}
+      />
+      {/* ショートカットヘルプパネル */}
+      <ShortcutHelpPanel
+        shortcuts={[
+          {
+            id: 'multi-select',
+            key: 'Shift + クリック',
+            description: '複数のパーツを選択できます',
+          },
+          {
+            id: 'delete',
+            key: 'Delete / Backspace',
+            description: '選択中のパーツを削除します',
+          },
+        ]}
+      />
+
       {prototypeType === 'EDIT' && (
-        <EditSidebars
-          prototypeName={prototypeName}
-          groupId={groupId}
-          players={players}
-          selectedPartIds={selectedPartIds}
-          parts={parts}
-          properties={properties}
-          onAddPart={handleAddPart}
-          onDeletePart={handleDeletePart}
-        />
-      )}
-      {prototypeType === 'PREVIEW' && (
-        <PreviewSidebars
-          prototypeName={prototypeName}
-          prototypeVersionNumber={prototypeVersionNumber}
-          isMasterPreview={isMasterPreview}
-          groupId={groupId}
-          players={players}
-        />
+        <>
+          {/* プロパティサイドバー */}
+          {selectedPartIds.length === 1 && (
+            <PartPropertySidebar
+              players={players}
+              selectedPartId={selectedPartIds[0]}
+              parts={parts}
+              properties={properties}
+              onAddPart={handleAddPart}
+              onDeletePart={handleDeletePart}
+            />
+          )}
+        </>
       )}
       <ToolsBar
         zoomIn={handleZoomIn}

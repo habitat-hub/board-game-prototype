@@ -19,8 +19,9 @@ import {
 import Part from '@/features/prototype/components/atoms/Part';
 import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumberTool';
 import { Cursor } from '@/features/prototype/components/Cursor';
-import EditSidebars from '@/features/prototype/components/molecules/EditSidebars';
-import PreviewSidebars from '@/features/prototype/components/molecules/PreviewSidebars';
+import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
+import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
+import ShortcutHelpPanel from '@/features/prototype/components/molecules/ShortcutHelpPanel';
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
 import { VERSION_NUMBER } from '@/features/prototype/const';
 import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
@@ -539,27 +540,47 @@ export default function Canvas({
         canZoomOut={camera.zoom > 0.4}
         zoomLevel={camera.zoom}
       />
-      {/* サイドバー */}
+      {/* 左サイドバー */}
+      <LeftSidebar
+        prototypeName={prototypeName}
+        prototypeVersionNumber={prototypeVersionNumber}
+        prototypeType={prototypeType}
+        isMasterPreview={isMasterPreview}
+        groupId={groupId}
+        players={players}
+        onAddPart={handleAddPart}
+      />
+
       {prototypeType === 'EDIT' && (
-        <EditSidebars
-          prototypeName={prototypeName}
-          groupId={groupId}
-          players={players}
-          selectedPartIds={selectedPartIds}
-          parts={parts}
-          properties={properties}
-          onAddPart={handleAddPart}
-          onDeletePart={handleDeletePart}
-        />
-      )}
-      {prototypeType === 'PREVIEW' && (
-        <PreviewSidebars
-          prototypeName={prototypeName}
-          prototypeVersionNumber={prototypeVersionNumber}
-          isMasterPreview={isMasterPreview}
-          groupId={groupId}
-          players={players}
-        />
+        <>
+          {/* ショートカットヘルプパネル */}
+          <ShortcutHelpPanel
+            shortcuts={[
+              {
+                id: 'multi-select',
+                key: 'Shift + クリック',
+                description: '複数のパーツを選択できます',
+              },
+              {
+                id: 'delete',
+                key: 'Delete / Backspace',
+                description: '選択中のパーツを削除します',
+              },
+            ]}
+          />
+
+          {/* プロパティサイドバー */}
+          {selectedPartIds.length === 1 && (
+            <PartPropertySidebar
+              players={players}
+              selectedPartId={selectedPartIds[0]}
+              parts={parts}
+              properties={properties}
+              onAddPart={handleAddPart}
+              onDeletePart={handleDeletePart}
+            />
+          )}
+        </>
       )}
       {/* 乱数ツールボタン */}
       <button
