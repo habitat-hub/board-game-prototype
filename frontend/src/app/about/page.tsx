@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import React from 'react';
 
-import About from '@/features/about/components/About';
+import About from '@/features/about/components/templates/About';
 
 export const metadata: Metadata = {
   title: 'KIBAKOについて',

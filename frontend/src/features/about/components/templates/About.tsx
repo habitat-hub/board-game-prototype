@@ -10,9 +10,9 @@ import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import { GiWoodenCrate } from 'react-icons/gi';
 
-import CatchCopyCard from './CatchCopyCard';
-import FloatingActionButton from './FloatingActionButton';
-import MiniGameBoard from './MiniGameBoard';
+import FloatingActionButton from '@/features/about/components/atoms/FloatingActionButton';
+import CatchCopyCard from '@/features/about/components/molecules/CatchCopyCard';
+import MiniGameBoard from '@/features/about/components/organisms/MiniGameBoard';
 
 const About: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
