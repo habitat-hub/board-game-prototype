@@ -14,7 +14,7 @@ import CatchCopyCard from './CatchCopyCard';
 import FloatingActionButton from './FloatingActionButton';
 import MiniGameBoard from './MiniGameBoard';
 
-const LandingPage: React.FC = () => {
+const About: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const { scrollYProgress } = useScroll();
 
@@ -613,4 +613,4 @@ const LandingPage: React.FC = () => {
   );
 };
 
-export default LandingPage;
+export default About;
