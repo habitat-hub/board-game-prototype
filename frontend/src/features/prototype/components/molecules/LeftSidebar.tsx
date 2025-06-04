@@ -176,7 +176,6 @@ export default function LeftSidebar({
       description: partConfig.description,
       color: partConfig.color,
       textColor: partConfig.textColor,
-      image: '',
     };
 
     // カードの場合は表裏両方のプロパティを作成、それ以外は表面のみ
