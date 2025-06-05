@@ -39,7 +39,7 @@ const FloatingActionButton = () => {
           transition={{ duration: 0.4, type: 'spring' }}
           className="fixed bottom-10 right-10 z-50"
         >
-          <Link href="/">
+          <Link href="/login">
             <motion.div
               className="flex items-center gap-2 px-6 py-4 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-full font-bold shadow-lg hover:shadow-amber-300/50"
               whileHover={{

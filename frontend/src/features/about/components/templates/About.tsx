@@ -344,7 +344,7 @@ const About: React.FC = () => {
                     transition={{ delay: 1, duration: 0.8 }}
                     className="flex flex-col sm:flex-row gap-4 justify-center"
                   >
-                    <Link href="/">
+                    <Link href="/login">
                       <motion.div
                         className="flex items-center gap-2 px-6 py-4 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-full font-bold shadow-lg hover:shadow-amber-300/50"
                         whileHover={{
@@ -585,7 +585,7 @@ const About: React.FC = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
-              <Link href="/">
+              <Link href="/login">
                 <motion.div
                   className="inline-flex items-center gap-2 px-6 py-4 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-full font-bold shadow-lg hover:shadow-amber-300/50"
                   whileHover={{
