@@ -10,11 +10,11 @@ import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import { GiWoodenCrate } from 'react-icons/gi';
 
-import CatchCopyCard from './CatchCopyCard';
-import FloatingActionButton from './FloatingActionButton';
-import MiniGameBoard from './MiniGameBoard';
+import FloatingActionButton from '@/features/about/components/atoms/FloatingActionButton';
+import CatchCopyCard from '@/features/about/components/molecules/CatchCopyCard';
+import MiniGameBoard from '@/features/about/components/organisms/MiniGameBoard';
 
-const LandingPage: React.FC = () => {
+const About: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const { scrollYProgress } = useScroll();
 
@@ -344,7 +344,7 @@ const LandingPage: React.FC = () => {
                     transition={{ delay: 1, duration: 0.8 }}
                     className="flex flex-col sm:flex-row gap-4 justify-center"
                   >
-                    <Link href="/">
+                    <Link href="/login">
                       <motion.div
                         className="flex items-center gap-2 px-6 py-4 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-full font-bold shadow-lg hover:shadow-amber-300/50"
                         whileHover={{
@@ -585,7 +585,7 @@ const LandingPage: React.FC = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
-              <Link href="/">
+              <Link href="/login">
                 <motion.div
                   className="inline-flex items-center gap-2 px-6 py-4 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-full font-bold shadow-lg hover:shadow-amber-300/50"
                   whileHover={{
@@ -613,4 +613,4 @@ const LandingPage: React.FC = () => {
   );
 };
 
-export default LandingPage;
+export default About;

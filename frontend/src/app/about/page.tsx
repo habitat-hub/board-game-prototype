@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import React from 'react';
 
-import LandingPage from '@/features/landing/components/LandingPage';
+import About from '@/features/about/components/templates/About';
 
 export const metadata: Metadata = {
   title: 'KIBAKOについて',
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 const AboutPage: React.FC = () => {
-  return <LandingPage />;
+  return <About />;
 };
 
 export default AboutPage;

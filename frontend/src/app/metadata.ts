@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     url: 'https://kibako.habitat-hub.com/about',
     images: [
       {
-        url: '/og-image.jpg', // 必要に応じて実際の画像パスに更新してください
+        url: '/images/og-image.png',
         width: 1200,
         height: 630,
         alt: 'KIBAKO - ボードゲーム試作品作成アプリ',
@@ -51,11 +51,8 @@ export const metadata: Metadata = {
     title: 'KIBAKO - ボードゲーム試作品作成アプリ',
     description:
       '気軽にボードゲームを作ろう - アイデアを素早く試作品に。ボードゲームをオンライン上で作成し、繰り返しテストプレイできます。',
-    images: ['/og-image.jpg'], // 必要に応じて実際の画像パスに更新してください
+    images: ['/images/og-image.png'],
   },
-
-  // アイコン設定
-  icons: [{ rel: 'icon', url: '/favicon.ico' }],
 
   // ロボット設定
   robots: {
