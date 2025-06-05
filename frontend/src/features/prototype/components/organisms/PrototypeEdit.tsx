@@ -12,7 +12,7 @@ import {
   Prototype,
   PrototypeVersion,
 } from '@/api/types';
-import Canvas from '@/features/prototype/components/organisms/Canvas';
+import GameBoard from '@/features/prototype/components/organisms/GameBoard';
 import { PrototypeVersionIdProvider } from '@/features/prototype/contexts/PrototypeVersionIdContext';
 import { SocketProvider } from '@/features/prototype/contexts/SocketContext';
 import { CursorInfo } from '@/features/prototype/types/cursor';
@@ -20,7 +20,7 @@ import { useUser } from '@/hooks/useUser';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
-const PrototypeEdit: React.FC = () => {
+export default function PrototypeEdit() {
   const router = useRouter();
   const { getPrototypeVersions } = usePrototypes();
   const { user } = useUser();
@@ -107,7 +107,7 @@ const PrototypeEdit: React.FC = () => {
   return (
     <SocketProvider socket={socket}>
       <PrototypeVersionIdProvider prototypeVersionId={versionId}>
-        <Canvas
+        <GameBoard
           prototypeName={prototype.name}
           parts={parts}
           properties={properties}
@@ -120,6 +120,4 @@ const PrototypeEdit: React.FC = () => {
       </PrototypeVersionIdProvider>
     </SocketProvider>
   );
-};
-
-export default PrototypeEdit;
+}

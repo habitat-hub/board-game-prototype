@@ -40,7 +40,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         setUser(data);
       })
       .catch(() => {
-        router.replace('/about');
+        router.replace('/');
       });
   }, [getUser, router]);
 

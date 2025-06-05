@@ -1,15 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  createContext,
-  useContext,
-  useCallback,
-  useMemo,
-} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   GiCardRandom,
   GiDiamonds,
@@ -19,119 +11,9 @@ import {
   GiSpades,
 } from 'react-icons/gi';
 
-// ゲームボード要素の参照を共有するためのContext
-const GameBoardContext = createContext<React.RefObject<HTMLDivElement> | null>(
-  null
-);
-
-// ゲームピース要素の参照を動的に管理するためのContext
-type GamePieceRefMap = Map<string, React.RefObject<HTMLDivElement>>;
-interface GamePieceContextType {
-  refs: GamePieceRefMap;
-  registerRef: (
-    id: string,
-    width: string,
-    height: string
-  ) => React.RefObject<HTMLDivElement>;
-}
-
-const GamePieceContext = createContext<GamePieceContextType | null>(null);
-
-// ピース要素のRefMapを提供するカスタムProvider
-const GamePieceProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const pieceRefs = useRef<GamePieceRefMap>(new Map());
-
-  const registerRef = useCallback(
-    (id: string, width: string, height: string) => {
-      // 既に存在する場合はそれを返す
-      const existingKey = `${id}-${width}-${height}`;
-      if (pieceRefs.current.has(existingKey)) {
-        return pieceRefs.current.get(existingKey)!;
-      }
-
-      // 新しいrefを作成して登録
-      const newRef = React.createRef<HTMLDivElement>();
-      pieceRefs.current.set(existingKey, newRef);
-      return newRef;
-    },
-    []
-  );
-
-  const contextValue = useMemo(
-    () => ({
-      refs: pieceRefs.current,
-      registerRef,
-    }),
-    [registerRef]
-  );
-
-  return (
-    <GamePieceContext.Provider value={contextValue}>
-      {children}
-    </GamePieceContext.Provider>
-  );
-};
-
-// ボード内のランダムな位置を生成するカスタムフック
-function useRandomPosition(id: string, width: string, height: string) {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const boardRef = useContext(GameBoardContext);
-  const piecesContext = useContext(GamePieceContext);
-
-  // このピース用のrefを登録
-  const pieceRef = piecesContext?.registerRef(id, width, height);
-
-  useEffect(() => {
-    const calculateRandomPosition = () => {
-      const boardElement = boardRef?.current;
-      if (boardElement) {
-        const boardRect = boardElement.getBoundingClientRect();
-
-        // pieceRefが設定されている場合はそれを使用する、まだ設定されていない場合は従来の方法でサイズを取得
-        let pieceWidth = 64; // デフォルト値
-        let pieceHeight = 64; // デフォルト値
-
-        if (pieceRef?.current) {
-          const pieceRect = pieceRef.current.getBoundingClientRect();
-          pieceWidth = pieceRect.width;
-          pieceHeight = pieceRect.height;
-        } else {
-          // ピースがまだレンダリングされていない場合のフォールバック
-          const pieceElements = boardElement.querySelectorAll(
-            `.${width}.${height}`
-          );
-          const pieceRect = pieceElements[0]?.getBoundingClientRect();
-          pieceWidth = pieceRect?.width || pieceWidth;
-          pieceHeight = pieceRect?.height || pieceHeight;
-        }
-
-        // ボードの余白を考慮
-        const buffer = 10;
-
-        // ランダムな位置を計算（ボード内に収まるように）
-        const randomX =
-          Math.floor(
-            Math.random() * (boardRect.width - pieceWidth - buffer * 2)
-          ) + buffer;
-        const randomY =
-          Math.floor(
-            Math.random() * (boardRect.height - pieceHeight - buffer * 2)
-          ) + buffer;
-
-        setPosition({ x: randomX, y: randomY });
-      }
-    };
-
-    // 少し遅延を入れてDOMが確実にレンダリングされた後に実行
-    const timer = setTimeout(calculateRandomPosition, 100);
-
-    return () => clearTimeout(timer);
-  }, [width, height, boardRef, pieceRef]);
-
-  return position;
-}
+import { useRandomPosition } from '../../hooks/useRandomPosition';
+import { GameBoardProvider, useGameBoard } from '../contexts/GameBoardContext';
+import { GamePieceProvider, useGamePiece } from '../contexts/GamePieceContext';
 
 interface DraggableGamePieceProps {
   id: string; // ピースを識別するためのユニークID
@@ -162,7 +44,7 @@ const DraggableGamePiece: React.FC<DraggableGamePieceProps> = ({
   const randomPosition = useRandomPosition(id, width, height);
 
   // GamePieceContextから参照を取得
-  const piecesContext = useContext(GamePieceContext);
+  const piecesContext = useGamePiece();
   const pieceRef = piecesContext?.registerRef(id, width, height);
 
   // useRandomInitialPositionがtrueの場合はランダム位置を使用、そうでなければ指定された初期位置を使用
@@ -186,7 +68,7 @@ const DraggableGamePiece: React.FC<DraggableGamePieceProps> = ({
   }, [useRandomInitialPosition, randomPosition]);
 
   // ボード参照の取得
-  const boardRef = useContext(GameBoardContext);
+  const boardRef = useGameBoard();
 
   // コンポーネントマウント時とウィンドウリサイズ時にボード境界を計算
   React.useEffect(() => {
@@ -540,7 +422,7 @@ const MiniGameBoard: React.FC<MiniGameBoardProps> = ({ className = '' }) => {
   };
 
   return (
-    <GameBoardContext.Provider value={boardRef}>
+    <GameBoardProvider boardRef={boardRef}>
       <GamePieceProvider>
         <div
           ref={boardRef}
@@ -642,7 +524,7 @@ const MiniGameBoard: React.FC<MiniGameBoardProps> = ({ className = '' }) => {
           </div>
         </div>
       </GamePieceProvider>
-    </GameBoardContext.Provider>
+    </GameBoardProvider>
   );
 };
 

@@ -1,10 +1,57 @@
 'use client';
 
-import React from 'react';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 import { FaGoogle } from 'react-icons/fa';
 import { GiWoodenCrate } from 'react-icons/gi';
 
+import { useAuth } from '@/api/hooks/useAuth';
+
 function Login() {
+  const router = useRouter();
+  const { getUser } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // ユーザーがログイン済みか確認
+    getUser()
+      .then((user) => {
+        // ユーザーデータが存在する場合はログイン済みと判断
+        if (user && user.id) {
+          // /prototypes にリダイレクト
+          router.replace('/prototypes');
+        } else {
+          // ユーザーがログインしていない場合はローディングを終了
+          setIsLoading(false);
+        }
+      })
+      .catch((error) => {
+        // エラーがあった場合はログイン画面を表示する
+        console.error('Login check error:', error);
+        setIsLoading(false);
+      });
+  }, [getUser, router]);
+
+  // ローディング中は簡単なアピール文を表示
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-amber-50">
+        <div className="flex items-center gap-3 mb-6 animate-pulse">
+          <GiWoodenCrate className="text-6xl drop-shadow-lg transform -rotate-6 text-amber-600" />
+          <h1 className="text-5xl font-bold tracking-wider text-amber-800">
+            KIBAKO
+          </h1>
+        </div>
+        <div className="h-1 w-40 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full mb-8"></div>
+        <p className="text-xl text-amber-700 text-center max-w-md px-4">
+          ボードゲームのアイデアを形にし、テストプレイを簡単に。
+          <br />
+          創造力を解き放つデジタルプレイグラウンド
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center justify-center relative overflow-hidden py-16">
       {/* 中央のログインカード */}

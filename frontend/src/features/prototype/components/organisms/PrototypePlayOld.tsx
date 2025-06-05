@@ -12,7 +12,7 @@ import {
   Prototype,
   PrototypeVersion,
 } from '@/api/types';
-import GameBoard from '@/features/prototype/components/organisms/GameBoard';
+import Canvas from '@/features/prototype/components/organisms/Canvas';
 import { PrototypeVersionIdProvider } from '@/features/prototype/contexts/PrototypeVersionIdContext';
 import { SocketProvider } from '@/features/prototype/contexts/SocketContext';
 import { CursorInfo } from '@/features/prototype/types/cursor';
@@ -20,7 +20,7 @@ import { useUser } from '@/hooks/useUser';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
-export default function PrototypeEdit2() {
+const PrototypePlayOld: React.FC = () => {
   const router = useRouter();
   const { getPrototypeVersions } = usePrototypes();
   const { user } = useUser();
@@ -47,7 +47,7 @@ export default function PrototypeEdit2() {
   // カーソル
   const [cursors, setCursors] = useState<Record<string, CursorInfo>>({});
 
-  // socket通信の設定
+  // socket通信
   useEffect(() => {
     // サーバーに接続した後、特定のプロトタイプに参加
     socket.emit('JOIN_PROTOTYPE', {
@@ -55,18 +55,18 @@ export default function PrototypeEdit2() {
       userId: user?.id || '',
     });
 
-    // 更新されたパーツを受信
+    // 更新パーツの受信
     socket.on('UPDATE_PARTS', ({ parts, properties }) => {
       setParts(parts);
       setProperties(properties);
     });
 
-    // 更新されたプレイヤーを受信
+    // 更新プレイヤーの受信
     socket.on('UPDATE_PLAYERS', (players: Player[]) => {
       setPlayers(players.sort((a, b) => a.id - b.id));
     });
 
-    // 更新されたカーソルを受信
+    // 更新カーソルの受信
     socket.on('UPDATE_CURSORS', ({ cursors }) => {
       setCursors(cursors);
     });
@@ -84,8 +84,8 @@ export default function PrototypeEdit2() {
       .then((response) => {
         const { prototype, versions } = response;
 
-        // プロトタイプのタイプが編集版でない場合
-        if (prototype.type !== 'EDIT') {
+        // プレビュー版でない場合
+        if (prototype.type !== 'PREVIEW') {
           router.replace(`/prototypes/groups/${prototype.groupId}`);
           return;
         }
@@ -95,7 +95,7 @@ export default function PrototypeEdit2() {
       .catch((error) => console.error('Error fetching prototypes:', error));
   }, [getPrototypeVersions, prototypeId, router]);
 
-  // バージョン番号
+  // プロトタイプバージョン番号
   const versionNumber = useMemo(() => {
     return prototype?.versions.find((version) => version.id === versionId)
       ?.versionNumber;
@@ -107,7 +107,7 @@ export default function PrototypeEdit2() {
   return (
     <SocketProvider socket={socket}>
       <PrototypeVersionIdProvider prototypeVersionId={versionId}>
-        <GameBoard
+        <Canvas
           prototypeName={prototype.name}
           parts={parts}
           properties={properties}
@@ -115,9 +115,11 @@ export default function PrototypeEdit2() {
           cursors={cursors}
           prototypeVersionNumber={versionNumber}
           groupId={prototype.groupId}
-          prototypeType="EDIT"
+          prototypeType="PREVIEW"
         />
       </PrototypeVersionIdProvider>
     </SocketProvider>
   );
-}
+};
+
+export default PrototypePlayOld;
