@@ -4,6 +4,9 @@ import React from 'react';
 
 import { Part, PartProperty, Player } from '@/api/types';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
+import { useMemoryUsage } from '@/features/prototype/hooks/useMemoryUsage';
+import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
+import { useRenderPerformance } from '@/features/prototype/hooks/useRenderPerformance';
 import { CursorInfo } from '@/features/prototype/types/cursor';
 
 interface DebugInfoProps {
@@ -41,6 +44,9 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
   selectedPartIds,
 }) => {
   const { showDebugInfo } = useDebugMode();
+  const renderPerformance = useRenderPerformance();
+  const { memoryInfo, formatMemory } = useMemoryUsage();
+  const { metrics: performanceMetrics, resetMetrics } = usePerformanceTracker();
 
   if (!showDebugInfo) return null;
 
@@ -99,6 +105,111 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
       <div>X: {Math.round(camera.x)}</div>
       <div>Y: {Math.round(camera.y)}</div>
       <div>Zoom: {camera.scale.toFixed(2)}x</div>
+
+      <div
+        style={{
+          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+          marginTop: '12px',
+          marginBottom: '8px',
+          paddingBottom: '4px',
+        }}
+      >
+        <strong>Performance</strong>
+      </div>
+
+      {/* レンダリングパフォーマンス */}
+      <div style={{ marginBottom: '5px' }}>
+        <div>
+          FPS:{' '}
+          <span
+            style={{
+              color:
+                renderPerformance.fps < 30
+                  ? '#ff6b6b'
+                  : renderPerformance.fps < 50
+                    ? '#ffd166'
+                    : '#06d6a0',
+            }}
+          >
+            {renderPerformance.fps}
+          </span>
+        </div>
+        <div>Frame Time: {renderPerformance.renderTime.toFixed(2)} ms</div>
+        <div>Avg Frame: {renderPerformance.avgFrameTime.toFixed(2)} ms</div>
+        <div>Worst Frame: {renderPerformance.worstFrameTime.toFixed(2)} ms</div>
+      </div>
+
+      {/* メモリ使用量 */}
+      <div style={{ marginBottom: '5px' }}>
+        <div>Memory Used: {formatMemory(memoryInfo.usedJSHeapSize)}</div>
+        <div>Memory Total: {formatMemory(memoryInfo.totalJSHeapSize)}</div>
+        <div>Memory Limit: {formatMemory(memoryInfo.jsHeapSizeLimit)}</div>
+        {memoryInfo.usedPercentage !== undefined && (
+          <div>
+            Usage:{' '}
+            <span
+              style={{
+                color:
+                  memoryInfo.usedPercentage > 80
+                    ? '#ff6b6b'
+                    : memoryInfo.usedPercentage > 60
+                      ? '#ffd166'
+                      : '#06d6a0',
+              }}
+            >
+              {memoryInfo.usedPercentage.toFixed(1)}%
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* オペレーション実行時間 */}
+      {Object.keys(performanceMetrics).length > 0 && (
+        <div style={{ marginBottom: '5px' }}>
+          <div style={{ marginBottom: '3px' }}>Operation Times:</div>
+          <div
+            style={{ fontSize: '11px', maxHeight: '120px', overflowY: 'auto' }}
+          >
+            {Object.entries(performanceMetrics).map(([op, metric]) => (
+              <div
+                key={op}
+                style={{
+                  marginBottom: '4px',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  padding: '2px',
+                  borderRadius: '2px',
+                }}
+              >
+                <div style={{ fontWeight: 'bold' }}>{op}</div>
+                <div style={{ marginLeft: '8px' }}>
+                  <div>Last: {metric.lastTime.toFixed(2)} ms</div>
+                  <div>Avg: {metric.avgTime.toFixed(2)} ms</div>
+                  <div>
+                    Min/Max: {metric.minTime.toFixed(2)}/
+                    {metric.maxTime.toFixed(2)} ms
+                  </div>
+                  <div>Count: {metric.count}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={resetMetrics}
+            style={{
+              background: 'rgba(255, 255, 255, 0.2)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              color: 'white',
+              padding: '2px 6px',
+              borderRadius: '3px',
+              fontSize: '10px',
+              cursor: 'pointer',
+              marginTop: '3px',
+            }}
+          >
+            Reset Metrics
+          </button>
+        </div>
+      )}
 
       <div
         style={{
