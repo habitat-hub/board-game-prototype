@@ -5,6 +5,7 @@ import { Part } from '@/api/types';
 import { GRID_SIZE } from '@/features/prototype/const';
 import { needsParentUpdate } from '@/features/prototype/helpers/partHelper';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
+import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { Camera, Point } from '@/features/prototype/type';
 
 interface UseCanvasEventsProps {
@@ -29,6 +30,7 @@ export const useCanvasEvents = ({
   mainViewRef,
 }: UseCanvasEventsProps) => {
   const { dispatch } = usePartReducer();
+  const { measureOperation } = usePerformanceTracker();
 
   // 移動中のキャンバス
   const [movingCanvas, setMovingCanvas] = useState<{
@@ -108,43 +110,45 @@ export const useCanvasEvents = ({
   const throttledUpdatePosition = useMemo(
     () =>
       throttle((x: number, y: number, shiftKey: boolean) => {
-        if (!movingPart) {
-          return;
-        }
+        measureOperation('Part Movement', () => {
+          if (!movingPart) {
+            return;
+          }
 
-        // 複数選択モードの場合は、Shiftキーが押されている時のみ選択された全てのパーツを移動
-        if (movingPart.isMultiSelect && shiftKey) {
-          updateMultiSelectedPartsPositions(x, y, shiftKey);
-        }
+          // 複数選択モードの場合は、Shiftキーが押されている時のみ選択された全てのパーツを移動
+          if (movingPart.isMultiSelect && shiftKey) {
+            updateMultiSelectedPartsPositions(x, y, shiftKey);
+          }
 
-        // 移動中のパーツのID
-        const movingPartId = movingPart.partId;
+          // 移動中のパーツのID
+          const movingPartId = movingPart.partId;
 
-        // 前回の位置
-        const lastPosition = lastPositions.current.get(movingPartId);
+          // 前回の位置
+          const lastPosition = lastPositions.current.get(movingPartId);
 
-        // 前回の位置があり、かつ、前回の位置と現在の位置が5px以内の場合は更新しない
-        if (
-          lastPosition &&
-          Math.abs(lastPosition.x - x) <= 10 &&
-          Math.abs(lastPosition.y - y) <= 10
-        ) {
-          return;
-        }
+          // 前回の位置があり、かつ、前回の位置と現在の位置が5px以内の場合は更新しない
+          if (
+            lastPosition &&
+            Math.abs(lastPosition.x - x) <= 10 &&
+            Math.abs(lastPosition.y - y) <= 10
+          ) {
+            return;
+          }
 
-        // 前回の位置を更新
-        lastPositions.current.set(movingPartId, { x, y });
+          // 前回の位置を更新
+          lastPositions.current.set(movingPartId, { x, y });
 
-        // パーツの位置を更新
-        dispatch({
-          type: 'UPDATE_PART',
-          payload: {
-            partId: movingPartId,
-            updatePart: { position: { x, y } },
-          },
+          // パーツの位置を更新
+          dispatch({
+            type: 'UPDATE_PART',
+            payload: {
+              partId: movingPartId,
+              updatePart: { position: { x, y } },
+            },
+          });
         });
       }, 100),
-    [movingPart, dispatch, updateMultiSelectedPartsPositions]
+    [movingPart, dispatch, updateMultiSelectedPartsPositions, measureOperation]
   );
 
   // throttleのクリーンアップ
@@ -224,40 +228,43 @@ export const useCanvasEvents = ({
       return;
     }
 
-    // シフトキーが押されている場合は複数選択
-    if (e.shiftKey) {
-      // 現在のパーツが選択されているかどうかを確認
-      const isPartSelected = selectedPartIds.includes(partId);
+    // パーツ選択処理をパフォーマンス測定
+    measureOperation('Part Selection', () => {
+      // シフトキーが押されている場合は複数選択
+      if (e.shiftKey) {
+        // 現在のパーツが選択されているかどうかを確認
+        const isPartSelected = selectedPartIds.includes(partId);
 
-      if (isPartSelected) {
-        // すでに選択されているパーツの場合は選択リストから削除
-        const newSelectedIds = selectedPartIds.filter((id) => id !== partId);
-        setSelectedPartIds(newSelectedIds);
+        if (isPartSelected) {
+          // すでに選択されているパーツの場合は選択リストから削除
+          const newSelectedIds = selectedPartIds.filter((id) => id !== partId);
+          setSelectedPartIds(newSelectedIds);
 
-        // 選択中のパーツが選択解除された場合は、別のパーツを主選択に設定
-        if (partId === selectedPartId) {
-          if (newSelectedIds.length > 0) {
-            // 残りのパーツから最初のパーツを主選択に
-            setSelectedPartId(newSelectedIds[0]);
-          } else {
-            // 選択パーツがなくなった場合はnullに
-            setSelectedPartId(null);
+          // 選択中のパーツが選択解除された場合は、別のパーツを主選択に設定
+          if (partId === selectedPartId) {
+            if (newSelectedIds.length > 0) {
+              // 残りのパーツから最初のパーツを主選択に
+              setSelectedPartId(newSelectedIds[0]);
+            } else {
+              // 選択パーツがなくなった場合はnullに
+              setSelectedPartId(null);
+            }
+          }
+        } else {
+          // 新しく選択する場合は追加
+          setSelectedPartIds((prev) => [...prev, partId]);
+
+          // まだ主選択パーツがない場合はこのパーツを主選択に
+          if (selectedPartId === null) {
+            setSelectedPartId(partId);
           }
         }
       } else {
-        // 新しく選択する場合は追加
-        setSelectedPartIds((prev) => [...prev, partId]);
-
-        // まだ主選択パーツがない場合はこのパーツを主選択に
-        if (selectedPartId === null) {
-          setSelectedPartId(partId);
-        }
+        // シフトキーなしでクリックした場合は他の選択をクリアして単一選択
+        setSelectedPartId(partId);
+        setSelectedPartIds([partId]);
       }
-    } else {
-      // シフトキーなしでクリックした場合は他の選択をクリアして単一選択
-      setSelectedPartId(partId);
-      setSelectedPartIds([partId]);
-    }
+    });
 
     const target = e.target as SVGElement;
     const direction = target.getAttribute('data-resize-direction') as

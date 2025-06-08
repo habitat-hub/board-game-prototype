@@ -27,6 +27,7 @@ import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
 import { VERSION_NUMBER } from '@/features/prototype/const';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
+import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { AddPartProps } from '@/features/prototype/type';
 import { CursorInfo } from '@/features/prototype/types/cursor';
 import { getImageFromIndexedDb, saveImageToIndexedDb } from '@/utils/db';
@@ -64,6 +65,7 @@ export default function GameBoard({
   });
   const { fetchImage } = useImages();
   const { dispatch } = usePartReducer();
+  const { measureOperation } = usePerformanceTracker();
   const [images, setImages] = useState<Record<string, string>>({});
 
   const [showContextMenu, setShowContextMenu] = useState(false);
@@ -345,56 +347,59 @@ export default function GameBoard({
     partId: number
   ) => {
     if (isMasterPreview) return;
-    const position = e.target.position();
-    const originals = originalPositionsRef.current;
-    const orig = originals[partId];
-    if (!orig) return;
 
-    const targetPart = parts.find((p) => p.id === partId);
-    if (!targetPart) return;
+    measureOperation('Part Drag Update', () => {
+      const position = e.target.position();
+      const originals = originalPositionsRef.current;
+      const orig = originals[partId];
+      if (!orig) return;
 
-    const offsetX = targetPart.width / 2;
-    const dx = position.x - offsetX - orig.x;
-    const dy = position.y - orig.y;
+      const targetPart = parts.find((p) => p.id === partId);
+      if (!targetPart) return;
 
-    const constrainedPos = constrainWithinCanvas(
-      targetPart,
-      orig.x,
-      orig.y,
-      dx,
-      dy
-    );
-    const constrainedDx = constrainedPos.x - orig.x;
-    const constrainedDy = constrainedPos.y - orig.y;
+      const offsetX = targetPart.width / 2;
+      const dx = position.x - offsetX - orig.x;
+      const dy = position.y - orig.y;
 
-    Object.entries(originals).forEach(([idStr, { x, y }]) => {
-      const id = Number(idStr);
-      const part = parts.find((p) => p.id === id);
-      if (!part) return;
-
-      const partConstrainedPos = constrainWithinCanvas(
-        part,
-        x,
-        y,
-        constrainedDx,
-        constrainedDy
+      const constrainedPos = constrainWithinCanvas(
+        targetPart,
+        orig.x,
+        orig.y,
+        dx,
+        dy
       );
+      const constrainedDx = constrainedPos.x - orig.x;
+      const constrainedDy = constrainedPos.y - orig.y;
 
-      dispatch({
-        type: 'UPDATE_PART',
-        payload: {
-          partId: id,
-          updatePart: {
-            position: {
-              x: Math.round(partConstrainedPos.x),
-              y: Math.round(partConstrainedPos.y),
+      Object.entries(originals).forEach(([idStr, { x, y }]) => {
+        const id = Number(idStr);
+        const part = parts.find((p) => p.id === id);
+        if (!part) return;
+
+        const partConstrainedPos = constrainWithinCanvas(
+          part,
+          x,
+          y,
+          constrainedDx,
+          constrainedDy
+        );
+
+        dispatch({
+          type: 'UPDATE_PART',
+          payload: {
+            partId: id,
+            updatePart: {
+              position: {
+                x: Math.round(partConstrainedPos.x),
+                y: Math.round(partConstrainedPos.y),
+              },
             },
           },
-        },
+        });
       });
-    });
 
-    originalPositionsRef.current = {};
+      originalPositionsRef.current = {};
+    });
   };
 
   const handleBackgroundClick = () => {
@@ -403,40 +408,44 @@ export default function GameBoard({
 
   const handleAddPart = useCallback(
     ({ part, properties }: AddPartProps) => {
-      setSelectedPartIds([]);
+      measureOperation('Part Addition', () => {
+        setSelectedPartIds([]);
 
-      const cameraCenterX = (camera.x + viewportSize.width / 2) / camera.scale;
-      const cameraCenterY = (camera.y + viewportSize.height / 2) / camera.scale;
+        const cameraCenterX =
+          (camera.x + viewportSize.width / 2) / camera.scale;
+        const cameraCenterY =
+          (camera.y + viewportSize.height / 2) / camera.scale;
 
-      const constrainedX = Math.max(
-        0,
-        Math.min(
-          CANVAS_SIZE - part.width,
-          Math.round(cameraCenterX - part.width / 2)
-        )
-      );
-      const constrainedY = Math.max(
-        0,
-        Math.min(
-          CANVAS_SIZE - part.height,
-          Math.round(cameraCenterY - part.height / 2)
-        )
-      );
+        const constrainedX = Math.max(
+          0,
+          Math.min(
+            CANVAS_SIZE - part.width,
+            Math.round(cameraCenterX - part.width / 2)
+          )
+        );
+        const constrainedY = Math.max(
+          0,
+          Math.min(
+            CANVAS_SIZE - part.height,
+            Math.round(cameraCenterY - part.height / 2)
+          )
+        );
 
-      const partWithCenteredPosition = {
-        ...part,
-        position: {
-          x: constrainedX,
-          y: constrainedY,
-        },
-      };
+        const partWithCenteredPosition = {
+          ...part,
+          position: {
+            x: constrainedX,
+            y: constrainedY,
+          },
+        };
 
-      dispatch({
-        type: 'ADD_PART',
-        payload: { part: partWithCenteredPosition, properties },
+        dispatch({
+          type: 'ADD_PART',
+          payload: { part: partWithCenteredPosition, properties },
+        });
       });
     },
-    [dispatch, camera, viewportSize]
+    [dispatch, camera, viewportSize, measureOperation]
   );
 
   const handleDeletePart = useCallback(() => {
