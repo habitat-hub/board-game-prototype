@@ -51,85 +51,43 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
   if (!showDebugInfo) return null;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        bottom: '1rem',
-        left: '1rem',
-        background: 'rgba(0, 0, 0, 0.7)',
-        color: 'white',
-        padding: '10px',
-        borderRadius: '5px',
-        fontFamily: 'monospace',
-        fontSize: '14px',
-        zIndex: 1000,
-        maxHeight: '50vh',
-        overflowY: 'auto',
-      }}
-    >
-      <div
-        style={{
-          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-          marginBottom: '8px',
-          paddingBottom: '4px',
-        }}
-      >
+    <div className="fixed bottom-4 left-4 bg-black bg-opacity-70 text-white p-2.5 rounded-md font-mono text-sm z-[1000] max-h-[60vh] overflow-y-auto">
+      <div className="border-b border-white border-opacity-20 mb-2 pb-1">
         <strong>Current Status</strong>
       </div>
       <div
-        style={{
-          fontWeight: 'bold',
-          color: selectedPartIds.length ? '#ffcc00' : 'white',
-          marginBottom: '5px',
-        }}
+        className={`font-bold mb-1.5 ${selectedPartIds.length ? 'text-yellow-400' : 'text-white'}`}
       >
         Selected Parts: {selectedPartIds.length}
       </div>
       {selectedPartIds.length > 0 && (
-        <div
-          style={{ marginLeft: '10px', fontSize: '12px', marginBottom: '5px' }}
-        >
+        <div className="ml-2.5 text-xs mb-1.5">
           IDs: {selectedPartIds.join(', ')}
         </div>
       )}
-      <div
-        style={{
-          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-          marginTop: '12px',
-          marginBottom: '8px',
-          paddingBottom: '4px',
-        }}
-      >
+      <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
         <strong>Camera</strong>
       </div>
       <div>X: {Math.round(camera.x)}</div>
       <div>Y: {Math.round(camera.y)}</div>
       <div>Zoom: {camera.scale.toFixed(2)}x</div>
 
-      <div
-        style={{
-          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-          marginTop: '12px',
-          marginBottom: '8px',
-          paddingBottom: '4px',
-        }}
-      >
+      <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
         <strong>Performance</strong>
       </div>
 
       {/* レンダリングパフォーマンス */}
-      <div style={{ marginBottom: '5px' }}>
+      <div className="mb-1.5">
         <div>
           FPS:{' '}
           <span
-            style={{
-              color:
-                renderPerformance.fps < 30
-                  ? '#ff6b6b'
-                  : renderPerformance.fps < 50
-                    ? '#ffd166'
-                    : '#06d6a0',
-            }}
+            className={
+              renderPerformance.fps < 30
+                ? 'text-red-400'
+                : renderPerformance.fps < 50
+                  ? 'text-yellow-400'
+                  : 'text-green-400'
+            }
           >
             {renderPerformance.fps}
           </span>
@@ -140,7 +98,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
       </div>
 
       {/* メモリ使用量 */}
-      <div style={{ marginBottom: '5px' }}>
+      <div className="mb-1.5">
         <div>Memory Used: {formatMemory(memoryInfo.usedJSHeapSize)}</div>
         <div>Memory Total: {formatMemory(memoryInfo.totalJSHeapSize)}</div>
         <div>Memory Limit: {formatMemory(memoryInfo.jsHeapSizeLimit)}</div>
@@ -148,14 +106,13 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
           <div>
             Usage:{' '}
             <span
-              style={{
-                color:
-                  memoryInfo.usedPercentage > 80
-                    ? '#ff6b6b'
-                    : memoryInfo.usedPercentage > 60
-                      ? '#ffd166'
-                      : '#06d6a0',
-              }}
+              className={
+                memoryInfo.usedPercentage > 80
+                  ? 'text-red-400'
+                  : memoryInfo.usedPercentage > 60
+                    ? 'text-yellow-400'
+                    : 'text-green-400'
+              }
             >
               {memoryInfo.usedPercentage.toFixed(1)}%
             </span>
@@ -165,23 +122,16 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
 
       {/* オペレーション実行時間 */}
       {Object.keys(performanceMetrics).length > 0 && (
-        <div style={{ marginBottom: '5px' }}>
-          <div style={{ marginBottom: '3px' }}>Operation Times:</div>
-          <div
-            style={{ fontSize: '11px', maxHeight: '120px', overflowY: 'auto' }}
-          >
+        <div className="mb-1.5">
+          <div className="mb-1">Operation Times:</div>
+          <div className="text-[11px] max-h-30 overflow-y-auto">
             {Object.entries(performanceMetrics).map(([op, metric]) => (
               <div
                 key={op}
-                style={{
-                  marginBottom: '4px',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  padding: '2px',
-                  borderRadius: '2px',
-                }}
+                className="mb-1 border border-white border-opacity-10 p-0.5 rounded-sm"
               >
-                <div style={{ fontWeight: 'bold' }}>{op}</div>
-                <div style={{ marginLeft: '8px' }}>
+                <div className="font-bold">{op}</div>
+                <div className="ml-2">
                   <div>Last: {metric.lastTime.toFixed(2)} ms</div>
                   <div>Avg: {metric.avgTime.toFixed(2)} ms</div>
                   <div>
@@ -195,30 +145,14 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
           </div>
           <button
             onClick={resetMetrics}
-            style={{
-              background: 'rgba(255, 255, 255, 0.2)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              color: 'white',
-              padding: '2px 6px',
-              borderRadius: '3px',
-              fontSize: '10px',
-              cursor: 'pointer',
-              marginTop: '3px',
-            }}
+            className="bg-white bg-opacity-20 border border-white border-opacity-30 text-white px-1.5 py-0.5 rounded text-[10px] cursor-pointer mt-1 hover:bg-opacity-30 transition-colors"
           >
             Reset Metrics
           </button>
         </div>
       )}
 
-      <div
-        style={{
-          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-          marginTop: '12px',
-          marginBottom: '8px',
-          paddingBottom: '4px',
-        }}
-      >
+      <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
         <strong>Prototype</strong>
       </div>
       <div>Name: {prototypeName}</div>
@@ -227,49 +161,35 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
       <div>Type: {prototypeType}</div>
       <div>Is Master Preview: {isMasterPreview ? 'Yes' : 'No'}</div>
 
-      <div
-        style={{
-          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-          marginTop: '12px',
-          marginBottom: '8px',
-          paddingBottom: '4px',
-        }}
-      >
+      <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
         <strong>Data</strong>
       </div>
       <div>Parts: {parts.length}</div>
       {parts.length > 0 && (
-        <div style={{ marginLeft: '10px', fontSize: '12px' }}>
+        <div className="ml-2.5 text-xs">
           First part: {parts[0].id} ({parts[0].type})
         </div>
       )}
       <div>Properties: {properties.length}</div>
       {properties.length > 0 && (
-        <div style={{ marginLeft: '10px', fontSize: '12px' }}>
+        <div className="ml-2.5 text-xs">
           First property: {properties[0].name}
         </div>
       )}
       <div>Players: {players.length}</div>
       {players.length > 0 && (
-        <div style={{ marginLeft: '10px', fontSize: '12px' }}>
+        <div className="ml-2.5 text-xs">
           First player: {players[0].playerName}
         </div>
       )}
       <div>Cursors: {Object.keys(cursors).length}</div>
 
-      <div
-        style={{
-          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-          marginTop: '12px',
-          marginBottom: '8px',
-          paddingBottom: '4px',
-        }}
-      >
+      <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
         <strong>Detailed Information</strong>
       </div>
-      <div style={{ fontSize: '11px', maxHeight: '200px', overflowY: 'auto' }}>
+      <div className="text-[11px] max-h-48 overflow-y-auto">
         {properties.map((prop, index) => (
-          <div key={`prop-${index}`} style={{ marginBottom: '8px' }}>
+          <div key={`prop-${index}`} className="mb-2">
             <div>
               ID: {prop.partId}, Side: {prop.side}
             </div>
@@ -280,19 +200,12 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
         ))}
       </div>
 
-      <div
-        style={{
-          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-          marginTop: '12px',
-          marginBottom: '8px',
-          paddingBottom: '4px',
-        }}
-      >
+      <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
         <strong>Detailed Parts</strong>
       </div>
-      <div style={{ fontSize: '11px', maxHeight: '200px', overflowY: 'auto' }}>
+      <div className="text-[11px] max-h-48 overflow-y-auto">
         {parts.map((part, index) => (
-          <div key={`part-${index}`} style={{ marginBottom: '8px' }}>
+          <div key={`part-${index}`} className="mb-2">
             <div>
               ID: {part.id}, Type: {part.type}
             </div>
@@ -305,21 +218,14 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
       </div>
 
       {/* Detailed cursors section */}
-      <div
-        style={{
-          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-          marginTop: '12px',
-          marginBottom: '8px',
-          paddingBottom: '4px',
-        }}
-      >
+      <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
         <strong>Detailed Cursors</strong>
       </div>
-      <div style={{ fontSize: '11px', maxHeight: '200px', overflowY: 'auto' }}>
+      <div className="text-[11px] max-h-48 overflow-y-auto">
         {Object.entries(cursors)
           .slice(0, 3)
           .map(([, cursor]) => (
-            <div key={cursor.userId} style={{ marginBottom: '8px' }}>
+            <div key={cursor.userId} className="mb-2">
               <div>
                 ID: {cursor.userId}, Name: {cursor.userName}
               </div>
@@ -333,7 +239,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
         )}
       </div>
 
-      <div style={{ fontSize: '11px', marginTop: '12px' }}>
+      <div className="text-[11px] mt-3">
         Press Cmd+i (Mac) or Ctrl+i (Windows) to toggle debug panel
       </div>
     </div>
