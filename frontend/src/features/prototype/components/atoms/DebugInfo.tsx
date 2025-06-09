@@ -44,21 +44,23 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
   selectedPartIds,
 }) => {
   const { showDebugInfo } = useDebugMode();
+
+  // パフォーマンス計測（レンダリングは常時、メモリはデバッグ表示時のみ）
   const renderPerformance = useRenderPerformance();
-  const { memoryInfo, formatMemory } = useMemoryUsage();
+  const { memoryInfo, formatMemory } = useMemoryUsage(showDebugInfo ? 2000 : 0);
   const { metrics: performanceMetrics, resetMetrics } = usePerformanceTracker();
 
   const [activeTab, setActiveTab] = useState<
-    'status' | 'performance' | 'data' | 'details'
+    'status' | 'perf' | 'data' | 'details'
   >('status');
 
   if (!showDebugInfo) return null;
 
   const tabs = [
-    { id: 'status' as const, label: 'Status' },
-    { id: 'performance' as const, label: 'Performance' },
+    { id: 'status' as const, label: 'Info' },
+    { id: 'perf' as const, label: 'Perf' },
     { id: 'data' as const, label: 'Data' },
-    { id: 'details' as const, label: 'Details' },
+    { id: 'details' as const, label: 'Raw' },
   ];
 
   const renderTabContent = () => {
@@ -98,7 +100,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
           </div>
         );
 
-      case 'performance':
+      case 'perf':
         return (
           <div className="text-sm">
             <div className="border-b border-white border-opacity-20 mb-2 pb-1">
@@ -306,14 +308,14 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
   };
 
   return (
-    <div className="fixed bottom-4 left-4 bg-black bg-opacity-80 text-white p-2.5 rounded-md font-mono text-sm z-[1000] w-80 max-h-[70vh] flex flex-col">
+    <div className="fixed bottom-4 left-4 bg-black bg-opacity-80 text-white p-2.5 rounded-md font-mono text-sm z-[1000] w-96 max-h-[80vh] flex flex-col">
       {/* タブヘッダー */}
       <div className="flex border-b border-white border-opacity-20 mb-2">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-2 py-1 text-xs cursor-pointer transition-colors ${
+            className={`flex-1 px-1 py-1 text-[11px] cursor-pointer transition-colors text-center ${
               activeTab === tab.id
                 ? 'text-blue-400 border-b-2 border-blue-400'
                 : 'text-white text-opacity-70 hover:text-opacity-100'

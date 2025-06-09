@@ -26,6 +26,11 @@ export const useMemoryUsage = (updateInterval: number = 2000) => {
   const [deviceMemory, setDeviceMemory] = useState<number | undefined>();
 
   useEffect(() => {
+    // updateInterval が 0 の場合は監視を無効化
+    if (updateInterval === 0) {
+      return;
+    }
+
     const updateMemoryInfo = () => {
       if (
         'performance' in window &&
@@ -36,7 +41,7 @@ export const useMemoryUsage = (updateInterval: number = 2000) => {
           const usedPercentage =
             memory.jsHeapSizeLimit > 0
               ? (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100
-              : 0;
+              : undefined;
 
           setMemoryInfo({
             jsHeapSizeLimit: memory.jsHeapSizeLimit,
