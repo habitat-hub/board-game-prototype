@@ -33,8 +33,9 @@ export const useMemoryUsage = (updateInterval: number = 2000) => {
 
     const updateMemoryInfo = () => {
       if (
-        'performance' in window &&
-        'memory' in (performance as PerformanceWithMemory)
+        typeof window !== 'undefined' &&
+        window.performance &&
+        'memory' in window.performance
       ) {
         const memory = (performance as PerformanceWithMemory).memory;
         if (memory) {

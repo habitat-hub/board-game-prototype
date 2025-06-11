@@ -68,7 +68,11 @@ class PerformanceTracker {
 
   private notifyListeners() {
     for (const listener of this.listeners) {
-      listener({ ...this.metrics });
+      try {
+        listener({ ...this.metrics });
+      } catch (error) {
+        console.warn('Performance tracker listener error:', error);
+      }
     }
   }
 

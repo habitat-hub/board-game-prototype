@@ -27,14 +27,14 @@ export const useCard = (part: Part, ref: React.ForwardedRef<PartHandle>) => {
     isNextFlipped: boolean,
     needsSocketEmit: boolean
   ) => {
-    measureOperation('Card Flip', () => {
-      // カードでない場合
-      if (part.type !== 'card') return;
-      // 反転不可の場合
-      if (!part.isReversible) return;
-      // 反転が不要な場合
-      if (isFlipped === isNextFlipped) return;
+    // カードでない場合
+    if (part.type !== 'card') return;
+    // 反転不可の場合
+    if (!part.isReversible) return;
+    // 反転が不要な場合
+    if (isFlipped === isNextFlipped) return;
 
+    measureOperation('Card Flip', () => {
       // 反転させる
       setIsReversing(true);
       setIsFlipped(isNextFlipped);
