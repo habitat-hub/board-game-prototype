@@ -370,9 +370,6 @@ export const swaggerSchemas = {
             "versionNumber": {
                   "type": "string"
             },
-            "description": {
-                  "type": "string"
-            },
             "createdAt": {
                   "type": "string"
             },

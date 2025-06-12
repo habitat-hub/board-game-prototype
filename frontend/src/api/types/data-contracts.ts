@@ -129,7 +129,6 @@ export interface PrototypeVersion {
   /** @format uuid */
   prototypeId: string;
   versionNumber: string;
-  description?: string;
   createdAt: string;
   updatedAt: string;
 }

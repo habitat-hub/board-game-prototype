@@ -66,7 +66,6 @@ export async function createPrototype({
     {
       prototypeId: newPrototype.id,
       versionNumber: PROTOTYPE_VERSION.INITIAL,
-      description: '初期バージョン',
     },
     { transaction }
   );
@@ -259,7 +258,6 @@ export const createPrototypeVersion = async (
     {
       prototypeId: originalPrototypeVersion.prototypeId,
       versionNumber: newVersionNumber,
-      description,
     },
     { transaction }
   );

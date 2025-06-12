@@ -9,8 +9,6 @@ class PrototypeVersionModel extends Model {
   public prototypeId!: string;
   // バージョン番号
   public versionNumber!: string;
-  // 説明
-  public description!: string | null;
 }
 
 PrototypeVersionModel.init(
@@ -28,10 +26,6 @@ PrototypeVersionModel.init(
     versionNumber: {
       type: DataTypes.STRING,
       allowNull: false,
-    },
-    description: {
-      type: DataTypes.STRING,
-      allowNull: true,
     },
   },
   {
