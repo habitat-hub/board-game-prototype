@@ -1,5 +1,6 @@
 import { Part } from '@/api/types';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
+import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 
 /**
  * 山札の状態を管理するフック
@@ -8,6 +9,7 @@ import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
  */
 export const useDeck = (part: Part) => {
   const { dispatch } = usePartReducer();
+  const { measureOperation } = usePerformanceTracker();
 
   /**
    * 山札をシャッフルする
@@ -16,7 +18,9 @@ export const useDeck = (part: Part) => {
     // 山札でない場合
     if (part.type !== 'deck') return;
 
-    dispatch({ type: 'SHUFFLE_DECK', payload: { deckId: part.id } });
+    measureOperation('Deck Shuffle', () => {
+      dispatch({ type: 'SHUFFLE_DECK', payload: { deckId: part.id } });
+    });
   };
 
   return {

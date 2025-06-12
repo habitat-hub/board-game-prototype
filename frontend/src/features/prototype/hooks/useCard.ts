@@ -2,6 +2,7 @@ import { useImperativeHandle, useState } from 'react';
 
 import { Part } from '@/api/types';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
+import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { PartHandle } from '@/features/prototype/type';
 
 /**
@@ -12,6 +13,7 @@ import { PartHandle } from '@/features/prototype/type';
  */
 export const useCard = (part: Part, ref: React.ForwardedRef<PartHandle>) => {
   const { dispatch } = usePartReducer();
+  const { measureOperation } = usePerformanceTracker();
   // カードが裏返しになっているかどうか
   const [isFlipped, setIsFlipped] = useState(part.isFlipped);
   // カードが反転中かどうか
@@ -32,17 +34,19 @@ export const useCard = (part: Part, ref: React.ForwardedRef<PartHandle>) => {
     // 反転が不要な場合
     if (isFlipped === isNextFlipped) return;
 
-    // 反転させる
-    setIsReversing(true);
-    setIsFlipped(isNextFlipped);
+    measureOperation('Card Flip', () => {
+      // 反転させる
+      setIsReversing(true);
+      setIsFlipped(isNextFlipped);
 
-    // ソケットをemitする場合
-    if (needsSocketEmit) {
-      dispatch({
-        type: 'FLIP_CARD',
-        payload: { cardId: part.id, isNextFlipped },
-      });
-    }
+      // ソケットをemitする場合
+      if (needsSocketEmit) {
+        dispatch({
+          type: 'FLIP_CARD',
+          payload: { cardId: part.id, isNextFlipped },
+        });
+      }
+    });
   };
 
   // 外部から呼び出せる関数を定義    // 外部から呼び出せる関数を定義
