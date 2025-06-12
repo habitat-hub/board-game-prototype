@@ -94,16 +94,6 @@ export default function GameBoard({
     [canvasSize]
   );
 
-  const initialCameraPosition = useMemo(() => {
-    return {
-      x: centerCoords.x - viewportSize.width / 2 / 0.5,
-      y: centerCoords.y - viewportSize.height / 2 / 0.5,
-      scale: 0.5,
-    };
-  }, [centerCoords, viewportSize]);
-
-  const [camera, setCamera] = useState(initialCameraPosition);
-
   const constrainCamera = useCallback(
     (x: number, y: number, scale: number) => {
       let constrainedX = x;
@@ -140,6 +130,40 @@ export default function GameBoard({
     },
     [viewportSize, canvasSize]
   );
+
+  const initialCameraPosition = useMemo(() => {
+    const latestPart = parts.reduce(
+      (latest, current) => {
+        if (!latest) return current;
+        return new Date(current.updatedAt) > new Date(latest.updatedAt)
+          ? current
+          : latest;
+      },
+      null as PartType | null
+    );
+
+    if (latestPart) {
+      const partCenterX = latestPart.position.x + latestPart.width / 2;
+      const partCenterY = latestPart.position.y + latestPart.height / 2;
+
+      const scale = 0.5;
+
+      const targetX = partCenterX - viewportSize.width / (2 * scale);
+      const targetY = partCenterY - viewportSize.height / (2 * scale);
+
+      const constrainedPosition = constrainCamera(targetX, targetY, scale);
+
+      return constrainedPosition;
+    }
+
+    return {
+      x: centerCoords.x - viewportSize.width / 2 / 0.5,
+      y: centerCoords.y - viewportSize.height / 2 / 0.5,
+      scale: 0.5,
+    };
+  }, [centerCoords, viewportSize, parts, constrainCamera]);
+
+  const [camera, setCamera] = useState(initialCameraPosition);
 
   useEffect(() => {
     const handleResize = () => {
