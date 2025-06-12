@@ -5,7 +5,7 @@ import { fetchImageFromS3 } from '../services/imageFetchService';
 import { deleteImageFromS3 } from '../services/imageDeleteService';
 import { pipeline } from 'stream/promises';
 
-import ImageModel from '../models/Image';
+import FileModel from '../models/File';
 import UserModel from '../models/User'; // Import UserModel
 import {
   ValidationError,
@@ -82,7 +82,7 @@ router.post(
       const uploadResult = await uploadImageToS3(req.file);
       const uploaderUserId = (req.user as UserModel).id;
 
-      const image = await ImageModel.create({
+      const image = await FileModel.create({
         displayName: uploadResult.displayName,
         storagePath: uploadResult.storagePath,
         contentType: uploadResult.contentType,
@@ -158,7 +158,7 @@ router.get(
         throw new UnauthorizedError('認証されていないユーザーです');
       }
 
-      const image = await ImageModel.findByPk(imageId);
+      const image = await FileModel.findByPk(imageId);
       if (!image) {
         throw new NotFoundError('指定された画像が存在しません');
       }
@@ -228,7 +228,7 @@ router.delete(
       if (!req.user) {
         throw new UnauthorizedError('認証されていないユーザーです');
       }
-      const image = await ImageModel.findByPk(imageId);
+      const image = await FileModel.findByPk(imageId);
       if (!image) {
         throw new NotFoundError('指定された画像が存在しません');
       }

@@ -1,7 +1,7 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
 import PartModel from './Part';
-import ImageModel from './Image';
+import FileModel from './File';
 
 // パーツの設定値を管理
 class PartPropertyModel extends Model {
@@ -58,7 +58,7 @@ PartPropertyModel.init(
     imageId: {
       type: DataTypes.UUID,
       references: {
-        model: 'Images',
+        model: 'Files',
         key: 'id',
       },
     },
@@ -81,13 +81,13 @@ PartModel.hasMany(PartPropertyModel, {
   as: 'partProperties',
 });
 
-PartPropertyModel.belongsTo(ImageModel, {
+PartPropertyModel.belongsTo(FileModel, {
   foreignKey: 'imageId',
   onDelete: 'SET NULL',
   as: 'image',
 });
 
-ImageModel.hasMany(PartPropertyModel, {
+FileModel.hasMany(PartPropertyModel, {
   foreignKey: 'imageId',
   as: 'images',
 });

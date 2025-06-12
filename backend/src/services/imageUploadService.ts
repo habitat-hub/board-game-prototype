@@ -10,14 +10,14 @@ import {
   IMAGE_MAX_SIZE,
   IMAGE_MAX_SIZE_MB,
 } from '../constants/fileConstants';
-import ImageModel from '../models/Image';
+import FileModel from '../models/File';
 import { handleAWSError } from '../utils/awsErrorHandler';
 
 const bucketName = process.env.AWS_S3_BUCKET_NAME!;
 
-// 戻り値型を定義（ImageModelから必要なプロパティを抽出）
+// 戻り値型を定義（FileModelから必要なプロパティを抽出）
 type UploadResult = Pick<
-  ImageModel,
+  FileModel,
   'displayName' | 'storagePath' | 'contentType' | 'fileSize'
 >;
 

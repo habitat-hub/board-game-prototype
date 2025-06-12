@@ -8,7 +8,7 @@ import sequelize from './index';
  * - このモデルは画像ファイルの「実体」を表し、表示名を除き、アプリ内での表示や・使用に関する情報は持たない。
  */
 // 画像を管理
-class ImageModel extends Model {
+class FileModel extends Model {
   // ID
   public id!: string;
   // アップロード時のファイル名（ユーザー編集不可）
@@ -23,7 +23,7 @@ class ImageModel extends Model {
   public uploaderUserId!: string;
 }
 
-ImageModel.init(
+FileModel.init(
   {
     id: {
       type: DataTypes.UUID,
@@ -59,7 +59,7 @@ ImageModel.init(
   },
   {
     sequelize,
-    modelName: 'Image',
+    modelName: 'File',
     indexes: [
       {
         fields: ['storagePath'],
@@ -69,4 +69,4 @@ ImageModel.init(
   }
 );
 
-export default ImageModel;
+export default FileModel;
