@@ -148,8 +148,8 @@ export default function GameBoard({
 
       const scale = 0.5;
 
-      const targetX = partCenterX * scale - viewportSize.width / 2;
-      const targetY = partCenterY * scale - viewportSize.height / 2;
+      const targetX = partCenterX - viewportSize.width / (2 * scale);
+      const targetY = partCenterY - viewportSize.height / (2 * scale);
 
       const constrainedPosition = constrainCamera(targetX, targetY, scale);
 
