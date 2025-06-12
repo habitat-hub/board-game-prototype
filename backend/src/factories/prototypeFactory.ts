@@ -103,7 +103,7 @@ export async function createPrototype({
   }
 
   // プロトタイプグループの追加
-  PrototypeGroupModel.create(
+  await PrototypeGroupModel.create(
     {
       id: prototypeGroupId,
       prototypeId: newPrototype.id,
