@@ -40,7 +40,7 @@ export default function ShortcutHelpPanel({
   }, []);
 
   return (
-    <div className="fixed left-[20rem] top-[1.75rem] z-50">
+    <div className="fixed left-[18rem] top-[1.75rem] z-50">
       <div className="relative">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
