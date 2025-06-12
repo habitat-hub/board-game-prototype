@@ -11,8 +11,6 @@ class PrototypeModel extends Model {
   public name!: string;
   // タイプ
   public type!: 'EDIT' | 'PREVIEW';
-  // マスタープロトタイプID
-  public masterPrototypeId!: string | null;
   // グループID
   public groupId!: string;
   // 最小プレイヤー数
@@ -41,10 +39,6 @@ PrototypeModel.init(
       type: DataTypes.ENUM('EDIT', 'PREVIEW'),
       allowNull: false,
     },
-    masterPrototypeId: {
-      type: DataTypes.UUID,
-      allowNull: true,
-    },
     groupId: {
       type: DataTypes.UUID,
       allowNull: false,
@@ -69,19 +63,11 @@ PrototypeModel.init(
       {
         fields: ['userId'],
       },
-      {
-        fields: ['masterPrototypeId'],
-      },
     ],
   }
 );
 
 PrototypeModel.belongsTo(User, { foreignKey: 'userId', onDelete: 'CASCADE' });
 User.hasMany(PrototypeModel, { foreignKey: 'userId', onDelete: 'CASCADE' });
-PrototypeModel.belongsTo(PrototypeModel, {
-  as: 'masterPrototype',
-  foreignKey: 'masterPrototypeId',
-  onDelete: 'CASCADE',
-});
 
 export default PrototypeModel;

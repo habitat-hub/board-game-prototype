@@ -308,10 +308,6 @@
               "PREVIEW"
             ]
           },
-          "masterPrototypeId": {
-            "type": "string",
-            "format": "uuid"
-          },
           "groupId": {
             "type": "string",
             "format": "uuid"
@@ -327,6 +323,10 @@
           },
           "updatedAt": {
             "type": "string"
+          },
+          "masterPrototypeId": {
+            "type": "string",
+            "format": "uuid"
           }
         },
         "required": [

@@ -17,11 +17,12 @@ import PartPropertyModel from '../models/PartProperty';
  * @param userId - ユーザーID
  * @param name - プロトタイプ名
  * @param type - プロトタイプタイプ
+ * @param editPrototypeDefaultVersionId - 編集版の初期バージョンID
  * @param groupId - グループID
- * @param masterPrototypeId - マスタープロトタイプID
  * @param minPlayers - 最小プレイヤー数
  * @param maxPlayers - 最大プレイヤー数
  * @param transaction - トランザクション
+ * @param needsPartDuplicate - パーツの複製を行うかどうか
  * @returns 作成したプロトタイプ
  */
 export async function createPrototype({
@@ -54,7 +55,6 @@ export async function createPrototype({
       name,
       type,
       groupId: prototypeGroupId,
-      masterPrototypeId: null,
       minPlayers,
       maxPlayers,
     },

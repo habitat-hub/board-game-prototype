@@ -306,10 +306,6 @@ export const swaggerSchemas = {
                         "PREVIEW"
                   ]
             },
-            "masterPrototypeId": {
-                  "type": "string",
-                  "format": "uuid"
-            },
             "groupId": {
                   "type": "string",
                   "format": "uuid"
