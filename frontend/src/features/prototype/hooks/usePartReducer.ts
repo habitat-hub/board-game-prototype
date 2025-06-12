@@ -25,7 +25,7 @@ export type PartAction =
       };
     }
   // カードの裏返し
-  | { type: 'FLIP_CARD'; payload: { cardId: number; isNextFlipped: boolean } }
+  | { type: 'REVERSE_CARD'; payload: { cardId: number; isNextFlipped: boolean } }
   // パーツの更新
   | {
       type: 'UPDATE_PART';
@@ -70,8 +70,8 @@ export const usePartReducer = () => {
             });
             break;
           // カードの裏返し
-          case 'FLIP_CARD':
-            socket.emit('FLIP_CARD', {
+          case 'REVERSE_CARD':
+            socket.emit('REVERSE_CARD', {
               cardId: action.payload.cardId,
               isNextFlipped: action.payload.isNextFlipped,
             });
@@ -90,7 +90,7 @@ export const usePartReducer = () => {
               'isReversible' in action.payload.updatePart &&
               action.payload.isFlipped
             ) {
-              socket.emit('FLIP_CARD', {
+              socket.emit('REVERSE_CARD', {
                 cardId: action.payload.partId,
                 isNextFlipped: !action.payload.isFlipped,
               });

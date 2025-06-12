@@ -425,7 +425,7 @@ export const useCanvasEvents = ({
     // 裏返し設定が変更された場合のみカードを裏返す
     if (isPreviousParentReverseRequired !== isNextParentReverseRequired) {
       dispatch({
-        type: 'FLIP_CARD',
+        type: 'REVERSE_CARD',
         payload: {
           cardId: cardPart.id,
           isNextFlipped: isNextParentReverseRequired,

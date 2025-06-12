@@ -238,15 +238,14 @@ function handleDeletePart(socket: Socket, io: Server) {
   });
 }
 
-// TODO: ReverseCardという名前に変える
 /**
  * カードを反転させる
  * @param socket - Socket
  * @param io - Server
  */
-function handleFlipCard(socket: Socket, io: Server) {
+function handleReverseCard(socket: Socket, io: Server) {
   socket.on(
-    'FLIP_CARD',
+    'REVERSE_CARD',
     async ({
       cardId,
       isNextFlipped,
@@ -262,7 +261,7 @@ function handleFlipCard(socket: Socket, io: Server) {
           { where: { id: cardId } }
         );
 
-        io.to(prototypeVersionId).emit('FLIP_CARD', {
+        io.to(prototypeVersionId).emit('REVERSE_CARD', {
           cardId,
           isNextFlipped,
         });
@@ -475,7 +474,7 @@ export default function handlePrototype(socket: Socket, io: Server) {
   handleAddPart(socket, io);
   handleUpdatePart(socket, io);
   handleDeletePart(socket, io);
-  handleFlipCard(socket, io);
+  handleReverseCard(socket, io);
   handleChangeOrder(socket, io);
   handleShuffleDeck(socket, io);
   handleUpdatePlayerUser(socket, io);

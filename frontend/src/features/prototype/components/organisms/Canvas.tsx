@@ -155,7 +155,7 @@ export default function Canvas({
   // ソケットイベントの定義
   useEffect(() => {
     socket.on(
-      'FLIP_CARD',
+      'REVERSE_CARD',
       ({
         cardId,
         isNextFlipped,
@@ -178,7 +178,7 @@ export default function Canvas({
     });
 
     return () => {
-      socket.off('FLIP_CARD');
+      socket.off('REVERSE_CARD');
       socket.off('ADD_PART_RESPONSE');
     };
   }, [socket, parts]);

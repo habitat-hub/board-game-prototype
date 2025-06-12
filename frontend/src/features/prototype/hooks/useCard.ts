@@ -42,7 +42,7 @@ export const useCard = (part: Part, ref: React.ForwardedRef<PartHandle>) => {
       // ソケットをemitする場合
       if (needsSocketEmit) {
         dispatch({
-          type: 'FLIP_CARD',
+          type: 'REVERSE_CARD',
           payload: { cardId: part.id, isNextFlipped },
         });
       }
