@@ -46,10 +46,14 @@ export async function getAccessiblePrototypes({ userId }: { userId: string }) {
     },
   });
 
-  return {
-    prototypeGroups,
-    prototypes,
-  };
+  return prototypeGroups.map((prototypeGroup) => {
+    return {
+      prototypeGroup,
+      prototypes: prototypes.filter(
+        ({ prototypeGroupId }) => prototypeGroupId === prototypeGroup.id
+      ),
+    };
+  });
 }
 
 /**

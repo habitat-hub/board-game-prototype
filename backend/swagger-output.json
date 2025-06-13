@@ -879,7 +879,18 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/PrototypeGroup"
+                    "type": "object",
+                    "properties": {
+                      "prototypeGroup": {
+                        "$ref": "#/components/schemas/PrototypeGroup"
+                      },
+                      "prototypes": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/Prototype"
+                        }
+                      }
+                    }
                   }
                 }
               }

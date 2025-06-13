@@ -1,5 +1,7 @@
 import axiosInstance from '../client';
 import {
+  Prototype,
+  PrototypeGroup,
   PrototypeGroupsCreatePayload,
   PrototypeGroupsInstanceCreateData,
   PrototypeGroupsVersionCreateData,
@@ -9,14 +11,21 @@ export const prototypeGroupService = {
   /**
    * プロトタイプグループ一覧取得
    */
-  getPrototypeGroups: async () => {
+  getPrototypeGroups: async (): Promise<
+    Array<{
+      prototypeGroup: PrototypeGroup;
+      prototypes: Array<Prototype>;
+    }>
+  > => {
     const response = await axiosInstance.get('/api/prototype-groups');
     return response.data;
   },
   /**
    * プロトタイプグループ作成
    */
-  createPrototypeGroup: async (data: PrototypeGroupsCreatePayload) => {
+  createPrototypeGroup: async (
+    data: PrototypeGroupsCreatePayload
+  ): Promise<PrototypeGroup> => {
     const response = await axiosInstance.post('/api/prototype-groups', data);
     return response.data;
   },
@@ -26,7 +35,7 @@ export const prototypeGroupService = {
   createPrototypeVersion: async (
     prototypeGroupId: string,
     data: PrototypeGroupsVersionCreateData
-  ) => {
+  ): Promise<Prototype> => {
     const response = await axiosInstance.post(
       `/api/prototype-groups/${prototypeGroupId}/version`,
       data
@@ -40,7 +49,7 @@ export const prototypeGroupService = {
     prototypeGroupId: string,
     prototypeVersionId: string,
     data: PrototypeGroupsInstanceCreateData
-  ) => {
+  ): Promise<Prototype> => {
     const response = await axiosInstance.post(
       `/api/prototype-groups/${prototypeGroupId}/${prototypeVersionId}/instance`,
       data
@@ -50,7 +59,12 @@ export const prototypeGroupService = {
   /**
    * プロトタイプグループに属するプロトタイプ一覧取得
    */
-  getPrototypeGroup: async (prototypeGroupId: string) => {
+  getPrototypeGroup: async (
+    prototypeGroupId: string
+  ): Promise<{
+    prototypeGroup: PrototypeGroup;
+    prototypes: Array<Prototype>;
+  }> => {
     const response = await axiosInstance.get(
       `/api/prototype-groups/${prototypeGroupId}`
     );
@@ -59,7 +73,7 @@ export const prototypeGroupService = {
   /**
    * プロトタイプグループ削除
    */
-  deletePrototypeGroup: async (prototypeGroupId: string) => {
+  deletePrototypeGroup: async (prototypeGroupId: string): Promise<void> => {
     const response = await axiosInstance.delete(
       `/api/prototype-groups/${prototypeGroupId}`
     );

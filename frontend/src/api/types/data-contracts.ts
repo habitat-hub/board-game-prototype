@@ -172,7 +172,10 @@ export type PrototypesUpdateData = Prototype;
 
 export type PrototypesDeleteData = SuccessResponse;
 
-export type PrototypeGroupsListData = PrototypeGroup[];
+export type PrototypeGroupsListData = {
+  prototypeGroup?: PrototypeGroup;
+  prototypes?: Prototype[];
+}[];
 
 export interface PrototypeGroupsCreatePayload {
   name?: string;

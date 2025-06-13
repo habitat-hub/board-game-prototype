@@ -39,7 +39,14 @@ router.use(ensureAuthenticated);
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/PrototypeGroup'
+ *                 type: object
+ *                 properties:
+ *                   prototypeGroup:
+ *                     $ref: '#/components/schemas/PrototypeGroup'
+ *                   prototypes:
+ *                     type: array
+ *                     items:
+ *                       $ref: '#/components/schemas/Prototype'
  */
 router.get('/', async (req: Request, res: Response) => {
   const user = req.user as UserModel;
