@@ -109,7 +109,7 @@ export default function Canvas({
   });
 
   // マスタープレビューかどうか
-  const isMasterPreview = prototypeType === 'VERSION';
+  const isVersionPrototype = prototypeType === 'VERSION';
 
   // 他のプレイヤーのカード
   const otherPlayerCards = useMemo(() => {
@@ -368,7 +368,7 @@ export default function Canvas({
    * @param partId - パーツID
    */
   const handlePartMouseDown = (e: React.MouseEvent, partId: number) => {
-    if (isMasterPreview) return;
+    if (isVersionPrototype) return;
 
     onPartMouseDown(e, partId);
   };
@@ -477,7 +477,7 @@ export default function Canvas({
                         partId: number;
                         type: 'front' | 'back' | 'backmost' | 'frontmost';
                       }) => {
-                        if (isMasterPreview) return;
+                        if (isVersionPrototype) return;
 
                         dispatch({
                           type: 'CHANGE_ORDER',
@@ -542,7 +542,7 @@ export default function Canvas({
         prototypeName={prototypeName}
         prototypeVersionNumber={prototypeVersionNumber}
         prototypeType={prototypeType}
-        isMasterPreview={isMasterPreview}
+        isVersionPrototype={isVersionPrototype}
         groupId={groupId}
         players={players}
         onAddPart={handleAddPart}

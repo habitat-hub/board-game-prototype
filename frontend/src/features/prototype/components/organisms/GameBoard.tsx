@@ -74,7 +74,7 @@ export default function GameBoard({
     null
   );
 
-  const isMasterPreview = prototypeType === 'VERSION';
+  const isVersionPrototype = prototypeType === 'VERSION';
 
   const canvasSize = useMemo(
     () => ({
@@ -319,7 +319,7 @@ export default function GameBoard({
     e: Konva.KonvaEventObject<DragEvent>,
     partId: number
   ) => {
-    if (isMasterPreview) return;
+    if (isVersionPrototype) return;
     e.cancelBubble = true;
     const newSelected = selectedPartIds.includes(partId)
       ? selectedPartIds
@@ -402,7 +402,7 @@ export default function GameBoard({
     e: Konva.KonvaEventObject<DragEvent>,
     partId: number
   ) => {
-    if (isMasterPreview) return;
+    if (isVersionPrototype) return;
 
     measureOperation('Part Drag Update', () => {
       const position = e.target.position();
@@ -745,7 +745,7 @@ export default function GameBoard({
         prototypeName={prototypeName}
         prototypeVersionNumber={prototypeVersionNumber}
         prototypeType={prototypeType}
-        isMasterPreview={isMasterPreview}
+        isVersionPrototype={isVersionPrototype}
         groupId={groupId}
         players={players}
         onAddPart={handleAddPart}
@@ -793,7 +793,7 @@ export default function GameBoard({
         camera={camera}
         prototypeName={prototypeName}
         prototypeVersionNumber={prototypeVersionNumber ?? 0}
-        isMasterPreview={isMasterPreview}
+        isVersionPrototype={isVersionPrototype}
         groupId={groupId}
         prototypeType={prototypeType}
         parts={parts}

@@ -19,7 +19,7 @@ interface DebugInfoProps {
   // Prototype info
   prototypeName: string;
   prototypeVersionNumber: number;
-  isMasterPreview: boolean;
+  isVersionPrototype: boolean;
   groupId: string;
   prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE';
   // Data
@@ -34,7 +34,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
   camera,
   prototypeName,
   prototypeVersionNumber,
-  isMasterPreview,
+  isVersionPrototype,
   groupId,
   prototypeType,
   parts,
@@ -113,7 +113,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
             <div>Version: {prototypeVersionNumber || 'N/A'}</div>
             <div>Group ID: {groupId}</div>
             <div>Type: {prototypeType}</div>
-            <div>Is Master Preview: {isMasterPreview ? 'Yes' : 'No'}</div>
+            <div>Is Master Preview: {isVersionPrototype ? 'Yes' : 'No'}</div>
 
             <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
               <strong>Multiplayer</strong>

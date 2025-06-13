@@ -80,7 +80,7 @@ const PrototypePlayOld: React.FC = () => {
 
   // プロタイプの取得
   useEffect(() => {
-    getPrototypeGroup(prototypeId)
+    getPrototypeGroup(groupId)
       .then((response) => {
         const { prototypeGroup, prototypes } = response;
 

@@ -9,7 +9,7 @@ class PlayerModel extends Model {
   // プロトタイプID
   public prototypeId!: string;
   // ユーザーID
-  public userId!: number | null;
+  public userId!: string | null;
   // プレイヤー名
   public playerName!: string;
   // 元のプレイヤーID
