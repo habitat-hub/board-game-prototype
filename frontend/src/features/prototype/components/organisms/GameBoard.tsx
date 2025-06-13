@@ -132,46 +132,45 @@ export default function GameBoard({
     [viewportSize, canvasSize]
   );
 
-  // 最新のパーツを取得する関数
-  const getLatestPart = useCallback(
-    (parts: PartType[]): PartType | null => {
-      return parts.reduce(
-        (latest, current) => {
-          if (!latest) return current;
-          return new Date(current.updatedAt) > new Date(latest.updatedAt)
-            ? current
-            : latest;
-        },
-        null as PartType | null
-      );
-    },
-    []
-  );
+  // 全パーツの平均センター位置を計算する関数
+  const calculateAveragePartsCenter = useCallback((parts: PartType[]) => {
+    if (parts.length === 0) return null;
+
+    const totalCenterX = parts.reduce((sum, part) => {
+      return sum + (part.position.x + part.width / 2);
+    }, 0);
+
+    const totalCenterY = parts.reduce((sum, part) => {
+      return sum + (part.position.y + part.height / 2);
+    }, 0);
+
+    return {
+      x: totalCenterX / parts.length,
+      y: totalCenterY / parts.length,
+    };
+  }, []);
 
   // 初期カメラ位置を計算する関数
   const calculateInitialCameraPosition = useCallback(
-    (latestPart: PartType) => {
-      const partCenterX = latestPart.position.x + latestPart.width / 2;
-      const partCenterY = latestPart.position.y + latestPart.height / 2;
-
-      // カメラの中央がパーツの中心になるようにカメラの左上位置を計算
+    (averageCenter: { x: number; y: number }) => {
+      // カメラの中央が全パーツの平均センターになるようにカメラの左上位置を計算
       const targetX =
-        partCenterX * DEFAULT_INITIAL_SCALE - viewportSize.width / 2;
+        averageCenter.x * DEFAULT_INITIAL_SCALE - viewportSize.width / 2;
       const targetY =
-        partCenterY * DEFAULT_INITIAL_SCALE - viewportSize.height / 2;
+        averageCenter.y * DEFAULT_INITIAL_SCALE - viewportSize.height / 2;
 
       return constrainCamera(targetX, targetY, DEFAULT_INITIAL_SCALE);
     },
     [viewportSize, constrainCamera]
   );
 
-  // 初期カメラ位置を計算する関数（useMemo で最初の一回だけ計算）
-  const latestPart = useMemo(() => {
-    return parts.length > 0 ? getLatestPart(parts) : null;
-  }, [parts, getLatestPart]);
+  // 全パーツの平均センター位置を計算（useMemo で最初の一回だけ計算）
+  const averagePartsCenter = useMemo(() => {
+    return calculateAveragePartsCenter(parts);
+  }, [parts, calculateAveragePartsCenter]);
 
   const initialCamera = useMemo(() => {
-    if (!latestPart) {
+    if (!averagePartsCenter) {
       // パーツがない場合はキャンバス中央を表示
       return {
         x: centerCoords.x * DEFAULT_INITIAL_SCALE - viewportSize.width / 2,
@@ -180,8 +179,13 @@ export default function GameBoard({
       };
     }
 
-    return calculateInitialCameraPosition(latestPart);
-  }, [latestPart, centerCoords, viewportSize, calculateInitialCameraPosition]);
+    return calculateInitialCameraPosition(averagePartsCenter);
+  }, [
+    averagePartsCenter,
+    centerCoords,
+    viewportSize,
+    calculateInitialCameraPosition,
+  ]);
 
   // 初期カメラ位置が変更された場合（partsが読み込まれた場合など）にカメラを更新
   // ただし、一度初期化されたら以降は自動更新しない
