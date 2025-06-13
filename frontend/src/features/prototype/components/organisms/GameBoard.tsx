@@ -36,6 +36,7 @@ const GRID_SIZE = 50;
 const CANVAS_SIZE = 5000;
 const MIN_SCALE = 0.18;
 const MAX_SCALE = 8;
+const DEFAULT_INITIAL_SCALE = 0.5;
 
 interface GameBoardProps {
   prototypeName: string;
@@ -150,13 +151,13 @@ export default function GameBoard({
       const partCenterX = latestPart.position.x + latestPart.width / 2;
       const partCenterY = latestPart.position.y + latestPart.height / 2;
 
-      const scale = 0.5;
-
       // カメラの中央がパーツの中心になるようにカメラの左上位置を計算
-      const targetX = partCenterX * scale - viewportSize.width / 2;
-      const targetY = partCenterY * scale - viewportSize.height / 2;
+      const targetX =
+        partCenterX * DEFAULT_INITIAL_SCALE - viewportSize.width / 2;
+      const targetY =
+        partCenterY * DEFAULT_INITIAL_SCALE - viewportSize.height / 2;
 
-      return constrainCamera(targetX, targetY, scale);
+      return constrainCamera(targetX, targetY, DEFAULT_INITIAL_SCALE);
     },
     [viewportSize, constrainCamera]
   );
@@ -170,9 +171,9 @@ export default function GameBoard({
     if (!latestPart) {
       // パーツがない場合はキャンバス中央を表示
       return {
-        x: centerCoords.x * 0.5 - viewportSize.width / 2,
-        y: centerCoords.y * 0.5 - viewportSize.height / 2,
-        scale: 0.5,
+        x: centerCoords.x * DEFAULT_INITIAL_SCALE - viewportSize.width / 2,
+        y: centerCoords.y * DEFAULT_INITIAL_SCALE - viewportSize.height / 2,
+        scale: DEFAULT_INITIAL_SCALE,
       };
     }
 
