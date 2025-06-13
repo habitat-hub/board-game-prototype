@@ -133,17 +133,20 @@ export default function GameBoard({
   );
 
   // 最新のパーツを取得する関数
-  const getLatestPart = useCallback((parts: PartType[]) => {
-    return parts.reduce(
-      (latest, current) => {
-        if (!latest) return current;
-        return new Date(current.updatedAt) > new Date(latest.updatedAt)
-          ? current
-          : latest;
-      },
-      null as PartType | null
-    );
-  }, []);
+  const getLatestPart = useCallback(
+    (parts: PartType[]): PartType | null => {
+      return parts.reduce(
+        (latest, current) => {
+          if (!latest) return current;
+          return new Date(current.updatedAt) > new Date(latest.updatedAt)
+            ? current
+            : latest;
+        },
+        null as PartType | null
+      );
+    },
+    []
+  );
 
   // 初期カメラ位置を計算する関数
   const calculateInitialCameraPosition = useCallback(
