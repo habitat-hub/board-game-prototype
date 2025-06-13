@@ -36,6 +36,7 @@ const GRID_SIZE = 50;
 const CANVAS_SIZE = 5000;
 const MIN_SCALE = 0.18;
 const MAX_SCALE = 8;
+const DEFAULT_INITIAL_SCALE = 0.5;
 
 interface GameBoardProps {
   prototypeName: string;
@@ -131,39 +132,69 @@ export default function GameBoard({
     [viewportSize, canvasSize]
   );
 
-  const initialCameraPosition = useMemo(() => {
-    const latestPart = parts.reduce(
-      (latest, current) => {
-        if (!latest) return current;
-        return new Date(current.updatedAt) > new Date(latest.updatedAt)
-          ? current
-          : latest;
-      },
-      null as PartType | null
-    );
+  // 最新のパーツを取得する関数
+  const getLatestPart = useCallback(
+    (parts: PartType[]): PartType | null => {
+      return parts.reduce(
+        (latest, current) => {
+          if (!latest) return current;
+          return new Date(current.updatedAt) > new Date(latest.updatedAt)
+            ? current
+            : latest;
+        },
+        null as PartType | null
+      );
+    },
+    []
+  );
 
-    if (latestPart) {
+  // 初期カメラ位置を計算する関数
+  const calculateInitialCameraPosition = useCallback(
+    (latestPart: PartType) => {
       const partCenterX = latestPart.position.x + latestPart.width / 2;
       const partCenterY = latestPart.position.y + latestPart.height / 2;
 
-      const scale = 0.5;
+      // カメラの中央がパーツの中心になるようにカメラの左上位置を計算
+      const targetX =
+        partCenterX * DEFAULT_INITIAL_SCALE - viewportSize.width / 2;
+      const targetY =
+        partCenterY * DEFAULT_INITIAL_SCALE - viewportSize.height / 2;
 
-      const targetX = partCenterX - viewportSize.width / (2 * scale);
-      const targetY = partCenterY - viewportSize.height / (2 * scale);
+      return constrainCamera(targetX, targetY, DEFAULT_INITIAL_SCALE);
+    },
+    [viewportSize, constrainCamera]
+  );
 
-      const constrainedPosition = constrainCamera(targetX, targetY, scale);
+  // 初期カメラ位置を計算する関数（useMemo で最初の一回だけ計算）
+  const latestPart = useMemo(() => {
+    return parts.length > 0 ? getLatestPart(parts) : null;
+  }, [parts, getLatestPart]);
 
-      return constrainedPosition;
+  const initialCamera = useMemo(() => {
+    if (!latestPart) {
+      // パーツがない場合はキャンバス中央を表示
+      return {
+        x: centerCoords.x * DEFAULT_INITIAL_SCALE - viewportSize.width / 2,
+        y: centerCoords.y * DEFAULT_INITIAL_SCALE - viewportSize.height / 2,
+        scale: DEFAULT_INITIAL_SCALE,
+      };
     }
 
-    return {
-      x: centerCoords.x - viewportSize.width / 2 / 0.5,
-      y: centerCoords.y - viewportSize.height / 2 / 0.5,
-      scale: 0.5,
-    };
-  }, [centerCoords, viewportSize, parts, constrainCamera]);
+    return calculateInitialCameraPosition(latestPart);
+  }, [latestPart, centerCoords, viewportSize, calculateInitialCameraPosition]);
 
-  const [camera, setCamera] = useState(initialCameraPosition);
+  // 初期カメラ位置が変更された場合（partsが読み込まれた場合など）にカメラを更新
+  // ただし、一度初期化されたら以降は自動更新しない
+  const [camera, setCamera] = useState(() => initialCamera);
+  const [hasInitialized, setHasInitialized] = useState(false);
+  useEffect(() => {
+    if (!hasInitialized || parts.length === 0) {
+      setCamera(initialCamera);
+      if (parts.length > 0) {
+        setHasInitialized(true);
+      }
+    }
+  }, [initialCamera, hasInitialized, parts.length]);
 
   useEffect(() => {
     const handleResize = () => {
