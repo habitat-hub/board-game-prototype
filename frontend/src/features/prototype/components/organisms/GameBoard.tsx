@@ -128,39 +128,45 @@ export default function GameBoard({
     [viewportSize, canvasSize]
   );
 
-  const initialCameraPosition = useMemo(() => {
-    const latestPart = parts.reduce(
-      (latest, current) => {
-        if (!latest) return current;
-        return new Date(current.updatedAt) > new Date(latest.updatedAt)
-          ? current
-          : latest;
-      },
-      null as PartType | null
-    );
+  // 初期カメラ位置を計算する関数（初期描画時のpartsを使用）
+  const calculateInitialCameraPosition = useCallback(
+    (initialParts: PartType[]) => {
+      const latestPart = initialParts.reduce(
+        (latest, current) => {
+          if (!latest) return current;
+          return new Date(current.updatedAt) > new Date(latest.updatedAt)
+            ? current
+            : latest;
+        },
+        null as PartType | null
+      );
 
-    if (latestPart) {
-      const partCenterX = latestPart.position.x + latestPart.width / 2;
-      const partCenterY = latestPart.position.y + latestPart.height / 2;
+      if (latestPart) {
+        const partCenterX = latestPart.position.x + latestPart.width / 2;
+        const partCenterY = latestPart.position.y + latestPart.height / 2;
 
-      const scale = 0.5;
+        const scale = 0.5;
 
-      const targetX = partCenterX - viewportSize.width / (2 * scale);
-      const targetY = partCenterY - viewportSize.height / (2 * scale);
+        // カメラの中央がパーツの中心になるようにカメラの左上位置を計算
+        const targetX = partCenterX * scale - viewportSize.width / 2;
+        const targetY = partCenterY * scale - viewportSize.height / 2;
 
-      const constrainedPosition = constrainCamera(targetX, targetY, scale);
+        return constrainCamera(targetX, targetY, scale);
+      }
 
-      return constrainedPosition;
-    }
+      return {
+        x: centerCoords.x * 0.5 - viewportSize.width / 2,
+        y: centerCoords.y * 0.5 - viewportSize.height / 2,
+        scale: 0.5,
+      };
+    },
+    [centerCoords, viewportSize, constrainCamera]
+  );
 
-    return {
-      x: centerCoords.x - viewportSize.width / 2 / 0.5,
-      y: centerCoords.y - viewportSize.height / 2 / 0.5,
-      scale: 0.5,
-    };
-  }, [centerCoords, viewportSize, parts, constrainCamera]);
-
-  const [camera, setCamera] = useState(initialCameraPosition);
+  // 初期カメラ位置を一度だけ計算
+  const [camera, setCamera] = useState(() =>
+    calculateInitialCameraPosition(parts)
+  );
 
   useEffect(() => {
     const handleResize = () => {
