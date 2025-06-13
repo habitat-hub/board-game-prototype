@@ -21,7 +21,7 @@ export default function ClientLayout({
   const [shouldRedirect, setShouldRedirect] = useState(false);
 
   // Canvas上で表示する場合はヘッダーを非表示にする
-  const isCanvas = /^\/prototypes\/[a-f0-9-]+\/versions\/[a-f0-9-]+\//.test(
+  const isCanvas = /^\/prototypes\/groups\/[a-f0-9-]+\/[a-f0-9-]+\//.test(
     pathname
   );
 

@@ -6,11 +6,11 @@ import React, { useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { RiLoaderLine } from 'react-icons/ri';
 
-import { usePrototypes } from '@/api/hooks/usePrototypes';
+import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
 
 const CreatePrototypeForm: React.FC = () => {
   const router = useRouter();
-  const { createPrototype } = usePrototypes();
+  const { createPrototypeGroup } = usePrototypeGroup();
 
   // フォーム
   const [form, setForm] = useState({
@@ -42,7 +42,7 @@ const CreatePrototypeForm: React.FC = () => {
       setIsCreating(true);
 
       // プロトタイプを作成する
-      const newPrototype = await createPrototype({
+      const newPrototype = await createPrototypeGroup({
         name: form.name,
         playerCount: form.playerCount,
       });
@@ -55,7 +55,7 @@ const CreatePrototypeForm: React.FC = () => {
       setError(null);
 
       // グループページへ遷移する
-      router.push(`/prototypes/groups/${newPrototype.groupId}`);
+      router.push(`/prototypes/groups/${newPrototype.id}`);
     } catch (error) {
       console.error('Error creating prototype:', error);
       setError('エラーが発生しました。');

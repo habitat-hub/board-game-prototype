@@ -1,14 +1,14 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
-import PrototypeVersionModel from './PrototypeVersion';
+import PrototypeModel from './Prototype';
 
 class PartModel extends Model {
   // ID
   public id!: number;
   // タイプ
   public type!: 'token' | 'card' | 'hand' | 'deck' | 'area';
-  // プロトタイプバージョンID
-  public prototypeVersionId!: string;
+  // プロトタイプID
+  public prototypeId!: string;
   // 親パーツID
   public parentId!: number | null;
   // 位置
@@ -53,7 +53,7 @@ PartModel.init(
       type: DataTypes.ENUM('token', 'card', 'hand', 'deck', 'area'),
       allowNull: false,
     },
-    prototypeVersionId: {
+    prototypeId: {
       type: DataTypes.UUID,
       allowNull: false,
     },
@@ -108,12 +108,12 @@ PartModel.init(
   }
 );
 
-PartModel.belongsTo(PrototypeVersionModel, {
-  foreignKey: 'prototypeVersionId',
+PartModel.belongsTo(PrototypeModel, {
+  foreignKey: 'prototypeId',
   onDelete: 'CASCADE',
 });
-PrototypeVersionModel.hasMany(PartModel, {
-  foreignKey: 'prototypeVersionId',
+PrototypeModel.hasMany(PartModel, {
+  foreignKey: 'prototypeId',
 });
 
 export default PartModel;

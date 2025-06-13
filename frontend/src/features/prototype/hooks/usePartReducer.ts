@@ -19,7 +19,7 @@ export type PartAction =
       payload: {
         part: Omit<
           Part,
-          'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'
+          'id' | 'prototypeId' | 'order' | 'createdAt' | 'updatedAt'
         >;
         properties: PartPropertiesWithoutMetadata[];
       };

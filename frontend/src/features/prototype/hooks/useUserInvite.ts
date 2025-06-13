@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 
-import { usePrototypes } from '@/api/hooks/usePrototypes';
+import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
 import { useUsers } from '@/api/hooks/useUsers';
-import { PrototypesGroupsDetailData, User } from '@/api/types';
+import { User } from '@/api/types';
 
 /**
  * ユーザー招待関連のロジックを管理するカスタムフック
@@ -11,10 +11,10 @@ export const useUserInvite = (groupId: string) => {
   const { searchUsers } = useUsers();
   const {
     getAccessUsersByGroup,
-    inviteUserToGroup,
-    deleteUserFromGroup,
-    getPrototypesByGroup,
-  } = usePrototypes();
+    getPrototypeGroup,
+    deleteInviteFromPrototypeGroup,
+    inviteToPrototypeGroup,
+  } = usePrototypeGroup();
 
   const [invitedUsers, setInvitedUsers] = useState<User[]>([]);
   const [searchResults, setSearchResults] = useState<User[]>([]);
@@ -36,16 +36,16 @@ export const useUserInvite = (groupId: string) => {
   // プロトタイプ名とオーナーIDを取得
   const fetchPrototypeInfo = useCallback(async () => {
     try {
-      const response: PrototypesGroupsDetailData =
-        await getPrototypesByGroup(groupId);
-      if (response && response.length > 0 && response[0].prototype) {
-        setPrototypeName(response[0].prototype.name || '');
-        setPrototypeOwnerId(response[0].prototype.userId || '');
+      const { prototypeGroup, prototypes } = await getPrototypeGroup(groupId);
+      const mainPrototype = prototypes.find(({ type }) => type === 'MASTER');
+      if (mainPrototype) {
+        setPrototypeName(mainPrototype.name || '');
+        setPrototypeOwnerId(prototypeGroup.userId || '');
       }
     } catch (error) {
       console.error('Error fetching prototype info:', error);
     }
-  }, [getPrototypesByGroup, groupId]);
+  }, [getPrototypeGroup, groupId]);
 
   // 初期化時に招待済みユーザーとプロトタイプ情報を取得
   useEffect(() => {
@@ -82,21 +82,21 @@ export const useUserInvite = (groupId: string) => {
   const removeInvitedUser = useCallback(
     async (userId: string) => {
       try {
-        await deleteUserFromGroup(groupId, userId);
+        await deleteInviteFromPrototypeGroup(groupId, userId);
         setInvitedUsers((prev) => prev.filter((user) => user.id !== userId));
       } catch (error) {
         console.error('Error removing user:', error);
         alert('ユーザーの除外に失敗しました');
       }
     },
-    [deleteUserFromGroup, groupId]
+    [deleteInviteFromPrototypeGroup, groupId]
   );
 
   // ユーザーを招待（単一ユーザー用）
   const inviteUser = useCallback(
     async (user: User) => {
       try {
-        await inviteUserToGroup(groupId, {
+        await inviteToPrototypeGroup(groupId, {
           guestIds: [user.id],
         });
 
@@ -110,7 +110,7 @@ export const useUserInvite = (groupId: string) => {
         alert('ユーザーの招待に失敗しました');
       }
     },
-    [inviteUserToGroup, groupId, fetchInvitedUsers]
+    [inviteToPrototypeGroup, groupId, fetchInvitedUsers]
   );
 
   return {

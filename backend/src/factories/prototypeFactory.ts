@@ -1,9 +1,7 @@
 import { Transaction } from 'sequelize';
-import { v4 as uuidv4 } from 'uuid';
 
 import PrototypeModel from '../models/Prototype';
-import { PROTOTYPE_VERSION } from '../const';
-import PrototypeVersionModel from '../models/PrototypeVersion';
+import { ACCESS_TYPE, PROTOTYPE_VERSION } from '../const';
 import PlayerModel from '../models/Player';
 import PrototypeGroupModel from '../models/PrototypeGroup';
 import AccessModel from '../models/Access';
@@ -12,416 +10,356 @@ import PartModel from '../models/Part';
 import PartPropertyModel from '../models/PartProperty';
 
 /**
- * プロトタイプを作成する(プロトタイプバージョン、プレイヤーも作成する)
+ * マスタープロトタイプを作成する
  *
  * @param userId - ユーザーID
  * @param name - プロトタイプ名
- * @param type - プロトタイプタイプ
- * @param groupId - グループID
- * @param masterPrototypeId - マスタープロトタイプID
  * @param minPlayers - 最小プレイヤー数
  * @param maxPlayers - 最大プレイヤー数
  * @param transaction - トランザクション
  * @returns 作成したプロトタイプ
  */
-export async function createPrototype({
+export async function createPrototypeMaster({
   userId,
   name,
-  type,
-  editPrototypeDefaultVersionId,
-  groupId,
   minPlayers,
   maxPlayers,
   transaction,
-  needsPartDuplicate = false,
 }: {
   userId: string;
   name: string;
-  type: 'EDIT' | 'PREVIEW';
-  editPrototypeDefaultVersionId: string | null;
-  groupId: string | null;
   minPlayers: number;
   maxPlayers: number;
   transaction: Transaction;
-  needsPartDuplicate?: boolean;
 }) {
-  const prototypeGroupId = groupId ?? uuidv4();
-
-  // プロトタイプ作成
-  const newPrototype = await PrototypeModel.create(
+  // プロトタイプグループの作成
+  const prototypeGroup = await PrototypeGroupModel.create(
     {
       userId,
+    },
+    { transaction }
+  );
+
+  // マスタープロトタイプの作成
+  const masterPrototype = await PrototypeModel.create(
+    {
+      prototypeGroupId: prototypeGroup.id,
       name,
-      type,
-      groupId: prototypeGroupId,
-      masterPrototypeId: null,
+      type: 'MASTER',
       minPlayers,
       maxPlayers,
-    },
-    { transaction }
-  );
-
-  // 初期バージョン作成
-  const newPrototypeVersion = await PrototypeVersionModel.create(
-    {
-      prototypeId: newPrototype.id,
       versionNumber: PROTOTYPE_VERSION.INITIAL,
-      description: '初期バージョン',
     },
     { transaction }
   );
 
-  // 初期バージョンのプレイヤー作成
-  const players = await PlayerModel.findAll({
-    where: {
-      prototypeVersionId: editPrototypeDefaultVersionId,
-    },
-    order: [['id', 'ASC']],
-  });
-  let newPlayers = null;
-  if (players.length === 0) {
-    // 編集版の場合は、プレイヤーを新規作成
-    newPlayers = await PlayerModel.bulkCreate(
-      Array.from({ length: maxPlayers }).map((_, i) => ({
-        prototypeVersionId: newPrototypeVersion.id,
-        userId: null,
-        playerName: `プレイヤー${i + 1}`,
-      })),
-      { transaction, returning: true }
-    );
-  } else {
-    // プレビュー版の場合は、プレイヤーを複製
-    newPlayers = await PlayerModel.bulkCreate(
-      players.map((player) => ({
-        prototypeVersionId: newPrototypeVersion.id,
-        userId: null,
-        playerName: player.playerName,
-        originalPlayerId: player.id,
-      })),
-      { transaction, returning: true }
-    );
-  }
+  // プレイヤーの作成
+  await PlayerModel.bulkCreate(
+    Array.from({ length: maxPlayers }).map((_, i) => ({
+      prototypeId: masterPrototype.id,
+      userId: null,
+      playerName: `プレイヤー${i + 1}`,
+    })),
+    { transaction, returning: true }
+  );
 
-  // プロトタイプグループの追加
-  PrototypeGroupModel.create(
+  // アクセス権の作成
+  const access = await AccessModel.create(
     {
-      id: prototypeGroupId,
-      prototypeId: newPrototype.id,
+      prototypeGroupId: prototypeGroup.id,
+      name: ACCESS_TYPE.MASTER,
+    },
+    { transaction }
+  );
+  await UserAccessModel.create(
+    {
+      userId,
+      accessId: access.id,
     },
     { transaction }
   );
 
-  // 編集用の場合は、アクセス権を作成する
-  if (type === 'EDIT') {
-    const access = await AccessModel.create(
-      {
-        prototypeGroupId: prototypeGroupId,
-        name: `グループ#${prototypeGroupId}のアクセス権`,
-      },
-      { transaction }
-    );
-    await UserAccessModel.create(
-      {
-        userId,
-        accessId: access.id,
-      },
-      { transaction }
-    );
-  }
-
-  if (needsPartDuplicate) {
-    // パーツの複製
-    const editParts = await PartModel.findAll({
-      where: {
-        prototypeVersionId: editPrototypeDefaultVersionId,
-      },
-    });
-
-    const newParts = await PartModel.bulkCreate(
-      editParts.map((part) => ({
-        type: part.type,
-        prototypeVersionId: newPrototypeVersion.id,
-        parentId: null,
-        position: part.position,
-        width: part.width,
-        height: part.height,
-        order: part.order,
-        configurableTypeAsChild: part.configurableTypeAsChild,
-        isReversible: part.isReversible,
-        isFlipped: part.isFlipped,
-        ownerId: null,
-        canReverseCardOnDeck: part.canReverseCardOnDeck,
-        originalPartId: part.id,
-      })),
-      { transaction, returning: true }
-    );
-
-    // パーツのプロパティを複製
-    const editPartProperties = await PartPropertyModel.findAll({
-      where: {
-        partId: editParts.map((part) => part.id),
-      },
-    });
-
-    // partIdごとにプロパティをグループ化
-    const groupedProperties = editPartProperties.reduce(
-      (acc, property) => {
-        if (!acc[property.partId]) {
-          acc[property.partId] = [];
-        }
-        acc[property.partId].push(property);
-        return acc;
-      },
-      {} as { [key: number]: PartPropertyModel[] }
-    );
-
-    // 各パーツの全プロパティ（front/back）を複製
-    const newPartProperties = Object.entries(groupedProperties).flatMap(
-      ([oldPartId, properties]) => {
-        const newPart = newParts.find(
-          (part) => part.originalPartId === Number(oldPartId)
-        );
-        if (!newPart) return [];
-
-        return properties.map((property) => ({
-          partId: newPart.id,
-          side: property.side,
-          name: property.name,
-          description: property.description,
-          color: property.color,
-          textColor: property.textColor,
-          imageId: property.imageId,
-        }));
-      }
-    );
-
-    await PartPropertyModel.bulkCreate(newPartProperties, { transaction });
-
-    // 親パーツがあるパーツを更新する
-    const editPartsWithParent = editParts.filter(
-      (part) => part.parentId !== null
-    );
-    await Promise.all(
-      editPartsWithParent.map(async (part) => {
-        const newParentPart = newParts.find(
-          (newPart) => newPart.originalPartId === part.parentId
-        );
-
-        if (!newParentPart) return null;
-        return PartModel.update(
-          { parentId: newParentPart.id },
-          { where: { originalPartId: part.id }, transaction }
-        );
-      })
-    );
-
-    // オーナーを設定する
-    const editPartsWithOwner = editParts.filter(
-      (part) => part.ownerId !== null
-    );
-    await Promise.all(
-      editPartsWithOwner.map(async (part) => {
-        const newOwner = newPlayers.find(
-          (player) => player.originalPlayerId === part.ownerId
-        );
-
-        if (!newOwner) return null;
-        return PartModel.update(
-          { ownerId: newOwner.id },
-          { where: { originalPartId: part.id }, transaction }
-        );
-      })
-    );
-  }
-
-  return newPrototype;
+  return masterPrototype;
 }
 
-export const createPrototypeVersion = async (
-  originalPrototypeVersion: PrototypeVersionModel,
-  description: string,
-  transaction: Transaction
-) => {
-  const existingVersions = await PrototypeVersionModel.findAll({
-    where: {
-      prototypeId: originalPrototypeVersion.prototypeId,
-    },
-    attributes: ['versionNumber'],
-  });
-  const majorVersions = existingVersions.map((version) => {
-    const parts = version.versionNumber.split('.');
-    return parseInt(parts[0], 10);
-  });
-  const maxMajorVersion = Math.max(...majorVersions);
-  const newVersionNumber = `${maxMajorVersion + 1}.0.0`;
-
-  const newPrototypeVersion = await PrototypeVersionModel.create(
+/**
+ * プロトタイプバージョンを作成する
+ *
+ * @param prototypeGroupId - プロトタイプグループID
+ * @param name - プロトタイプ名
+ * @param type - プロトタイプタイプ
+ * @param minPlayers - 最小プレイヤー数
+ * @param maxPlayers - 最大プレイヤー数
+ * @param versionNumber - バージョン番号
+ * @param transaction - トランザクション
+ * @returns 作成したプロトタイプ
+ */
+export const createPrototypeVersion = async ({
+  prototypeGroupId,
+  name,
+  minPlayers,
+  maxPlayers,
+  versionNumber = PROTOTYPE_VERSION.INITIAL,
+  transaction,
+}: {
+  prototypeGroupId: string;
+  name: string;
+  minPlayers: number;
+  maxPlayers: number;
+  versionNumber: number;
+  transaction: Transaction;
+}) => {
+  // バージョンプロトトタイプの作成
+  const versionPrototype = await PrototypeModel.create(
     {
-      prototypeId: originalPrototypeVersion.prototypeId,
-      versionNumber: newVersionNumber,
-      description,
+      prototypeGroupId,
+      name,
+      type: 'VERSION',
+      minPlayers,
+      maxPlayers,
+      versionNumber,
     },
     { transaction }
   );
 
-  const prototype = await PrototypeModel.findByPk(
-    originalPrototypeVersion.prototypeId
-  );
-  if (!prototype) {
-    throw new Error('プロトタイプが見つかりません');
+  // マスタープロトタイプの取得
+  const masterPrototype = await PrototypeModel.findOne({
+    where: {
+      prototypeGroupId,
+      type: 'MASTER',
+    },
+  });
+  if (!masterPrototype) {
+    throw new Error('マスタープロトタイプが見つかりません');
   }
 
-  // プレイヤー作成
-  const players = await PlayerModel.findAll({
+  // マスタープロトタイプのプレイヤーの取得
+  const masterPlayers = await PlayerModel.findAll({
     where: {
-      prototypeVersionId: originalPrototypeVersion.id,
+      prototypeId: masterPrototype.id,
     },
-    order: [['id', 'ASC']],
   });
-  const newPlayers = await PlayerModel.bulkCreate(
-    players.map((player) => ({
-      prototypeVersionId: newPrototypeVersion.id,
-      userId: null,
-      playerName: player.playerName,
-      originalPlayerId: player.id,
+
+  // プレイヤーの作成
+  const versionPlayers = await PlayerModel.bulkCreate(
+    masterPlayers.map(({ userId, playerName, id }) => ({
+      prototypeId: versionPrototype.id,
+      userId,
+      playerName,
+      originalPlayerId: id,
     })),
     { transaction, returning: true }
   );
 
-  // パーツの複製
-  const originalParts = await PartModel.findAll({
+  // マスタープロトタイプのパーツの取得
+  const masterParts = await PartModel.findAll({
     where: {
-      prototypeVersionId: originalPrototypeVersion.id,
-    },
-  });
-  const newParts = await PartModel.bulkCreate(
-    originalParts.map((part) => ({
-      type: part.type,
-      prototypeVersionId: newPrototypeVersion.id,
-      parentId: null,
-      position: part.position,
-      width: part.width,
-      height: part.height,
-      order: part.order,
-      configurableTypeAsChild: part.configurableTypeAsChild,
-      isReversible: part.isReversible,
-      isFlipped: part.isFlipped,
-      ownerId: null,
-      canReverseCardOnDeck: part.canReverseCardOnDeck,
-      originalPartId: part.id,
-    })),
-    { transaction, returning: true }
-  );
-
-  // パーツのプロパティを複製
-  const originalPartProperties = await PartPropertyModel.findAll({
-    where: {
-      partId: originalParts.map((part) => part.id),
+      prototypeId: masterPrototype.id,
     },
   });
 
-  // partIdごとにプロパティをグループ化
-  const groupedProperties = originalPartProperties.reduce(
-    (acc, property) => {
-      if (!acc[property.partId]) {
-        acc[property.partId] = [];
-      }
-      acc[property.partId].push(property);
-      return acc;
+  // マスタープロトタイプのパーツのプロパティの取得
+  const masterPartProperties = await PartPropertyModel.findAll({
+    where: {
+      partId: masterParts.map((part) => part.id),
     },
-    {} as { [key: number]: PartPropertyModel[] }
-  );
+  });
 
-  // 各パーツの全プロパティ（front/back）を複製
-  const newPartProperties = Object.entries(groupedProperties).flatMap(
-    ([oldPartId, properties]) => {
-      const newPart = newParts.find(
-        (part) => part.originalPartId === Number(oldPartId)
+  // パーツの作成
+  masterParts.map(
+    async ({
+      id,
+      type,
+      parentId,
+      position,
+      width,
+      height,
+      configurableTypeAsChild,
+      isReversible,
+      isFlipped,
+      canReverseCardOnDeck,
+      ownerId,
+    }) => {
+      const newOwnerId = versionPlayers.find(
+        (player) => player.originalPlayerId === ownerId
+      )?.id;
+
+      const versionPart = await PartModel.create(
+        {
+          type,
+          prototypeId: versionPrototype.id,
+          parentId,
+          position,
+          width,
+          height,
+          configurableTypeAsChild,
+          originalPartId: id,
+          isReversible,
+          isFlipped,
+          ownerId: newOwnerId,
+          canReverseCardOnDeck,
+        },
+        { transaction, returning: true }
       );
-      if (!newPart) return [];
 
-      return properties.map((property) => ({
-        partId: newPart.id,
-        side: property.side,
-        name: property.name,
-        description: property.description,
-        color: property.color,
-        textColor: property.textColor,
-        imageId: property.imageId,
-      }));
+      const partProperties = masterPartProperties.filter(
+        ({ partId }) => partId === id
+      );
+      partProperties.map(
+        async ({ side, name, description, color, textColor, imageId }) => {
+          await PartPropertyModel.create(
+            {
+              partId: versionPart.id,
+              side,
+              name,
+              description,
+              color,
+              textColor,
+              imageId,
+            },
+            { transaction }
+          );
+        }
+      );
     }
   );
 
-  await PartPropertyModel.bulkCreate(newPartProperties, { transaction });
-
-  // 親パーツがあるパーツを更新する
-  const originalPartsWithParent = originalParts.filter(
-    (part) => part.parentId !== null
-  );
-  await Promise.all(
-    originalPartsWithParent.map(async (part) => {
-      const newParentPart = newParts.find(
-        (newPart) => newPart.originalPartId === part.parentId
-      );
-
-      if (!newParentPart) return null;
-      return PartModel.update(
-        { parentId: newParentPart.id },
-        { where: { originalPartId: part.id }, transaction }
-      );
-    })
-  );
-
-  // オーナーを設定する
-  const originalPartsWithOwner = originalParts.filter(
-    (part) => part.ownerId !== null
-  );
-  await Promise.all(
-    originalPartsWithOwner.map(async (part) => {
-      const newOwner = newPlayers.find(
-        (player) => player.originalPlayerId === part.ownerId
-      );
-
-      if (!newOwner) return null;
-      return PartModel.update(
-        { ownerId: newOwner.id },
-        { where: { originalPartId: part.id }, transaction }
-      );
-    })
-  );
+  return versionPrototype;
 };
 
 /**
- * プロトタイプバージョンを削除する
+ * インスタンスプロトタイプを作成する
  *
- * @param prototypeVersionId - 削除するプロトタイプバージョンID
- * @param prototypeId - プロトタイプID (検証用)
- * @param transaction - トランザクション (オプション)
- * @returns - 削除が成功したかどうかと、エラーメッセージ
+ * @param prototypeGroupId - プロトタイプグループID
+ * @param name - プロトタイプ名
+ * @param transaction - トランザクション
  */
-export const deletePrototypeVersion = async (
-  prototypeVersionId: string,
-  prototypeId: string,
-  transaction?: Transaction
-): Promise<{ success: boolean; message?: string }> => {
-  // バージョンを取得
-  const prototypeVersion =
-    await PrototypeVersionModel.findByPk(prototypeVersionId);
+export const createPrototypeInstance = async ({
+  prototypeGroupId,
+  prototypeVersionId,
+  name,
+  minPlayers,
+  maxPlayers,
+  versionNumber = PROTOTYPE_VERSION.INITIAL,
+  transaction,
+}: {
+  prototypeGroupId: string;
+  prototypeVersionId: string;
+  name: string;
+  minPlayers: number;
+  maxPlayers: number;
+  versionNumber: number;
+  transaction: Transaction;
+}) => {
+  // インスタンスプロトタイプの作成
+  const instancePrototype = await PrototypeModel.create(
+    {
+      prototypeGroupId,
+      name,
+      type: 'INSTANCE',
+      minPlayers,
+      maxPlayers,
+      versionNumber,
+    },
+    { transaction }
+  );
 
-  // 存在しないかIDが一致しない場合
-  if (!prototypeVersion || prototypeVersion.prototypeId !== prototypeId) {
-    return { success: false, message: 'バージョンが見つかりません' };
+  // バージョンプロトタイプの取得
+  const versionPrototype = await PrototypeModel.findByPk(prototypeVersionId);
+  if (!versionPrototype) {
+    throw new Error('バージョンプロトタイプが見つかりません');
   }
 
-  // マスターバージョン（0.0.0）は削除できない
-  if (prototypeVersion.versionNumber === '0.0.0') {
-    return { success: false, message: 'マスターバージョンは削除できません' };
-  }
-
-  await PrototypeVersionModel.destroy({
-    where: { id: prototypeVersionId },
-    transaction,
+  // バージョンプロトタイプのプレイヤーの取得
+  const versionPlayers = await PlayerModel.findAll({
+    where: {
+      prototypeId: versionPrototype.id,
+    },
   });
 
-  return { success: true, message: 'バージョンを削除しました' };
+  // プレイヤーの作成
+  const instancePlayers = await PlayerModel.bulkCreate(
+    versionPlayers.map(({ userId, playerName, id }) => ({
+      prototypeId: instancePrototype.id,
+      userId,
+      playerName,
+      originalPlayerId: id,
+    })),
+    { transaction, returning: true }
+  );
+
+  // バージョンプロトタイプのパーツの取得
+  const versionParts = await PartModel.findAll({
+    where: {
+      prototypeId: versionPrototype.id,
+    },
+  });
+
+  // バージョンプロトタイプのパーツのプロパティの取得
+  const versionPartProperties = await PartPropertyModel.findAll({
+    where: {
+      partId: versionParts.map((part) => part.id),
+    },
+  });
+
+  // パーツの作成
+  versionParts.map(
+    async ({
+      id,
+      type,
+      parentId,
+      position,
+      width,
+      height,
+      configurableTypeAsChild,
+      isReversible,
+      isFlipped,
+      canReverseCardOnDeck,
+      ownerId,
+    }) => {
+      const newOwnerId = instancePlayers.find(
+        (player) => player.originalPlayerId === ownerId
+      )?.id;
+
+      const instancePart = await PartModel.create(
+        {
+          type,
+          prototypeId: instancePrototype.id,
+          parentId,
+          position,
+          width,
+          height,
+          configurableTypeAsChild,
+          originalPartId: id,
+          isReversible,
+          isFlipped,
+          ownerId: newOwnerId,
+          canReverseCardOnDeck,
+        },
+        { transaction, returning: true }
+      );
+
+      const partProperties = versionPartProperties.filter(
+        ({ partId }) => partId === id
+      );
+      partProperties.map(
+        async ({ side, name, description, color, textColor, imageId }) => {
+          await PartPropertyModel.create(
+            {
+              partId: instancePart.id,
+              side,
+              name,
+              description,
+              color,
+              textColor,
+              imageId,
+            },
+            { transaction }
+          );
+        }
+      );
+    }
+  );
+
+  return instancePrototype;
 };

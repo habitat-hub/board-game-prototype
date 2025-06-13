@@ -15,7 +15,7 @@ import {
 } from 'react-icons/gi';
 import { IoArrowBack, IoMenu } from 'react-icons/io5';
 
-import { usePrototypes } from '@/api/hooks/usePrototypes';
+import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
 import { Part, PartProperty, Player, User } from '@/api/types';
 import Dropdown from '@/components/atoms/Dropdown';
 import TextIconButton from '@/components/atoms/TextIconButton';
@@ -27,7 +27,7 @@ export default function LeftSidebar({
   prototypeName,
   prototypeVersionNumber,
   prototypeType,
-  isMasterPreview,
+  isVersionPrototype,
   groupId,
   players,
   onAddPart,
@@ -35,11 +35,11 @@ export default function LeftSidebar({
   // プロトタイプ名
   prototypeName: string;
   // プロトタイプバージョン番号（プレビューモード時のみ使用）
-  prototypeVersionNumber?: string;
+  prototypeVersionNumber?: number;
   // プロトタイプタイプ（'preview'または'edit'）
-  prototypeType: 'PREVIEW' | 'EDIT';
+  prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE';
   // マスタープレビューかどうか（プレビューモード時のみ使用）
-  isMasterPreview: boolean;
+  isVersionPrototype: boolean;
   // グループID
   groupId: string;
   // プレイヤー
@@ -48,7 +48,7 @@ export default function LeftSidebar({
   onAddPart?: ({ part, properties }: AddPartProps) => void;
 }) {
   const { dispatch } = usePartReducer();
-  const { getAccessUsersByGroup } = usePrototypes();
+  const { getAccessUsersByGroup } = usePrototypeGroup();
   const router = useRouter();
 
   // 左サイドバーが最小化されているか
@@ -61,15 +61,15 @@ export default function LeftSidebar({
     prototypeName,
     prototypeVersionNumber,
     prototypeType,
-    isMasterPreview,
+    isVersionPrototype,
     groupId,
     isMinimized,
     onToggle,
   }: {
     prototypeName: string;
-    prototypeVersionNumber?: string;
-    prototypeType: 'PREVIEW' | 'EDIT';
-    isMasterPreview: boolean;
+    prototypeVersionNumber?: number;
+    prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE';
+    isVersionPrototype: boolean;
     groupId: string;
     isMinimized: boolean;
     onToggle: () => void;
@@ -90,15 +90,15 @@ export default function LeftSidebar({
           >
             {prototypeName}
           </h2>
-          {prototypeVersionNumber && prototypeType === 'PREVIEW' && (
+          {prototypeVersionNumber && prototypeType === 'VERSION' && (
             <span className="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-600 rounded-md min-w-1 border border-blue-600 flex-shrink-0">
-              {isMasterPreview
+              {isVersionPrototype
                 ? 'プレビュー'
-                : `プレイルーム${prototypeVersionNumber.replace('.0.0', '')}`}
+                : `プレイルーム${prototypeVersionNumber}`}
             </span>
           )}
         </div>
-        {(prototypeType === 'EDIT' || !isMasterPreview) && (
+        {(prototypeType === 'MASTER' || !isVersionPrototype) && (
           <button
             onClick={onToggle}
             aria-label={isMinimized ? 'サイドバーを展開' : 'サイドバーを最小化'}
@@ -113,12 +113,12 @@ export default function LeftSidebar({
 
   // グループにアクセス可能なユーザーを取得（プレビューモード時のみ）
   useEffect(() => {
-    if (prototypeType === 'PREVIEW' && !isMasterPreview) {
+    if (prototypeType === 'VERSION' && !isVersionPrototype) {
       getAccessUsersByGroup(groupId).then((response) => {
         setAccessibleUsers(response);
       });
     }
-  }, [groupId, getAccessUsersByGroup, prototypeType, isMasterPreview]);
+  }, [groupId, getAccessUsersByGroup, prototypeType, isVersionPrototype]);
 
   /**
    * パーツを作成する（編集モード時のみ）
@@ -141,7 +141,7 @@ export default function LeftSidebar({
     // 新しいパーツ
     const newPart: Omit<
       Part,
-      'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'
+      'id' | 'prototypeId' | 'order' | 'createdAt' | 'updatedAt'
     > = {
       type: partType,
       parentId: undefined,
@@ -199,7 +199,7 @@ export default function LeftSidebar({
 
   // プレビューモードのコンテンツをレンダリング
   const renderPreviewContent = () => {
-    if (isMasterPreview) return null;
+    if (isVersionPrototype) return null;
 
     return (
       <>
@@ -304,7 +304,7 @@ export default function LeftSidebar({
         prototypeName={prototypeName}
         prototypeVersionNumber={prototypeVersionNumber}
         prototypeType={prototypeType}
-        isMasterPreview={isMasterPreview}
+        isVersionPrototype={isVersionPrototype}
         groupId={groupId}
         isMinimized={isLeftSidebarMinimized}
         onToggle={toggleSidebar}
@@ -312,8 +312,8 @@ export default function LeftSidebar({
 
       {!isLeftSidebarMinimized && (
         <>
-          {prototypeType === 'PREVIEW' && renderPreviewContent()}
-          {prototypeType === 'EDIT' && renderEditContent()}
+          {prototypeType === 'VERSION' && renderPreviewContent()}
+          {prototypeType === 'MASTER' && renderEditContent()}
         </>
       )}
     </div>
