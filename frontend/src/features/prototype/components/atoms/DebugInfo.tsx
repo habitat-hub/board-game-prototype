@@ -85,8 +85,25 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
             <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
               <strong>Camera</strong>
             </div>
-            <div>X: {Math.round(camera.x)}</div>
-            <div>Y: {Math.round(camera.y)}</div>
+            <div className="mb-1">
+              <div className="text-xs text-gray-300 mb-0.5">
+                Top-Left Position:
+              </div>
+              <div>X: {Math.round(camera.x)}</div>
+              <div>Y: {Math.round(camera.y)}</div>
+            </div>
+            <div className="mb-1">
+              <div className="text-xs text-gray-300 mb-0.5">
+                Center Position:
+              </div>
+              <div>
+                X: {Math.round(camera.x + window.innerWidth / 2 / camera.scale)}
+              </div>
+              <div>
+                Y:{' '}
+                {Math.round(camera.y + window.innerHeight / 2 / camera.scale)}
+              </div>
+            </div>
             <div>Zoom: {camera.scale.toFixed(2)}x</div>
 
             <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
