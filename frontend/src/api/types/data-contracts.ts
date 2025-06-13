@@ -90,7 +90,7 @@ export interface PartProperty {
 export interface Player {
   id: number;
   /** @format uuid */
-  prototypeVersionId: string;
+  prototypeId: string;
   /** @format uuid */
   userId?: string;
   playerName: string;
@@ -103,15 +103,12 @@ export interface Prototype {
   /** @format uuid */
   id: string;
   /** @format uuid */
-  userId: string;
+  prototypeGroupId: string;
   name: string;
-  type: 'EDIT' | 'PREVIEW';
-  /** @format uuid */
-  masterPrototypeId?: string;
-  /** @format uuid */
-  groupId: string;
+  type: 'MASTER' | 'VERSION' | 'INSTANCE';
   minPlayers: number;
   maxPlayers: number;
+  versionNumber: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -120,15 +117,7 @@ export interface PrototypeGroup {
   /** @format uuid */
   id: string;
   /** @format uuid */
-  prototypeId: string;
-}
-
-export interface PrototypeVersion {
-  /** @format uuid */
-  id: string;
-  /** @format uuid */
-  prototypeId: string;
-  versionNumber: string;
+  userId: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -169,16 +158,9 @@ export type ImagesDetailData = File;
 
 export type ImagesDeleteData = any;
 
-export type PrototypesListData = Prototype[];
-
-export interface PrototypesCreatePayload {
-  name?: string;
-  playerCount?: number;
+export interface PrototypesDetailData {
+  prototype?: Prototype;
 }
-
-export type PrototypesCreateData = Prototype;
-
-export type PrototypesDetailData = Prototype;
 
 export interface PrototypesUpdatePayload {
   name?: string;
@@ -190,38 +172,37 @@ export type PrototypesUpdateData = Prototype;
 
 export type PrototypesDeleteData = SuccessResponse;
 
-export interface PrototypesVersionsListData {
-  prototype: Prototype;
-  versions: PrototypeVersion[];
+export type PrototypeGroupsListData = PrototypeGroup[];
+
+export interface PrototypeGroupsCreatePayload {
+  name?: string;
+  playerCount?: number;
 }
 
-export type PrototypesGroupsDetailData = {
-  prototype: Prototype;
-  versions: PrototypeVersion[];
-}[];
+export type PrototypeGroupsCreateData = PrototypeGroup;
 
-export type PrototypesGroupsAccessUsersListData = User[];
+export type PrototypeGroupsVersionCreateData = Prototype;
 
-export interface PrototypesGroupsInviteCreatePayload {
+export type PrototypeGroupsInstanceCreateData = Prototype;
+
+export interface PrototypeGroupsDetailData {
+  prototypeGroup?: PrototypeGroup;
+  prototypes?: Prototype[];
+}
+
+export type PrototypeGroupsDeleteData = SuccessResponse;
+
+export type PrototypeGroupsAccessUsersListData = User[];
+
+export interface PrototypeGroupsInviteCreatePayload {
   guestIds?: string[];
 }
 
-export type PrototypesGroupsInviteCreateData = SuccessResponse;
+export type PrototypeGroupsInviteCreateData = SuccessResponse;
 
-export type PrototypesGroupsInviteDeleteData = SuccessResponse;
+export type PrototypeGroupsInviteDeleteData = SuccessResponse;
 
-export type PrototypesDuplicateCreateData = SuccessResponse;
-
-export type PrototypesPreviewCreateData = Prototype;
-
-export interface PrototypesVersionsCreatePayload {
-  /** 新しいバージョンの説明 */
-  description?: string;
-}
-
-export type PrototypesVersionsCreateData = SuccessResponse;
-
-export type PrototypesVersionsDeleteData = SuccessResponse;
+export type PrototypeGroupsDuplicateCreateData = SuccessResponse;
 
 export interface UsersSearchListParams {
   /** 検索するユーザー名 */

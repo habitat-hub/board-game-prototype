@@ -1,13 +1,13 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
-import PrototypeVersionModel from './PrototypeVersion';
+import PrototypeModel from './Prototype';
 import UserModel from './User';
 
 class PlayerModel extends Model {
   // ID
   public id!: number;
-  // プロトタイプバージョンID
-  public prototypeVersionId!: string;
+  // プロトタイプID
+  public prototypeId!: string;
   // ユーザーID
   public userId!: number | null;
   // プレイヤー名
@@ -23,7 +23,7 @@ PlayerModel.init(
       autoIncrement: true,
       primaryKey: true,
     },
-    prototypeVersionId: {
+    prototypeId: {
       type: DataTypes.UUID,
       allowNull: false,
     },
@@ -49,18 +49,18 @@ PlayerModel.init(
         fields: ['id'],
       },
       {
-        fields: ['prototypeVersionId'],
+        fields: ['prototypeId'],
       },
     ],
   }
 );
 
-PlayerModel.belongsTo(PrototypeVersionModel, {
-  foreignKey: 'prototypeVersionId',
+PlayerModel.belongsTo(PrototypeModel, {
+  foreignKey: 'prototypeId',
   onDelete: 'CASCADE',
 });
-PrototypeVersionModel.hasMany(PlayerModel, {
-  foreignKey: 'prototypeVersionId',
+PrototypeModel.hasMany(PlayerModel, {
+  foreignKey: 'prototypeId',
   onDelete: 'CASCADE',
 });
 

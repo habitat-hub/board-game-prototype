@@ -142,7 +142,7 @@ export const swaggerSchemas = {
                         "area"
                   ]
             },
-            "prototypeVersionId": {
+            "prototypeId": {
                   "type": "string",
                   "format": "uuid"
             },
@@ -193,7 +193,7 @@ export const swaggerSchemas = {
       "required": [
             "id",
             "type",
-            "prototypeVersionId",
+            "prototypeId",
             "position",
             "width",
             "height",
@@ -256,7 +256,7 @@ export const swaggerSchemas = {
             "id": {
                   "type": "integer"
             },
-            "prototypeVersionId": {
+            "prototypeId": {
                   "type": "string",
                   "format": "uuid"
             },
@@ -279,7 +279,7 @@ export const swaggerSchemas = {
       },
       "required": [
             "id",
-            "prototypeVersionId",
+            "prototypeId",
             "playerName",
             "createdAt",
             "updatedAt"
@@ -292,7 +292,7 @@ export const swaggerSchemas = {
                   "type": "string",
                   "format": "uuid"
             },
-            "userId": {
+            "prototypeGroupId": {
                   "type": "string",
                   "format": "uuid"
             },
@@ -302,18 +302,18 @@ export const swaggerSchemas = {
             "type": {
                   "type": "string",
                   "enum": [
-                        "EDIT",
-                        "PREVIEW"
+                        "MASTER",
+                        "VERSION",
+                        "INSTANCE"
                   ]
-            },
-            "groupId": {
-                  "type": "string",
-                  "format": "uuid"
             },
             "minPlayers": {
                   "type": "integer"
             },
             "maxPlayers": {
+                  "type": "integer"
+            },
+            "versionNumber": {
                   "type": "integer"
             },
             "createdAt": {
@@ -325,12 +325,12 @@ export const swaggerSchemas = {
       },
       "required": [
             "id",
-            "userId",
+            "prototypeGroupId",
             "name",
             "type",
-            "groupId",
             "minPlayers",
             "maxPlayers",
+            "versionNumber",
             "createdAt",
             "updatedAt"
       ]
@@ -342,29 +342,9 @@ export const swaggerSchemas = {
                   "type": "string",
                   "format": "uuid"
             },
-            "prototypeId": {
+            "userId": {
                   "type": "string",
                   "format": "uuid"
-            }
-      },
-      "required": [
-            "id",
-            "prototypeId"
-      ]
-},
-      PrototypeVersion: {
-      "type": "object",
-      "properties": {
-            "id": {
-                  "type": "string",
-                  "format": "uuid"
-            },
-            "prototypeId": {
-                  "type": "string",
-                  "format": "uuid"
-            },
-            "versionNumber": {
-                  "type": "string"
             },
             "createdAt": {
                   "type": "string"
@@ -375,8 +355,7 @@ export const swaggerSchemas = {
       },
       "required": [
             "id",
-            "prototypeId",
-            "versionNumber",
+            "userId",
             "createdAt",
             "updatedAt"
       ]

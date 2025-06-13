@@ -7,12 +7,16 @@ import AccessModel from '../models/Access';
  * @param groupId - グループID
  * @returns アクセス可能なユーザー
  */
-export async function getAccessibleUsers({ groupId }: { groupId: string }) {
+export async function getAccessibleUsers({
+  prototypeGroupId,
+}: {
+  prototypeGroupId: string;
+}) {
   // グループへのアクセス権を持つユーザー
   const accessibleUsers = await UserModel.findAll({
     include: {
       model: AccessModel,
-      where: { prototypeGroupId: groupId },
+      where: { prototypeGroupId },
     },
   });
 

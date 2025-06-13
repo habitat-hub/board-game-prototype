@@ -3,7 +3,7 @@ import PartModel from '../models/Part';
 import PartPropertyModel from '../models/PartProperty';
 import PlayerModel from '../models/Player';
 import { UPDATABLE_PROTOTYPE_FIELDS } from '../const';
-import PrototypeVersionModel from '../models/PrototypeVersion';
+import PrototypeModel from '../models/Prototype';
 import {
   getOverLappingPart,
   getUnderLappingPart,
@@ -83,7 +83,7 @@ function handleJoinPrototype(socket: Socket) {
     }) => {
       try {
         const prototypeVersion =
-          await PrototypeVersionModel.findByPk(prototypeVersionId);
+          await PrototypeModel.findByPk(prototypeVersionId);
         if (!prototypeVersion) return;
 
         // socket.dataにprototypeVersionIdとuserIdを設定

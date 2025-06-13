@@ -1,17 +1,21 @@
 import { Op } from 'sequelize';
 import AccessModel from '../models/Access';
 import PartModel from '../models/Part';
-import PrototypeModel from '../models/Prototype';
 import PrototypeGroupModel from '../models/PrototypeGroup';
 import UserModel from '../models/User';
+import PrototypeModel from '../models/Prototype';
 
 /**
- * アクセス可能なプロトタイプを取得する
+ * アクセス可能なプロトタイプグループを取得する
  *
  * @param userId - ユーザーID
- * @returns アクセス可能なプロトタイプ
+ * @returns アクセス可能なプロトタイプグループ
  */
-export async function getAccessiblePrototypes({ userId }: { userId: string }) {
+export async function getAccessiblePrototypeGroups({
+  userId,
+}: {
+  userId: string;
+}) {
   // アクセス権
   const accesses = await AccessModel.findAll({
     include: {
@@ -21,18 +25,31 @@ export async function getAccessiblePrototypes({ userId }: { userId: string }) {
   });
   // アクセス可能なグループID
   const accessibleGroupIds = accesses.map((access) => access.prototypeGroupId);
-  // アクセス可能なグループ
-  const accessibleGroups = await PrototypeGroupModel.findAll({
+  // アクセス可能なプロトタイプグループ
+  return await PrototypeGroupModel.findAll({
     where: { id: { [Op.in]: accessibleGroupIds } },
   });
-  // アクセス可能なプロトタイプID
-  const accessiblePrototypeIds = accessibleGroups.map(
-    (group) => group.prototypeId
-  );
-  // アクセス可能なプロトタイプ
-  return await PrototypeModel.findAll({
-    where: { id: { [Op.in]: accessiblePrototypeIds } },
+}
+
+/**
+ * アクセス可能なプロトタイプを取得する
+ *
+ * @param userId - ユーザーID
+ * @returns アクセス可能なプロトタイプ
+ */
+export async function getAccessiblePrototypes({ userId }: { userId: string }) {
+  const prototypeGroups = await getAccessiblePrototypeGroups({ userId });
+
+  const prototypes = await PrototypeModel.findAll({
+    where: {
+      prototypeGroupId: { [Op.in]: prototypeGroups.map(({ id }) => id) },
+    },
   });
+
+  return {
+    prototypeGroups,
+    prototypes,
+  };
 }
 
 /**

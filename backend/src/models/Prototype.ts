@@ -1,22 +1,22 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
-import User from './User';
+import PrototypeGroupModel from './PrototypeGroup';
 
 class PrototypeModel extends Model {
   // ID
   public id!: string;
-  // ユーザーID
-  public userId!: string;
-  // 名前
+  // プロトタイプグループID
+  public prototypeGroupId!: string;
+  // プロトタイプ名
   public name!: string;
-  // タイプ
-  public type!: 'EDIT' | 'PREVIEW';
-  // グループID
-  public groupId!: string;
+  // プロトタイプタイプ
+  public type!: 'MASTER' | 'VERSION' | 'INSTANCE';
   // 最小プレイヤー数
   public minPlayers!: number;
   // 最大プレイヤー数
   public maxPlayers!: number;
+  // バージョン番号
+  public versionNumber!: number;
 }
 
 PrototypeModel.init(
@@ -27,7 +27,7 @@ PrototypeModel.init(
       primaryKey: true,
       allowNull: false,
     },
-    userId: {
+    prototypeGroupId: {
       type: DataTypes.UUID,
       allowNull: false,
     },
@@ -36,11 +36,7 @@ PrototypeModel.init(
       allowNull: false,
     },
     type: {
-      type: DataTypes.ENUM('EDIT', 'PREVIEW'),
-      allowNull: false,
-    },
-    groupId: {
-      type: DataTypes.UUID,
+      type: DataTypes.ENUM('MASTER', 'VERSION', 'INSTANCE'),
       allowNull: false,
     },
     minPlayers: {
@@ -48,6 +44,10 @@ PrototypeModel.init(
       allowNull: false,
     },
     maxPlayers: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    versionNumber: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
@@ -61,13 +61,20 @@ PrototypeModel.init(
         fields: ['id'],
       },
       {
-        fields: ['userId'],
+        fields: ['prototypeGroupId'],
       },
     ],
   }
 );
 
-PrototypeModel.belongsTo(User, { foreignKey: 'userId', onDelete: 'CASCADE' });
-User.hasMany(PrototypeModel, { foreignKey: 'userId', onDelete: 'CASCADE' });
+// PrototypeGroupとの関連付け
+PrototypeModel.belongsTo(PrototypeGroupModel, {
+  foreignKey: 'prototypeGroupId',
+  onDelete: 'CASCADE',
+});
+PrototypeGroupModel.hasMany(PrototypeModel, {
+  foreignKey: 'prototypeGroupId',
+  onDelete: 'CASCADE',
+});
 
 export default PrototypeModel;
