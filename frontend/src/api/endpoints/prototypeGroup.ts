@@ -4,7 +4,9 @@ import {
   PrototypeGroup,
   PrototypeGroupsCreatePayload,
   PrototypeGroupsInstanceCreateData,
+  PrototypeGroupsInviteCreatePayload,
   PrototypeGroupsVersionCreateData,
+  User,
 } from '../types';
 
 export const prototypeGroupService = {
@@ -76,6 +78,41 @@ export const prototypeGroupService = {
   deletePrototypeGroup: async (prototypeGroupId: string): Promise<void> => {
     const response = await axiosInstance.delete(
       `/api/prototype-groups/${prototypeGroupId}`
+    );
+    return response.data;
+  },
+  /**
+   * プロトタイプグループの参加ユーザー取得
+   */
+  getAccessUsersByGroup: async (prototypeGroupId: string): Promise<User[]> => {
+    const response = await axiosInstance.get(
+      `/api/prototype-groups/${prototypeGroupId}/access-users`
+    );
+    return response.data;
+  },
+  /**
+   * プロトタイプグループに招待する
+   */
+  inviteToPrototypeGroup: async (
+    prototypeGroupId: string,
+    data: PrototypeGroupsInviteCreatePayload
+  ): Promise<void> => {
+    const response = await axiosInstance.post(
+      `/api/prototype-groups/${prototypeGroupId}/invite`,
+      data
+    );
+    return response.data;
+  },
+
+  /**
+   * プロトタイプグループから招待を削除する
+   */
+  deleteInviteFromPrototypeGroup: async (
+    prototypeGroupId: string,
+    guestId: string
+  ): Promise<void> => {
+    const response = await axiosInstance.delete(
+      `/api/prototype-groups/${prototypeGroupId}/invite/${guestId}`
     );
     return response.data;
   },

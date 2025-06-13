@@ -974,6 +974,27 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "playerCount": {
+                    "type": "integer"
+                  },
+                  "versionNumber": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "プロトタイプバージョンを作成しました",
@@ -1035,6 +1056,27 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "playerCount": {
+                    "type": "integer"
+                  },
+                  "versionNumber": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "プロトタイプインスタンスを作成しました",
@@ -1162,7 +1204,7 @@
         }
       }
     },
-    "/api/prototype-groups/{prototypeGroupId}/accessUsers": {
+    "/api/prototype-groups/{prototypeGroupId}/access-users": {
       "get": {
         "tags": [
           "PrototypeGroups"

@@ -5,6 +5,7 @@ import {
   PrototypeGroupsCreatePayload,
   PrototypeGroupsVersionCreateData,
   PrototypeGroupsInstanceCreateData,
+  PrototypeGroupsInviteCreatePayload,
 } from '@/api/types';
 
 export const usePrototypeGroup = () => {
@@ -73,12 +74,56 @@ export const usePrototypeGroup = () => {
     return await prototypeGroupService.deletePrototypeGroup(prototypeGroupId);
   }, []);
 
+  /**
+   * プロトタイプグループの参加ユーザー取得
+   */
+  const getAccessUsersByGroup = useCallback(
+    async (prototypeGroupId: string) => {
+      return await prototypeGroupService.getAccessUsersByGroup(
+        prototypeGroupId
+      );
+    },
+    []
+  );
+
+  /**
+   * プロトタイプグループに招待する
+   */
+  const inviteToPrototypeGroup = useCallback(
+    async (
+      prototypeGroupId: string,
+      data: PrototypeGroupsInviteCreatePayload
+    ) => {
+      return await prototypeGroupService.inviteToPrototypeGroup(
+        prototypeGroupId,
+        data
+      );
+    },
+    []
+  );
+
+  /**
+   * プロトタイプグループから招待を削除する
+   */
+  const deleteInviteFromPrototypeGroup = useCallback(
+    async (prototypeGroupId: string, guestId: string) => {
+      return await prototypeGroupService.deleteInviteFromPrototypeGroup(
+        prototypeGroupId,
+        guestId
+      );
+    },
+    []
+  );
+
   return {
     getPrototypeGroups,
     createPrototypeGroup,
     createPrototypeVersion,
     createPrototypeInstance,
     getPrototypeGroup,
+    getAccessUsersByGroup,
+    inviteToPrototypeGroup,
+    deleteInviteFromPrototypeGroup,
     deletePrototypeGroup,
   };
 };

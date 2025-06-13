@@ -96,7 +96,10 @@ export async function checkPrototypeAccess(
   try {
     const prototypeId = req.params.prototypeId;
     // アクセス可能なプロトタイプ
-    const { prototypes } = await getAccessiblePrototypes({ userId });
+    const accessiblePrototypes = await getAccessiblePrototypes({ userId });
+    const prototypes = accessiblePrototypes.flatMap(
+      ({ prototypes }) => prototypes
+    );
     // 対象のプロトタイプがアクセス可能な場合
     if (prototypes.some(({ id }) => id === prototypeId)) {
       return next();

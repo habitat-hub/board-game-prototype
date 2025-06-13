@@ -184,7 +184,19 @@ export interface PrototypeGroupsCreatePayload {
 
 export type PrototypeGroupsCreateData = PrototypeGroup;
 
+export interface PrototypeGroupsVersionCreatePayload {
+  name?: string;
+  playerCount?: number;
+  versionNumber?: number;
+}
+
 export type PrototypeGroupsVersionCreateData = Prototype;
+
+export interface PrototypeGroupsInstanceCreatePayload {
+  name?: string;
+  playerCount?: number;
+  versionNumber?: number;
+}
 
 export type PrototypeGroupsInstanceCreateData = Prototype;
 

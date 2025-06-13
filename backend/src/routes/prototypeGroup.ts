@@ -143,6 +143,19 @@ router.post('/', async (req: Request, res: Response) => {
  *         description: プロトタイプグループのID
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               playerCount:
+ *                 type: integer
+ *               versionNumber:
+ *                 type: integer
  *     responses:
  *       '200':
  *         description: プロトタイプバージョンを作成しました
@@ -216,6 +229,19 @@ router.post(
  *         description: プロトタイプバージョンのID
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               playerCount:
+ *                 type: integer
+ *               versionNumber:
+ *                 type: integer
  *     responses:
  *       '200':
  *         description: プロトタイプインスタンスを作成しました
@@ -390,7 +416,7 @@ router.delete(
 
 /**
  * @swagger
- * /api/prototype-groups/{prototypeGroupId}/accessUsers:
+ * /api/prototype-groups/{prototypeGroupId}/access-users:
  *   get:
  *     tags: [PrototypeGroups]
  *     summary: プロトタイプグループへのアクセス権を取得
@@ -413,7 +439,7 @@ router.delete(
  *                 $ref: '#/components/schemas/User'
  */
 router.get(
-  '/:prototypeGroupId/accessUsers',
+  '/:prototypeGroupId/access-users',
   checkPrototypeGroupAccess,
   async (req: Request, res: Response) => {
     const prototypeGroupId = req.params.prototypeGroupId;

@@ -13,8 +13,9 @@ import {
 import { HiOutlinePencilAlt } from 'react-icons/hi';
 import { IoAdd, IoArrowBack, IoTrash } from 'react-icons/io5';
 
+import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
 import { usePrototypes } from '@/api/hooks/usePrototypes';
-import { Prototype, PrototypeVersion, User } from '@/api/types';
+import { Prototype, PrototypeGroup, User } from '@/api/types';
 import AccessUsersCard from '@/features/prototype/components/molecules/AccessUsersCard';
 import CreateVersionButton from '@/features/prototype/components/molecules/CreateVersionButton';
 import PlayRoomCard from '@/features/prototype/components/molecules/PlayRoomCard';
@@ -29,16 +30,13 @@ import formatDate from '@/utils/dateFormat';
 const GroupPrototypeList: React.FC = () => {
   const router = useRouter();
   const { user } = useUser();
+  const { deletePrototype, updatePrototype } = usePrototypes();
   const {
-    getPrototypesByGroup,
-    createPreview,
-    createVersion,
-    deletePrototype,
-    deleteVersion,
-    updatePrototype,
+    getPrototypeGroup,
     getAccessUsersByGroup,
-    duplicatePrototype,
-  } = usePrototypes();
+    createPrototypeVersion,
+    createPrototypeInstance,
+  } = usePrototypeGroup();
 
   // グループID
   const { groupId } = useParams<{ groupId: string }>();
@@ -56,35 +54,36 @@ const GroupPrototypeList: React.FC = () => {
   const [accessUsers, setAccessUsers] = useState<User[]>([]);
 
   const [prototype, setPrototype] = useState<{
-    // 編集版プロトタイプ
-    edit: {
-      prototype: Prototype;
-      versions: PrototypeVersion[];
-    } | null;
-    // プレビュー版プロトタイプ
-    preview: {
-      prototype: Prototype;
-      versions: PrototypeVersion[];
-    }[];
+    // グループ
+    group: PrototypeGroup | null;
+    // マスター版プロトタイプ
+    master: Prototype | null;
+    // バージョン版プロトタイプ
+    versions: Prototype[];
+    // インスタンス版プロトタイプ
+    instances: Prototype[];
   } | null>(null);
 
   /**
    * プロトタイプを取得する
    */
-  const getPrototypeGroups = useCallback(async () => {
-    const response = await getPrototypesByGroup(groupId);
-    const prototypes = response;
+  const getPrototypes = useCallback(async () => {
+    const { prototypeGroup, prototypes } = await getPrototypeGroup(groupId);
 
-    // 編集版プロトタイプ
-    const edit = prototypes.find((p) => p.prototype.type === 'EDIT');
-    // プレビュー版プロトタイプ
-    const previews = prototypes.filter((p) => p.prototype.type === 'PREVIEW');
+    // マスター版プロトタイプ
+    const master = prototypes.find(({ type }) => type === 'MASTER');
+    // バージョン版プロトタイプ
+    const versions = prototypes.filter(({ type }) => type === 'VERSION');
+    // インスタンス版プロトタイプ
+    const instances = prototypes.filter(({ type }) => type === 'INSTANCE');
 
     setPrototype({
-      edit: edit || null,
-      preview: previews,
+      group: prototypeGroup || null,
+      master: master || null,
+      versions,
+      instances,
     });
-  }, [getPrototypesByGroup, groupId]);
+  }, [getPrototypeGroup, groupId]);
 
   /**
    * グループの参加ユーザーを取得する
@@ -100,17 +99,21 @@ const GroupPrototypeList: React.FC = () => {
 
   // プロトタイプを取得する
   useEffect(() => {
-    getPrototypeGroups();
+    getPrototypes();
     fetchAccessUsers();
-  }, [getPrototypeGroups, fetchAccessUsers]);
+  }, [getPrototypes, fetchAccessUsers]);
 
   /**
    * プレビュー版プロトタイプを作成する
    * @param prototypeVersionId プレビュー版プロトタイプのID
    */
   const handleCreatePreviewPrototype = async (prototypeVersionId: string) => {
-    await createPreview(prototypeVersionId);
-    await getPrototypeGroups();
+    await createPrototypeVersion(prototypeVersionId, {
+      name: 'バージョン',
+      playerCount: 4,
+      versionNumber: 1,
+    });
+    await getPrototypes();
   };
 
   /**
@@ -119,13 +122,15 @@ const GroupPrototypeList: React.FC = () => {
    * @param prototypeVersionId プロトタイプのバージョンのID
    */
   const handleCreateRoom = async (
-    prototypeId: string,
+    prototypeGroupId: string,
     prototypeVersionId: string
   ) => {
-    await createVersion(prototypeId, prototypeVersionId, {
-      description: undefined,
+    await createPrototypeInstance(prototypeGroupId, prototypeVersionId, {
+      name: 'インスタンス',
+      playerCount: 4,
+      versionNumber: 1,
     });
-    await getPrototypeGroups();
+    await getPrototypes();
   };
 
   /**
@@ -134,20 +139,16 @@ const GroupPrototypeList: React.FC = () => {
    */
   const handleDeletePreview = async (prototypeId: string) => {
     await deletePrototype(prototypeId);
-    await getPrototypeGroups();
+    await getPrototypes();
   };
 
   /**
    * ルームを削除する
    * @param prototypeId プロトタイプのID
-   * @param prototypeVersionId プロトタイプのバージョンのID
    */
-  const handleDeleteRoom = async (
-    prototypeId: string,
-    prototypeVersionId: string
-  ) => {
-    await deleteVersion(prototypeId, prototypeVersionId);
-    await getPrototypeGroups();
+  const handleDeleteRoom = async (prototypeId: string) => {
+    await deletePrototype(prototypeId);
+    await getPrototypes();
   };
 
   /**
@@ -172,7 +173,7 @@ const GroupPrototypeList: React.FC = () => {
   const handleNameEditComplete = async () => {
     try {
       // 編集中のプロトタイプがない場合は処理を終了
-      if (!prototype?.edit || !nameEditingId) return;
+      if (!prototype?.master || !nameEditingId) return;
 
       if (editedName.trim() === '') {
         alert('プロトタイプ名を入力してください');
@@ -185,7 +186,7 @@ const GroupPrototypeList: React.FC = () => {
       });
 
       // 一覧を更新
-      await getPrototypeGroups();
+      await getPrototypes();
     } catch (error) {
       console.error('Error updating prototype name:', error);
     } finally {
@@ -222,9 +223,9 @@ const GroupPrototypeList: React.FC = () => {
   const handlePlayersEditComplete = async () => {
     try {
       // 編集中のプロトタイプがない場合は処理を終了
-      if (!prototype?.edit || !playersEditingId) return;
+      if (!prototype?.master || !playersEditingId) return;
 
-      const prototypeToEdit = prototype.edit.prototype;
+      const masterPrototype = prototype.master;
 
       // プレイヤー人数のバリデーション
       if (editedMinPlayers < PLAYERS_MIN || editedMinPlayers > PLAYERS_MAX) {
@@ -245,13 +246,13 @@ const GroupPrototypeList: React.FC = () => {
 
       // プロトタイプのプレイヤー人数を更新
       await updatePrototype(playersEditingId, {
-        name: prototypeToEdit.name,
+        name: masterPrototype.name,
         minPlayers: editedMinPlayers,
         maxPlayers: editedMaxPlayers,
       });
 
       // 一覧を更新
-      await getPrototypeGroups();
+      await getPrototypes();
     } catch (error) {
       console.error('Error updating player count:', error);
     } finally {
@@ -266,7 +267,8 @@ const GroupPrototypeList: React.FC = () => {
    */
   const handleDuplicate = async (prototypeId: string) => {
     try {
-      await duplicatePrototype(prototypeId);
+      // TODO: 複製処理を実装
+      // await duplicatePrototype(prototypeId);
       router.push('/prototypes'); // 複製後はプロトタイプ一覧へ
     } catch (error) {
       console.error('Error duplicating prototype:', error);
@@ -274,7 +276,7 @@ const GroupPrototypeList: React.FC = () => {
   };
 
   // プロトタイプが存在しない場合
-  if (!prototype || !prototype.edit) return null;
+  if (!prototype?.master) return null;
 
   return (
     <div className="max-w-4xl mx-auto mt-16 relative">
@@ -287,7 +289,7 @@ const GroupPrototypeList: React.FC = () => {
           <IoArrowBack className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
         </button>
 
-        {prototype.edit && nameEditingId === prototype.edit.prototype.id ? (
+        {prototype.master && nameEditingId === prototype.master.id ? (
           <form
             className="flex-grow flex items-center justify-center"
             onSubmit={(e) => {
@@ -313,15 +315,15 @@ const GroupPrototypeList: React.FC = () => {
         ) : (
           <div className="flex-grow flex items-center justify-center">
             <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
-              {prototype.edit?.prototype.name}
+              {prototype.master.name}
             </h1>
-            {prototype.edit && (
+            {prototype.master && (
               <button
                 onClick={() =>
-                  prototype.edit &&
+                  prototype.master &&
                   handleNameEditToggle(
-                    prototype.edit.prototype.id,
-                    prototype.edit.prototype.name
+                    prototype.master.id,
+                    prototype.master.name
                   )
                 }
                 className="ml-3 p-2 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors"
@@ -338,14 +340,13 @@ const GroupPrototypeList: React.FC = () => {
       <div className="mb-6 p-6 overflow-visible rounded-xl bg-gradient-to-r from-content via-content to-content-secondary shadow-lg border border-wood-lightest/30">
         <h2 className="text-xl font-bold text-wood-darkest mb-4 border-b border-wood-light/30 pb-2 flex justify-between items-center">
           <span>このプロトタイプについて</span>
-          {prototype.edit && (
+          {prototype.master && (
             <div className="flex items-center gap-2">
-              {user?.id === prototype.edit.prototype.userId ? (
+              {user?.id === prototype?.group?.userId ? (
                 <>
                   <button
                     onClick={() =>
-                      prototype.edit &&
-                      handleDuplicate(prototype.edit.prototype.id)
+                      prototype.master && handleDuplicate(prototype.master.id)
                     }
                     className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/70 text-wood-dark hover:text-header rounded-md hover:bg-white transition-colors border border-wood-light/30"
                     title="プロトタイプ複製"
@@ -355,10 +356,8 @@ const GroupPrototypeList: React.FC = () => {
                   </button>
                   <button
                     onClick={() =>
-                      prototype.edit &&
-                      router.push(
-                        `/prototypes/${prototype.edit.prototype.id}/delete`
-                      )
+                      prototype.master &&
+                      router.push(`/prototypes/${prototype.master.id}/delete`)
                     }
                     className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/70 text-wood-dark hover:text-red-600 rounded-md hover:bg-white transition-colors border border-wood-light/30"
                     title="プロトタイプ削除"
@@ -396,8 +395,7 @@ const GroupPrototypeList: React.FC = () => {
               プレイヤー人数
             </h3>
 
-            {prototype.edit &&
-            playersEditingId === prototype.edit.prototype.id ? (
+            {prototype.master && playersEditingId === prototype.master.id ? (
               <form
                 className="flex items-center gap-2"
                 onSubmit={(e) => {
@@ -444,18 +442,17 @@ const GroupPrototypeList: React.FC = () => {
               <div className="flex items-center">
                 <FaUsers className="h-4 w-4 mr-2 text-wood-dark" />
                 <span className="text-2xl font-semibold text-wood-darkest">
-                  {prototype.edit.prototype.minPlayers ===
-                  prototype.edit.prototype.maxPlayers
-                    ? `${prototype.edit.prototype.minPlayers}人`
-                    : `${prototype.edit.prototype.minPlayers}〜${prototype.edit.prototype.maxPlayers}人`}
+                  {prototype.master.minPlayers === prototype.master.maxPlayers
+                    ? `${prototype.master.minPlayers}人`
+                    : `${prototype.master.minPlayers}〜${prototype.master.maxPlayers}人`}
                 </span>
                 <button
                   onClick={() =>
-                    prototype.edit &&
+                    prototype.master &&
                     handlePlayersEditToggle(
-                      prototype.edit.prototype.id,
-                      prototype.edit.prototype.minPlayers,
-                      prototype.edit.prototype.maxPlayers
+                      prototype.master.id,
+                      prototype.master.minPlayers,
+                      prototype.master.maxPlayers
                     )
                   }
                   className="ml-3 p-1.5 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-all"
@@ -471,7 +468,7 @@ const GroupPrototypeList: React.FC = () => {
           <AccessUsersCard
             accessUsers={accessUsers}
             groupId={groupId}
-            prototypeOwnerId={prototype.edit?.prototype.userId}
+            prototypeOwnerId={prototype?.group?.userId}
           />
 
           {/* 作成日時カード - クリック不可でホバーエフェクトなし */}
@@ -480,7 +477,7 @@ const GroupPrototypeList: React.FC = () => {
               作成日時
             </h3>
             <p className="text-2xl font-semibold text-wood-darkest">
-              {formatDate(prototype.edit.prototype.createdAt, true)}
+              {formatDate(prototype.master.createdAt, true)}
             </p>
           </div>
         </div>
@@ -489,10 +486,8 @@ const GroupPrototypeList: React.FC = () => {
         <div className="flex flex-col gap-4 mt-6">
           <button
             onClick={() => {
-              if (!prototype.edit) return;
-              router.push(
-                `/prototypes/${prototype.edit.prototype.id}/versions/${prototype.edit.versions[0].id}/edit`
-              );
+              if (!prototype.master) return;
+              router.push(`/prototypes/${prototype.master.id}/edit`);
             }}
             className="bg-gradient-to-r from-header/90 to-header-light/90 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-header/20 group w-full"
             title="プロトタイプ編集"
@@ -520,28 +515,28 @@ const GroupPrototypeList: React.FC = () => {
           <div className="flex justify-start w-full mb-6">
             <CreateVersionButton
               onClick={() => {
-                if (!prototype.edit) return;
-                handleCreatePreviewPrototype(prototype.edit.prototype.id);
+                if (!prototype.master) return;
+                handleCreatePreviewPrototype(prototype.master.id);
               }}
             />
           </div>
 
-          {prototype.preview.length === 0 ? (
+          {prototype.versions.length === 0 ? (
             <div className="text-center py-8 text-wood-dark">
               <p className="mb-2">バージョン・プレイルームがありません</p>
             </div>
           ) : (
-            [...prototype.preview]
+            [...prototype.versions]
               .sort(
                 (a, b) =>
-                  new Date(b.prototype.createdAt).getTime() -
-                  new Date(a.prototype.createdAt).getTime()
+                  new Date(b.createdAt).getTime() -
+                  new Date(a.createdAt).getTime()
               )
-              .map(({ prototype, versions }) => (
-                <div key={prototype.id} className="mb-8">
+              .map(({ version }) => (
+                <div key={version.id} className="mb-8">
                   <div className="bg-gradient-to-br from-content to-content-secondary rounded-2xl shadow-lg border border-wood-lightest/30 p-5">
                     <div className="flex justify-between items-center mb-4 pb-3 border-b border-wood-light/30">
-                      {nameEditingId === prototype.id ? (
+                      {nameEditingId === version.id ? (
                         <form
                           className="flex items-center"
                           onSubmit={(e) => {
@@ -566,10 +561,10 @@ const GroupPrototypeList: React.FC = () => {
                         </form>
                       ) : (
                         <h3 className="font-medium text-wood-darkest flex items-center">
-                          <span>{prototype.name}</span>
+                          <span>{version.name}</span>
                           <button
                             onClick={() =>
-                              handleNameEditToggle(prototype.id, prototype.name)
+                              handleNameEditToggle(version.id, version.name)
                             }
                             className="ml-2 p-1.5 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-all"
                             title="バージョン名編集"
@@ -583,27 +578,23 @@ const GroupPrototypeList: React.FC = () => {
                         <div className="text-sm text-wood-dark bg-wood-lightest/70 px-2 py-0.5 rounded-md border border-wood-light/20 flex items-center">
                           <FaUsers className="h-3 w-3 mr-1" />
                           <span>
-                            {prototype.minPlayers === prototype.maxPlayers
-                              ? `${prototype.minPlayers}人`
-                              : `${prototype.minPlayers}〜${prototype.maxPlayers}人`}
+                            {version.minPlayers === version.maxPlayers
+                              ? `${version.minPlayers}人`
+                              : `${version.minPlayers}〜${version.maxPlayers}人`}
                           </span>
                         </div>
-                        {versions.some(
-                          (v) => v.versionNumber === VERSION_NUMBER.MASTER
-                        ) && (
+                        {version.versionNumber === VERSION_NUMBER.MASTER && (
                           <>
                             <Link
-                              href={`/prototypes/${prototype.id}/versions/${versions.find((v) => v.versionNumber === VERSION_NUMBER.MASTER)?.id}/play`}
+                              href={`/prototypes/${prototype.id}/versions/${version.id}/play`}
                               className="p-1.5 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-all"
                               title="バージョンプレビュー"
                             >
                               <FaEye className="h-4 w-4" />
                             </Link>
-                            {user?.id === prototype.userId ? (
+                            {user?.id === prototype.master.userId ? (
                               <button
-                                onClick={() =>
-                                  handleDeletePreview(prototype.id)
-                                }
+                                onClick={() => handleDeletePreview(version.id)}
                                 className="p-1.5 text-wood hover:text-red-500 rounded-md hover:bg-red-50/20 transition-all"
                                 title="バージョン削除"
                               >
@@ -623,34 +614,24 @@ const GroupPrototypeList: React.FC = () => {
                       </div>
                     </div>
 
-                    {versions.some(
-                      (v) => v.versionNumber !== VERSION_NUMBER.MASTER
-                    ) ? (
+                    {version.versionNumber !== VERSION_NUMBER.MASTER ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {versions.map((version) => {
-                          // Skip rendering master version
-                          if (version.versionNumber === VERSION_NUMBER.MASTER) {
-                            return null;
-                          }
-
-                          return (
-                            <PlayRoomCard
-                              key={version.id}
-                              version={version}
-                              onDelete={handleDeleteRoom}
-                              prototype={prototype}
-                            />
-                          );
-                        })}
+                        {version.versionNumber !== VERSION_NUMBER.MASTER && (
+                          <PlayRoomCard
+                            key={version.id}
+                            version={version}
+                            onDelete={handleDeleteRoom}
+                            prototype={prototype}
+                          />
+                        )}
 
                         {/* 新しいルームを作成する空のカード */}
                         <button
                           onClick={() => {
-                            const masterVersion = versions.find(
-                              (v) => v.versionNumber === VERSION_NUMBER.MASTER
-                            );
+                            const masterVersion =
+                              version.versionNumber === VERSION_NUMBER.MASTER;
                             if (masterVersion) {
-                              handleCreateRoom(prototype.id, masterVersion.id);
+                              handleCreateRoom(prototype.id, version.id);
                             }
                           }}
                           aria-label="新しいルーム作成"
@@ -673,11 +654,10 @@ const GroupPrototypeList: React.FC = () => {
                         {/* 新しいルームを作成する空のカード - プレイルームが無い場合 */}
                         <button
                           onClick={() => {
-                            const masterVersion = versions.find(
-                              (v) => v.versionNumber === VERSION_NUMBER.MASTER
-                            );
+                            const masterVersion =
+                              version.versionNumber === VERSION_NUMBER.MASTER;
                             if (masterVersion) {
-                              handleCreateRoom(prototype.id, masterVersion.id);
+                              handleCreateRoom(prototype.id, version.id);
                             }
                           }}
                           aria-label="新しいルーム作成"

@@ -25,11 +25,13 @@ import {
   PrototypeGroupsDetailData,
   PrototypeGroupsDuplicateCreateData,
   PrototypeGroupsInstanceCreateData,
+  PrototypeGroupsInstanceCreatePayload,
   PrototypeGroupsInviteCreateData,
   PrototypeGroupsInviteCreatePayload,
   PrototypeGroupsInviteDeleteData,
   PrototypeGroupsListData,
   PrototypeGroupsVersionCreateData,
+  PrototypeGroupsVersionCreatePayload,
   PrototypesDeleteData,
   PrototypesDetailData,
   PrototypesUpdateData,
@@ -195,6 +197,7 @@ export class Api<
    */
   prototypeGroupsVersionCreate = (
     prototypeGroupId: string,
+    data: PrototypeGroupsVersionCreatePayload,
     params: RequestParams = {}
   ) =>
     this.request<
@@ -203,6 +206,8 @@ export class Api<
     >({
       path: `/api/prototype-groups/${prototypeGroupId}/version`,
       method: 'POST',
+      body: data,
+      type: ContentType.Json,
       format: 'json',
       ...params,
     });
@@ -217,6 +222,7 @@ export class Api<
   prototypeGroupsInstanceCreate = (
     prototypeGroupId: string,
     prototypeVersionId: string,
+    data: PrototypeGroupsInstanceCreatePayload,
     params: RequestParams = {}
   ) =>
     this.request<
@@ -225,6 +231,8 @@ export class Api<
     >({
       path: `/api/prototype-groups/${prototypeGroupId}/${prototypeVersionId}/instance`,
       method: 'POST',
+      body: data,
+      type: ContentType.Json,
       format: 'json',
       ...params,
     });
@@ -270,14 +278,14 @@ export class Api<
    * @tags PrototypeGroups
    * @name PrototypeGroupsAccessUsersList
    * @summary プロトタイプグループへのアクセス権を取得
-   * @request GET:/api/prototype-groups/{prototypeGroupId}/accessUsers
+   * @request GET:/api/prototype-groups/{prototypeGroupId}/access-users
    */
   prototypeGroupsAccessUsersList = (
     prototypeGroupId: string,
     params: RequestParams = {}
   ) =>
     this.request<PrototypeGroupsAccessUsersListData, any>({
-      path: `/api/prototype-groups/${prototypeGroupId}/accessUsers`,
+      path: `/api/prototype-groups/${prototypeGroupId}/access-users`,
       method: 'GET',
       format: 'json',
       ...params,
