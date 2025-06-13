@@ -6,10 +6,7 @@ import {
   checkPrototypeGroupAccess,
   checkPrototypeGroupOwner,
 } from '../middlewares/accessControl';
-import {
-  getAccessiblePrototypeGroups,
-  getAccessiblePrototypes,
-} from '../helpers/prototypeHelper';
+import { getAccessiblePrototypes } from '../helpers/prototypeHelper';
 import sequelize from '../models';
 import {
   createPrototypeInstance,
@@ -194,7 +191,7 @@ router.post(
 
 /**
  * @swagger
- * /api/prototype-groups/{prototypeGroupId}/instance:
+ * /api/prototype-groups/{prototypeGroupId}/{prototypeVersionId}/instance:
  *   post:
  *     tags: [PrototypeGroups]
  *     summary: プロトタイプインスタンス作成
@@ -204,6 +201,12 @@ router.post(
  *         in: path
  *         required: true
  *         description: プロトタイプグループのID
+ *         schema:
+ *           type: string
+ *       - name: prototypeVersionId
+ *         in: path
+ *         required: true
+ *         description: プロトタイプバージョンのID
  *         schema:
  *           type: string
  *     responses:

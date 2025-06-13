@@ -997,7 +997,7 @@
         }
       }
     },
-    "/api/prototype-groups/{prototypeGroupId}/instance": {
+    "/api/prototype-groups/{prototypeGroupId}/{prototypeVersionId}/instance": {
       "post": {
         "tags": [
           "PrototypeGroups"
@@ -1010,6 +1010,15 @@
             "in": "path",
             "required": true,
             "description": "プロトタイプグループのID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prototypeVersionId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプバージョンのID",
             "schema": {
               "type": "string"
             }

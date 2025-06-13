@@ -58,7 +58,7 @@ export interface Part {
   id: number;
   type: 'token' | 'card' | 'hand' | 'deck' | 'area';
   /** @format uuid */
-  prototypeVersionId: string;
+  prototypeId: string;
   parentId?: number;
   position: Record<string, any>;
   width: number;

@@ -212,17 +212,18 @@ export class Api<
    * @tags PrototypeGroups
    * @name PrototypeGroupsInstanceCreate
    * @summary プロトタイプインスタンス作成
-   * @request POST:/api/prototype-groups/{prototypeGroupId}/instance
+   * @request POST:/api/prototype-groups/{prototypeGroupId}/{prototypeVersionId}/instance
    */
   prototypeGroupsInstanceCreate = (
     prototypeGroupId: string,
+    prototypeVersionId: string,
     params: RequestParams = {}
   ) =>
     this.request<
       PrototypeGroupsInstanceCreateData,
       Error404Response | Error500Response
     >({
-      path: `/api/prototype-groups/${prototypeGroupId}/instance`,
+      path: `/api/prototype-groups/${prototypeGroupId}/${prototypeVersionId}/instance`,
       method: 'POST',
       format: 'json',
       ...params,

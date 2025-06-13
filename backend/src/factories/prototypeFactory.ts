@@ -67,7 +67,7 @@ export async function createPrototypeMaster({
   const access = await AccessModel.create(
     {
       prototypeGroupId: prototypeGroup.id,
-      type: ACCESS_TYPE.MASTER,
+      name: ACCESS_TYPE.MASTER,
     },
     { transaction }
   );
