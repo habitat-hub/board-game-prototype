@@ -1,30 +1,34 @@
 import { Request, Response, NextFunction } from 'express';
-import PrototypeModel from '../models/Prototype';
+import PrototypeGroupModel from '../models/PrototypeGroup';
 import UserModel from '../models/User';
-import { getAccessiblePrototypes } from '../helpers/prototypeHelper';
+import {
+  getAccessiblePrototypeGroups,
+  getAccessiblePrototypes,
+} from '../helpers/prototypeHelper';
 import AccessModel from '../models/Access';
 
 /**
- * プロトタイプの作成者かどうかを確認する
+ * プロトタイプグループの作成者かどうかを確認する
  * @param req - リクエスト
  * @param res - レスポンス
  * @param next - 次のミドルウェアを呼び出す
  * @returns
  */
-export async function checkPrototypeOwner(
+export async function checkPrototypeGroupOwner(
   req: Request,
   res: Response,
   next: NextFunction
 ) {
   try {
-    const prototypeId = req.params.prototypeId;
-    // 対象プロトタイプ
-    const targetPrototype = await PrototypeModel.findByPk(prototypeId);
+    const prototypeGroupId = req.params.prototypeGroupId;
+    // 対象プロトタイプグループ
+    const targetPrototypeGroup =
+      await PrototypeGroupModel.findByPk(prototypeGroupId);
 
     // プロトタイプの作成者の場合
     if (
-      targetPrototype &&
-      targetPrototype.userId === (req.user as UserModel).id
+      targetPrototypeGroup &&
+      targetPrototypeGroup.userId === (req.user as UserModel).id
     ) {
       return next();
     }
@@ -34,6 +38,43 @@ export async function checkPrototypeOwner(
   } catch (error) {
     res.status(500).json({ message: '予期せぬエラーが発生しました' });
     next(error);
+    return;
+  }
+}
+
+/**
+ * プロトタイプグループへのアクセス権を確認する
+ * @param req - リクエスト
+ * @param res - レスポンス
+ * @param next - 次のミドルウェアを呼び出す
+ * @returns
+ */
+export async function checkPrototypeGroupAccess(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const userId = (req.user as UserModel).id;
+
+  try {
+    const prototypeGroupId = req.params.prototypeGroupId;
+
+    // アクセス可能なプロトタイプグループ
+    const accessiblePrototypeGroups = await getAccessiblePrototypeGroups({
+      userId,
+    });
+    // 対象のプロトタイプグループがアクセス可能な場合
+    if (accessiblePrototypeGroups.some(({ id }) => id === prototypeGroupId)) {
+      return next();
+    }
+
+    res
+      .status(403)
+      .json({ message: 'プロトタイプグループへのアクセス権がありません' });
+    return;
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: '予期せぬエラーが発生しました' });
     return;
   }
 }
@@ -56,10 +97,11 @@ export async function checkPrototypeAccess(
     const prototypeId = req.params.prototypeId;
     // アクセス可能なプロトタイプ
     const accessiblePrototypes = await getAccessiblePrototypes({ userId });
+    const prototypes = accessiblePrototypes.flatMap(
+      ({ prototypes }) => prototypes
+    );
     // 対象のプロトタイプがアクセス可能な場合
-    if (
-      accessiblePrototypes.some((prototype) => prototype.id === prototypeId)
-    ) {
+    if (prototypes.some(({ id }) => id === prototypeId)) {
       return next();
     }
 

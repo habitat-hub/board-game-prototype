@@ -12,8 +12,9 @@ import { FaCheck } from 'react-icons/fa';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { FaBoxOpen, FaPenToSquare, FaPlus } from 'react-icons/fa6';
 
+import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
 import { usePrototypes } from '@/api/hooks/usePrototypes';
-import { Prototype } from '@/api/types';
+import { Prototype, PrototypeGroup } from '@/api/types';
 import { UserContext } from '@/contexts/UserContext';
 import formatDate from '@/utils/dateFormat';
 
@@ -33,7 +34,8 @@ type SortOrder = 'asc' | 'desc';
  * @state isLoading - データ取得中のローディング状態を管理するState。
  */
 const PrototypeList: React.FC = () => {
-  const { getPrototypes, updatePrototype } = usePrototypes();
+  const { updatePrototype } = usePrototypes();
+  const { getPrototypeGroups } = usePrototypeGroup();
   // UserContextからユーザー情報を取得
   const userContext = useContext(UserContext);
   // ローディング状態を管理するState
@@ -43,7 +45,12 @@ const PrototypeList: React.FC = () => {
   // 編集中のプロトタイプの名前を保持するState
   const [editedName, setEditedName] = useState<string>('');
   // 編集用プロトタイプ
-  const [editPrototypes, setEditPrototypes] = useState<Prototype[]>([]);
+  const [prototypeList, setPrototypeList] = useState<
+    {
+      prototypeGroup: PrototypeGroup;
+      editPrototype: Prototype | undefined;
+    }[]
+  >([]);
   // ソート
   const [sort, setSort] = useState<{
     key: SortKey;
@@ -80,7 +87,9 @@ const PrototypeList: React.FC = () => {
     }
 
     try {
-      const prototype = editPrototypes.find((p) => p.id === nameEditingId);
+      const prototype = prototypeList.find(
+        ({ editPrototype }) => editPrototype?.id === nameEditingId
+      );
       if (!prototype) return;
 
       // 名前だけを更新
@@ -88,12 +97,7 @@ const PrototypeList: React.FC = () => {
         name: editedName,
       });
 
-      // ローカルの状態を更新
-      setEditPrototypes((currentPrototypes) =>
-        currentPrototypes.map((p) =>
-          p.id === nameEditingId ? { ...p, name: editedName } : p
-        )
-      );
+      fetchPrototypeGroups();
     } catch (error) {
       console.error('Error updating prototype name:', error);
     } finally {
@@ -105,24 +109,29 @@ const PrototypeList: React.FC = () => {
   /**
    * プロトタイプを取得する
    */
-  const fetchPrototypes = useCallback(async () => {
+  const fetchPrototypeGroups = useCallback(async () => {
     setIsLoading(true);
 
     try {
-      const response = await getPrototypes();
-      const filteredPrototypes = response.filter(({ type }) => type === 'EDIT');
-      setEditPrototypes(filteredPrototypes);
+      const response = await getPrototypeGroups();
+      const prototypeInfo = response.map(({ prototypeGroup, prototypes }) => {
+        return {
+          prototypeGroup,
+          editPrototype: prototypes.find(({ type }) => type === 'MASTER'),
+        };
+      });
+      setPrototypeList(prototypeInfo);
     } catch (error) {
       console.error('Error fetching prototypes:', error);
     } finally {
       setIsLoading(false); // ローディング終了
     }
-  }, [getPrototypes]);
+  }, [getPrototypeGroups]);
 
   // プロトタイプの取得
   useEffect(() => {
-    fetchPrototypes();
-  }, [fetchPrototypes]);
+    fetchPrototypeGroups();
+  }, [fetchPrototypeGroups]);
 
   /**
    * プロトタイプをソートする
@@ -130,21 +139,29 @@ const PrototypeList: React.FC = () => {
    * @returns ソートされたプロトタイプ
    */
   const sortPrototypes = useCallback(
-    (prototypes: Prototype[]) => {
-      return [...prototypes].sort((a, b) => {
+    (
+      prototypeList: {
+        prototypeGroup: PrototypeGroup;
+        editPrototype: Prototype | undefined;
+      }[]
+    ) => {
+      return [...prototypeList].sort((a, b) => {
         switch (sort.key) {
           // 名前順
           case 'name':
+            if (!a.editPrototype?.name || !b.editPrototype?.name) return 0;
             return sort.order === 'asc'
-              ? a.name.localeCompare(b.name)
-              : b.name.localeCompare(a.name);
+              ? a.editPrototype.name.localeCompare(b.editPrototype.name)
+              : b.editPrototype.name.localeCompare(a.editPrototype.name);
           // 作成日順
           case 'createdAt':
+            if (!a.editPrototype?.createdAt || !b.editPrototype?.createdAt)
+              return 0;
             return sort.order === 'asc'
-              ? new Date(b.createdAt).getTime() -
-                  new Date(a.createdAt).getTime()
-              : new Date(a.createdAt).getTime() -
-                  new Date(b.createdAt).getTime();
+              ? new Date(b.editPrototype.createdAt).getTime() -
+                  new Date(a.editPrototype.createdAt).getTime()
+              : new Date(a.editPrototype.createdAt).getTime() -
+                  new Date(b.editPrototype.createdAt).getTime();
           default:
             return 0;
         }
@@ -154,16 +171,15 @@ const PrototypeList: React.FC = () => {
   );
 
   // ソートされたプロトタイプ
-  const sortedPrototypes = useMemo(
-    () => sortPrototypes(editPrototypes),
-    [editPrototypes, sortPrototypes]
-  );
+  const sortedPrototypeList = useMemo(() => {
+    return sortPrototypes(prototypeList);
+  }, [prototypeList, sortPrototypes]);
 
   if (isLoading) {
     return <PrototypeListSkeleton />;
   }
 
-  if (sortedPrototypes.length === 0) {
+  if (sortedPrototypeList.length === 0) {
     return <EmptyPrototypeList />;
   }
 
@@ -227,93 +243,86 @@ const PrototypeList: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-wood-lightest/20">
-            {sortedPrototypes.map(
-              ({
-                id,
-                groupId,
-                name,
-                minPlayers,
-                maxPlayers,
-                createdAt,
-                userId,
-              }) => {
-                const isNameEditing = nameEditingId === id; // 現在の項目が編集中かどうかを判定
-                return (
-                  <tr key={id}>
-                    <td className="p-4">
-                      {isNameEditing ? (
-                        <form
-                          className="text-wood-darkest flex items-center"
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            handleNameEditComplete();
-                          }}
-                        >
-                          <input
-                            type="text"
-                            value={editedName}
-                            onChange={(e) => setEditedName(e.target.value)}
-                            className="w-[80%] p-1 border border-wood-light rounded"
-                            autoFocus
-                          />
-                          <button
-                            type="submit"
-                            className="ml-2 p-1.5 text-green-600 hover:text-green-700 rounded-md border border-green-500 hover:bg-green-50 transition-colors"
-                            title="編集完了"
-                          >
-                            <FaCheck className="w-3.5 h-3.5" />
-                          </button>
-                        </form>
-                      ) : (
-                        <div className="flex items-center">
-                          <Link
-                            href={`prototypes/groups/${groupId}`}
-                            className="text-wood-darkest font-medium"
-                          >
-                            {name}
-                          </Link>
-                          <button
-                            onClick={() => handleNameEditToggle(id, name)}
-                            className="ml-2 p-1 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors"
-                            title="プロトタイプ名を編集"
-                          >
-                            <FaPenToSquare className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center">
-                        <span className="text-wood-dark">
-                          {minPlayers !== maxPlayers
-                            ? `${minPlayers} ~ ${maxPlayers}`
-                            : `${minPlayers}`}
-                        </span>
-                        <span className="text-wood-dark">人</span>
-                      </div>
-                    </td>
-                    <td className="p-4 text-sm text-wood">
-                      {formatDate(createdAt)}
-                    </td>
-                    <td className="p-4 text-sm text-wood">
-                      {userContext?.user?.id === userId
-                        ? '自分'
-                        : '他のユーザー'}
-                    </td>
-                    <td className="p-4 flex justify-center gap-2">
-                      <Link
-                        href={`prototypes/groups/${groupId}`}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
-                        title="プロトタイプを開く"
+            {sortedPrototypeList.map(({ editPrototype, prototypeGroup }) => {
+              if (!editPrototype) return null;
+              const { id, name, minPlayers, maxPlayers, createdAt } =
+                editPrototype;
+              const isNameEditing = nameEditingId === id;
+              return (
+                <tr key={id}>
+                  <td className="p-4">
+                    {isNameEditing ? (
+                      <form
+                        className="text-wood-darkest flex items-center"
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          handleNameEditComplete();
+                        }}
                       >
-                        <FaBoxOpen className="w-4 h-4" />
-                        <span>開く</span>
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              }
-            )}
+                        <input
+                          type="text"
+                          value={editedName}
+                          onChange={(e) => setEditedName(e.target.value)}
+                          className="w-[80%] p-1 border border-wood-light rounded"
+                          autoFocus
+                        />
+                        <button
+                          type="submit"
+                          className="ml-2 p-1.5 text-green-600 hover:text-green-700 rounded-md border border-green-500 hover:bg-green-50 transition-colors"
+                          title="編集完了"
+                        >
+                          <FaCheck className="w-3.5 h-3.5" />
+                        </button>
+                      </form>
+                    ) : (
+                      <div className="flex items-center">
+                        <Link
+                          href={`prototypes/groups/${prototypeGroup.id}`}
+                          className="text-wood-darkest font-medium"
+                        >
+                          {name}
+                        </Link>
+                        <button
+                          onClick={() => handleNameEditToggle(id, name)}
+                          className="ml-2 p-1 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors"
+                          title="プロトタイプ名を編集"
+                        >
+                          <FaPenToSquare className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center">
+                      <span className="text-wood-dark">
+                        {minPlayers !== maxPlayers
+                          ? `${minPlayers} ~ ${maxPlayers}`
+                          : `${minPlayers}`}
+                      </span>
+                      <span className="text-wood-dark">人</span>
+                    </div>
+                  </td>
+                  <td className="p-4 text-sm text-wood">
+                    {formatDate(createdAt)}
+                  </td>
+                  <td className="p-4 text-sm text-wood">
+                    {userContext?.user?.id === prototypeGroup.userId
+                      ? '自分'
+                      : '他のユーザー'}
+                  </td>
+                  <td className="p-4 flex justify-center gap-2">
+                    <Link
+                      href={`prototypes/groups/${prototypeGroup.id}`}
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
+                      title="プロトタイプを開く"
+                    >
+                      <FaBoxOpen className="w-4 h-4" />
+                      <span>開く</span>
+                    </Link>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

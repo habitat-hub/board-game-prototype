@@ -18,24 +18,24 @@ import {
   ImagesCreatePayload,
   ImagesDeleteData,
   ImagesDetailData,
-  PrototypesCreateData,
-  PrototypesCreatePayload,
+  PrototypeGroupsAccessUsersListData,
+  PrototypeGroupsCreateData,
+  PrototypeGroupsCreatePayload,
+  PrototypeGroupsDeleteData,
+  PrototypeGroupsDetailData,
+  PrototypeGroupsDuplicateCreateData,
+  PrototypeGroupsInstanceCreateData,
+  PrototypeGroupsInstanceCreatePayload,
+  PrototypeGroupsInviteCreateData,
+  PrototypeGroupsInviteCreatePayload,
+  PrototypeGroupsInviteDeleteData,
+  PrototypeGroupsListData,
+  PrototypeGroupsVersionCreateData,
+  PrototypeGroupsVersionCreatePayload,
   PrototypesDeleteData,
   PrototypesDetailData,
-  PrototypesDuplicateCreateData,
-  PrototypesGroupsAccessUsersListData,
-  PrototypesGroupsDetailData,
-  PrototypesGroupsInviteCreateData,
-  PrototypesGroupsInviteCreatePayload,
-  PrototypesGroupsInviteDeleteData,
-  PrototypesListData,
-  PrototypesPreviewCreateData,
   PrototypesUpdateData,
   PrototypesUpdatePayload,
-  PrototypesVersionsCreateData,
-  PrototypesVersionsCreatePayload,
-  PrototypesVersionsDeleteData,
-  PrototypesVersionsListData,
   UsersSearchListData,
   UsersSearchListParams,
   UsersUpdateData,
@@ -99,46 +99,11 @@ export class Api<
       ...params,
     });
   /**
-   * @description ユーザーがアクセス可能なプロトタイプの一覧を取得します。
-   *
-   * @tags Prototypes
-   * @name PrototypesList
-   * @summary プロトタイプ一覧取得
-   * @request GET:/api/prototypes
-   */
-  prototypesList = (params: RequestParams = {}) =>
-    this.request<PrototypesListData, any>({
-      path: `/api/prototypes`,
-      method: 'GET',
-      format: 'json',
-      ...params,
-    });
-  /**
-   * @description 新しいプロトタイプを作成します。
-   *
-   * @tags Prototypes
-   * @name PrototypesCreate
-   * @summary プロトタイプ作成
-   * @request POST:/api/prototypes
-   */
-  prototypesCreate = (
-    data: PrototypesCreatePayload,
-    params: RequestParams = {}
-  ) =>
-    this.request<PrototypesCreateData, Error400Response | Error500Response>({
-      path: `/api/prototypes`,
-      method: 'POST',
-      body: data,
-      type: ContentType.Json,
-      format: 'json',
-      ...params,
-    });
-  /**
    * @description 指定されたIDのプロトタイプを取得します。
    *
    * @tags Prototypes
    * @name PrototypesDetail
-   * @summary プロトタイプ取得
+   * @summary 特定のプロトタイプ取得
    * @request GET:/api/prototypes/{prototypeId}
    */
   prototypesDetail = (prototypeId: string, params: RequestParams = {}) =>
@@ -185,71 +150,37 @@ export class Api<
       ...params,
     });
   /**
-   * @description 指定されたプロトタイプのバージョン一覧を取得します。
+   * @description ユーザーがアクセス可能なプロトタイプグループの一覧を取得します。
    *
-   * @tags Prototypes
-   * @name PrototypesVersionsList
-   * @summary プロトタイプバージョン一覧取得
-   * @request GET:/api/prototypes/{prototypeId}/versions
+   * @tags PrototypeGroups
+   * @name PrototypeGroupsList
+   * @summary プロトタイプグループ一覧取得
+   * @request GET:/api/prototype-groups
    */
-  prototypesVersionsList = (prototypeId: string, params: RequestParams = {}) =>
-    this.request<PrototypesVersionsListData, Error404Response>({
-      path: `/api/prototypes/${prototypeId}/versions`,
+  prototypeGroupsList = (params: RequestParams = {}) =>
+    this.request<PrototypeGroupsListData, any>({
+      path: `/api/prototype-groups`,
       method: 'GET',
       format: 'json',
       ...params,
     });
   /**
-   * @description 指定されたグループに属するプロトタイプの一覧を作成日の古い順で取得します。
+   * @description 新しいプロトタイプグループを作成します。
    *
-   * @tags Prototypes
-   * @name PrototypesGroupsDetail
-   * @summary グループのプロトタイプ一覧取得
-   * @request GET:/api/prototypes/groups/{groupId}
+   * @tags PrototypeGroups
+   * @name PrototypeGroupsCreate
+   * @summary プロトタイプグループ作成
+   * @request POST:/api/prototype-groups
    */
-  prototypesGroupsDetail = (groupId: string, params: RequestParams = {}) =>
-    this.request<PrototypesGroupsDetailData, any>({
-      path: `/api/prototypes/groups/${groupId}`,
-      method: 'GET',
-      format: 'json',
-      ...params,
-    });
-  /**
-   * @description 指定されたグループにアクセス可能なユーザーを取得します。
-   *
-   * @tags Prototypes
-   * @name PrototypesGroupsAccessUsersList
-   * @summary グループへのアクセス権を取得
-   * @request GET:/api/prototypes/groups/{groupId}/accessUsers
-   */
-  prototypesGroupsAccessUsersList = (
-    groupId: string,
-    params: RequestParams = {}
-  ) =>
-    this.request<PrototypesGroupsAccessUsersListData, any>({
-      path: `/api/prototypes/groups/${groupId}/accessUsers`,
-      method: 'GET',
-      format: 'json',
-      ...params,
-    });
-  /**
-   * @description 指定されたグループにユーザーを招待します。
-   *
-   * @tags Prototypes
-   * @name PrototypesGroupsInviteCreate
-   * @summary ユーザーにプロトタイプへのアクセス権を付与
-   * @request POST:/api/prototypes/groups/{groupId}/invite
-   */
-  prototypesGroupsInviteCreate = (
-    groupId: string,
-    data: PrototypesGroupsInviteCreatePayload,
+  prototypeGroupsCreate = (
+    data: PrototypeGroupsCreatePayload,
     params: RequestParams = {}
   ) =>
     this.request<
-      PrototypesGroupsInviteCreateData,
-      Error400Response | Error404Response | Error500Response
+      PrototypeGroupsCreateData,
+      Error400Response | Error500Response
     >({
-      path: `/api/prototypes/groups/${groupId}/invite`,
+      path: `/api/prototype-groups`,
       method: 'POST',
       body: data,
       type: ContentType.Json,
@@ -257,110 +188,172 @@ export class Api<
       ...params,
     });
   /**
-   * @description 指定されたグループからユーザーのアクセス権を削除します。
+   * @description 指定されたプロトタイプグループのプロトタイプバージョンを作成します。
    *
-   * @tags Prototypes
-   * @name PrototypesGroupsInviteDelete
-   * @summary ユーザーのアクセス権を削除
-   * @request DELETE:/api/prototypes/groups/{groupId}/invite/{guestId}
+   * @tags PrototypeGroups
+   * @name PrototypeGroupsVersionCreate
+   * @summary プロトタイプバージョン作成
+   * @request POST:/api/prototype-groups/{prototypeGroupId}/version
    */
-  prototypesGroupsInviteDelete = (
-    groupId: string,
+  prototypeGroupsVersionCreate = (
+    prototypeGroupId: string,
+    data: PrototypeGroupsVersionCreatePayload,
+    params: RequestParams = {}
+  ) =>
+    this.request<
+      PrototypeGroupsVersionCreateData,
+      Error404Response | Error500Response
+    >({
+      path: `/api/prototype-groups/${prototypeGroupId}/version`,
+      method: 'POST',
+      body: data,
+      type: ContentType.Json,
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description 指定されたプロトタイプグループのプロトタイプインスタンスを作成します。
+   *
+   * @tags PrototypeGroups
+   * @name PrototypeGroupsInstanceCreate
+   * @summary プロトタイプインスタンス作成
+   * @request POST:/api/prototype-groups/{prototypeGroupId}/{prototypeVersionId}/instance
+   */
+  prototypeGroupsInstanceCreate = (
+    prototypeGroupId: string,
+    prototypeVersionId: string,
+    data: PrototypeGroupsInstanceCreatePayload,
+    params: RequestParams = {}
+  ) =>
+    this.request<
+      PrototypeGroupsInstanceCreateData,
+      Error404Response | Error500Response
+    >({
+      path: `/api/prototype-groups/${prototypeGroupId}/${prototypeVersionId}/instance`,
+      method: 'POST',
+      body: data,
+      type: ContentType.Json,
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description 指定されたIDのプロトタイプグループに属するプロトタイプの一覧を取得します。
+   *
+   * @tags PrototypeGroups
+   * @name PrototypeGroupsDetail
+   * @summary 特定のグループに属するプロトタイプ一覧取得
+   * @request GET:/api/prototype-groups/{prototypeGroupId}
+   */
+  prototypeGroupsDetail = (
+    prototypeGroupId: string,
+    params: RequestParams = {}
+  ) =>
+    this.request<PrototypeGroupsDetailData, Error404Response>({
+      path: `/api/prototype-groups/${prototypeGroupId}`,
+      method: 'GET',
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description 指定されたIDのプロトタイプグループを削除します。
+   *
+   * @tags PrototypeGroups
+   * @name PrototypeGroupsDelete
+   * @summary プロトタイプグループ削除
+   * @request DELETE:/api/prototype-groups/{prototypeGroupId}
+   */
+  prototypeGroupsDelete = (
+    prototypeGroupId: string,
+    params: RequestParams = {}
+  ) =>
+    this.request<PrototypeGroupsDeleteData, Error404Response>({
+      path: `/api/prototype-groups/${prototypeGroupId}`,
+      method: 'DELETE',
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description 指定されたプロトタイプグループにアクセス可能なユーザーを取得します。
+   *
+   * @tags PrototypeGroups
+   * @name PrototypeGroupsAccessUsersList
+   * @summary プロトタイプグループへのアクセス権を取得
+   * @request GET:/api/prototype-groups/{prototypeGroupId}/access-users
+   */
+  prototypeGroupsAccessUsersList = (
+    prototypeGroupId: string,
+    params: RequestParams = {}
+  ) =>
+    this.request<PrototypeGroupsAccessUsersListData, any>({
+      path: `/api/prototype-groups/${prototypeGroupId}/access-users`,
+      method: 'GET',
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description 指定されたプロトタイプグループにユーザーを招待します。
+   *
+   * @tags PrototypeGroups
+   * @name PrototypeGroupsInviteCreate
+   * @summary ユーザーにプロトタイプへのアクセス権を付与
+   * @request POST:/api/prototype-groups/{prototypeGroupId}/invite
+   */
+  prototypeGroupsInviteCreate = (
+    prototypeGroupId: string,
+    data: PrototypeGroupsInviteCreatePayload,
+    params: RequestParams = {}
+  ) =>
+    this.request<
+      PrototypeGroupsInviteCreateData,
+      Error400Response | Error404Response | Error500Response
+    >({
+      path: `/api/prototype-groups/${prototypeGroupId}/invite`,
+      method: 'POST',
+      body: data,
+      type: ContentType.Json,
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description 指定されたプロトタイプグループからユーザーのアクセス権を削除します。
+   *
+   * @tags PrototypeGroups
+   * @name PrototypeGroupsInviteDelete
+   * @summary ユーザーのアクセス権を削除
+   * @request DELETE:/api/prototype-groups/{prototypeGroupId}/invite/{guestId}
+   */
+  prototypeGroupsInviteDelete = (
+    prototypeGroupId: string,
     guestId: string,
     params: RequestParams = {}
   ) =>
     this.request<
-      PrototypesGroupsInviteDeleteData,
+      PrototypeGroupsInviteDeleteData,
       Error400Response | Error404Response | Error500Response
     >({
-      path: `/api/prototypes/groups/${groupId}/invite/${guestId}`,
+      path: `/api/prototype-groups/${prototypeGroupId}/invite/${guestId}`,
       method: 'DELETE',
       format: 'json',
       ...params,
     });
   /**
-   * @description 指定されたプロトタイプを複製します。
+   * @description 指定されたプロトタイプグループを複製します。
    *
-   * @tags Prototypes
-   * @name PrototypesDuplicateCreate
-   * @summary プロトタイプの複製
-   * @request POST:/api/prototypes/{prototypeId}/duplicate
+   * @tags PrototypeGroups
+   * @name PrototypeGroupsDuplicateCreate
+   * @summary プロトタイプグループの複製
+   * @request POST:/api/prototype-groups/{prototypeGroupId}/duplicate
    */
-  prototypesDuplicateCreate = (
-    prototypeId: string,
+  prototypeGroupsDuplicateCreate = (
+    prototypeGroupId: string,
     params: RequestParams = {}
   ) =>
     this.request<
-      PrototypesDuplicateCreateData,
+      PrototypeGroupsDuplicateCreateData,
       Error404Response | Error500Response
     >({
-      path: `/api/prototypes/${prototypeId}/duplicate`,
+      path: `/api/prototype-groups/${prototypeGroupId}/duplicate`,
       method: 'POST',
-      format: 'json',
-      ...params,
-    });
-  /**
-   * @description 指定されたプロトタイプのプレビュー版を作成します。
-   *
-   * @tags Prototypes
-   * @name PrototypesPreviewCreate
-   * @summary プレビュー版作成
-   * @request POST:/api/prototypes/{prototypeId}/preview
-   */
-  prototypesPreviewCreate = (prototypeId: string, params: RequestParams = {}) =>
-    this.request<
-      PrototypesPreviewCreateData,
-      Error404Response | Error500Response
-    >({
-      path: `/api/prototypes/${prototypeId}/preview`,
-      method: 'POST',
-      format: 'json',
-      ...params,
-    });
-  /**
-   * @description 指定されたプロトタイプのバージョンを作成します。
-   *
-   * @tags Prototypes
-   * @name PrototypesVersionsCreate
-   * @summary バージョン作成
-   * @request POST:/api/prototypes/{prototypeId}/versions/{prototypeVersionId}
-   */
-  prototypesVersionsCreate = (
-    prototypeId: string,
-    prototypeVersionId: string,
-    data: PrototypesVersionsCreatePayload,
-    params: RequestParams = {}
-  ) =>
-    this.request<
-      PrototypesVersionsCreateData,
-      Error400Response | Error404Response | Error500Response
-    >({
-      path: `/api/prototypes/${prototypeId}/versions/${prototypeVersionId}`,
-      method: 'POST',
-      body: data,
-      type: ContentType.Json,
-      format: 'json',
-      ...params,
-    });
-  /**
-   * @description 指定されたプロトタイプのバージョンを削除します。マスターバージョン（0.0.0）は削除できません。
-   *
-   * @tags Prototypes
-   * @name PrototypesVersionsDelete
-   * @summary バージョン削除
-   * @request DELETE:/api/prototypes/{prototypeId}/versions/{prototypeVersionId}
-   */
-  prototypesVersionsDelete = (
-    prototypeId: string,
-    prototypeVersionId: string,
-    params: RequestParams = {}
-  ) =>
-    this.request<
-      PrototypesVersionsDeleteData,
-      Error400Response | Error404Response | Error500Response
-    >({
-      path: `/api/prototypes/${prototypeId}/versions/${prototypeVersionId}`,
-      method: 'DELETE',
       format: 'json',
       ...params,
     });

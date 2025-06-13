@@ -4,16 +4,16 @@ import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 import { io } from 'socket.io-client';
 
-import { usePrototypes } from '@/api/hooks/usePrototypes';
+import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
 import {
   Part,
   PartProperty,
   Player,
   Prototype,
-  PrototypeVersion,
+  PrototypeGroup,
 } from '@/api/types';
 import Canvas from '@/features/prototype/components/organisms/Canvas';
-import { PrototypeVersionIdProvider } from '@/features/prototype/contexts/PrototypeVersionIdContext';
+import { PrototypeIdProvider } from '@/features/prototype/contexts/PrototypeIdContext';
 import { SocketProvider } from '@/features/prototype/contexts/SocketContext';
 import { CursorInfo } from '@/features/prototype/types/cursor';
 import { useUser } from '@/hooks/useUser';
@@ -22,19 +22,19 @@ const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
 const PrototypePlayOld: React.FC = () => {
   const router = useRouter();
-  const { getPrototypeVersions } = usePrototypes();
+  const { getPrototypeGroup } = usePrototypeGroup();
   const { user } = useUser();
 
   // プロトタイプID, バージョンID
-  const { prototypeId, versionId } = useParams<{
+  const { groupId, prototypeId } = useParams<{
+    groupId: string;
     prototypeId: string;
-    versionId: string;
   }>();
 
   // プロトタイプ
   const [prototype, setPrototype] = useState<
-    | (Prototype & {
-        versions: PrototypeVersion[];
+    | (PrototypeGroup & {
+        prototypes: Prototype[];
       })
     | null
   >(null);
@@ -51,7 +51,7 @@ const PrototypePlayOld: React.FC = () => {
   useEffect(() => {
     // サーバーに接続した後、特定のプロトタイプに参加
     socket.emit('JOIN_PROTOTYPE', {
-      prototypeVersionId: versionId,
+      prototypeId,
       userId: user?.id || '',
     });
 
@@ -76,48 +76,47 @@ const PrototypePlayOld: React.FC = () => {
       socket.off('UPDATE_PLAYERS');
       socket.off('UPDATE_CURSORS');
     };
-  }, [versionId, user?.id]);
+  }, [prototypeId, user?.id]);
 
   // プロタイプの取得
   useEffect(() => {
-    getPrototypeVersions(prototypeId)
+    getPrototypeGroup(groupId)
       .then((response) => {
-        const { prototype, versions } = response;
+        const { prototypeGroup, prototypes } = response;
 
-        // プレビュー版でない場合
-        if (prototype.type !== 'PREVIEW') {
-          router.replace(`/prototypes/groups/${prototype.groupId}`);
-          return;
-        }
-
-        setPrototype({ ...prototype, versions });
+        setPrototype({ ...prototypeGroup, prototypes });
       })
       .catch((error) => console.error('Error fetching prototypes:', error));
-  }, [getPrototypeVersions, prototypeId, router]);
+  }, [getPrototypeGroup, prototypeId, router]);
 
   // プロトタイプバージョン番号
   const versionNumber = useMemo(() => {
-    return prototype?.versions.find((version) => version.id === versionId)
-      ?.versionNumber;
-  }, [prototype, versionId]);
+    return prototype?.prototypes.find(
+      (prototype) => prototype.id === prototypeId
+    )?.versionNumber;
+  }, [prototype, prototypeId]);
 
   // プロトタイプが存在しない場合
   if (!prototype) return null;
 
   return (
     <SocketProvider socket={socket}>
-      <PrototypeVersionIdProvider prototypeVersionId={versionId}>
+      <PrototypeIdProvider prototypeId={prototypeId}>
         <Canvas
-          prototypeName={prototype.name}
+          prototypeName={
+            prototype.prototypes.find(
+              (prototype) => prototype.id === prototypeId
+            )?.name || ''
+          }
           parts={parts}
           properties={properties}
           players={players}
           cursors={cursors}
           prototypeVersionNumber={versionNumber}
-          groupId={prototype.groupId}
-          prototypeType="PREVIEW"
+          groupId={groupId}
+          prototypeType="VERSION"
         />
-      </PrototypeVersionIdProvider>
+      </PrototypeIdProvider>
     </SocketProvider>
   );
 };

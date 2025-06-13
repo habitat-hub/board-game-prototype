@@ -20,6 +20,7 @@ import sequelize from './models';
 import UserModel from './models/User';
 import authRoutes from './routes/auth';
 import prototypeRoutes from './routes/prototype';
+import prototypeGroupRoutes from './routes/prototypeGroup';
 import userRoutes from './routes/user';
 import imageRoutes from './routes/image';
 import handlePrototype from './socket/prototypeHandler';
@@ -165,6 +166,7 @@ passport.deserializeUser((id: number | number, done) => {
 // ルーティング設定
 app.use('/auth', authRoutes);
 app.use('/api/prototypes', prototypeRoutes);
+app.use('/api/prototype-groups', prototypeGroupRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/images', imageRoutes);
 

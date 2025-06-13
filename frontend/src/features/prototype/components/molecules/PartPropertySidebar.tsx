@@ -101,7 +101,7 @@ export default function PartPropertySidebar({
     // 新しいパーツ
     const newPart: Omit<
       Part,
-      'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'
+      'id' | 'prototypeId' | 'order' | 'createdAt' | 'updatedAt'
     > = {
       type: selectedPart.type,
       parentId: selectedPart.parentId,

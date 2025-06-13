@@ -1,5 +1,9 @@
 export const PROTOTYPE_VERSION = {
-  INITIAL: '0.0.0',
+  INITIAL: 0,
+};
+
+export const ACCESS_TYPE = {
+  MASTER: 'MASTER',
 };
 
 export const UPDATABLE_PROTOTYPE_FIELDS = {

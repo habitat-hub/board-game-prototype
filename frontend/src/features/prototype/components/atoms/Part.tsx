@@ -25,7 +25,7 @@ interface PartProps {
   // 他のプレイヤーのカードか
   isOtherPlayerCard?: boolean;
   // プロトタイプタイプ
-  prototypeType: 'EDIT' | 'PREVIEW';
+  prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE';
   // マウスダウン時のコールバック
   onMouseDown: (e: React.MouseEvent, partId: number) => void;
   // 移動順序を変更するコールバック
@@ -70,7 +70,7 @@ const Part = forwardRef<PartHandle, PartProps>(
     }, [players, part.ownerId]);
 
     // 裏向き表示にする必要があるか
-    const isFlippedNeeded = prototypeType === 'PREVIEW' && isOtherPlayerCard;
+    const isFlippedNeeded = prototypeType === 'VERSION' && isOtherPlayerCard;
 
     // 対象面（表or裏）のプロパティを取得
     const targetProperty = useMemo(() => {

@@ -1,12 +1,12 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
-import PrototypeModel from './Prototype';
+import User from './User';
 
 class PrototypeGroupModel extends Model {
   // ID
   public id!: string;
-  // プロトタイプID
-  public prototypeId!: string;
+  // ユーザーID
+  public userId!: string;
 }
 
 PrototypeGroupModel.init(
@@ -17,21 +17,32 @@ PrototypeGroupModel.init(
       primaryKey: true,
       allowNull: false,
     },
-    prototypeId: {
+    userId: {
       type: DataTypes.UUID,
-      primaryKey: true,
       allowNull: false,
     },
   },
   {
     sequelize,
     modelName: 'PrototypeGroup',
-    timestamps: false,
+    indexes: [
+      {
+        unique: true,
+        fields: ['id'],
+      },
+      {
+        fields: ['userId'],
+      },
+    ],
   }
 );
 
-PrototypeGroupModel.belongsTo(PrototypeModel, {
-  foreignKey: 'prototypeId',
+PrototypeGroupModel.belongsTo(User, {
+  foreignKey: 'userId',
+  onDelete: 'CASCADE',
+});
+User.hasMany(PrototypeGroupModel, {
+  foreignKey: 'userId',
   onDelete: 'CASCADE',
 });
 
