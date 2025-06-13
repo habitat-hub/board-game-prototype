@@ -51,23 +51,23 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
   const { metrics: performanceMetrics, resetMetrics } = usePerformanceTracker();
 
   const [activeTab, setActiveTab] = useState<
-    'status' | 'perf' | 'data' | 'details'
-  >('status');
+    'info' | 'perf' | 'data' | 'parts'
+  >('info');
 
   if (!showDebugInfo) return null;
 
   const tabs = [
-    { id: 'status' as const, label: 'Info' },
+    { id: 'info' as const, label: 'Info' },
     { id: 'perf' as const, label: 'Perf' },
     { id: 'data' as const, label: 'Data' },
-    { id: 'details' as const, label: 'Raw' },
+    { id: 'parts' as const, label: 'Parts' },
   ];
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'status':
+      case 'info':
         return (
-          <div className="text-sm">
+          <div className="text-sm h-[50vh] overflow-y-auto">
             <div className="border-b border-white border-opacity-20 mb-2 pb-1">
               <strong>Current Status</strong>
             </div>
@@ -85,8 +85,25 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
             <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
               <strong>Camera</strong>
             </div>
-            <div>X: {Math.round(camera.x)}</div>
-            <div>Y: {Math.round(camera.y)}</div>
+            <div className="mb-1">
+              <div className="text-xs text-gray-300 mb-0.5">
+                Top-Left Position:
+              </div>
+              <div>X: {Math.round(camera.x)}</div>
+              <div>Y: {Math.round(camera.y)}</div>
+            </div>
+            <div className="mb-1">
+              <div className="text-xs text-gray-300 mb-0.5">
+                Center Position:
+              </div>
+              <div>
+                X: {Math.round(camera.x + window.innerWidth / 2 / camera.scale)}
+              </div>
+              <div>
+                Y:{' '}
+                {Math.round(camera.y + window.innerHeight / 2 / camera.scale)}
+              </div>
+            </div>
             <div>Zoom: {camera.scale.toFixed(2)}x</div>
 
             <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
@@ -97,12 +114,41 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
             <div>Group ID: {groupId}</div>
             <div>Type: {prototypeType}</div>
             <div>Is Master Preview: {isMasterPreview ? 'Yes' : 'No'}</div>
+
+            <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
+              <strong>Multiplayer</strong>
+            </div>
+            <div className="mb-2">
+              <div className="font-semibold">Players: {players.length}</div>
+              {players.length > 0 && (
+                <div className="ml-2.5 text-xs">
+                  <div>
+                    Names: {players.map((p) => p.playerName).join(', ')}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div>
+              <div className="font-semibold">
+                Cursors: {Object.keys(cursors).length}
+              </div>
+              {Object.keys(cursors).length > 0 && (
+                <div className="ml-2.5 text-xs">
+                  <div>
+                    Active Users:{' '}
+                    {Object.values(cursors)
+                      .map((c) => c.userName)
+                      .join(', ')}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         );
 
       case 'perf':
         return (
-          <div className="text-sm">
+          <div className="text-sm h-[50vh] overflow-y-auto">
             <div className="border-b border-white border-opacity-20 mb-2 pb-1">
               <strong>Performance</strong>
             </div>
@@ -195,108 +241,170 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
 
       case 'data':
         return (
-          <div className="text-sm">
+          <div className="text-sm h-[50vh] overflow-y-auto">
             <div className="border-b border-white border-opacity-20 mb-2 pb-1">
               <strong>Data Overview</strong>
             </div>
-            <div>Parts: {parts.length}</div>
-            {parts.length > 0 && (
-              <div className="ml-2.5 text-xs">
-                First part: {parts[0].id} ({parts[0].type})
-              </div>
-            )}
-            <div>Properties: {properties.length}</div>
-            {properties.length > 0 && (
-              <div className="ml-2.5 text-xs">
-                First property: {properties[0].name}
-              </div>
-            )}
-            <div>Players: {players.length}</div>
-            {players.length > 0 && (
-              <div className="ml-2.5 text-xs">
-                First player: {players[0].playerName}
-              </div>
-            )}
-            <div>Cursors: {Object.keys(cursors).length}</div>
+            <div className="mb-2">
+              <div className="font-semibold">Parts: {parts.length}</div>
+              {parts.length > 0 && (
+                <div className="ml-2.5 text-xs space-y-1">
+                  <div>
+                    Types: {[...new Set(parts.map((p) => p.type))].join(', ')}
+                  </div>
+                  <div>
+                    With Parent: {parts.filter((p) => p.parentId).length}
+                  </div>
+                  <div>
+                    Reversible Cards:{' '}
+                    {
+                      parts.filter((p) => p.type === 'card' && p.isReversible)
+                        .length
+                    }
+                  </div>
+                  <div>
+                    Flipped Cards:{' '}
+                    {
+                      parts.filter((p) => p.type === 'card' && p.isFlipped)
+                        .length
+                    }
+                  </div>
+                  <div>
+                    Hands with Owner:{' '}
+                    {parts.filter((p) => p.type === 'hand' && p.ownerId).length}
+                  </div>
+                  <div className="text-gray-300">
+                    Order Range:{' '}
+                    {Math.min(...parts.map((p) => p.order)).toFixed(2)} -{' '}
+                    {Math.max(...parts.map((p) => p.order)).toFixed(2)}
+                  </div>
+                  <div>Total Properties: {properties.length}</div>
+                  <div>
+                    Properties with Images:{' '}
+                    {properties.filter((p) => p.imageId).length}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         );
 
-      case 'details':
+      case 'parts':
         return (
-          <div className="text-sm">
-            <div className="border-b border-white border-opacity-20 mb-2 pb-1">
-              <strong>Detailed Information</strong>
-            </div>
-
-            {/* Properties詳細 */}
+          <div className="text-sm h-[50vh] overflow-y-auto">
+            {/* Parts詳細 - partIdごとにpropertiesもまとめて表示 */}
             <div className="mb-3">
               <div className="font-semibold mb-1">
-                Properties ({properties.length})
+                Parts with Properties ({parts.length})
               </div>
-              <div className="text-[11px] max-h-32 overflow-y-auto">
-                {properties.map((prop, index) => (
-                  <div
-                    key={`prop-${index}`}
-                    className="mb-2 border border-white border-opacity-10 p-1 rounded-sm"
-                  >
-                    <div>
-                      ID: {prop.partId}, Side: {prop.side}
-                    </div>
-                    <div>Name: {prop.name}</div>
-                    <div>Color: {prop.color}</div>
-                    <div>ImageID: {prop.imageId || 'None'}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
+              <div className="text-[11px]">
+                {parts
+                  .sort(
+                    (a, b) =>
+                      new Date(b.updatedAt).getTime() -
+                      new Date(a.updatedAt).getTime()
+                  )
+                  .map((part, index) => {
+                    // このパーツに関連するプロパティを取得
+                    const partProperties = properties.filter(
+                      (prop) => prop.partId === part.id
+                    );
 
-            {/* Parts詳細 */}
-            <div className="mb-3">
-              <div className="font-semibold mb-1">Parts ({parts.length})</div>
-              <div className="text-[11px] max-h-32 overflow-y-auto">
-                {parts.map((part, index) => (
-                  <div
-                    key={`part-${index}`}
-                    className="mb-2 border border-white border-opacity-10 p-1 rounded-sm"
-                  >
-                    <div>
-                      ID: {part.id}, Type: {part.type}
-                    </div>
-                    <div>Pos: {JSON.stringify(part.position)}</div>
-                    <div>
-                      Size: {part.width}x{part.height}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+                    return (
+                      <div
+                        key={`part-${index}`}
+                        className="mb-2 border border-white border-opacity-10 p-1 rounded-sm"
+                      >
+                        <div className="font-bold text-blue-300">
+                          ID: {part.id} | Type: {part.type}
+                        </div>
+                        <div>
+                          Position: ({part.position.x}, {part.position.y})
+                        </div>
+                        <div>
+                          Size: {part.width} × {part.height}
+                        </div>
+                        <div>
+                          Order:{' '}
+                          {typeof part.order === 'number'
+                            ? part.order.toFixed(3)
+                            : 'N/A'}
+                        </div>
+                        <div>Version ID: {part.prototypeVersionId}</div>
+                        {part.parentId !== undefined &&
+                          part.parentId !== null && (
+                            <div>Parent ID: {part.parentId}</div>
+                          )}
+                        {part.originalPartId !== undefined &&
+                          part.originalPartId !== null && (
+                            <div>Original ID: {part.originalPartId}</div>
+                          )}
+                        <div>
+                          Child Types: [
+                          {part.configurableTypeAsChild.join(', ')}]
+                        </div>
+                        {part.type === 'card' && (
+                          <>
+                            {part.isReversible !== undefined && (
+                              <div>
+                                Reversible: {part.isReversible ? 'Yes' : 'No'}
+                              </div>
+                            )}
+                            {part.isFlipped !== undefined && (
+                              <div>
+                                Flipped: {part.isFlipped ? 'Yes' : 'No'}
+                              </div>
+                            )}
+                          </>
+                        )}
+                        {part.type === 'hand' &&
+                          part.ownerId !== undefined &&
+                          part.ownerId !== null && (
+                            <div>Owner ID: {part.ownerId}</div>
+                          )}
+                        {part.type === 'deck' &&
+                          part.canReverseCardOnDeck !== undefined && (
+                            <div>
+                              Can Reverse Cards:{' '}
+                              {part.canReverseCardOnDeck ? 'Yes' : 'No'}
+                            </div>
+                          )}
 
-            {/* Cursors詳細 */}
-            <div className="mb-3">
-              <div className="font-semibold mb-1">
-                Cursors ({Object.keys(cursors).length})
-              </div>
-              <div className="text-[11px] max-h-32 overflow-y-auto">
-                {Object.entries(cursors)
-                  .slice(0, 5)
-                  .map(([, cursor]) => (
-                    <div
-                      key={cursor.userId}
-                      className="mb-2 border border-white border-opacity-10 p-1 rounded-sm"
-                    >
-                      <div>
-                        ID: {cursor.userId}, Name: {cursor.userName}
+                        {/* このパーツのプロパティ */}
+                        {partProperties.length > 0 && (
+                          <div className="mt-2 border-t border-white border-opacity-10 pt-1">
+                            <div className="text-yellow-300 font-bold text-[10px]">
+                              Properties ({partProperties.length}):
+                            </div>
+                            {partProperties.map((prop, propIndex) => (
+                              <div
+                                key={`prop-${propIndex}`}
+                                className="ml-2 mt-1 text-[10px] border-l border-white border-opacity-10 pl-1"
+                              >
+                                <div className="text-green-300">
+                                  Side: {prop.side}
+                                </div>
+                                <div>Name: {prop.name}</div>
+                                <div>Color: {prop.color}</div>
+                                <div>Text Color: {prop.textColor}</div>
+                                <div>ImageID: {prop.imageId || 'None'}</div>
+                                {prop.description && (
+                                  <div>Description: {prop.description}</div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="text-gray-400 text-[10px] mt-1">
+                          Created: {new Date(part.createdAt).toLocaleString()}
+                        </div>
+                        <div className="text-gray-400 text-[10px]">
+                          Updated: {new Date(part.updatedAt).toLocaleString()}
+                        </div>
                       </div>
-                      <div>
-                        Pos: {cursor.position.x}, {cursor.position.y}
-                      </div>
-                    </div>
-                  ))}
-                {Object.entries(cursors).length > 5 && (
-                  <div className="text-xs">
-                    ...and {Object.entries(cursors).length - 5} more
-                  </div>
-                )}
+                    );
+                  })}
               </div>
             </div>
           </div>
