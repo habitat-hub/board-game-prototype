@@ -330,7 +330,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
                             ? part.order.toFixed(3)
                             : 'N/A'}
                         </div>
-                        <div>Version ID: {part.prototypeVersionId}</div>
+                        <div>Version ID: {part.prototypeId}</div>
                         {part.parentId !== undefined &&
                           part.parentId !== null && (
                             <div>Parent ID: {part.parentId}</div>
