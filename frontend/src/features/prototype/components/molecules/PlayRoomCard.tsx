@@ -11,7 +11,7 @@ import formatDate from '@/utils/dateFormat';
 
 interface PlayRoomCardProps {
   prototype: Prototype;
-  onDelete: (prototypeId: string, prototypeVersionId: string) => Promise<void>;
+  onDelete: (prototypeId: string, prototypeInstanceId: string) => Promise<void>;
   prototypeGroup: PrototypeGroup; // プロトタイプグループ情報（プレイヤー数を表示するため）
 }
 

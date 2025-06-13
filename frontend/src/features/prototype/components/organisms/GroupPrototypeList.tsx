@@ -101,7 +101,7 @@ const GroupPrototypeList: React.FC = () => {
 
   /**
    * プレビュー版プロトタイプを作成する
-   * @param prototypeVersionId プレビュー版プロトタイプのID
+   * @param prototypeIdプレビュー版プロトタイプのID
    */
   const handleCreatePreviewPrototype = async (prototypeGroupId: string) => {
     await createPrototypeVersion(prototypeGroupId, {
@@ -115,7 +115,7 @@ const GroupPrototypeList: React.FC = () => {
   /**
    * 新しいルームを作成する
    * @param prototypeId プロトタイプのID
-   * @param prototypeVersionId プロトタイプのバージョンのID
+   * @param prototypeIdプロトタイプのバージョンのID
    */
   const handleCreateRoom = async (
     prototypeGroupId: string,

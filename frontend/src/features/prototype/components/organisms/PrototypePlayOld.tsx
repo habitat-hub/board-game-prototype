@@ -13,7 +13,7 @@ import {
   PrototypeGroup,
 } from '@/api/types';
 import Canvas from '@/features/prototype/components/organisms/Canvas';
-import { PrototypeVersionIdProvider } from '@/features/prototype/contexts/PrototypeVersionIdContext';
+import { PrototypeIdProvider } from '@/features/prototype/contexts/PrototypeIdContext';
 import { SocketProvider } from '@/features/prototype/contexts/SocketContext';
 import { CursorInfo } from '@/features/prototype/types/cursor';
 import { useUser } from '@/hooks/useUser';
@@ -51,7 +51,7 @@ const PrototypePlayOld: React.FC = () => {
   useEffect(() => {
     // サーバーに接続した後、特定のプロトタイプに参加
     socket.emit('JOIN_PROTOTYPE', {
-      prototypeVersionId: prototypeId,
+      prototypeId,
       userId: user?.id || '',
     });
 
@@ -101,7 +101,7 @@ const PrototypePlayOld: React.FC = () => {
 
   return (
     <SocketProvider socket={socket}>
-      <PrototypeVersionIdProvider prototypeVersionId={prototypeId}>
+      <PrototypeIdProvider prototypeId={prototypeId}>
         <Canvas
           prototypeName={
             prototype.prototypes.find(
@@ -116,7 +116,7 @@ const PrototypePlayOld: React.FC = () => {
           groupId={groupId}
           prototypeType="VERSION"
         />
-      </PrototypeVersionIdProvider>
+      </PrototypeIdProvider>
     </SocketProvider>
   );
 };
