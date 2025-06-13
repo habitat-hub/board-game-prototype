@@ -19,7 +19,7 @@ interface Part2Props {
   images: Record<string, string>[];
   players: Player[];
   isOtherPlayerCard: boolean;
-  prototypeType: 'EDIT' | 'PREVIEW';
+  prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE';
   onDragStart: (e: Konva.KonvaEventObject<DragEvent>) => void;
   onDragMove: (e: Konva.KonvaEventObject<DragEvent>, partId: number) => void;
   onDragEnd: (e: Konva.KonvaEventObject<DragEvent>, partId: number) => void;
@@ -60,7 +60,7 @@ const Part2 = forwardRef<PartHandle, Part2Props>(
 
     // 要素のドラッグ開始時に最前面に移動する処理を追加（PREVIEWモードのみ）
     useEffect(() => {
-      if (!groupRef.current || prototypeType !== 'PREVIEW') return;
+      if (!groupRef.current || prototypeType !== 'VERSION') return;
 
       const currentGroup = groupRef.current;
 
@@ -120,7 +120,7 @@ const Part2 = forwardRef<PartHandle, Part2Props>(
     }, [players, part.ownerId]);
 
     // 裏向き表示にする必要があるか
-    const isFlippedNeeded = prototypeType === 'PREVIEW' && isOtherPlayerCard;
+    const isFlippedNeeded = prototypeType === 'VERSION' && isOtherPlayerCard;
 
     // 対象面（表or裏）のプロパティを取得 (ローカルの isFlipped 状態を使用)
     const targetProperty = useMemo(() => {

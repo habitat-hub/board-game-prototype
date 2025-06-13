@@ -18,10 +18,10 @@ interface DebugInfoProps {
   };
   // Prototype info
   prototypeName: string;
-  prototypeVersionNumber: string;
+  prototypeVersionNumber: number;
   isMasterPreview: boolean;
   groupId: string;
-  prototypeType: 'EDIT' | 'PREVIEW';
+  prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE';
   // Data
   parts: Part[];
   properties: PartProperty[];

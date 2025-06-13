@@ -23,7 +23,6 @@ import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
 import ShortcutHelpPanel from '@/features/prototype/components/molecules/ShortcutHelpPanel';
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
-import { VERSION_NUMBER } from '@/features/prototype/const';
 import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { useSocket } from '@/features/prototype/hooks/useSocket';
@@ -36,7 +35,7 @@ interface CanvasProps {
   // プロトタイプ名
   prototypeName: string;
   // プロトタイプバージョン番号
-  prototypeVersionNumber?: string;
+  prototypeVersionNumber?: number;
   // グループID
   groupId: string;
   // パーツ
@@ -48,7 +47,7 @@ interface CanvasProps {
   // カーソル
   cursors: Record<string, CursorInfo>;
   // プロトタイプの種類
-  prototypeType: 'EDIT' | 'PREVIEW';
+  prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE';
 }
 
 export default function Canvas({
@@ -110,9 +109,7 @@ export default function Canvas({
   });
 
   // マスタープレビューかどうか
-  const isMasterPreview =
-    prototypeType === 'PREVIEW' &&
-    prototypeVersionNumber === VERSION_NUMBER.MASTER;
+  const isMasterPreview = prototypeType === 'VERSION';
 
   // 他のプレイヤーのカード
   const otherPlayerCards = useMemo(() => {
@@ -551,7 +548,7 @@ export default function Canvas({
         onAddPart={handleAddPart}
       />
 
-      {prototypeType === 'EDIT' && (
+      {prototypeType === 'MASTER' && (
         <>
           {/* ショートカットヘルプパネル */}
           <ShortcutHelpPanel

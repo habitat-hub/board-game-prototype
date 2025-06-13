@@ -4,13 +4,13 @@ import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 import { io } from 'socket.io-client';
 
-import { usePrototypes } from '@/api/hooks/usePrototypes';
+import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
 import {
   Part,
   PartProperty,
   Player,
   Prototype,
-  PrototypeVersion,
+  PrototypeGroup,
 } from '@/api/types';
 import GameBoard from '@/features/prototype/components/organisms/GameBoard';
 import { PrototypeVersionIdProvider } from '@/features/prototype/contexts/PrototypeVersionIdContext';
@@ -22,19 +22,19 @@ const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
 export default function PrototypeEdit() {
   const router = useRouter();
-  const { getPrototypeVersions } = usePrototypes();
+  const { getPrototypeGroup } = usePrototypeGroup();
   const { user } = useUser();
 
   // プロトタイプID, バージョンID
-  const { prototypeId, versionId } = useParams<{
+  const { groupId, prototypeId } = useParams<{
+    groupId: string;
     prototypeId: string;
-    versionId: string;
   }>();
 
   // プロトタイプ
   const [prototype, setPrototype] = useState<
-    | (Prototype & {
-        versions: PrototypeVersion[];
+    | (PrototypeGroup & {
+        prototypes: Prototype[];
       })
     | null
   >(null);
@@ -51,7 +51,7 @@ export default function PrototypeEdit() {
   useEffect(() => {
     // サーバーに接続した後、特定のプロトタイプに参加
     socket.emit('JOIN_PROTOTYPE', {
-      prototypeVersionId: versionId,
+      prototypeVersionId: prototypeId,
       userId: user?.id || '',
     });
 
@@ -76,46 +76,45 @@ export default function PrototypeEdit() {
       socket.off('UPDATE_PLAYERS');
       socket.off('UPDATE_CURSORS');
     };
-  }, [versionId, user?.id]);
+  }, [prototypeId, user?.id]);
 
   // プロタイプの取得
   useEffect(() => {
-    getPrototypeVersions(prototypeId)
+    getPrototypeGroup(groupId)
       .then((response) => {
-        const { prototype, versions } = response;
+        const { prototypeGroup, prototypes } = response;
 
-        // プロトタイプのタイプが編集版でない場合
-        if (prototype.type !== 'EDIT') {
-          router.replace(`/prototypes/groups/${prototype.groupId}`);
-          return;
-        }
-
-        setPrototype({ ...prototype, versions });
+        setPrototype({ ...prototypeGroup, prototypes });
       })
       .catch((error) => console.error('Error fetching prototypes:', error));
-  }, [getPrototypeVersions, prototypeId, router]);
+  }, [getPrototypeGroup, groupId, router]);
 
   // バージョン番号
   const versionNumber = useMemo(() => {
-    return prototype?.versions.find((version) => version.id === versionId)
-      ?.versionNumber;
-  }, [prototype, versionId]);
+    return prototype?.prototypes.find(
+      (prototype) => prototype.id === prototypeId
+    )?.versionNumber;
+  }, [prototype, prototypeId]);
 
   // プロトタイプが存在しない場合
   if (!prototype) return null;
 
   return (
     <SocketProvider socket={socket}>
-      <PrototypeVersionIdProvider prototypeVersionId={versionId}>
+      <PrototypeVersionIdProvider prototypeVersionId={prototypeId}>
         <GameBoard
-          prototypeName={prototype.name}
+          prototypeName={
+            prototype.prototypes.find(
+              (prototype) => prototype.id === prototypeId
+            )?.name || ''
+          }
           parts={parts}
           properties={properties}
           players={players}
           cursors={cursors}
           prototypeVersionNumber={versionNumber}
-          groupId={prototype.groupId}
-          prototypeType="EDIT"
+          groupId={groupId}
+          prototypeType="MASTER"
         />
       </PrototypeVersionIdProvider>
     </SocketProvider>

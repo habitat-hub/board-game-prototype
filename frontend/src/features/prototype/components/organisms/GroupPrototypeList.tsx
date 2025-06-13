@@ -265,7 +265,7 @@ const GroupPrototypeList: React.FC = () => {
    * プロトタイプを複製する
    * @param prototypeId プロトタイプID
    */
-  const handleDuplicate = async (prototypeId: string) => {
+  const handleDuplicate = async () => {
     try {
       // TODO: 複製処理を実装
       // await duplicatePrototype(prototypeId);
@@ -357,7 +357,7 @@ const GroupPrototypeList: React.FC = () => {
                   <button
                     onClick={() =>
                       prototype.master &&
-                      router.push(`/prototypes/${prototype.master.id}/delete`)
+                      router.push(`/prototypes/groups/${groupId}/delete`)
                     }
                     className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/70 text-wood-dark hover:text-red-600 rounded-md hover:bg-white transition-colors border border-wood-light/30"
                     title="プロトタイプ削除"
@@ -487,7 +487,9 @@ const GroupPrototypeList: React.FC = () => {
           <button
             onClick={() => {
               if (!prototype.master) return;
-              router.push(`/prototypes/${prototype.master.id}/edit`);
+              router.push(
+                `/prototypes/groups/${groupId}/${prototype.master.id}/edit`
+              );
             }}
             className="bg-gradient-to-r from-header/90 to-header-light/90 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-header/20 group w-full"
             title="プロトタイプ編集"
