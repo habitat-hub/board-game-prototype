@@ -3,9 +3,9 @@ import {
   Prototype,
   PrototypeGroup,
   PrototypeGroupsCreatePayload,
-  PrototypeGroupsInstanceCreateData,
+  PrototypeGroupsInstanceCreatePayload,
   PrototypeGroupsInviteCreatePayload,
-  PrototypeGroupsVersionCreateData,
+  PrototypeGroupsVersionCreatePayload,
   User,
 } from '../types';
 
@@ -36,7 +36,7 @@ export const prototypeGroupService = {
    */
   createPrototypeVersion: async (
     prototypeGroupId: string,
-    data: PrototypeGroupsVersionCreateData
+    data: PrototypeGroupsVersionCreatePayload
   ): Promise<Prototype> => {
     const response = await axiosInstance.post(
       `/api/prototype-groups/${prototypeGroupId}/version`,
@@ -50,7 +50,7 @@ export const prototypeGroupService = {
   createPrototypeInstance: async (
     prototypeGroupId: string,
     prototypeVersionId: string,
-    data: PrototypeGroupsInstanceCreateData
+    data: PrototypeGroupsInstanceCreatePayload
   ): Promise<Prototype> => {
     const response = await axiosInstance.post(
       `/api/prototype-groups/${prototypeGroupId}/${prototypeVersionId}/instance`,

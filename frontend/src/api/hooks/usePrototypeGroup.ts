@@ -3,9 +3,9 @@ import { useCallback } from 'react';
 import { prototypeGroupService } from '@/api/endpoints/prototypeGroup';
 import {
   PrototypeGroupsCreatePayload,
-  PrototypeGroupsVersionCreateData,
-  PrototypeGroupsInstanceCreateData,
+  PrototypeGroupsInstanceCreatePayload,
   PrototypeGroupsInviteCreatePayload,
+  PrototypeGroupsVersionCreatePayload,
 } from '@/api/types';
 
 export const usePrototypeGroup = () => {
@@ -32,7 +32,7 @@ export const usePrototypeGroup = () => {
   const createPrototypeVersion = useCallback(
     async (
       prototypeGroupId: string,
-      data: PrototypeGroupsVersionCreateData
+      data: PrototypeGroupsVersionCreatePayload
     ) => {
       return await prototypeGroupService.createPrototypeVersion(
         prototypeGroupId,
@@ -49,7 +49,7 @@ export const usePrototypeGroup = () => {
     async (
       prototypeGroupId: string,
       prototypeVersionId: string,
-      data: PrototypeGroupsInstanceCreateData
+      data: PrototypeGroupsInstanceCreatePayload
     ) => {
       return await prototypeGroupService.createPrototypeInstance(
         prototypeGroupId,
