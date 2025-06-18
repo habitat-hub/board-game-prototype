@@ -228,7 +228,6 @@ const PrototypeList: React.FC = () => {
                   {getSortIcon('name')}
                 </button>
               </th>
-              <th className="text-left p-4 w-36">プレイヤー人数</th>
               <th className="text-left p-4 w-32">
                 <button
                   onClick={() => handleSort('createdAt')}
@@ -291,16 +290,6 @@ const PrototypeList: React.FC = () => {
                         </button>
                       </div>
                     )}
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center">
-                      <span className="text-wood-dark">
-                        {minPlayers !== maxPlayers
-                          ? `${minPlayers} ~ ${maxPlayers}`
-                          : `${minPlayers}`}
-                      </span>
-                      <span className="text-wood-dark">人</span>
-                    </div>
                   </td>
                   <td className="p-4 text-sm text-wood">
                     {formatDate(createdAt)}
