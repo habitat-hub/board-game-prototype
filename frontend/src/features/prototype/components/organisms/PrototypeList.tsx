@@ -12,6 +12,7 @@ import React, {
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { FaBoxOpen, FaPlus } from 'react-icons/fa6';
 import { GiWoodenSign } from 'react-icons/gi';
+import { IoTrash } from 'react-icons/io5';
 import { RiLoaderLine } from 'react-icons/ri';
 
 import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
@@ -447,6 +448,18 @@ const PrototypeList: React.FC = () => {
                       <FaBoxOpen className="w-4 h-4" />
                       <span>開く</span>
                     </Link>
+                    <button
+                      onClick={() =>
+                        router.push(
+                          `/prototypes/groups/${prototypeGroup.id}/delete`
+                        )
+                      }
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
+                      title="プロトタイプ削除"
+                    >
+                      <IoTrash className="w-4 h-4" />
+                      <span>削除</span>
+                    </button>
                   </td>
                 </tr>
               );
