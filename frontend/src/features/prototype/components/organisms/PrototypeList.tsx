@@ -9,6 +9,7 @@ import React, {
   useContext,
 } from 'react';
 import { FaCheck } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { FaBoxOpen, FaPenToSquare, FaPlus } from 'react-icons/fa6';
 
@@ -20,6 +21,7 @@ import formatDate from '@/utils/dateFormat';
 
 import EmptyPrototypeList from '../molecules/EmptyPrototypeList';
 import PrototypeListSkeleton from '../molecules/PrototypeListSkeleton';
+import { IoTrash } from 'react-icons/io5';
 
 type SortKey = 'name' | 'createdAt';
 type SortOrder = 'asc' | 'desc';
@@ -59,6 +61,7 @@ const PrototypeList: React.FC = () => {
     key: 'createdAt',
     order: 'desc',
   });
+  const router = useRouter();
 
   /**
    * プロトタイプ名の編集モードを切り替える関数
@@ -308,6 +311,16 @@ const PrototypeList: React.FC = () => {
                       <FaBoxOpen className="w-4 h-4" />
                       <span>開く</span>
                     </Link>
+                    <button
+                      onClick={() =>
+                        router.push(`/prototypes/groups/${prototypeGroup.id}/delete`)
+                      }
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
+                      title="プロトタイプ削除"
+                    >
+                      <IoTrash className="w-4 h-4" />
+                      <span>削除</span>
+                    </button>
                   </td>
                 </tr>
               );
