@@ -3,13 +3,13 @@ import { AxiosInstance } from 'axios';
 // リダイレクト先URL定数
 const REDIRECT_URLS = {
   UNAUTHORIZED: '/', // 401: 未認証時のリダイレクト先
-  FORBIDDEN: '/prototypes', // 403: 認可エラー時のリダイレクト先
+  FORBIDDEN: '/groups', // 403: 認可エラー時のリダイレクト先
 } as const;
 
 /**
  * 認証エラーハンドリング用のレスポンスインターセプター
  * 401: 未認証 -> / にリダイレクト
- * 403: 認可エラー -> /prototypes にリダイレクト
+ * 403: 認可エラー -> /groups にリダイレクト
  *
  * Next.jsのrouter/navigationが使えない理由：
  * - useRouter: フックなので、React コンポーネント内でしか使えない

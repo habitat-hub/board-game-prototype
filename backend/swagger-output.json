@@ -444,7 +444,7 @@
                 "schema": {
                   "type": "string"
                 },
-                "example": "http://localhost:3000/prototypes"
+                "example": "http://localhost:3000/groups"
               }
             }
           }

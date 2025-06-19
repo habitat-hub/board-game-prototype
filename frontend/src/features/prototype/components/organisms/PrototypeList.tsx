@@ -277,7 +277,7 @@ const PrototypeList: React.FC = () => {
                     ) : (
                       <div className="flex items-center">
                         <Link
-                          href={`prototypes/groups/${prototypeGroup.id}`}
+                          href={`groups/${prototypeGroup.id}`}
                           className="text-wood-darkest font-medium"
                         >
                           {name}
@@ -312,7 +312,7 @@ const PrototypeList: React.FC = () => {
                   </td>
                   <td className="p-4 flex justify-center gap-2">
                     <Link
-                      href={`prototypes/groups/${prototypeGroup.id}`}
+                      href={`groups/${prototypeGroup.id}`}
                       className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
                       title="プロトタイプを開く"
                     >

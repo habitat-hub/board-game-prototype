@@ -265,7 +265,7 @@ const GroupPrototypeList: React.FC = () => {
     try {
       // TODO: 複製処理を実装
       // await duplicatePrototype(prototypeId);
-      router.push('/prototypes'); // 複製後はプロトタイプ一覧へ
+      router.push('/groups'); // 複製後はプロトタイプ一覧へ
     } catch (error) {
       console.error('Error duplicating prototype:', error);
     }
@@ -278,7 +278,7 @@ const GroupPrototypeList: React.FC = () => {
     <div className="max-w-4xl mx-auto mt-16 relative">
       <div className="flex items-center gap-4 mb-8">
         <button
-          onClick={() => router.push('/prototypes')}
+          onClick={() => router.push('/groups')}
           className="p-2 hover:bg-content-secondary rounded-full transition-colors"
           title="プロトタイプ一覧へ戻る"
         >
@@ -351,7 +351,7 @@ const GroupPrototypeList: React.FC = () => {
                   <button
                     onClick={() =>
                       prototypeInfo.master &&
-                      router.push(`/prototypes/groups/${groupId}/delete`)
+                      router.push(`/groups/${groupId}/delete`)
                     }
                     className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/70 text-wood-dark hover:text-red-600 rounded-md hover:bg-white transition-colors border border-wood-light/30"
                     title="プロトタイプ削除"
@@ -484,7 +484,7 @@ const GroupPrototypeList: React.FC = () => {
             onClick={() => {
               if (!prototypeInfo.master) return;
               router.push(
-                `/prototypes/groups/${groupId}/${prototypeInfo.master.id}/edit`
+                `/groups/${groupId}/prototypes/${prototypeInfo.master.id}/edit`
               );
             }}
             className="bg-gradient-to-r from-header/90 to-header-light/90 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-header/20 group w-full"
