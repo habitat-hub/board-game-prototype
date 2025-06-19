@@ -42,20 +42,23 @@ const CreatePrototypeForm: React.FC = () => {
       setIsCreating(true);
 
       // プロトタイプを作成する
-      const newPrototype = await createPrototypeGroup({
+      const group = await createPrototypeGroup({
         name: form.name,
         playerCount: form.playerCount,
       });
 
-      // フォームをリセットする
-      setForm({
-        name: '',
-        playerCount: 4,
-      });
+      const masterPrototype = group.prototypes.find((p) => p.type === 'MASTER');
+
+      if (!masterPrototype) {
+        throw new Error('マスタープロトタイプが見つかりません。');
+      }
+
       setError(null);
 
       // グループページへ遷移する
-      router.push(`/prototypes/groups/${newPrototype.prototypeGroupId}`);
+      router.push(
+        `/prototypes/groups/${group.prototypeGroup.id}/${masterPrototype.id}/edit`
+      );
     } catch (error) {
       console.error('Error creating prototype:', error);
       setError('エラーが発生しました。');
