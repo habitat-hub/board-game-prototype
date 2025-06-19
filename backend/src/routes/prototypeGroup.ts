@@ -10,7 +10,7 @@ import { getAccessiblePrototypes } from '../helpers/prototypeHelper';
 import sequelize from '../models';
 import {
   createPrototypeInstance,
-  createPrototypeMaster,
+  createPrototypeGroup,
   createPrototypeVersion,
 } from '../factories/prototypeFactory';
 import PrototypeModel from '../models/Prototype';
@@ -112,7 +112,7 @@ router.post('/', async (req: Request, res: Response) => {
 
   const transaction = await sequelize.transaction();
   try {
-    const newPrototype = await createPrototypeMaster({
+    const group = await createPrototypeGroup({
       userId: user.id,
       name,
       minPlayers: playerCount,
@@ -121,7 +121,7 @@ router.post('/', async (req: Request, res: Response) => {
     });
 
     await transaction.commit();
-    res.status(201).json(newPrototype);
+    res.status(201).json(group);
   } catch (error) {
     await transaction.rollback();
     console.error(error);
