@@ -10,16 +10,16 @@ import PartModel from '../models/Part';
 import PartPropertyModel from '../models/PartProperty';
 
 /**
- * マスタープロトタイプを作成する
+ * プロトタイプグループを作成する
  *
  * @param userId - ユーザーID
  * @param name - プロトタイプ名
  * @param minPlayers - 最小プレイヤー数
  * @param maxPlayers - 最大プレイヤー数
  * @param transaction - トランザクション
- * @returns 作成したプロトタイプ
+ * @returns 作成したプロトタイプグループとそれに含まれるプロトタイプ
  */
-export async function createPrototypeMaster({
+export async function createPrototypeGroup({
   userId,
   name,
   minPlayers,
@@ -79,7 +79,10 @@ export async function createPrototypeMaster({
     { transaction }
   );
 
-  return masterPrototype;
+  return {
+    prototypeGroup,
+    prototypes: [masterPrototype],
+  };
 }
 
 /**
