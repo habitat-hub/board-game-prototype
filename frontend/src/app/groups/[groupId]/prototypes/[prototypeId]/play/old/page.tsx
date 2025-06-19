@@ -8,6 +8,7 @@ export const metadata: Metadata = {
 };
 
 export const runtime = 'edge';
+
 const PrototypesPreviewPage: React.FC = () => {
   return <PrototypePlayOld />;
 };

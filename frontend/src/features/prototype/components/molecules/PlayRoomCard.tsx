@@ -21,7 +21,7 @@ const PlayRoomCard: React.FC<PlayRoomCardProps> = ({
   prototypeGroup,
 }) => {
   return (
-    <Link href={`/prototypes/${prototypeGroup.id}/${prototype.id}/play`}>
+    <Link href={`/groups/${prototypeGroup.id}/prototypes/${prototype.id}/play`}>
       <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-wood-light/20 group">
         <div className="bg-gradient-to-r from-wood-lightest to-wood-lightest/50 p-3 border-b border-wood-light/20">
           <div className="flex justify-between items-center">

@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   title: 'プロトタイプ一覧',
 };
 
-const PrototypesPage: React.FC = () => {
+const GroupsPage: React.FC = () => {
   return <PrototypeList />;
 };
 
-export default PrototypesPage;
+export default GroupsPage;
