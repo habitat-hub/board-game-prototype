@@ -973,6 +973,44 @@ router.delete(
     const { prototypeGroupId, userId } = req.params;
 
     try {
+      // プロトタイプグループの作成者かチェック
+      const prototypeGroup =
+        await PrototypeGroupModel.findByPk(prototypeGroupId);
+      if (prototypeGroup && prototypeGroup.userId === userId) {
+        res.status(400).json({
+          error: 'プロトタイプグループの作成者のロールは削除できません',
+        });
+        return;
+      }
+
+      // 最後の管理者かチェック
+      const adminRole = await RoleModel.findOne({ where: { name: 'admin' } });
+      if (adminRole) {
+        const adminCount = await UserRoleModel.count({
+          where: {
+            roleId: adminRole.id,
+            resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
+            resourceId: prototypeGroupId,
+          },
+        });
+
+        const userAdminRole = await UserRoleModel.findOne({
+          where: {
+            userId,
+            roleId: adminRole.id,
+            resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
+            resourceId: prototypeGroupId,
+          },
+        });
+
+        if (userAdminRole && adminCount <= 1) {
+          res
+            .status(400)
+            .json({ error: '最後の管理者のロールは削除できません' });
+          return;
+        }
+      }
+
       // ユーザーの全ロールを削除
       await UserRoleModel.destroy({
         where: {
