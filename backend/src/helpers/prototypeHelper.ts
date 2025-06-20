@@ -1,9 +1,9 @@
 import { Op } from 'sequelize';
-import AccessModel from '../models/Access';
 import PartModel from '../models/Part';
 import PrototypeGroupModel from '../models/PrototypeGroup';
-import UserModel from '../models/User';
 import PrototypeModel from '../models/Prototype';
+import { getAccessibleResourceIds } from './roleHelper';
+import { RESOURCE_TYPES, PERMISSION_ACTIONS } from '../const';
 
 /**
  * アクセス可能なプロトタイプグループを取得する
@@ -16,15 +16,13 @@ export async function getAccessiblePrototypeGroups({
 }: {
   userId: string;
 }) {
-  // アクセス権
-  const accesses = await AccessModel.findAll({
-    include: {
-      model: UserModel,
-      where: { id: userId },
-    },
-  });
-  // アクセス可能なグループID
-  const accessibleGroupIds = accesses.map((access) => access.prototypeGroupId);
+  // ユーザーがアクセス可能なプロトタイプグループIDを取得
+  const accessibleGroupIds = await getAccessibleResourceIds(
+    userId,
+    RESOURCE_TYPES.PROTOTYPE_GROUP,
+    PERMISSION_ACTIONS.READ
+  );
+
   // アクセス可能なプロトタイプグループ
   return await PrototypeGroupModel.findAll({
     where: { id: { [Op.in]: accessibleGroupIds } },

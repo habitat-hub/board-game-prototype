@@ -119,4 +119,49 @@ export const prototypeGroupService = {
     );
     return response.data;
   },
+
+  /**
+   * プロトタイプグループのロール一覧取得
+   */
+  getPrototypeGroupRoles: async (
+    prototypeGroupId: string
+  ): Promise<
+    Array<{
+      userId: string;
+      user: User;
+      roles: Array<{ name: string; description: string }>;
+    }>
+  > => {
+    const response = await axiosInstance.get(
+      `/api/prototype-groups/${prototypeGroupId}/roles`
+    );
+    return response.data;
+  },
+
+  /**
+   * プロトタイプグループにロール追加
+   */
+  addRoleToPrototypeGroup: async (
+    prototypeGroupId: string,
+    data: { userId: string; roleName: string }
+  ): Promise<void> => {
+    const response = await axiosInstance.post(
+      `/api/prototype-groups/${prototypeGroupId}/roles`,
+      data
+    );
+    return response.data;
+  },
+
+  /**
+   * プロトタイプグループからロール削除
+   */
+  removeRoleFromPrototypeGroup: async (
+    prototypeGroupId: string,
+    userId: string
+  ): Promise<void> => {
+    const response = await axiosInstance.delete(
+      `/api/prototype-groups/${prototypeGroupId}/roles/${userId}`
+    );
+    return response.data;
+  },
 };

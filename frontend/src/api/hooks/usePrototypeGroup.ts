@@ -115,6 +115,47 @@ export const usePrototypeGroup = () => {
     []
   );
 
+  /**
+   * プロトタイプグループのロール一覧取得
+   */
+  const getPrototypeGroupRoles = useCallback(
+    async (prototypeGroupId: string) => {
+      return await prototypeGroupService.getPrototypeGroupRoles(
+        prototypeGroupId
+      );
+    },
+    []
+  );
+
+  /**
+   * プロトタイプグループにロール追加
+   */
+  const addRoleToPrototypeGroup = useCallback(
+    async (
+      prototypeGroupId: string,
+      data: { userId: string; roleName: string }
+    ) => {
+      return await prototypeGroupService.addRoleToPrototypeGroup(
+        prototypeGroupId,
+        data
+      );
+    },
+    []
+  );
+
+  /**
+   * プロトタイプグループからロール削除
+   */
+  const removeRoleFromPrototypeGroup = useCallback(
+    async (prototypeGroupId: string, userId: string) => {
+      return await prototypeGroupService.removeRoleFromPrototypeGroup(
+        prototypeGroupId,
+        userId
+      );
+    },
+    []
+  );
+
   return {
     getPrototypeGroups,
     createPrototypeGroup,
@@ -125,5 +166,8 @@ export const usePrototypeGroup = () => {
     inviteToPrototypeGroup,
     deleteInviteFromPrototypeGroup,
     deletePrototypeGroup,
+    getPrototypeGroupRoles,
+    addRoleToPrototypeGroup,
+    removeRoleFromPrototypeGroup,
   };
 };

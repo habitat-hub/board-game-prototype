@@ -3,9 +3,9 @@ import UserModel from '../models/User';
 import PrototypeGroupModel from '../models/PrototypeGroup';
 import { ensureAuthenticated } from '../middlewares/auth';
 import {
-  checkPrototypeGroupAccess,
-  checkPrototypeGroupOwner,
-} from '../middlewares/accessControl';
+  checkPrototypeGroupReadPermission,
+  checkPrototypeGroupManagePermission,
+} from '../middlewares/authorization';
 import { getAccessiblePrototypes } from '../helpers/prototypeHelper';
 import sequelize from '../models';
 import {
@@ -16,8 +16,11 @@ import {
 import PrototypeModel from '../models/Prototype';
 import { Op } from 'sequelize';
 import { getAccessibleUsers } from '../helpers/userHelper';
-import AccessModel from '../models/Access';
-import UserAccessModel from '../models/UserAccess';
+import { assignRole } from '../helpers/roleHelper';
+import { RESOURCE_TYPES, ROLE_TYPE } from '../const';
+import RoleModel from '../models/Role';
+import UserRoleModel from '../models/UserRole';
+import { getPrototypeGroupMembers } from '../helpers/userRoleHelper';
 
 const router = express.Router();
 
@@ -168,7 +171,7 @@ router.post('/', async (req: Request, res: Response) => {
  */
 router.post(
   '/:prototypeGroupId/version',
-  checkPrototypeGroupAccess,
+  checkPrototypeGroupReadPermission,
   async (req: Request, res: Response) => {
     const { name, versionNumber } = req.body;
     if (!name || !versionNumber) {
@@ -250,7 +253,7 @@ router.post(
  */
 router.post(
   '/:prototypeGroupId/:prototypeVersionId/instance',
-  checkPrototypeGroupAccess,
+  checkPrototypeGroupReadPermission,
   async (req: Request, res: Response) => {
     const { name, versionNumber } = req.body;
     if (!name || !versionNumber) {
@@ -317,7 +320,7 @@ router.post(
  */
 router.get(
   '/:prototypeGroupId',
-  checkPrototypeGroupAccess,
+  checkPrototypeGroupReadPermission,
   async (req: Request, res: Response) => {
     const prototypeGroupId = req.params.prototypeGroupId;
 
@@ -374,7 +377,7 @@ router.get(
  */
 router.delete(
   '/:prototypeGroupId',
-  checkPrototypeGroupOwner,
+  checkPrototypeGroupManagePermission,
   async (req: Request, res: Response) => {
     const prototypeGroupId = req.params.prototypeGroupId;
 
@@ -424,7 +427,7 @@ router.delete(
  */
 router.get(
   '/:prototypeGroupId/access-users',
-  checkPrototypeGroupAccess,
+  checkPrototypeGroupReadPermission,
   async (req: Request, res: Response) => {
     const prototypeGroupId = req.params.prototypeGroupId;
 
@@ -462,6 +465,12 @@ router.get(
  *                 type: array
  *                 items:
  *                   type: string
+ *                 description: 招待するユーザーのIDリスト
+ *               roleType:
+ *                 type: string
+ *                 enum: ['admin', 'editor', 'viewer']
+ *                 default: 'editor'
+ *                 description: "付与するロールタイプ（admin：管理者、editor：編集者、viewer：閲覧者）"
  *     responses:
  *       '200':
  *         description: ユーザーを招待しました
@@ -470,7 +479,7 @@ router.get(
  *             schema:
  *               $ref: '#/components/schemas/SuccessResponse'
  *       '400':
- *         description: リクエストが不正です
+ *         description: リクエストが不正です（無効なロールタイプまたは無効なロールが指定された場合）
  *         content:
  *           application/json:
  *             schema:
@@ -490,17 +499,27 @@ router.get(
  */
 router.post(
   '/:prototypeGroupId/invite',
-  checkPrototypeGroupAccess,
+  checkPrototypeGroupReadPermission,
   async (req, res) => {
     const prototypeGroupId = req.params.prototypeGroupId;
     const guestIds = req.body.guestIds;
+    const roleType = req.body.roleType || ROLE_TYPE.EDITOR; // デフォルトはeditor
+
+    // 有効なロールタイプかチェック
+    const validRoleTypes = Object.values(ROLE_TYPE);
+    if (!validRoleTypes.includes(roleType)) {
+      res.status(400).json({ message: '無効なロールタイプが指定されました' });
+      return;
+    }
 
     try {
-      const access = await AccessModel.findOne({
-        where: { prototypeGroupId },
+      // 指定されたロールを取得
+      const role = await RoleModel.findOne({
+        where: { name: roleType },
       });
-      if (!access) {
-        res.status(400).json({ message: 'リクエストが不正です' });
+
+      if (!role) {
+        res.status(400).json({ message: '無効なロールが指定されました' });
         return;
       }
 
@@ -514,14 +533,19 @@ router.post(
 
       await Promise.all(
         guests.map(async (guest) => {
-          await UserAccessModel.upsert({
-            userId: guest.id,
-            accessId: access.id,
-          });
+          await assignRole(
+            guest.id,
+            role.id,
+            RESOURCE_TYPES.PROTOTYPE_GROUP,
+            prototypeGroupId
+          );
         })
       );
 
-      res.status(200).json({ message: 'ユーザーを招待しました' });
+      res.status(200).json({
+        message: `ユーザーを${roleType}ロールで招待しました`,
+        assignedRole: roleType,
+      });
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: '予期せぬエラーが発生しました' });
@@ -577,7 +601,7 @@ router.post(
  */
 router.delete(
   '/:prototypeGroupId/invite/:guestId',
-  checkPrototypeGroupAccess,
+  checkPrototypeGroupReadPermission,
   async (req, res) => {
     const prototypeGroupId = req.params.prototypeGroupId;
     const guestId = req.params.guestId;
@@ -594,16 +618,13 @@ router.delete(
         return;
       }
 
-      const access = await AccessModel.findOne({
-        where: { prototypeGroupId },
-      });
-      if (!access) {
-        res.status(400).json({ message: 'リクエストが不正です' });
-        return;
-      }
-
-      await UserAccessModel.destroy({
-        where: { userId: guestId, accessId: access.id },
+      // すべてのロールを削除（このプロトタイプグループに対する）
+      await UserRoleModel.destroy({
+        where: {
+          userId: guestId,
+          resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
+          resourceId: prototypeGroupId,
+        },
       });
 
       res.status(200).json({ message: 'ユーザーのアクセス権を削除しました' });
@@ -650,15 +671,362 @@ router.delete(
  */
 router.post(
   '/:prototypeGroupId/duplicate',
-  checkPrototypeGroupAccess,
+  checkPrototypeGroupReadPermission,
+  async (req, res) => {
+    // const prototypeGroupId = req.params.prototypeGroupId;
+
+    try {
+      // TODO: グループの複製
+      res.status(501).json({ message: '未実装' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: '予期せぬエラーが発生しました' });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/prototype-groups/{prototypeGroupId}/members:
+ *   get:
+ *     tags: [PrototypeGroups]
+ *     summary: プロトタイプグループのメンバー一覧取得
+ *     description: プロトタイプグループのメンバーとそのロールを取得します。
+ *     parameters:
+ *       - name: prototypeGroupId
+ *         in: path
+ *         required: true
+ *         description: プロトタイプグループのID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: メンバー一覧を返します
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   userId:
+ *                     type: string
+ *                   roles:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         name:
+ *                           type: string
+ *                         description:
+ *                           type: string
+ */
+router.get(
+  '/:prototypeGroupId/members',
+  checkPrototypeGroupReadPermission,
   async (req, res) => {
     const prototypeGroupId = req.params.prototypeGroupId;
 
     try {
-      // TODO: グループの複製
+      const members = await getPrototypeGroupMembers(prototypeGroupId);
+      res.json(members);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: '予期せぬエラーが発生しました' });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/prototype-groups/{prototypeGroupId}/roles:
+ *   get:
+ *     tags: [PrototypeGroups]
+ *     summary: プロトタイプグループのロール一覧取得
+ *     description: プロトタイプグループのユーザーロール一覧を取得します。
+ *     parameters:
+ *       - in: path
+ *         name: prototypeGroupId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: プロトタイプグループのID
+ *     responses:
+ *       '200':
+ *         description: ロール一覧
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   userId:
+ *                     type: string
+ *                   user:
+ *                     $ref: '#/components/schemas/User'
+ *                   roles:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         name:
+ *                           type: string
+ *                         description:
+ *                           type: string
+ */
+router.get(
+  '/:prototypeGroupId/roles',
+  checkPrototypeGroupReadPermission,
+  async (req: Request, res: Response) => {
+    const { prototypeGroupId } = req.params;
+
+    try {
+      // UserRoleを関連データと共に取得（N+1問題を解決）
+      const userRoles = await UserRoleModel.findAll({
+        where: {
+          resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
+          resourceId: prototypeGroupId,
+        },
+        include: [
+          {
+            model: UserModel,
+            as: 'User',
+            attributes: ['id', 'username'],
+          },
+          {
+            model: RoleModel,
+            as: 'Role',
+            attributes: ['name', 'description'],
+          },
+        ],
+      });
+
+      // ユーザーごとにロールをグループ化
+      const roleMap = new Map();
+      userRoles.forEach((userRole) => {
+        // 関連データが存在することを確認
+        if (!userRole.User || !userRole.Role) {
+          console.warn(
+            'UserRole record missing associated User or Role data:',
+            userRole
+          );
+          return;
+        }
+
+        const userId = userRole.User.id;
+        if (!roleMap.has(userId)) {
+          roleMap.set(userId, {
+            userId,
+            user: {
+              id: userRole.User.id,
+              username: userRole.User.username,
+            },
+            roles: [],
+          });
+        }
+        roleMap.get(userId).roles.push({
+          name: userRole.Role.name,
+          description: userRole.Role.description,
+        });
+      });
+
+      res.json(Array.from(roleMap.values()));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/prototype-groups/{prototypeGroupId}/roles:
+ *   post:
+ *     tags: [PrototypeGroups]
+ *     summary: プロトタイプグループにロールを追加
+ *     description: ユーザーにプロトタイプグループのロールを割り当てます。
+ *     parameters:
+ *       - in: path
+ *         name: prototypeGroupId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: プロトタイプグループのID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *               roleName:
+ *                 type: string
+ *                 enum: [admin, editor, viewer]
+ *     responses:
+ *       '201':
+ *         description: ロールが追加されました
+ *       '400':
+ *         description: リクエストが不正です
+ *       '404':
+ *         description: ユーザーまたはロールが見つかりません
+ *       '409':
+ *         description: ユーザーは既にこのロールを持っています
+ */
+router.post(
+  '/:prototypeGroupId/roles',
+  checkPrototypeGroupManagePermission,
+  async (req: Request, res: Response) => {
+    const { prototypeGroupId } = req.params;
+    const { userId, roleName } = req.body;
+
+    if (!userId || !roleName) {
+      res.status(400).json({ error: 'ユーザーIDとロール名は必須です' });
+      return;
+    }
+
+    try {
+      // ユーザーが存在するかチェック
+      const user = await UserModel.findByPk(userId);
+      if (!user) {
+        res.status(404).json({ error: 'ユーザーが見つかりません' });
+        return;
+      }
+
+      // ロールが存在するかチェック
+      const role = await RoleModel.findOne({
+        where: { name: roleName },
+      });
+      if (!role) {
+        res.status(404).json({ error: 'ロールが見つかりません' });
+        return;
+      }
+
+      // 既存のロール割り当てをチェック
+      const existingRole = await UserRoleModel.findOne({
+        where: {
+          userId,
+          roleId: role.id,
+          resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
+          resourceId: prototypeGroupId,
+        },
+      });
+      if (existingRole) {
+        res
+          .status(409)
+          .json({ error: 'ユーザーは既にこのロールを持っています' });
+        return;
+      }
+
+      // ロールを割り当て
+      await assignRole(
+        userId,
+        role.id,
+        RESOURCE_TYPES.PROTOTYPE_GROUP,
+        prototypeGroupId
+      );
+
+      res.status(201).json({
+        message: `ユーザーに${roleName}ロールを割り当てました`,
+        userId,
+        roleName,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/prototype-groups/{prototypeGroupId}/roles/{userId}:
+ *   delete:
+ *     tags: [PrototypeGroups]
+ *     summary: プロトタイプグループからロールを削除
+ *     description: ユーザーからプロトタイプグループのロールを削除します。
+ *     parameters:
+ *       - in: path
+ *         name: prototypeGroupId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: プロトタイプグループのID
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ユーザーのID
+ *     responses:
+ *       '200':
+ *         description: ロールが削除されました
+ *       '404':
+ *         description: ユーザーまたはロールが見つかりません
+ */
+router.delete(
+  '/:prototypeGroupId/roles/:userId',
+  checkPrototypeGroupManagePermission,
+  async (req: Request, res: Response) => {
+    const { prototypeGroupId, userId } = req.params;
+
+    try {
+      // プロトタイプグループの作成者かチェック
+      const prototypeGroup =
+        await PrototypeGroupModel.findByPk(prototypeGroupId);
+      if (prototypeGroup && prototypeGroup.userId === userId) {
+        res.status(400).json({
+          error: 'プロトタイプグループの作成者のロールは削除できません',
+        });
+        return;
+      }
+
+      // 最後の管理者かチェック
+      const adminRole = await RoleModel.findOne({ where: { name: 'admin' } });
+      if (adminRole) {
+        const adminCount = await UserRoleModel.count({
+          where: {
+            roleId: adminRole.id,
+            resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
+            resourceId: prototypeGroupId,
+          },
+        });
+
+        const userAdminRole = await UserRoleModel.findOne({
+          where: {
+            userId,
+            roleId: adminRole.id,
+            resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
+            resourceId: prototypeGroupId,
+          },
+        });
+
+        if (userAdminRole && adminCount <= 1) {
+          res
+            .status(400)
+            .json({ error: '最後の管理者のロールは削除できません' });
+          return;
+        }
+      }
+
+      // ユーザーの全ロールを削除
+      await UserRoleModel.destroy({
+        where: {
+          userId,
+          resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
+          resourceId: prototypeGroupId,
+        },
+      });
+
+      res.json({
+        message: 'ユーザーのロールを削除しました',
+        userId,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
     }
   }
 );

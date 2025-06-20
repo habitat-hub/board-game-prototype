@@ -57,10 +57,22 @@ PartModel.init(
     prototypeId: {
       type: DataTypes.UUID,
       allowNull: false,
+      references: {
+        model: 'Prototypes',
+        key: 'id',
+      },
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
     },
     parentId: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      references: {
+        model: 'Parts',
+        key: 'id',
+      },
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
     },
     position: {
       type: DataTypes.JSON,
@@ -85,6 +97,12 @@ PartModel.init(
     originalPartId: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      references: {
+        model: 'Parts',
+        key: 'id',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
     },
     isReversible: {
       type: DataTypes.BOOLEAN,
@@ -101,6 +119,8 @@ PartModel.init(
         model: 'Users',
         key: 'id',
       },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
     },
     canReverseCardOnDeck: {
       type: DataTypes.BOOLEAN,

@@ -34,13 +34,6 @@ export interface Error500Response {
   error: string;
 }
 
-export interface Access {
-  id: number;
-  /** @format uuid */
-  prototypeGroupId: string;
-  name: string;
-}
-
 export interface Image {
   /** @format uuid */
   id: string;
@@ -88,6 +81,16 @@ export interface PartProperty {
   updatedAt: string;
 }
 
+export interface Permission {
+  id: number;
+  name: string;
+  resource: string;
+  action: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Prototype {
   /** @format uuid */
   id: string;
@@ -109,6 +112,19 @@ export interface PrototypeGroup {
   updatedAt: string;
 }
 
+export interface Role {
+  id: number;
+  name: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RolePermission {
+  roleId: number;
+  permissionId: number;
+}
+
 export interface User {
   /** @format uuid */
   id: string;
@@ -117,10 +133,20 @@ export interface User {
   updatedAt: string;
 }
 
-export interface UserAccess {
+export interface UserPermission {
   /** @format uuid */
   userId: string;
-  accessId: number;
+  permissionId: number;
+}
+
+export interface UserRole {
+  /** @format uuid */
+  userId: string;
+  roleId: number;
+  resourceType: string;
+  resourceId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export type LogoutCreateData = SuccessResponse;
@@ -194,7 +220,13 @@ export type PrototypeGroupsDeleteData = SuccessResponse;
 export type PrototypeGroupsAccessUsersListData = User[];
 
 export interface PrototypeGroupsInviteCreatePayload {
+  /** 招待するユーザーのIDリスト */
   guestIds?: string[];
+  /**
+   * 付与するロールタイプ（admin：管理者、editor：編集者、viewer：閲覧者）
+   * @default "editor"
+   */
+  roleType?: 'admin' | 'editor' | 'viewer';
 }
 
 export type PrototypeGroupsInviteCreateData = SuccessResponse;
@@ -202,6 +234,32 @@ export type PrototypeGroupsInviteCreateData = SuccessResponse;
 export type PrototypeGroupsInviteDeleteData = SuccessResponse;
 
 export type PrototypeGroupsDuplicateCreateData = SuccessResponse;
+
+export type PrototypeGroupsMembersListData = {
+  userId?: string;
+  roles?: {
+    name?: string;
+    description?: string;
+  }[];
+}[];
+
+export type PrototypeGroupsRolesListData = {
+  userId?: string;
+  user?: User;
+  roles?: {
+    name?: string;
+    description?: string;
+  }[];
+}[];
+
+export interface PrototypeGroupsRolesCreatePayload {
+  userId?: string;
+  roleName?: 'admin' | 'editor' | 'viewer';
+}
+
+export type PrototypeGroupsRolesCreateData = any;
+
+export type PrototypeGroupsRolesDeleteData = any;
 
 export interface UsersSearchListParams {
   /** 検索するユーザー名 */

@@ -1,9 +1,6 @@
-export const PROTOTYPE_VERSION = {
-  INITIAL: 0,
-};
-
 /**
  * ロールタイプの定義
+ * バックエンドの `backend/src/const.ts` の `ROLE_TYPE` と同期
  *
  * Role Hierarchy (権限の階層):
  * admin:  すべての権限 (read, write, delete, manage)
@@ -14,44 +11,31 @@ export const ROLE_TYPE = {
   ADMIN: 'admin',
   EDITOR: 'editor',
   VIEWER: 'viewer',
-};
+} as const;
 
 /**
  * 権限アクションの定義
- *
- * READ:   リソースの閲覧
- * WRITE:  リソースの編集・作成
- * DELETE: リソースの削除
- * MANAGE: リソースの管理（メンバー招待、設定変更など）
+ * バックエンドの `backend/src/const.ts` の `PERMISSION_ACTIONS` と同期
  */
 export const PERMISSION_ACTIONS = {
   READ: 'read',
   WRITE: 'write',
   DELETE: 'delete',
   MANAGE: 'manage',
-};
+} as const;
 
+/**
+ * リソースタイプの定義
+ * バックエンドの `backend/src/const.ts` の `RESOURCE_TYPES` と同期
+ */
 export const RESOURCE_TYPES = {
   PROTOTYPE_GROUP: 'prototype_group',
   PROTOTYPE: 'prototype',
   USER: 'user',
-};
+} as const;
 
-export const UPDATABLE_PROTOTYPE_FIELDS = {
-  PROTOTYPE: ['name'],
-  PART: [
-    'parentId',
-    'name',
-    'description',
-    'color',
-    'textColor',
-    'position',
-    'width',
-    'height',
-    'isReversible',
-    'isFlipped',
-    'ownerId',
-    'originalPartId',
-    'canReverseCardOnDeck',
-  ],
-};
+// 型定義
+export type RoleType = (typeof ROLE_TYPE)[keyof typeof ROLE_TYPE];
+export type PermissionAction =
+  (typeof PERMISSION_ACTIONS)[keyof typeof PERMISSION_ACTIONS];
+export type ResourceType = (typeof RESOURCE_TYPES)[keyof typeof RESOURCE_TYPES];

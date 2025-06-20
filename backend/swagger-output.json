@@ -67,26 +67,6 @@
           "error": "予期せぬエラーが発生しました"
         }
       },
-      "Access": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "prototypeGroupId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "prototypeGroupId",
-          "name"
-        ]
-      },
       "Image": {
         "type": "object",
         "properties": {
@@ -253,6 +233,40 @@
           "updatedAt"
         ]
       },
+      "Permission": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "resource": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "resource",
+          "action",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
       "Prototype": {
         "type": "object",
         "properties": {
@@ -320,6 +334,47 @@
           "updatedAt"
         ]
       },
+      "Role": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "RolePermission": {
+        "type": "object",
+        "properties": {
+          "roleId": {
+            "type": "integer"
+          },
+          "permissionId": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "roleId",
+          "permissionId"
+        ]
+      },
       "User": {
         "type": "object",
         "properties": {
@@ -344,20 +399,52 @@
           "updatedAt"
         ]
       },
-      "UserAccess": {
+      "UserPermission": {
         "type": "object",
         "properties": {
           "userId": {
             "type": "string",
             "format": "uuid"
           },
-          "accessId": {
+          "permissionId": {
             "type": "integer"
           }
         },
         "required": [
           "userId",
-          "accessId"
+          "permissionId"
+        ]
+      },
+      "UserRole": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "roleId": {
+            "type": "integer"
+          },
+          "resourceType": {
+            "type": "string"
+          },
+          "resourceId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "roleId",
+          "resourceType",
+          "resourceId",
+          "createdAt",
+          "updatedAt"
         ]
       }
     }
@@ -1217,7 +1304,18 @@
                     "type": "array",
                     "items": {
                       "type": "string"
-                    }
+                    },
+                    "description": "招待するユーザーのIDリスト"
+                  },
+                  "roleType": {
+                    "type": "string",
+                    "enum": [
+                      "admin",
+                      "editor",
+                      "viewer"
+                    ],
+                    "default": "editor",
+                    "description": "付与するロールタイプ（admin：管理者、editor：編集者、viewer：閲覧者）"
                   }
                 }
               }
@@ -1236,7 +1334,7 @@
             }
           },
           "400": {
-            "description": "リクエストが不正です",
+            "description": "リクエストが不正です（無効なロールタイプまたは無効なロールが指定された場合）",
             "content": {
               "application/json": {
                 "schema": {
@@ -1387,6 +1485,209 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/prototype-groups/{prototypeGroupId}/members": {
+      "get": {
+        "tags": [
+          "PrototypeGroups"
+        ],
+        "summary": "プロトタイプグループのメンバー一覧取得",
+        "description": "プロトタイプグループのメンバーとそのロールを取得します。",
+        "parameters": [
+          {
+            "name": "prototypeGroupId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプグループのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "メンバー一覧を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "userId": {
+                        "type": "string"
+                      },
+                      "roles": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/prototype-groups/{prototypeGroupId}/roles": {
+      "get": {
+        "tags": [
+          "PrototypeGroups"
+        ],
+        "summary": "プロトタイプグループのロール一覧取得",
+        "description": "プロトタイプグループのユーザーロール一覧を取得します。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "prototypeGroupId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "プロトタイプグループのID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ロール一覧",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "userId": {
+                        "type": "string"
+                      },
+                      "user": {
+                        "$ref": "#/components/schemas/User"
+                      },
+                      "roles": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "PrototypeGroups"
+        ],
+        "summary": "プロトタイプグループにロールを追加",
+        "description": "ユーザーにプロトタイプグループのロールを割り当てます。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "prototypeGroupId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "プロトタイプグループのID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string"
+                  },
+                  "roleName": {
+                    "type": "string",
+                    "enum": [
+                      "admin",
+                      "editor",
+                      "viewer"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "ロールが追加されました"
+          },
+          "400": {
+            "description": "リクエストが不正です"
+          },
+          "404": {
+            "description": "ユーザーまたはロールが見つかりません"
+          },
+          "409": {
+            "description": "ユーザーは既にこのロールを持っています"
+          }
+        }
+      }
+    },
+    "/api/prototype-groups/{prototypeGroupId}/roles/{userId}": {
+      "delete": {
+        "tags": [
+          "PrototypeGroups"
+        ],
+        "summary": "プロトタイプグループからロールを削除",
+        "description": "ユーザーからプロトタイプグループのロールを削除します。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "prototypeGroupId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "プロトタイプグループのID"
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ユーザーのID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ロールが削除されました"
+          },
+          "404": {
+            "description": "ユーザーまたはロールが見つかりません"
           }
         }
       }

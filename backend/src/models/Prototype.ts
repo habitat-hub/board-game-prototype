@@ -26,6 +26,12 @@ PrototypeModel.init(
     prototypeGroupId: {
       type: DataTypes.UUID,
       allowNull: false,
+      references: {
+        model: 'PrototypeGroups',
+        key: 'id',
+      },
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
     },
     name: {
       type: DataTypes.STRING,
