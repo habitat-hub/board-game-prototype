@@ -223,6 +223,15 @@ export const checkPrototypeWritePermission = checkPermission(
 );
 
 /**
+ * プロトタイプの削除権限をチェック
+ */
+export const checkPrototypeDeletePermission = checkPermission(
+  RESOURCE_TYPES.PROTOTYPE,
+  PERMISSION_ACTIONS.DELETE,
+  'prototypeId'
+);
+
+/**
  * プロトタイプのプレイ権限をチェック
  */
 export const checkPrototypePlayPermission = checkPermission(
