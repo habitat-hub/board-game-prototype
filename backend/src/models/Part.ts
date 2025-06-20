@@ -1,6 +1,7 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
 import PrototypeModel from './Prototype';
+import UserModel from './User';
 
 class PartModel extends Model {
   // ID
@@ -33,8 +34,8 @@ class PartModel extends Model {
   /**
    * 手札
    */
-  // 所有者ID
-  public ownerId: number | undefined;
+  // 所有者ID (ユーザーID)
+  public ownerId: string | undefined;
   /**
    * 山札
    */
@@ -94,8 +95,12 @@ PartModel.init(
       allowNull: true,
     },
     ownerId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: true,
+      references: {
+        model: 'Users',
+        key: 'id',
+      },
     },
     canReverseCardOnDeck: {
       type: DataTypes.BOOLEAN,
@@ -114,6 +119,15 @@ PartModel.belongsTo(PrototypeModel, {
 });
 PrototypeModel.hasMany(PartModel, {
   foreignKey: 'prototypeId',
+});
+
+PartModel.belongsTo(UserModel, {
+  foreignKey: 'ownerId',
+  onDelete: 'SET NULL',
+});
+UserModel.hasMany(PartModel, {
+  foreignKey: 'ownerId',
+  onDelete: 'SET NULL',
 });
 
 export default PartModel;

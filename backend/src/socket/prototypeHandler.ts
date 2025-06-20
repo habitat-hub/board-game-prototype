@@ -1,7 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import PartModel from '../models/Part';
 import PartPropertyModel from '../models/PartProperty';
-import PlayerModel from '../models/Player';
 import { UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import PrototypeModel from '../models/Prototype';
 import {
@@ -90,16 +89,7 @@ function handleJoinPrototype(socket: Socket) {
 
         socket.join(prototypeId);
 
-        const promises = [
-          PlayerModel.findAll({
-            where: { prototypeId },
-            order: [['id', 'ASC']],
-          }),
-          fetchPartsAndProperties(prototypeId),
-        ];
-
-        const [players, partsAndProperties] = await Promise.all(promises);
-        socket.emit('UPDATE_PLAYERS', players);
+        const partsAndProperties = await fetchPartsAndProperties(prototypeId);
         socket.emit('UPDATE_PARTS', partsAndProperties);
         socket.emit('UPDATE_CURSORS', {
           cursors: cursorMap[prototypeId] || {},
@@ -410,38 +400,6 @@ function handleShuffleDeck(socket: Socket, io: Server) {
 }
 
 /**
- * プレイヤーに紐づけるユーザーを更新
- * @param socket - Socket
- * @param io - Server
- */
-function handleUpdatePlayerUser(socket: Socket, io: Server) {
-  socket.on(
-    'UPDATE_PLAYER_USER',
-    async ({
-      playerId,
-      userId,
-    }: {
-      playerId: number;
-      userId: string | null;
-    }) => {
-      const { prototypeId } = socket.data as SocketData;
-
-      try {
-        await PlayerModel.update({ userId }, { where: { id: playerId } });
-        const players = await PlayerModel.findAll({
-          where: { prototypeId },
-          order: [['id', 'ASC']],
-        });
-
-        io.to(prototypeId).emit('UPDATE_PLAYERS', players);
-      } catch (error) {
-        console.error('プレイヤーのユーザー更新に失敗しました。', error);
-      }
-    }
-  );
-}
-
-/**
  * カーソル情報の更新
  * @param socket - Socket
  * @param io - Server
@@ -473,7 +431,6 @@ export default function handlePrototype(socket: Socket, io: Server) {
   handleFlipCard(socket, io);
   handleChangeOrder(socket, io);
   handleShuffleDeck(socket, io);
-  handleUpdatePlayerUser(socket, io);
   handleUpdateCursor(socket, io);
 
   socket.on('disconnect', () => {

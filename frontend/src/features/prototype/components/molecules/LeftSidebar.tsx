@@ -5,7 +5,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { BiArea } from 'react-icons/bi';
 import {
   Gi3dMeeple,
@@ -15,12 +15,9 @@ import {
 } from 'react-icons/gi';
 import { IoArrowBack, IoMenu } from 'react-icons/io5';
 
-import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
-import { Part, PartProperty, Player, User } from '@/api/types';
-import Dropdown from '@/components/atoms/Dropdown';
+import { Part, PartProperty } from '@/api/types';
 import TextIconButton from '@/components/atoms/TextIconButton';
 import { PART_DEFAULT_CONFIG } from '@/features/prototype/const';
-import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { AddPartProps } from '@/features/prototype/type';
 
 export default function LeftSidebar({
@@ -29,7 +26,6 @@ export default function LeftSidebar({
   prototypeType,
   isVersionPrototype,
   groupId,
-  players,
   onAddPart,
 }: {
   // プロトタイプ名
@@ -42,19 +38,13 @@ export default function LeftSidebar({
   isVersionPrototype: boolean;
   // グループID
   groupId: string;
-  // プレイヤー
-  players: Player[];
   // パーツを追加時の処理（編集モード時のみ使用）
   onAddPart?: ({ part, properties }: AddPartProps) => void;
 }) {
-  const { dispatch } = usePartReducer();
-  const { getAccessUsersByGroup } = usePrototypeGroup();
   const router = useRouter();
 
   // 左サイドバーが最小化されているか
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
-  // グループにアクセス可能なユーザー（プレビューモード時のみ使用）
-  const [accessibleUsers, setAccessibleUsers] = useState<User[]>([]);
 
   // 左サイドバーのヘッダーコンポーネント
   const LeftSidebarHeader = ({
@@ -111,15 +101,6 @@ export default function LeftSidebar({
     );
   };
 
-  // グループにアクセス可能なユーザーを取得（プレビューモード時のみ）
-  useEffect(() => {
-    if (prototypeType === 'VERSION' && !isVersionPrototype) {
-      getAccessUsersByGroup(groupId).then((response) => {
-        setAccessibleUsers(response);
-      });
-    }
-  }, [groupId, getAccessUsersByGroup, prototypeType, isVersionPrototype]);
-
   /**
    * パーツを作成する（編集モード時のみ）
    * @param partType - パーツのタイプ
@@ -160,7 +141,7 @@ export default function LeftSidebar({
         newPart.isFlipped = false;
       },
       hand: () => {
-        newPart.ownerId = players[0].id;
+        // 手札作成時の処理（現在は何もしない）
       },
       token: () => {},
       deck: () => {},
@@ -200,60 +181,7 @@ export default function LeftSidebar({
   // プレビューモードのコンテンツをレンダリング
   const renderPreviewContent = () => {
     if (isVersionPrototype) return null;
-
-    return (
-      <>
-        <div className="border-b border-wood-light/30" />
-        <div className="flex flex-col gap-2 p-4">
-          <div className="flex flex-col items-start justify-between mb-2">
-            <span className="text-xs font-medium uppercase tracking-wide text-wood-dark/70">
-              プレイヤー割り当て
-            </span>
-            <details className="text-xs">
-              <summary className="cursor-pointer text-wood-dark/60 hover:text-wood-dark">
-                詳細
-              </summary>
-              <div className="p-2 mt-1 bg-wood-lightest/20 rounded-md text-wood-dark/80">
-                手札のプレイヤー番号とユーザーを紐づけます。
-              </div>
-            </details>
-          </div>
-          <div className="flex flex-col gap-1">
-            {players.map((player) => (
-              <div key={player.id}>
-                <p className="text-[9px] font-medium text-wood-dark mb-1">
-                  {player.playerName}
-                </p>
-                <div className="flex w-full mb-2">
-                  <Dropdown
-                    value={
-                      accessibleUsers.find((user) => user.id === player.userId)
-                        ?.username || 'プレイヤーを選択'
-                    }
-                    onChange={(value: string) => {
-                      const userId = accessibleUsers.find(
-                        (user) => user.username === value
-                      )?.id;
-                      dispatch({
-                        type: 'UPDATE_PLAYER_USER',
-                        payload: {
-                          playerId: player.id,
-                          userId: userId ?? null,
-                        },
-                      });
-                    }}
-                    options={[
-                      'プレイヤーを選択',
-                      ...accessibleUsers.map((user) => user.username),
-                    ]}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </>
-    );
+    return null; // 現在プレビューモードでは何も表示しない
   };
 
   // 編集モードのコンテンツをレンダリング

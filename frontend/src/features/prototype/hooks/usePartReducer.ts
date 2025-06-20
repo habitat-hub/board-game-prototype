@@ -47,12 +47,7 @@ export type PartAction =
       };
     }
   // デッキのシャッフル
-  | { type: 'SHUFFLE_DECK'; payload: { deckId: number } }
-  // プレイヤーのユーザーの更新
-  | {
-      type: 'UPDATE_PLAYER_USER';
-      payload: { playerId: number; userId: string | null };
-    };
+  | { type: 'SHUFFLE_DECK'; payload: { deckId: number } };
 
 export const usePartReducer = () => {
   const { socket } = useSocket();
@@ -113,13 +108,6 @@ export const usePartReducer = () => {
           case 'SHUFFLE_DECK':
             socket.emit('SHUFFLE_DECK', {
               deckId: action.payload.deckId,
-            });
-            break;
-          // プレイヤーのユーザーの更新
-          case 'UPDATE_PLAYER_USER':
-            socket.emit('UPDATE_PLAYER_USER', {
-              playerId: action.payload.playerId,
-              userId: action.payload.userId,
             });
             break;
         }

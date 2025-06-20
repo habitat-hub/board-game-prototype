@@ -5,13 +5,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { io } from 'socket.io-client';
 
 import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
-import {
-  Part,
-  PartProperty,
-  Player,
-  Prototype,
-  PrototypeGroup,
-} from '@/api/types';
+import { Part, PartProperty, Prototype, PrototypeGroup } from '@/api/types';
 import GameBoard from '@/features/prototype/components/organisms/GameBoard';
 import { PrototypeIdProvider } from '@/features/prototype/contexts/PrototypeIdContext';
 import { SocketProvider } from '@/features/prototype/contexts/SocketContext';
@@ -42,8 +36,6 @@ export default function PrototypeEdit() {
   const [parts, setParts] = useState<Part[]>([]);
   // パーツのプロパティ
   const [properties, setProperties] = useState<PartProperty[]>([]);
-  // プレイヤー
-  const [players, setPlayers] = useState<Player[]>([]);
   // カーソル
   const [cursors, setCursors] = useState<Record<string, CursorInfo>>({});
 
@@ -61,11 +53,6 @@ export default function PrototypeEdit() {
       setProperties(properties);
     });
 
-    // 更新されたプレイヤーを受信
-    socket.on('UPDATE_PLAYERS', (players: Player[]) => {
-      setPlayers(players.sort((a, b) => a.id - b.id));
-    });
-
     // 更新されたカーソルを受信
     socket.on('UPDATE_CURSORS', ({ cursors }) => {
       setCursors(cursors);
@@ -73,7 +60,6 @@ export default function PrototypeEdit() {
 
     return () => {
       socket.off('UPDATE_PARTS');
-      socket.off('UPDATE_PLAYERS');
       socket.off('UPDATE_CURSORS');
     };
   }, [prototypeId, user?.id]);
@@ -110,7 +96,6 @@ export default function PrototypeEdit() {
           }
           parts={parts}
           properties={properties}
-          players={players}
           cursors={cursors}
           prototypeVersionNumber={versionNumber}
           groupId={groupId}

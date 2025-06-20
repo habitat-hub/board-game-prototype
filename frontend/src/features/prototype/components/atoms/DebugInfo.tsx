@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-import { Part, PartProperty, Player } from '@/api/types';
+import { Part, PartProperty } from '@/api/types';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { useMemoryUsage } from '@/features/prototype/hooks/useMemoryUsage';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
@@ -25,7 +25,6 @@ interface DebugInfoProps {
   // Data
   parts: Part[];
   properties: PartProperty[];
-  players: Player[];
   cursors: Record<string, CursorInfo>;
   selectedPartIds: number[];
 }
@@ -39,7 +38,6 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
   prototypeType,
   parts,
   properties,
-  players,
   cursors,
   selectedPartIds,
 }) => {
@@ -117,16 +115,6 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
 
             <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
               <strong>Multiplayer</strong>
-            </div>
-            <div className="mb-2">
-              <div className="font-semibold">Players: {players.length}</div>
-              {players.length > 0 && (
-                <div className="ml-2.5 text-xs">
-                  <div>
-                    Names: {players.map((p) => p.playerName).join(', ')}
-                  </div>
-                </div>
-              )}
             </div>
             <div>
               <div className="font-semibold">
