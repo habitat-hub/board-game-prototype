@@ -34,7 +34,7 @@ const DeletePrototypeConfirmation = () => {
         );
         // ユーザーがプロトタイプのオーナーでない場合はリダイレクト
         if (user && prototypeGroup.userId !== user.id) {
-          router.push('/prototypes');
+          router.push('/groups');
         }
       } catch (err) {
         setError('プロトタイプの取得に失敗しました');
@@ -55,7 +55,7 @@ const DeletePrototypeConfirmation = () => {
     try {
       setIsDeleting(true);
       await deletePrototypeGroup(groupId);
-      router.push('/prototypes');
+      router.push('/groups');
     } catch (err) {
       setError('プロトタイプの削除に失敗しました');
       console.error('Error deleting prototype:', err);
@@ -98,7 +98,7 @@ const DeletePrototypeConfirmation = () => {
         </div>
         <div className="mt-4 text-center">
           <button
-            onClick={() => router.push('/prototypes')}
+            onClick={() => router.push('/groups')}
             className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
           >
             プロトタイプ一覧へ戻る
