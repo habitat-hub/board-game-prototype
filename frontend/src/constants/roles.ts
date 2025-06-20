@@ -3,15 +3,13 @@
  * バックエンドの `backend/src/const.ts` の `ROLE_TYPE` と同期
  *
  * Role Hierarchy (権限の階層):
- * admin:  すべての権限 (read, write, delete, manage, play)
+ * admin:  すべての権限 (read, write, delete, manage)
  * editor: 読み書き権限 (read, write)
- * player: 読み取りとプレイ権限 (read, play) - ゲーム中のパーツ操作が可能
  * viewer: 読み取り権限のみ (read) - 閲覧のみ
  */
 export const ROLE_TYPE = {
   ADMIN: 'admin',
   EDITOR: 'editor',
-  PLAYER: 'player',
   VIEWER: 'viewer',
 } as const;
 
@@ -24,7 +22,6 @@ export const PERMISSION_ACTIONS = {
   WRITE: 'write',
   DELETE: 'delete',
   MANAGE: 'manage',
-  PLAY: 'play',
 } as const;
 
 /**

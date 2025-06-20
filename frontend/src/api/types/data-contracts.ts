@@ -219,12 +219,6 @@ export type PrototypeGroupsDeleteData = SuccessResponse;
 
 export type PrototypeGroupsAccessUsersListData = User[];
 
-export interface PrototypeGroupsInviteCreatePayload {
-  guestIds?: string[];
-}
-
-export type PrototypeGroupsInviteCreateData = SuccessResponse;
-
 export type PrototypeGroupsInviteDeleteData = SuccessResponse;
 
 export type PrototypeGroupsDuplicateCreateData = SuccessResponse;
@@ -248,7 +242,7 @@ export type PrototypeGroupsRolesListData = {
 
 export interface PrototypeGroupsRolesCreatePayload {
   userId?: string;
-  roleName?: 'admin' | 'editor';
+  roleName?: 'admin' | 'editor' | 'viewer';
 }
 
 export type PrototypeGroupsRolesCreateData = any;

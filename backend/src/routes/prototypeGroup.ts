@@ -468,9 +468,9 @@ router.get(
  *                 description: 招待するユーザーのIDリスト
  *               roleType:
  *                 type: string
- *                 enum: ['admin', 'editor', 'player', 'viewer']
+ *                 enum: ['admin', 'editor', 'viewer']
  *                 default: 'editor'
- *                 description: 付与するロールタイプ（admin: 管理者、editor: 編集者、player: プレイヤー、viewer: 閲覧者）
+ *                 description: 付与するロールタイプ（admin: 管理者、editor: 編集者、viewer: 閲覧者）
  *     responses:
  *       '200':
  *         description: ユーザーを招待しました
@@ -864,7 +864,7 @@ router.get(
  *                 type: string
  *               roleName:
  *                 type: string
- *                 enum: [admin, editor]
+ *                 enum: [admin, editor, viewer]
  *     responses:
  *       '201':
  *         description: ロールが追加されました

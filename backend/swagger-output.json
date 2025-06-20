@@ -1275,86 +1275,6 @@
         }
       }
     },
-    "/api/prototype-groups/{prototypeGroupId}/invite": {
-      "post": {
-        "tags": [
-          "PrototypeGroups"
-        ],
-        "summary": "ユーザーにプロトタイプへのアクセス権を付与",
-        "description": "指定されたプロトタイプグループにユーザーを招待します。",
-        "parameters": [
-          {
-            "name": "prototypeGroupId",
-            "in": "path",
-            "required": true,
-            "description": "プロトタイプグループのID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "guestIds": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "ユーザーを招待しました",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "リクエストが不正です",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error400Response"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "グループが見つかりません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error404Response"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "サーバーエラー",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error500Response"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/prototype-groups/{prototypeGroupId}/invite/{guestId}": {
       "delete": {
         "tags": [
@@ -1619,7 +1539,8 @@
                     "type": "string",
                     "enum": [
                       "admin",
-                      "editor"
+                      "editor",
+                      "viewer"
                     ]
                   }
                 }

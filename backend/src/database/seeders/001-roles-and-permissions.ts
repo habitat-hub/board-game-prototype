@@ -16,10 +16,6 @@ const INITIAL_ROLES = [
     description: '編集者 - プロトタイプの作成・編集が可能',
   },
   {
-    name: ROLE_TYPE.PLAYER,
-    description: 'プレイヤー - プロトタイプでのゲームプレイが可能',
-  },
-  {
     name: ROLE_TYPE.VIEWER,
     description: '閲覧者 - プロトタイプの閲覧のみ可能',
   },
@@ -70,12 +66,6 @@ const INITIAL_PERMISSIONS = [
     action: PERMISSION_ACTIONS.DELETE,
     description: 'プロトタイプの削除',
   },
-  {
-    name: 'play_prototype',
-    resource: RESOURCE_TYPES.PROTOTYPE,
-    action: PERMISSION_ACTIONS.PLAY,
-    description: 'プロトタイプでのゲームプレイ（パーツの移動、操作など）',
-  },
   // ユーザー管理関連
   {
     name: 'read_user',
@@ -97,7 +87,6 @@ const INITIAL_PERMISSIONS = [
 const ROLE_PERMISSION_MAPPING = {
   [ROLE_TYPE.ADMIN]: 'ALL', // 全権限
   [ROLE_TYPE.EDITOR]: [PERMISSION_ACTIONS.READ, PERMISSION_ACTIONS.WRITE],
-  [ROLE_TYPE.PLAYER]: [PERMISSION_ACTIONS.READ, PERMISSION_ACTIONS.PLAY],
   [ROLE_TYPE.VIEWER]: [PERMISSION_ACTIONS.READ],
 };
 
