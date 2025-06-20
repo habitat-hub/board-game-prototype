@@ -32,7 +32,7 @@ const AccessUsersCard: React.FC<AccessUsersCardProps> = ({
         </span>
         {prototypeOwnerId && user?.id === prototypeOwnerId ? (
           <button
-            onClick={() => router.push(`/groups/${groupId}/invite`)}
+            onClick={() => router.push(`/groups/${groupId}/roles`)}
             className="p-1.5 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-all"
             title="他ユーザー招待"
           >
