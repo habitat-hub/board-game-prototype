@@ -34,13 +34,6 @@ export interface Error500Response {
   error: string;
 }
 
-export interface Access {
-  id: number;
-  /** @format uuid */
-  prototypeGroupId: string;
-  name: string;
-}
-
 export interface Image {
   /** @format uuid */
   id: string;
@@ -88,6 +81,16 @@ export interface PartProperty {
   updatedAt: string;
 }
 
+export interface Permission {
+  id: number;
+  name: string;
+  resource: string;
+  action: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Prototype {
   /** @format uuid */
   id: string;
@@ -109,6 +112,19 @@ export interface PrototypeGroup {
   updatedAt: string;
 }
 
+export interface Role {
+  id: number;
+  name: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RolePermission {
+  roleId: number;
+  permissionId: number;
+}
+
 export interface User {
   /** @format uuid */
   id: string;
@@ -117,10 +133,20 @@ export interface User {
   updatedAt: string;
 }
 
-export interface UserAccess {
+export interface UserPermission {
   /** @format uuid */
   userId: string;
-  accessId: number;
+  permissionId: number;
+}
+
+export interface UserRole {
+  /** @format uuid */
+  userId: string;
+  roleId: number;
+  resourceType: string;
+  resourceId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export type LogoutCreateData = SuccessResponse;
@@ -202,6 +228,32 @@ export type PrototypeGroupsInviteCreateData = SuccessResponse;
 export type PrototypeGroupsInviteDeleteData = SuccessResponse;
 
 export type PrototypeGroupsDuplicateCreateData = SuccessResponse;
+
+export type PrototypeGroupsMembersListData = {
+  userId?: string;
+  roles?: {
+    name?: string;
+    description?: string;
+  }[];
+}[];
+
+export type PrototypeGroupsRolesListData = {
+  userId?: string;
+  user?: User;
+  roles?: {
+    name?: string;
+    description?: string;
+  }[];
+}[];
+
+export interface PrototypeGroupsRolesCreatePayload {
+  userId?: string;
+  roleName?: 'admin' | 'editor';
+}
+
+export type PrototypeGroupsRolesCreateData = any;
+
+export type PrototypeGroupsRolesDeleteData = any;
 
 export interface UsersSearchListParams {
   /** 検索するユーザー名 */

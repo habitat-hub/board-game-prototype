@@ -30,6 +30,11 @@ import {
   PrototypeGroupsInviteCreatePayload,
   PrototypeGroupsInviteDeleteData,
   PrototypeGroupsListData,
+  PrototypeGroupsMembersListData,
+  PrototypeGroupsRolesCreateData,
+  PrototypeGroupsRolesCreatePayload,
+  PrototypeGroupsRolesDeleteData,
+  PrototypeGroupsRolesListData,
   PrototypeGroupsVersionCreateData,
   PrototypeGroupsVersionCreatePayload,
   PrototypesDeleteData,
@@ -355,6 +360,80 @@ export class Api<
       path: `/api/prototype-groups/${prototypeGroupId}/duplicate`,
       method: 'POST',
       format: 'json',
+      ...params,
+    });
+  /**
+   * @description プロトタイプグループのメンバーとそのロールを取得します。
+   *
+   * @tags PrototypeGroups
+   * @name PrototypeGroupsMembersList
+   * @summary プロトタイプグループのメンバー一覧取得
+   * @request GET:/api/prototype-groups/{prototypeGroupId}/members
+   */
+  prototypeGroupsMembersList = (
+    prototypeGroupId: string,
+    params: RequestParams = {}
+  ) =>
+    this.request<PrototypeGroupsMembersListData, any>({
+      path: `/api/prototype-groups/${prototypeGroupId}/members`,
+      method: 'GET',
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description プロトタイプグループのユーザーロール一覧を取得します。
+   *
+   * @tags PrototypeGroups
+   * @name PrototypeGroupsRolesList
+   * @summary プロトタイプグループのロール一覧取得
+   * @request GET:/api/prototype-groups/{prototypeGroupId}/roles
+   */
+  prototypeGroupsRolesList = (
+    prototypeGroupId: string,
+    params: RequestParams = {}
+  ) =>
+    this.request<PrototypeGroupsRolesListData, any>({
+      path: `/api/prototype-groups/${prototypeGroupId}/roles`,
+      method: 'GET',
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description ユーザーにプロトタイプグループのロールを割り当てます。
+   *
+   * @tags PrototypeGroups
+   * @name PrototypeGroupsRolesCreate
+   * @summary プロトタイプグループにロールを追加
+   * @request POST:/api/prototype-groups/{prototypeGroupId}/roles
+   */
+  prototypeGroupsRolesCreate = (
+    prototypeGroupId: string,
+    data: PrototypeGroupsRolesCreatePayload,
+    params: RequestParams = {}
+  ) =>
+    this.request<PrototypeGroupsRolesCreateData, void>({
+      path: `/api/prototype-groups/${prototypeGroupId}/roles`,
+      method: 'POST',
+      body: data,
+      type: ContentType.Json,
+      ...params,
+    });
+  /**
+   * @description ユーザーからプロトタイプグループのロールを削除します。
+   *
+   * @tags PrototypeGroups
+   * @name PrototypeGroupsRolesDelete
+   * @summary プロトタイプグループからロールを削除
+   * @request DELETE:/api/prototype-groups/{prototypeGroupId}/roles/{userId}
+   */
+  prototypeGroupsRolesDelete = (
+    prototypeGroupId: string,
+    userId: string,
+    params: RequestParams = {}
+  ) =>
+    this.request<PrototypeGroupsRolesDeleteData, void>({
+      path: `/api/prototype-groups/${prototypeGroupId}/roles/${userId}`,
+      method: 'DELETE',
       ...params,
     });
   /**
