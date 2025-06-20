@@ -103,6 +103,7 @@ const ROLE_PERMISSION_MAPPING = {
 
 /**
  * ロールと権限を作成する関数
+ * 冪等性を保証し、何度実行しても安全
  */
 export async function seedRolesAndPermissions() {
   try {
@@ -111,12 +112,17 @@ export async function seedRolesAndPermissions() {
     // ロールを作成
     const roles = new Map();
     for (const roleData of INITIAL_ROLES) {
-      const [role] = await RoleModel.findOrCreate({
+      const [role, created] = await RoleModel.findOrCreate({
         where: { name: roleData.name },
         defaults: roleData,
       });
       roles.set(roleData.name, role);
-      console.log(`✓ Role created/found: ${roleData.name}`);
+
+      if (created) {
+        console.log(`✓ Role created: ${roleData.name}`);
+      } else {
+        console.log(`✓ Role found: ${roleData.name}`);
+      }
     }
 
     console.log('Creating initial permissions...');
@@ -124,23 +130,31 @@ export async function seedRolesAndPermissions() {
     // 権限を作成
     const permissions = new Map();
     for (const permissionData of INITIAL_PERMISSIONS) {
-      const [permission] = await PermissionModel.findOrCreate({
+      const [permission, created] = await PermissionModel.findOrCreate({
         where: { name: permissionData.name },
         defaults: permissionData,
       });
       permissions.set(permissionData.name, permission);
-      console.log(`✓ Permission created/found: ${permissionData.name}`);
+
+      if (created) {
+        console.log(`✓ Permission created: ${permissionData.name}`);
+      } else {
+        console.log(`✓ Permission found: ${permissionData.name}`);
+      }
     }
 
     console.log('Creating role-permission mappings...');
 
     // ロールと権限の関連付け
+    let mappingsCreated = 0;
+    let mappingsExisting = 0;
+
     for (const [roleName, allowedActions] of Object.entries(
       ROLE_PERMISSION_MAPPING
     )) {
       const role = roles.get(roleName);
       if (!role) {
-        console.warn(`Role not found: ${roleName}`);
+        console.warn(`⚠️ Role not found: ${roleName}`);
         continue;
       }
 
@@ -168,14 +182,21 @@ export async function seedRolesAndPermissions() {
         });
 
         if (created) {
+          mappingsCreated++;
           console.log(
             `✓ Role-Permission mapping created: ${roleName} -> ${permission.name}`
           );
+        } else {
+          mappingsExisting++;
         }
       }
     }
 
-    console.log('✅ Roles and permissions seeding completed successfully');
+    console.log(`✅ Roles and permissions seeding completed successfully`);
+    console.log(`   - ${roles.size} roles processed`);
+    console.log(`   - ${permissions.size} permissions processed`);
+    console.log(`   - ${mappingsCreated} new mappings created`);
+    console.log(`   - ${mappingsExisting} existing mappings found`);
   } catch (error) {
     console.error('❌ Error seeding roles and permissions:', error);
     throw error;

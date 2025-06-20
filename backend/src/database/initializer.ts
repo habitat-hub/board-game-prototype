@@ -24,19 +24,23 @@ export async function isDatabaseInitialized(): Promise<boolean> {
       console.log(
         `📊 Database status: ${roleCount} roles, ${permissionCount} permissions, ${mappingCount} mappings`
       );
+    } else {
+      console.log(
+        `📊 Database incomplete: ${roleCount} roles, ${permissionCount} permissions, ${mappingCount} mappings`
+      );
     }
 
     return isInitialized;
-  } catch {
+  } catch (error) {
     // テーブルが存在しない場合はfalseを返す
-    console.log('📊 Database tables not found or empty');
+    console.log('📊 Database tables not found or inaccessible:', error);
     return false;
   }
 }
 
 /**
  * データベースの初期化とシードを実行
- * テーブルが存在しない場合のみ実行される
+ * データが不足している場合のみ実行される
  */
 export async function initializeDatabaseIfNeeded(): Promise<void> {
   try {
@@ -55,8 +59,8 @@ export async function initializeDatabaseIfNeeded(): Promise<void> {
     const { setupAssociations } = await import('./associations');
     setupAssociations();
 
-    // テーブル作成を強制実行（初回のみ）
-    await sequelize.sync({ force: false, alter: true });
+    // データベースを安全にsync
+    await sequelize.sync({ force: false, alter: false });
     console.log('✅ Database tables created/updated');
 
     // シードデータを実行
@@ -65,7 +69,15 @@ export async function initializeDatabaseIfNeeded(): Promise<void> {
     );
     await seedRolesAndPermissions();
 
-    console.log('✅ Database initialization completed successfully');
+    // 実行後の検証
+    const finalCheck = await isDatabaseInitialized();
+    if (finalCheck) {
+      console.log(
+        '✅ Database initialization completed and verified successfully'
+      );
+    } else {
+      throw new Error('Database initialization verification failed');
+    }
   } catch (error) {
     console.error('❌ Database initialization failed:', error);
     throw error;
