@@ -6,15 +6,13 @@ export const PROTOTYPE_VERSION = {
  * ロールタイプの定義
  *
  * Role Hierarchy (権限の階層):
- * admin:  すべての権限 (read, write, delete, manage, play)
+ * admin:  すべての権限 (read, write, delete, manage)
  * editor: 読み書き権限 (read, write)
- * player: 読み取りとプレイ権限 (read, play) - ゲーム中のパーツ操作が可能
  * viewer: 読み取り権限のみ (read) - 閲覧のみ
  */
 export const ROLE_TYPE = {
   ADMIN: 'admin',
   EDITOR: 'editor',
-  PLAYER: 'player',
   VIEWER: 'viewer',
 };
 
@@ -25,14 +23,12 @@ export const ROLE_TYPE = {
  * WRITE:  リソースの編集・作成
  * DELETE: リソースの削除
  * MANAGE: リソースの管理（メンバー招待、設定変更など）
- * PLAY:   ゲームプレイ権限（パーツの移動、操作など）
  */
 export const PERMISSION_ACTIONS = {
   READ: 'read',
   WRITE: 'write',
   DELETE: 'delete',
   MANAGE: 'manage',
-  PLAY: 'play',
 };
 
 export const RESOURCE_TYPES = {

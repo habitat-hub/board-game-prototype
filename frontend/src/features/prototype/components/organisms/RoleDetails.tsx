@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import React from 'react';
-import { FaUserShield, FaEdit, FaGamepad, FaEye } from 'react-icons/fa';
+import { FaUserShield, FaEdit, FaEye } from 'react-icons/fa';
 import { IoArrowBack } from 'react-icons/io5';
 
 import { ROLE_TYPE } from '@/constants/roles';
@@ -30,14 +30,7 @@ const RoleDetails: React.FC = () => {
       name: 'Editor',
       description: 'プロトタイプの編集権限を持ちます',
       icon: <FaEdit className="h-6 w-6 text-blue-600" />,
-      permissions: ['プロトタイプの編集', 'プロトタイプのプレイ'],
-    },
-    {
-      id: ROLE_TYPE.PLAYER,
-      name: 'Player',
-      description: 'プロトタイプのプレイ権限を持ちます',
-      icon: <FaGamepad className="h-6 w-6 text-green-600" />,
-      permissions: ['プロトタイプのプレイ', 'パーツの操作'],
+      permissions: ['プロトタイプの編集'],
     },
     {
       id: ROLE_TYPE.VIEWER,

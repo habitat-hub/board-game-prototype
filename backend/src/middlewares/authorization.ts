@@ -288,11 +288,3 @@ export const checkPrototypeDeletePermission = checkPermission(
   'prototypeId'
 );
 
-/**
- * プロトタイプのプレイ権限をチェック
- */
-export const checkPrototypePlayPermission = checkPermission(
-  RESOURCE_TYPES.PROTOTYPE,
-  PERMISSION_ACTIONS.PLAY,
-  'prototypeId'
-);
