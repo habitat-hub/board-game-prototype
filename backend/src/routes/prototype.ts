@@ -1,6 +1,10 @@
 import express, { Request, Response } from 'express';
 import { ensureAuthenticated } from '../middlewares/auth';
-import { checkPrototypeReadPermission } from '../middlewares/authorization';
+import {
+  checkPrototypeReadPermission,
+  checkPrototypeWritePermission,
+  checkPrototypeDeletePermission,
+} from '../middlewares/authorization';
 import { UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import PrototypeModel from '../models/Prototype';
 
@@ -111,7 +115,7 @@ router.get(
  */
 router.put(
   '/:prototypeId',
-  checkPrototypeReadPermission,
+  checkPrototypeWritePermission,
   async (req: Request, res: Response) => {
     const prototypeId = req.params.prototypeId;
 
@@ -175,7 +179,7 @@ router.put(
  */
 router.delete(
   '/:prototypeId',
-  checkPrototypeReadPermission,
+  checkPrototypeDeletePermission,
   async (req: Request, res: Response) => {
     const prototypeId = req.params.prototypeId;
 
