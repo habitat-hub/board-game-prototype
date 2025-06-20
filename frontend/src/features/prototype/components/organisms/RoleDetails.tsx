@@ -2,8 +2,10 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import React from 'react';
-import { FaUserShield, FaEdit } from 'react-icons/fa';
+import { FaUserShield, FaEdit, FaGamepad, FaEye } from 'react-icons/fa';
 import { IoArrowBack } from 'react-icons/io5';
+
+import { ROLE_TYPE } from '@/constants/roles';
 
 const RoleDetails: React.FC = () => {
   const router = useRouter();
@@ -11,7 +13,7 @@ const RoleDetails: React.FC = () => {
 
   const roleDefinitions = [
     {
-      id: 'admin',
+      id: ROLE_TYPE.ADMIN,
       name: 'Admin',
       description: 'プロトタイプの管理者権限を持ちます',
       icon: <FaUserShield className="h-6 w-6 text-red-600" />,
@@ -24,11 +26,25 @@ const RoleDetails: React.FC = () => {
       ],
     },
     {
-      id: 'editor',
+      id: ROLE_TYPE.EDITOR,
       name: 'Editor',
       description: 'プロトタイプの編集権限を持ちます',
       icon: <FaEdit className="h-6 w-6 text-blue-600" />,
       permissions: ['プロトタイプの編集', 'プロトタイプのプレイ'],
+    },
+    {
+      id: ROLE_TYPE.PLAYER,
+      name: 'Player',
+      description: 'プロトタイプのプレイ権限を持ちます',
+      icon: <FaGamepad className="h-6 w-6 text-green-600" />,
+      permissions: ['プロトタイプのプレイ', 'パーツの操作'],
+    },
+    {
+      id: ROLE_TYPE.VIEWER,
+      name: 'Viewer',
+      description: 'プロトタイプの閲覧権限のみを持ちます',
+      icon: <FaEye className="h-6 w-6 text-gray-600" />,
+      permissions: ['プロトタイプの閲覧'],
     },
   ];
 
@@ -51,7 +67,7 @@ const RoleDetails: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
         {roleDefinitions.map((role) => (
           <div
             key={role.id}
