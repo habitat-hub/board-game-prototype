@@ -13,22 +13,16 @@ import PartPropertyModel from '../models/PartProperty';
  *
  * @param userId - ユーザーID
  * @param name - プロトタイプ名
- * @param minPlayers - 最小プレイヤー数
- * @param maxPlayers - 最大プレイヤー数
  * @param transaction - トランザクション
  * @returns 作成したプロトタイプグループとそれに含まれるプロトタイプ
  */
 export async function createPrototypeGroup({
   userId,
   name,
-  minPlayers,
-  maxPlayers,
   transaction,
 }: {
   userId: string;
   name: string;
-  minPlayers: number;
-  maxPlayers: number;
   transaction: Transaction;
 }) {
   // プロトタイプグループの作成
@@ -45,8 +39,6 @@ export async function createPrototypeGroup({
       prototypeGroupId: prototypeGroup.id,
       name,
       type: 'MASTER',
-      minPlayers,
-      maxPlayers,
       versionNumber: PROTOTYPE_VERSION.INITIAL,
     },
     { transaction }
@@ -80,8 +72,6 @@ export async function createPrototypeGroup({
  * @param prototypeGroupId - プロトタイプグループID
  * @param name - プロトタイプ名
  * @param type - プロトタイプタイプ
- * @param minPlayers - 最小プレイヤー数
- * @param maxPlayers - 最大プレイヤー数
  * @param versionNumber - バージョン番号
  * @param transaction - トランザクション
  * @returns 作成したプロトタイプ
@@ -89,15 +79,11 @@ export async function createPrototypeGroup({
 export const createPrototypeVersion = async ({
   prototypeGroupId,
   name,
-  minPlayers,
-  maxPlayers,
   versionNumber = PROTOTYPE_VERSION.INITIAL,
   transaction,
 }: {
   prototypeGroupId: string;
   name: string;
-  minPlayers: number;
-  maxPlayers: number;
   versionNumber: number;
   transaction: Transaction;
 }) => {
@@ -107,8 +93,6 @@ export const createPrototypeVersion = async ({
       prototypeGroupId,
       name,
       type: 'VERSION',
-      minPlayers,
-      maxPlayers,
       versionNumber,
     },
     { transaction }
@@ -206,16 +190,12 @@ export const createPrototypeInstance = async ({
   prototypeGroupId,
   prototypeVersionId,
   name,
-  minPlayers,
-  maxPlayers,
   versionNumber = PROTOTYPE_VERSION.INITIAL,
   transaction,
 }: {
   prototypeGroupId: string;
   prototypeVersionId: string;
   name: string;
-  minPlayers: number;
-  maxPlayers: number;
   versionNumber: number;
   transaction: Transaction;
 }) => {
@@ -225,8 +205,6 @@ export const createPrototypeInstance = async ({
       prototypeGroupId,
       name,
       type: 'INSTANCE',
-      minPlayers,
-      maxPlayers,
       versionNumber,
     },
     { transaction }

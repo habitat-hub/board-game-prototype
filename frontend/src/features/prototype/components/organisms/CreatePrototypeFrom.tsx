@@ -16,8 +16,6 @@ const CreatePrototypeForm: React.FC = () => {
   const [form, setForm] = useState({
     // プロトタイプ名
     name: '',
-    // プレイヤー人数
-    playerCount: 4,
   });
   // エラー
   const [error, setError] = useState<string | null>(null);
@@ -31,9 +29,9 @@ const CreatePrototypeForm: React.FC = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    // プロトタイプ名またはプレイヤー人数を入力していない場合
-    if (!form.name || form.playerCount <= 0) {
-      setError('プロトタイプ名とプレイヤー人数を入力してください。');
+    // プロトタイプ名を入力していない場合
+    if (!form.name) {
+      setError('プロトタイプ名を入力してください。');
       return;
     }
 
@@ -44,7 +42,6 @@ const CreatePrototypeForm: React.FC = () => {
       // プロトタイプを作成する
       const group = await createPrototypeGroup({
         name: form.name,
-        playerCount: form.playerCount,
       });
 
       const masterPrototype = group.prototypes.find((p) => p.type === 'MASTER');
@@ -100,29 +97,6 @@ const CreatePrototypeForm: React.FC = () => {
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             placeholder="プロトタイプ名"
-            className="w-full p-2 border bg-white rounded-lg text-wood-darkest shadow-inner border-wood-lightest/40"
-            required
-            disabled={isCreating}
-          />
-        </div>
-        <div className="mb-6">
-          <label
-            htmlFor="playerCount"
-            className="block text-wood-darkest mb-2 font-medium"
-          >
-            プレイヤー人数
-          </label>
-          <input
-            id="playerCount"
-            type="number"
-            value={form.playerCount}
-            onChange={(e) => {
-              const value = Number(e.target.value);
-              if (value >= 0) {
-                setForm({ ...form, playerCount: value });
-              }
-            }}
-            placeholder="プレイヤー人数"
             className="w-full p-2 border bg-white rounded-lg text-wood-darkest shadow-inner border-wood-lightest/40"
             required
             disabled={isCreating}

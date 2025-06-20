@@ -7,7 +7,7 @@ export const ACCESS_TYPE = {
 };
 
 export const UPDATABLE_PROTOTYPE_FIELDS = {
-  PROTOTYPE: ['name', 'minPlayers', 'maxPlayers'],
+  PROTOTYPE: ['name'],
   PART: [
     'parentId',
     'name',

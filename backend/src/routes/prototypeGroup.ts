@@ -75,8 +75,6 @@ router.get('/', async (req: Request, res: Response) => {
  *             properties:
  *               name:
  *                 type: string
- *               playerCount:
- *                 type: integer
  *     responses:
  *       '201':
  *         description: 新しいプロトタイプグループを作成しました
@@ -100,13 +98,9 @@ router.get('/', async (req: Request, res: Response) => {
 router.post('/', async (req: Request, res: Response) => {
   const user = req.user as UserModel;
 
-  const { name, playerCount } = req.body;
+  const { name } = req.body;
   if (!name) {
     res.status(400).json({ error: 'プロトタイプ名が必要です' });
-    return;
-  }
-  if (playerCount === 0) {
-    res.status(400).json({ error: 'プレイヤー数が必要です' });
     return;
   }
 
@@ -115,8 +109,6 @@ router.post('/', async (req: Request, res: Response) => {
     const group = await createPrototypeGroup({
       userId: user.id,
       name,
-      minPlayers: playerCount,
-      maxPlayers: playerCount,
       transaction,
     });
 
@@ -152,8 +144,6 @@ router.post('/', async (req: Request, res: Response) => {
  *             properties:
  *               name:
  *                 type: string
- *               playerCount:
- *                 type: integer
  *               versionNumber:
  *                 type: integer
  *     responses:
@@ -180,10 +170,10 @@ router.post(
   '/:prototypeGroupId/version',
   checkPrototypeGroupAccess,
   async (req: Request, res: Response) => {
-    const { name, playerCount, versionNumber } = req.body;
-    if (!name || !playerCount || !versionNumber) {
+    const { name, versionNumber } = req.body;
+    if (!name || !versionNumber) {
       res.status(400).json({
-        error: 'プロトタイプ名、プレイヤー数、バージョン番号が必要です',
+        error: 'プロトタイプ名、バージョン番号が必要です',
       });
       return;
     }
@@ -193,8 +183,6 @@ router.post(
       const newPrototype = await createPrototypeVersion({
         prototypeGroupId: req.params.prototypeGroupId,
         name,
-        minPlayers: playerCount,
-        maxPlayers: playerCount,
         versionNumber,
         transaction,
       });
@@ -238,8 +226,6 @@ router.post(
  *             properties:
  *               name:
  *                 type: string
- *               playerCount:
- *                 type: integer
  *               versionNumber:
  *                 type: integer
  *     responses:
@@ -266,10 +252,10 @@ router.post(
   '/:prototypeGroupId/:prototypeVersionId/instance',
   checkPrototypeGroupAccess,
   async (req: Request, res: Response) => {
-    const { name, playerCount, versionNumber } = req.body;
-    if (!name || !playerCount || !versionNumber) {
+    const { name, versionNumber } = req.body;
+    if (!name || !versionNumber) {
       res.status(400).json({
-        error: 'プロトタイプ名、プレイヤー数、バージョン番号が必要です',
+        error: 'プロトタイプ名、バージョン番号が必要です',
       });
       return;
     }
@@ -280,8 +266,6 @@ router.post(
         prototypeGroupId: req.params.prototypeGroupId,
         prototypeVersionId: req.params.prototypeVersionId,
         name,
-        minPlayers: playerCount,
-        maxPlayers: playerCount,
         versionNumber,
         transaction,
       });

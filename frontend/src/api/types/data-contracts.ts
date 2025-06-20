@@ -95,8 +95,6 @@ export interface Prototype {
   prototypeGroupId: string;
   name: string;
   type: 'MASTER' | 'VERSION' | 'INSTANCE';
-  minPlayers: number;
-  maxPlayers: number;
   versionNumber: number;
   createdAt: string;
   updatedAt: string;
@@ -168,14 +166,12 @@ export type PrototypeGroupsListData = {
 
 export interface PrototypeGroupsCreatePayload {
   name?: string;
-  playerCount?: number;
 }
 
 export type PrototypeGroupsCreateData = PrototypeGroup;
 
 export interface PrototypeGroupsVersionCreatePayload {
   name?: string;
-  playerCount?: number;
   versionNumber?: number;
 }
 
@@ -183,7 +179,6 @@ export type PrototypeGroupsVersionCreateData = Prototype;
 
 export interface PrototypeGroupsInstanceCreatePayload {
   name?: string;
-  playerCount?: number;
   versionNumber?: number;
 }
 
