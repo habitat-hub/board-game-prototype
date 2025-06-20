@@ -17,8 +17,6 @@ import path from 'path';
 dotenv.config();
 
 import sequelize from './models';
-import { setupAssociations } from './database/associations';
-setupAssociations();
 
 import UserModel from './models/User';
 import authRoutes from './routes/auth';
