@@ -418,6 +418,9 @@
       "UserRole": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "integer"
+          },
           "userId": {
             "type": "string",
             "format": "uuid"
@@ -439,6 +442,7 @@
           }
         },
         "required": [
+          "id",
           "userId",
           "roleId",
           "resourceType",
