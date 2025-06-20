@@ -25,7 +25,6 @@ UserRoleModel.init(
   {
     userId: {
       type: DataTypes.UUID,
-      primaryKey: true,
       allowNull: false,
       references: {
         model: 'Users',
@@ -36,7 +35,6 @@ UserRoleModel.init(
     },
     roleId: {
       type: DataTypes.INTEGER,
-      primaryKey: true,
       allowNull: false,
       references: {
         model: 'Roles',
@@ -47,7 +45,6 @@ UserRoleModel.init(
     },
     resourceType: {
       type: DataTypes.STRING,
-      primaryKey: true,
       allowNull: false,
       validate: {
         isIn: [Object.values(RESOURCE_TYPES)],
@@ -55,7 +52,6 @@ UserRoleModel.init(
     },
     resourceId: {
       type: DataTypes.STRING,
-      primaryKey: true,
       allowNull: false,
     },
   },
@@ -64,6 +60,11 @@ UserRoleModel.init(
     modelName: 'UserRole',
     timestamps: true,
     indexes: [
+      {
+        unique: true,
+        fields: ['userId', 'roleId', 'resourceType', 'resourceId'],
+        name: 'user_role_resource_unique',
+      },
       {
         fields: ['userId'],
       },

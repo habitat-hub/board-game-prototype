@@ -140,6 +140,7 @@ export interface UserPermission {
 }
 
 export interface UserRole {
+  id: number;
   /** @format uuid */
   userId: string;
   roleId: number;
