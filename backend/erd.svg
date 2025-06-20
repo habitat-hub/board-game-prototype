@@ -121,7 +121,8 @@
 <text text-anchor="start" x="259.5" y="-295" font-family="Times,serif" font-style="italic" text-decoration="underline" font-size="10.00" fill="#000000">prototypeId</text>
 <text text-anchor="start" x="306.155" y="-295" font-family="Times,serif" font-size="10.00" fill="#000000">: UUID</text>
 <polygon fill="none" stroke="#000000" points="254.5,-264 254.5,-286 415.5,-286 415.5,-264 254.5,-264"/>
-<text text-anchor="start" x="259.5" y="-272" font-family="Times,serif" font-size="10.00" fill="#000000">parentId: NUMBER</text>
+<text text-anchor="start" x="259.5" y="-273" font-family="Times,serif" font-style="italic" text-decoration="underline" font-size="10.00" fill="#000000">parentId</text>
+<text text-anchor="start" x="292.815" y="-273" font-family="Times,serif" font-size="10.00" fill="#000000">: NUMBER</text>
 <polygon fill="none" stroke="#000000" points="254.5,-242 254.5,-264 415.5,-264 415.5,-242 254.5,-242"/>
 <text text-anchor="start" x="259.5" y="-250" font-family="Times,serif" font-size="10.00" fill="#000000">position: JSON</text>
 <polygon fill="none" stroke="#000000" points="254.5,-220 254.5,-242 415.5,-242 415.5,-220 254.5,-220"/>
@@ -133,7 +134,8 @@
 <polygon fill="none" stroke="#000000" points="254.5,-154 254.5,-176 415.5,-176 415.5,-154 254.5,-154"/>
 <text text-anchor="start" x="259.5" y="-162" font-family="Times,serif" font-size="10.00" fill="#000000">configurableTypeAsChild: ARRAY</text>
 <polygon fill="none" stroke="#000000" points="254.5,-132 254.5,-154 415.5,-154 415.5,-132 254.5,-132"/>
-<text text-anchor="start" x="259.5" y="-140" font-family="Times,serif" font-size="10.00" fill="#000000">originalPartId: NUMBER</text>
+<text text-anchor="start" x="259.5" y="-141" font-family="Times,serif" font-style="italic" text-decoration="underline" font-size="10.00" fill="#000000">originalPartId</text>
+<text text-anchor="start" x="315.04" y="-141" font-family="Times,serif" font-size="10.00" fill="#000000">: NUMBER</text>
 <polygon fill="none" stroke="#000000" points="254.5,-110 254.5,-132 415.5,-132 415.5,-110 254.5,-110"/>
 <text text-anchor="start" x="259.5" y="-118" font-family="Times,serif" font-size="10.00" fill="#000000">isReversible: BOOLEAN</text>
 <polygon fill="none" stroke="#000000" points="254.5,-88 254.5,-110 415.5,-110 415.5,-88 254.5,-88"/>
