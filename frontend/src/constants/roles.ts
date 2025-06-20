@@ -38,6 +38,7 @@ export const RESOURCE_TYPES = {
 } as const;
 
 // 型定義
-export type RoleType = typeof ROLE_TYPE[keyof typeof ROLE_TYPE];
-export type PermissionAction = typeof PERMISSION_ACTIONS[keyof typeof PERMISSION_ACTIONS];
-export type ResourceType = typeof RESOURCE_TYPES[keyof typeof RESOURCE_TYPES];
+export type RoleType = (typeof ROLE_TYPE)[keyof typeof ROLE_TYPE];
+export type PermissionAction =
+  (typeof PERMISSION_ACTIONS)[keyof typeof PERMISSION_ACTIONS];
+export type ResourceType = (typeof RESOURCE_TYPES)[keyof typeof RESOURCE_TYPES];
