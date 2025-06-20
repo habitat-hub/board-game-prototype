@@ -31,9 +31,9 @@ export async function isDatabaseInitialized(): Promise<boolean> {
     }
 
     return isInitialized;
-  } catch (error) {
-    // テーブルが存在しない場合はfalseを返す
-    console.log('📊 Database tables not found or inaccessible:', error);
+  } catch {
+    // テーブルが存在しない場合はfalseを返す（これは初回起動時の正常な動作）
+    console.log('📊 Database tables not found - this is expected on first run');
     return false;
   }
 }
@@ -54,10 +54,6 @@ export async function initializeDatabaseIfNeeded(): Promise<void> {
     }
 
     console.log('🚀 Database not initialized, running setup...');
-
-    // アソシエーションを設定
-    const { setupAssociations } = await import('./associations');
-    setupAssociations();
 
     // データベースを安全にsync
     await sequelize.sync({ force: false, alter: false });

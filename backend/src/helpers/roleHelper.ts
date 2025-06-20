@@ -84,12 +84,25 @@ export async function assignRole(
   resourceType: string,
   resourceId: string
 ): Promise<void> {
-  await UserRoleModel.upsert({
-    userId,
-    roleId,
-    resourceType,
-    resourceId,
+  // 既存のレコードを確認
+  const existingRole = await UserRoleModel.findOne({
+    where: {
+      userId,
+      roleId,
+      resourceType,
+      resourceId,
+    },
   });
+
+  // 既存のレコードがない場合のみ作成
+  if (!existingRole) {
+    await UserRoleModel.create({
+      userId,
+      roleId,
+      resourceType,
+      resourceId,
+    });
+  }
 }
 
 /**
