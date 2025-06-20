@@ -29,6 +29,7 @@ const RoleManagement: React.FC = () => {
     loading,
     addRole,
     removeRole,
+    canRemoveUserRole,
   } = useRoleManagement(groupId);
 
   const handleAddRole = async () => {
@@ -41,6 +42,13 @@ const RoleManagement: React.FC = () => {
   };
 
   const handleRemoveRole = async (userId: string) => {
+    const removeCheck = canRemoveUserRole(userId, userRoles);
+
+    if (!removeCheck.canRemove) {
+      alert(removeCheck.reason);
+      return;
+    }
+
     if (confirm('このユーザーのロールを削除しますか？')) {
       await removeRole(userId);
     }
@@ -83,36 +91,51 @@ const RoleManagement: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          {userRoles.map((userRole) => (
-            <div
-              key={userRole.userId}
-              className="flex items-center justify-between p-4 bg-content border border-wood-lightest/20 rounded-lg"
-            >
-              <div className="flex items-center gap-3">
-                {userRole.roles.some((role) => role.name === 'admin') ? (
-                  <FaUserShield className="h-5 w-5 text-red-600" />
-                ) : (
-                  <FaEdit className="h-5 w-5 text-blue-600" />
-                )}
-                <div>
-                  <div className="font-medium text-wood-dark">
-                    {userRole.user.username}
-                  </div>
-                  <div className="text-sm text-wood">
-                    {userRole.roles.map((role) => role.name).join(', ')}
+          {userRoles.map((userRole) => {
+            const removeCheck = canRemoveUserRole(userRole.userId, userRoles);
+
+            return (
+              <div
+                key={userRole.userId}
+                className="flex items-center justify-between p-4 bg-content border border-wood-lightest/20 rounded-lg"
+              >
+                <div className="flex items-center gap-3">
+                  {userRole.roles.some((role) => role.name === 'admin') ? (
+                    <FaUserShield className="h-5 w-5 text-red-600" />
+                  ) : (
+                    <FaEdit className="h-5 w-5 text-blue-600" />
+                  )}
+                  <div>
+                    <div className="font-medium text-wood-dark">
+                      {userRole.user.username}
+                    </div>
+                    <div className="text-sm text-wood">
+                      {userRole.roles.map((role) => role.name).join(', ')}
+                    </div>
+                    {!removeCheck.canRemove && (
+                      <div className="text-xs text-orange-600 mt-1">
+                        {removeCheck.reason}
+                      </div>
+                    )}
                   </div>
                 </div>
+                <button
+                  onClick={() => handleRemoveRole(userRole.userId)}
+                  className={`p-2 rounded-md transition-colors ${
+                    removeCheck.canRemove
+                      ? 'text-wood hover:text-red-500 hover:bg-wood-lightest/20'
+                      : 'text-gray-400 cursor-not-allowed opacity-50'
+                  }`}
+                  title={
+                    removeCheck.canRemove ? 'ロールを削除' : removeCheck.reason
+                  }
+                  disabled={loading || !removeCheck.canRemove}
+                >
+                  <FaTrash className="h-4 w-4" />
+                </button>
               </div>
-              <button
-                onClick={() => handleRemoveRole(userRole.userId)}
-                className="p-2 text-wood hover:text-red-500 rounded-md hover:bg-wood-lightest/20 transition-colors"
-                title="ロールを削除"
-                disabled={loading}
-              >
-                <FaTrash className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
+            );
+          })}
           {userRoles.length === 0 && (
             <div className="text-center py-8 text-wood">
               まだユーザーロールが設定されていません
