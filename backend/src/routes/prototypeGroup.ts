@@ -16,7 +16,7 @@ import {
 import PrototypeModel from '../models/Prototype';
 import { Op } from 'sequelize';
 import { getAccessibleUsers } from '../helpers/userHelper';
-import { assignRole, removeRole } from '../helpers/roleHelper';
+import { assignRole } from '../helpers/roleHelper';
 import { RESOURCE_TYPES, ROLE_TYPE } from '../const';
 import RoleModel from '../models/Role';
 import UserRoleModel from '../models/UserRole';
@@ -606,18 +606,13 @@ router.delete(
       }
 
       // すべてのロールを削除（このプロトタイプグループに対する）
-      const editorRole = await RoleModel.findOne({
-        where: { name: ROLE_TYPE.EDITOR },
+      await UserRoleModel.destroy({
+        where: {
+          userId: guestId,
+          resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
+          resourceId: prototypeGroupId,
+        },
       });
-
-      if (editorRole) {
-        await removeRole(
-          guestId,
-          editorRole.id,
-          RESOURCE_TYPES.PROTOTYPE_GROUP,
-          prototypeGroupId
-        );
-      }
 
       res.status(200).json({ message: 'ユーザーのアクセス権を削除しました' });
     } catch (error) {
