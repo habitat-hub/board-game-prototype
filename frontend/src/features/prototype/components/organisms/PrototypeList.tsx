@@ -302,12 +302,12 @@ const PrototypeList: React.FC = () => {
                   {getSortIcon('name')}
                 </button>
               </th>
-              <th className="text-left p-4 w-32">
+              <th className="text-left p-4 w-56">
                 <button
                   onClick={() => handleSort('createdAt')}
                   className="flex items-center gap-1 hover:text-header transition-colors duration-200 w-full"
                 >
-                  作成日
+                  作成日時
                   {getSortIcon('createdAt')}
                 </button>
               </th>
@@ -365,7 +365,7 @@ const PrototypeList: React.FC = () => {
                     )}
                   </td>
                   <td className="p-4 text-sm text-wood">
-                    {formatDate(createdAt)}
+                    {formatDate(createdAt, true)}
                   </td>
                   <td className="p-4 text-sm text-wood">
                     {userContext?.user?.id === prototypeGroup.userId
