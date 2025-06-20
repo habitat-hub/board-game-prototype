@@ -12,6 +12,7 @@ import React, {
 import { FaCheck } from 'react-icons/fa';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { FaBoxOpen, FaPenToSquare, FaPlus } from 'react-icons/fa6';
+import { GiWoodenSign } from 'react-icons/gi';
 import { RiLoaderLine } from 'react-icons/ri';
 
 import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
@@ -20,7 +21,6 @@ import { Prototype, PrototypeGroup } from '@/api/types';
 import { UserContext } from '@/contexts/UserContext';
 import formatDate from '@/utils/dateFormat';
 
-import EmptyPrototypeList from '../molecules/EmptyPrototypeList';
 import PrototypeListSkeleton from '../molecules/PrototypeListSkeleton';
 
 type SortKey = 'name' | 'createdAt';
@@ -254,7 +254,39 @@ const PrototypeList: React.FC = () => {
   }
 
   if (sortedPrototypeList.length === 0) {
-    return <EmptyPrototypeList />;
+    return (
+      <div className="flex flex-col h-full justify-center items-center relative">
+        <div className="text-wood-light">
+          <GiWoodenSign className="w-[600px] h-[600px]" aria-hidden="true" />
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center flex-col">
+          <p className="text-4xl text-wood-darkest text-center w-full mb-12">
+            最初のプロトタイプを
+            <br />
+            作成しましょう
+          </p>
+          <button
+            onClick={handleCreatePrototype}
+            disabled={isCreating}
+            className="flex items-center justify-center gap-3 bg-gradient-to-r from-header via-header-light to-header text-content py-4 px-8 rounded-full hover:from-header-light hover:via-header hover:to-header-light transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 group text-xl font-bold animate-pulse disabled:opacity-80 disabled:cursor-not-allowed disabled:hover:transform-none"
+            title="新規プロトタイプを作成"
+          >
+            {isCreating ? (
+              <RiLoaderLine
+                className="w-6 h-6 animate-spin"
+                aria-hidden="true"
+              />
+            ) : (
+              <FaPlus
+                className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300"
+                aria-hidden="true"
+              />
+            )}
+            <span>{isCreating ? '作成中...' : 'KIBAKOの世界へ飛び込む！'}</span>
+          </button>
+        </div>
+      </div>
+    );
   }
 
   /**
