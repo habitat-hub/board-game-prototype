@@ -1,5 +1,6 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
+import { RESOURCE_TYPES } from '../const';
 
 class UserRoleModel extends Model {
   // ユーザーID
@@ -40,6 +41,9 @@ UserRoleModel.init(
       type: DataTypes.STRING,
       primaryKey: true,
       allowNull: false,
+      validate: {
+        isIn: [Object.values(RESOURCE_TYPES)],
+      },
     },
     resourceId: {
       type: DataTypes.STRING,

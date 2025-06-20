@@ -11,11 +11,11 @@ export async function hasPermission(
   action: string,
   resourceId?: string
 ): Promise<boolean> {
-  // ユーザーのロールを取得
-  const userRoles = await UserRoleModel.findAll({
+  // リソース固有の権限をチェック
+  const resourceSpecificRoles = await UserRoleModel.findAll({
     where: {
       userId,
-      ...(resourceId && { resourceId }),
+      resourceId: resourceId || null,
     },
     include: [
       {
@@ -37,7 +37,42 @@ export async function hasPermission(
     ],
   });
 
-  return userRoles.length > 0;
+  // リソース固有の権限がある場合
+  if (resourceSpecificRoles.length > 0) {
+    return true;
+  }
+
+  // グローバル権限をチェック（resourceId が null の場合）
+  if (resourceId) {
+    const globalRoles = await UserRoleModel.findAll({
+      where: {
+        userId,
+        resourceId: null,
+      },
+      include: [
+        {
+          model: RoleModel,
+          as: 'Role',
+          include: [
+            {
+              model: PermissionModel,
+              as: 'permissions',
+              where: {
+                resource,
+                action,
+              },
+              required: true,
+            },
+          ],
+          required: true,
+        },
+      ],
+    });
+
+    return globalRoles.length > 0;
+  }
+
+  return false;
 }
 
 /**

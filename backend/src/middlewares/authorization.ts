@@ -19,16 +19,25 @@ export async function checkPrototypeGroupOwner(
   next: NextFunction
 ) {
   try {
+    const user = req.user as UserModel;
     const prototypeGroupId = req.params.prototypeGroupId;
+
+    if (!user || !user.id) {
+      res.status(401).json({ message: '認証が必要です' });
+      return;
+    }
+
+    if (!prototypeGroupId) {
+      res.status(400).json({ message: '必要なパラメータが不足しています' });
+      return;
+    }
+
     // 対象プロトタイプグループ
     const targetPrototypeGroup =
       await PrototypeGroupModel.findByPk(prototypeGroupId);
 
     // プロトタイプグループの作成者の場合
-    if (
-      targetPrototypeGroup &&
-      targetPrototypeGroup.userId === (req.user as UserModel).id
-    ) {
+    if (targetPrototypeGroup && targetPrototypeGroup.userId === user.id) {
       return next();
     }
 
@@ -37,8 +46,8 @@ export async function checkPrototypeGroupOwner(
       .json({ message: 'プロトタイプグループの作成者ではありません' });
     return;
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: '予期せぬエラーが発生しました' });
-    next(error);
     return;
   }
 }
@@ -55,8 +64,20 @@ export async function checkPrototypeGroupReadPermission(
   res: Response,
   next: NextFunction
 ) {
-  const userId = (req.user as UserModel).id;
+  const user = req.user as UserModel;
   const prototypeGroupId = req.params.prototypeGroupId;
+
+  if (!user || !user.id) {
+    res.status(401).json({ message: '認証が必要です' });
+    return;
+  }
+
+  if (!prototypeGroupId) {
+    res.status(400).json({ message: '必要なパラメータが不足しています' });
+    return;
+  }
+
+  const userId = user.id;
 
   try {
     // RBACシステムで読み取り権限をチェック
@@ -94,8 +115,20 @@ export async function checkPrototypeReadPermission(
   res: Response,
   next: NextFunction
 ) {
-  const userId = (req.user as UserModel).id;
+  const user = req.user as UserModel;
   const prototypeId = req.params.prototypeId;
+
+  if (!user || !user.id) {
+    res.status(401).json({ message: '認証が必要です' });
+    return;
+  }
+
+  if (!prototypeId) {
+    res.status(400).json({ message: '必要なパラメータが不足しています' });
+    return;
+  }
+
+  const userId = user.id;
 
   try {
     // RBACシステムで読み取り権限をチェック
@@ -133,8 +166,20 @@ export async function checkGroupReadPermission(
   res: Response,
   next: NextFunction
 ) {
-  const userId = (req.user as UserModel).id;
+  const user = req.user as UserModel;
   const groupId = req.params.groupId;
+
+  if (!user || !user.id) {
+    res.status(401).json({ message: '認証が必要です' });
+    return;
+  }
+
+  if (!groupId) {
+    res.status(400).json({ message: '必要なパラメータが不足しています' });
+    return;
+  }
+
+  const userId = user.id;
 
   try {
     // RBACシステムでグループへの読み取り権限をチェック
@@ -177,8 +222,20 @@ export function checkPermission(
   resourceIdParam: string = 'resourceId'
 ) {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const userId = (req.user as UserModel).id;
+    const user = req.user as UserModel;
     const resourceId = req.params[resourceIdParam];
+
+    if (!user || !user.id) {
+      res.status(401).json({ message: '認証が必要です' });
+      return;
+    }
+
+    if (!resourceId) {
+      res.status(400).json({ message: '必要なパラメータが不足しています' });
+      return;
+    }
+
+    const userId = user.id;
 
     try {
       const hasAccess = await hasPermission(
