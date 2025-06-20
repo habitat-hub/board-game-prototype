@@ -465,6 +465,12 @@ router.get(
  *                 type: array
  *                 items:
  *                   type: string
+ *                 description: 招待するユーザーのIDリスト
+ *               roleType:
+ *                 type: string
+ *                 enum: ['admin', 'editor', 'player', 'viewer']
+ *                 default: 'editor'
+ *                 description: 付与するロールタイプ（admin: 管理者、editor: 編集者、player: プレイヤー、viewer: 閲覧者）
  *     responses:
  *       '200':
  *         description: ユーザーを招待しました
@@ -473,7 +479,7 @@ router.get(
  *             schema:
  *               $ref: '#/components/schemas/SuccessResponse'
  *       '400':
- *         description: リクエストが不正です
+ *         description: リクエストが不正です（無効なロールタイプまたは無効なロールが指定された場合）
  *         content:
  *           application/json:
  *             schema:
@@ -498,6 +504,13 @@ router.post(
     const prototypeGroupId = req.params.prototypeGroupId;
     const guestIds = req.body.guestIds;
     const roleType = req.body.roleType || ROLE_TYPE.EDITOR; // デフォルトはeditor
+
+    // 有効なロールタイプかチェック
+    const validRoleTypes = Object.values(ROLE_TYPE);
+    if (!validRoleTypes.includes(roleType)) {
+      res.status(400).json({ message: '無効なロールタイプが指定されました' });
+      return;
+    }
 
     try {
       // 指定されたロールを取得
