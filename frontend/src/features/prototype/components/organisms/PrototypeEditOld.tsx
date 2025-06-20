@@ -5,13 +5,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { io } from 'socket.io-client';
 
 import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
-import {
-  Part,
-  PartProperty,
-  Player,
-  Prototype,
-  PrototypeGroup,
-} from '@/api/types';
+import { Part, PartProperty, Prototype, PrototypeGroup } from '@/api/types';
 import Canvas from '@/features/prototype/components/organisms/Canvas';
 import { PrototypeIdProvider } from '@/features/prototype/contexts/PrototypeIdContext';
 import { SocketProvider } from '@/features/prototype/contexts/SocketContext';
@@ -42,8 +36,6 @@ export default function PrototypeEditOld() {
   const [parts, setParts] = useState<Part[]>([]);
   // パーツのプロパティ
   const [properties, setProperties] = useState<PartProperty[]>([]);
-  // プレイヤー
-  const [players, setPlayers] = useState<Player[]>([]);
   // カーソル
   const [cursors, setCursors] = useState<Record<string, CursorInfo>>({});
 
@@ -61,11 +53,6 @@ export default function PrototypeEditOld() {
       setProperties(properties);
     });
 
-    // 更新されたプレイヤーを受信
-    socket.on('UPDATE_PLAYERS', (players: Player[]) => {
-      setPlayers(players.sort((a, b) => a.id - b.id));
-    });
-
     // 更新されたカーソルを受信
     socket.on('UPDATE_CURSORS', ({ cursors }) => {
       setCursors(cursors);
@@ -73,7 +60,6 @@ export default function PrototypeEditOld() {
 
     return () => {
       socket.off('UPDATE_PARTS');
-      socket.off('UPDATE_PLAYERS');
       socket.off('UPDATE_CURSORS');
     };
   }, [prototypeId, user?.id]);
@@ -87,7 +73,7 @@ export default function PrototypeEditOld() {
         setPrototype({ ...prototypeGroup, prototypes });
       })
       .catch((error) => console.error('Error fetching prototypes:', error));
-  }, [getPrototypeGroup, prototypeId, router]);
+  }, [getPrototypeGroup, prototypeId, router, groupId]);
 
   // バージョン番号
   const versionNumber = useMemo(() => {
@@ -110,7 +96,6 @@ export default function PrototypeEditOld() {
           }
           parts={parts}
           properties={properties}
-          players={players}
           cursors={cursors}
           prototypeVersionNumber={versionNumber}
           groupId={groupId}

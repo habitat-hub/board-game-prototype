@@ -16,7 +16,7 @@ import {
 } from 'react-icons/gi';
 
 import { useImages } from '@/api/hooks/useImages';
-import { Part, PartProperty, Player } from '@/api/types';
+import { Part, PartProperty } from '@/api/types';
 import Dropdown from '@/components/atoms/Dropdown';
 import NumberInput from '@/components/atoms/NumberInput';
 import TextIconButton from '@/components/atoms/TextIconButton';
@@ -31,15 +31,12 @@ import {
 import { saveImageToIndexedDb } from '@/utils/db';
 
 export default function PartPropertySidebar({
-  players,
   selectedPartId,
   parts,
   properties,
   onAddPart,
   onDeletePart,
 }: {
-  // プレイヤー
-  players: Player[];
   // 選択中のパーツID
   selectedPartId: number | null;
   // パーツ
@@ -499,44 +496,6 @@ export default function PartPropertySidebar({
                         });
                       }}
                       options={['はい', 'いいえ']}
-                    />
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-          {selectedPart.type === 'hand' && (
-            <>
-              <div className="border-b border-gray-200"></div>
-              <div className="flex flex-col gap-2 p-4">
-                <span className="mb-2 text-[11px] font-medium">手札</span>
-                <div className="flex flex-col gap-1">
-                  <p className="text-[9px] font-medium text-gray-500">所有者</p>
-                  <div className="flex w-full mb-2">
-                    <Dropdown
-                      value={
-                        players.find(
-                          (player) => player.id === selectedPart.ownerId
-                        )?.playerName ?? '未設定'
-                      }
-                      onChange={(value) => {
-                        const player = players.find(
-                          (player) => player.playerName === value
-                        );
-                        if (player) {
-                          dispatch({
-                            type: 'UPDATE_PART',
-                            payload: {
-                              partId: selectedPart.id,
-                              updatePart: { ownerId: player.id },
-                            },
-                          });
-                        }
-                      }}
-                      options={[
-                        '未設定',
-                        ...players.map((player) => player.playerName),
-                      ]}
                     />
                   </div>
                 </div>
