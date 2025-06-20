@@ -219,6 +219,18 @@ export type PrototypeGroupsDeleteData = SuccessResponse;
 
 export type PrototypeGroupsAccessUsersListData = User[];
 
+export interface PrototypeGroupsInviteCreatePayload {
+  /** 招待するユーザーのIDリスト */
+  guestIds?: string[];
+  /**
+   * 付与するロールタイプ（admin：管理者、editor：編集者、viewer：閲覧者）
+   * @default "editor"
+   */
+  roleType?: 'admin' | 'editor' | 'viewer';
+}
+
+export type PrototypeGroupsInviteCreateData = SuccessResponse;
+
 export type PrototypeGroupsInviteDeleteData = SuccessResponse;
 
 export type PrototypeGroupsDuplicateCreateData = SuccessResponse;

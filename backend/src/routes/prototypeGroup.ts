@@ -470,7 +470,7 @@ router.get(
  *                 type: string
  *                 enum: ['admin', 'editor', 'viewer']
  *                 default: 'editor'
- *                 description: 付与するロールタイプ（admin: 管理者、editor: 編集者、viewer: 閲覧者）
+ *                 description: "付与するロールタイプ（admin：管理者、editor：編集者、viewer：閲覧者）"
  *     responses:
  *       '200':
  *         description: ユーザーを招待しました
