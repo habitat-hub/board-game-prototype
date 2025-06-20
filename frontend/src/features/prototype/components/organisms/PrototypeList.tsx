@@ -277,7 +277,7 @@ const PrototypeList: React.FC = () => {
                     ) : (
                       <div className="flex items-center">
                         <Link
-                          href={`groups/${prototypeGroup.id}`}
+                          href={`/groups/${prototypeGroup.id}`}
                           className="text-wood-darkest font-medium"
                         >
                           {name}
