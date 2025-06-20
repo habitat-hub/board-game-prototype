@@ -2,15 +2,10 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import {
-  FaUserShield,
-  FaEdit,
-  FaPlus,
-  FaTrash,
-  FaInfoCircle,
-} from 'react-icons/fa';
+import { FaUserShield, FaEdit, FaPlus, FaTrash, FaEye } from 'react-icons/fa';
 import { IoArrowBack } from 'react-icons/io5';
 
+import { ROLE_TYPE } from '@/constants/roles';
 import { useRoleManagement } from '@/features/prototype/hooks/useRoleManagement';
 
 const RoleManagement: React.FC = () => {
@@ -53,6 +48,29 @@ const RoleManagement: React.FC = () => {
       await removeRole(userId);
     }
   };
+
+  // ローディング中の表示
+  if (loading && userRoles.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto p-4 bg-white rounded-lg shadow mt-16">
+        <div className="flex items-center relative mb-6">
+          <button
+            onClick={() => router.push(`/groups/${groupId}`)}
+            className="p-2 hover:bg-content-secondary rounded-full transition-colors absolute left-0"
+            title="プロトタイプ管理へ戻る"
+          >
+            <IoArrowBack className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
+          </button>
+          <h2 className="text-xl font-bold w-full text-center">ロール管理</h2>
+        </div>
+
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-wood-light"></div>
+          <span className="ml-3 text-wood-dark">ロール情報を読み込み中...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-4 bg-white rounded-lg shadow mt-16">
@@ -97,7 +115,9 @@ const RoleManagement: React.FC = () => {
             return (
               <div
                 key={userRole.userId}
-                className="flex items-center justify-between p-4 bg-content border border-wood-lightest/20 rounded-lg"
+                className={`flex items-center justify-between p-4 bg-content border border-wood-lightest/20 rounded-lg transition-opacity ${
+                  loading ? 'opacity-60' : ''
+                }`}
               >
                 <div className="flex items-center gap-3">
                   {userRole.roles.some((role) => role.name === 'admin') ? (
@@ -121,22 +141,30 @@ const RoleManagement: React.FC = () => {
                 </div>
                 <button
                   onClick={() => handleRemoveRole(userRole.userId)}
-                  className={`p-2 rounded-md transition-colors ${
-                    removeCheck.canRemove
+                  className={`p-2 rounded-md transition-colors relative ${
+                    removeCheck.canRemove && !loading
                       ? 'text-wood hover:text-red-500 hover:bg-wood-lightest/20'
                       : 'text-gray-400 cursor-not-allowed opacity-50'
                   }`}
                   title={
-                    removeCheck.canRemove ? 'ロールを削除' : removeCheck.reason
+                    loading
+                      ? '処理中...'
+                      : removeCheck.canRemove
+                        ? 'ロールを削除'
+                        : removeCheck.reason
                   }
                   disabled={loading || !removeCheck.canRemove}
                 >
-                  <FaTrash className="h-4 w-4" />
+                  {loading ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-wood-light"></div>
+                  ) : (
+                    <FaTrash className="h-4 w-4" />
+                  )}
                 </button>
               </div>
             );
           })}
-          {userRoles.length === 0 && (
+          {userRoles.length === 0 && !loading && (
             <div className="text-center py-8 text-wood">
               まだユーザーロールが設定されていません
             </div>
@@ -144,15 +172,76 @@ const RoleManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* ロール詳細へのリンク */}
-      <div className="text-center">
-        <button
-          onClick={() => router.push(`/groups/${groupId}/roles/details`)}
-          className="inline-flex items-center gap-2 px-4 py-2 text-wood-dark bg-content hover:bg-wood-lightest border border-wood-lightest rounded-lg transition-colors"
-        >
-          <FaInfoCircle className="h-4 w-4" />
-          ロールの詳細と権限を確認
-        </button>
+      {/* ロール詳細と権限 */}
+      <div className="mb-8">
+        <h3 className="text-lg font-semibold text-wood-dark mb-4">
+          ロール詳細と権限
+        </h3>
+        <p className="text-wood-dark mb-6">
+          プロトタイプで利用可能なロールと権限の詳細です。
+        </p>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[
+            {
+              id: ROLE_TYPE.ADMIN,
+              name: 'Admin',
+              description: 'プロトタイプの管理者権限を持ちます',
+              icon: <FaUserShield className="h-6 w-6 text-red-600" />,
+              permissions: [
+                'プロトタイプの削除',
+                'ユーザーの招待・除外',
+                'ロールの変更',
+                'プロトタイプの編集',
+                'プロトタイプのプレイ',
+              ],
+            },
+            {
+              id: ROLE_TYPE.EDITOR,
+              name: 'Editor',
+              description: 'プロトタイプの編集権限を持ちます',
+              icon: <FaEdit className="h-6 w-6 text-blue-600" />,
+              permissions: ['プロトタイプの編集'],
+            },
+            {
+              id: ROLE_TYPE.VIEWER,
+              name: 'Viewer',
+              description: 'プロトタイプの閲覧権限のみを持ちます',
+              icon: <FaEye className="h-6 w-6 text-gray-600" />,
+              permissions: ['プロトタイプの閲覧'],
+            },
+          ].map((role) => (
+            <div
+              key={role.id}
+              className="bg-content border border-wood-lightest/20 rounded-lg p-4 shadow-sm"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                {role.icon}
+                <div>
+                  <h4 className="font-semibold text-wood-dark">{role.name}</h4>
+                  <p className="text-sm text-wood">{role.description}</p>
+                </div>
+              </div>
+
+              <div>
+                <h5 className="font-medium text-wood-dark mb-2 text-sm">
+                  権限一覧
+                </h5>
+                <ul className="space-y-1">
+                  {role.permissions.map((permission, index) => (
+                    <li
+                      key={index}
+                      className="flex items-center gap-2 text-sm text-wood"
+                    >
+                      <span className="w-1.5 h-1.5 bg-wood-light rounded-full flex-shrink-0"></span>
+                      {permission}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* ロール追加モーダル */}
@@ -198,16 +287,24 @@ const RoleManagement: React.FC = () => {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="flex-1 px-4 py-2 text-wood-dark bg-content hover:bg-wood-lightest border border-wood-lightest rounded-lg transition-colors"
+                className="flex-1 px-4 py-2 text-wood-dark bg-content hover:bg-wood-lightest border border-wood-lightest rounded-lg transition-colors disabled:opacity-50"
+                disabled={loading}
               >
                 キャンセル
               </button>
               <button
                 onClick={handleAddRole}
                 disabled={!selectedUserId || loading}
-                className="flex-1 px-4 py-2 bg-wood-light hover:bg-wood text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-wood-light hover:bg-wood text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed relative"
               >
-                {loading ? '追加中...' : '追加'}
+                {loading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>追加中...</span>
+                  </div>
+                ) : (
+                  '追加'
+                )}
               </button>
             </div>
           </div>
