@@ -1,10 +1,10 @@
 import { Transaction } from 'sequelize';
 
 import PrototypeModel from '../models/Prototype';
-import { ACCESS_TYPE, PROTOTYPE_VERSION } from '../const';
+import { ROLE_TYPE, PROTOTYPE_VERSION, RESOURCE_TYPES } from '../const';
 import PrototypeGroupModel from '../models/PrototypeGroup';
-import AccessModel from '../models/Access';
-import UserAccessModel from '../models/UserAccess';
+import { assignRole } from '../helpers/roleHelper';
+import RoleModel from '../models/Role';
 import PartModel from '../models/Part';
 import PartPropertyModel from '../models/PartProperty';
 
@@ -44,21 +44,19 @@ export async function createPrototypeGroup({
     { transaction }
   );
 
-  // アクセス権の作成
-  const access = await AccessModel.create(
-    {
-      prototypeGroupId: prototypeGroup.id,
-      name: ACCESS_TYPE.MASTER,
-    },
-    { transaction }
-  );
-  await UserAccessModel.create(
-    {
+  // 作成者にadminロールを割り当て
+  const adminRole = await RoleModel.findOne({
+    where: { name: ROLE_TYPE.ADMIN },
+  });
+
+  if (adminRole) {
+    await assignRole(
       userId,
-      accessId: access.id,
-    },
-    { transaction }
-  );
+      adminRole.id,
+      RESOURCE_TYPES.PROTOTYPE_GROUP,
+      prototypeGroup.id
+    );
+  }
 
   return {
     prototypeGroup,

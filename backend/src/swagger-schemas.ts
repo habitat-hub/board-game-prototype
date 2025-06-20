@@ -65,26 +65,6 @@ export const swaggerSchemas = {
             }
       }
 },
-      Access: {
-      "type": "object",
-      "properties": {
-            "id": {
-                  "type": "integer"
-            },
-            "prototypeGroupId": {
-                  "type": "string",
-                  "format": "uuid"
-            },
-            "name": {
-                  "type": "string"
-            }
-      },
-      "required": [
-            "id",
-            "prototypeGroupId",
-            "name"
-      ]
-},
       Image: {
       "type": "object",
       "properties": {
@@ -251,6 +231,40 @@ export const swaggerSchemas = {
             "updatedAt"
       ]
 },
+      Permission: {
+      "type": "object",
+      "properties": {
+            "id": {
+                  "type": "integer"
+            },
+            "name": {
+                  "type": "string"
+            },
+            "resource": {
+                  "type": "string"
+            },
+            "action": {
+                  "type": "string"
+            },
+            "description": {
+                  "type": "string"
+            },
+            "createdAt": {
+                  "type": "string"
+            },
+            "updatedAt": {
+                  "type": "string"
+            }
+      },
+      "required": [
+            "id",
+            "name",
+            "resource",
+            "action",
+            "createdAt",
+            "updatedAt"
+      ]
+},
       Prototype: {
       "type": "object",
       "properties": {
@@ -318,6 +332,47 @@ export const swaggerSchemas = {
             "updatedAt"
       ]
 },
+      Role: {
+      "type": "object",
+      "properties": {
+            "id": {
+                  "type": "integer"
+            },
+            "name": {
+                  "type": "string"
+            },
+            "description": {
+                  "type": "string"
+            },
+            "createdAt": {
+                  "type": "string"
+            },
+            "updatedAt": {
+                  "type": "string"
+            }
+      },
+      "required": [
+            "id",
+            "name",
+            "createdAt",
+            "updatedAt"
+      ]
+},
+      RolePermission: {
+      "type": "object",
+      "properties": {
+            "roleId": {
+                  "type": "integer"
+            },
+            "permissionId": {
+                  "type": "integer"
+            }
+      },
+      "required": [
+            "roleId",
+            "permissionId"
+      ]
+},
       User: {
       "type": "object",
       "properties": {
@@ -342,20 +397,52 @@ export const swaggerSchemas = {
             "updatedAt"
       ]
 },
-      UserAccess: {
+      UserPermission: {
       "type": "object",
       "properties": {
             "userId": {
                   "type": "string",
                   "format": "uuid"
             },
-            "accessId": {
+            "permissionId": {
                   "type": "integer"
             }
       },
       "required": [
             "userId",
-            "accessId"
+            "permissionId"
+      ]
+},
+      UserRole: {
+      "type": "object",
+      "properties": {
+            "userId": {
+                  "type": "string",
+                  "format": "uuid"
+            },
+            "roleId": {
+                  "type": "integer"
+            },
+            "resourceType": {
+                  "type": "string"
+            },
+            "resourceId": {
+                  "type": "string"
+            },
+            "createdAt": {
+                  "type": "string"
+            },
+            "updatedAt": {
+                  "type": "string"
+            }
+      },
+      "required": [
+            "userId",
+            "roleId",
+            "resourceType",
+            "resourceId",
+            "createdAt",
+            "updatedAt"
       ]
 },
     }
