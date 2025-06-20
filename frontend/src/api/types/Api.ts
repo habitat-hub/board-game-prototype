@@ -26,6 +26,8 @@ import {
   PrototypeGroupsDuplicateCreateData,
   PrototypeGroupsInstanceCreateData,
   PrototypeGroupsInstanceCreatePayload,
+  PrototypeGroupsInviteCreateData,
+  PrototypeGroupsInviteCreatePayload,
   PrototypeGroupsInviteDeleteData,
   PrototypeGroupsListData,
   PrototypeGroupsMembersListData,
@@ -290,6 +292,30 @@ export class Api<
     this.request<PrototypeGroupsAccessUsersListData, any>({
       path: `/api/prototype-groups/${prototypeGroupId}/access-users`,
       method: 'GET',
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description 指定されたプロトタイプグループにユーザーを招待します。
+   *
+   * @tags PrototypeGroups
+   * @name PrototypeGroupsInviteCreate
+   * @summary ユーザーにプロトタイプへのアクセス権を付与
+   * @request POST:/api/prototype-groups/{prototypeGroupId}/invite
+   */
+  prototypeGroupsInviteCreate = (
+    prototypeGroupId: string,
+    data: PrototypeGroupsInviteCreatePayload,
+    params: RequestParams = {}
+  ) =>
+    this.request<
+      PrototypeGroupsInviteCreateData,
+      Error400Response | Error404Response | Error500Response
+    >({
+      path: `/api/prototype-groups/${prototypeGroupId}/invite`,
+      method: 'POST',
+      body: data,
+      type: ContentType.Json,
       format: 'json',
       ...params,
     });

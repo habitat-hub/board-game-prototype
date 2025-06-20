@@ -287,4 +287,3 @@ export const checkPrototypeDeletePermission = checkPermission(
   PERMISSION_ACTIONS.DELETE,
   'prototypeId'
 );
-
