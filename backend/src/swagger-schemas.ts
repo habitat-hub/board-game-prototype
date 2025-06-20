@@ -178,7 +178,8 @@ export const swaggerSchemas = {
                   "type": "boolean"
             },
             "ownerId": {
-                  "type": "integer"
+                  "type": "string",
+                  "format": "uuid"
             },
             "canReverseCardOnDeck": {
                   "type": "boolean"
@@ -246,41 +247,6 @@ export const swaggerSchemas = {
             "description",
             "color",
             "textColor",
-            "createdAt",
-            "updatedAt"
-      ]
-},
-      Player: {
-      "type": "object",
-      "properties": {
-            "id": {
-                  "type": "integer"
-            },
-            "prototypeId": {
-                  "type": "string",
-                  "format": "uuid"
-            },
-            "userId": {
-                  "type": "string",
-                  "format": "uuid"
-            },
-            "playerName": {
-                  "type": "string"
-            },
-            "originalPlayerId": {
-                  "type": "integer"
-            },
-            "createdAt": {
-                  "type": "string"
-            },
-            "updatedAt": {
-                  "type": "string"
-            }
-      },
-      "required": [
-            "id",
-            "prototypeId",
-            "playerName",
             "createdAt",
             "updatedAt"
       ]

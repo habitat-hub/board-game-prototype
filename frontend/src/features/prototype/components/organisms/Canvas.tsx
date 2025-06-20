@@ -11,11 +11,7 @@ import React, {
 import { AiOutlineTool } from 'react-icons/ai';
 
 import { useImages } from '@/api/hooks/useImages';
-import {
-  Part as PartType,
-  PartProperty as PropertyType,
-  Player,
-} from '@/api/types';
+import { Part as PartType, PartProperty as PropertyType } from '@/api/types';
 import Part from '@/features/prototype/components/atoms/Part';
 import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumberTool';
 import { Cursor } from '@/features/prototype/components/Cursor';
@@ -42,8 +38,6 @@ interface CanvasProps {
   parts: PartType[];
   // パーツのプロパティ
   properties: PropertyType[];
-  // プレイヤー
-  players: Player[];
   // カーソル
   cursors: Record<string, CursorInfo>;
   // プロトタイプの種類
@@ -56,7 +50,6 @@ export default function Canvas({
   groupId,
   parts,
   properties,
-  players,
   cursors,
   prototypeType,
 }: CanvasProps) {
@@ -111,33 +104,8 @@ export default function Canvas({
   // マスタープレビューかどうか
   const isVersionPrototype = prototypeType === 'VERSION';
 
-  // 他のプレイヤーのカード
-  const otherPlayerCards = useMemo(() => {
-    if (!user) return [];
-
-    // 自分以外が設定されているプレイヤー
-    const playerIds = players
-      .filter((player) => player.userId !== user.id)
-      .map((player) => player.id);
-    // 自分以外がオーナーの手札
-    const otherPlayerHandIds = parts
-      .filter(
-        (part) =>
-          part.type === 'hand' &&
-          part.ownerId != null &&
-          playerIds.includes(part.ownerId)
-      )
-      .map((part) => part.id);
-    // 自分以外がオーナーのカード
-    return parts
-      .filter(
-        (part) =>
-          part.type === 'card' &&
-          part.parentId != null &&
-          otherPlayerHandIds.includes(part.parentId)
-      )
-      .map((part) => part.id);
-  }, [parts, players, user]);
+  // Other player cards are not supported anymore since Player model was removed
+  const otherPlayerCards: number[] = [];
 
   // 選択したパーツが更新されたら、最新化
   useEffect(() => {
@@ -466,7 +434,6 @@ export default function Canvas({
                       part={part}
                       properties={filteredProperties}
                       images={filteredImages}
-                      players={players}
                       prototypeType={prototypeType}
                       isOtherPlayerCard={otherPlayerCards.includes(part.id)}
                       onMouseDown={(e) => handlePartMouseDown(e, part.id)}
@@ -544,7 +511,6 @@ export default function Canvas({
         prototypeType={prototypeType}
         isVersionPrototype={isVersionPrototype}
         groupId={groupId}
-        players={players}
         onAddPart={handleAddPart}
       />
 
@@ -569,7 +535,6 @@ export default function Canvas({
           {/* プロパティサイドバー */}
           {selectedPartIds.length === 1 && (
             <PartPropertySidebar
-              players={players}
               selectedPartId={selectedPartIds[0]}
               parts={parts}
               properties={properties}

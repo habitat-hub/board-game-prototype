@@ -68,7 +68,8 @@ export interface Part {
   originalPartId?: number;
   isReversible?: boolean;
   isFlipped?: boolean;
-  ownerId?: number;
+  /** @format uuid */
+  ownerId?: string;
   canReverseCardOnDeck?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -83,18 +84,6 @@ export interface PartProperty {
   textColor: string;
   /** @format uuid */
   imageId?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Player {
-  id: number;
-  /** @format uuid */
-  prototypeId: string;
-  /** @format uuid */
-  userId?: string;
-  playerName: string;
-  originalPlayerId?: number;
   createdAt: string;
   updatedAt: string;
 }

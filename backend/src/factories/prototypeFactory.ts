@@ -2,7 +2,6 @@ import { Transaction } from 'sequelize';
 
 import PrototypeModel from '../models/Prototype';
 import { ACCESS_TYPE, PROTOTYPE_VERSION } from '../const';
-import PlayerModel from '../models/Player';
 import PrototypeGroupModel from '../models/PrototypeGroup';
 import AccessModel from '../models/Access';
 import UserAccessModel from '../models/UserAccess';
@@ -51,16 +50,6 @@ export async function createPrototypeGroup({
       versionNumber: PROTOTYPE_VERSION.INITIAL,
     },
     { transaction }
-  );
-
-  // プレイヤーの作成
-  await PlayerModel.bulkCreate(
-    Array.from({ length: maxPlayers }).map((_, i) => ({
-      prototypeId: masterPrototype.id,
-      userId: null,
-      playerName: `プレイヤー${i + 1}`,
-    })),
-    { transaction, returning: true }
   );
 
   // アクセス権の作成
@@ -136,24 +125,6 @@ export const createPrototypeVersion = async ({
     throw new Error('マスタープロトタイプが見つかりません');
   }
 
-  // マスタープロトタイプのプレイヤーの取得
-  const masterPlayers = await PlayerModel.findAll({
-    where: {
-      prototypeId: masterPrototype.id,
-    },
-  });
-
-  // プレイヤーの作成
-  const versionPlayers = await PlayerModel.bulkCreate(
-    masterPlayers.map(({ userId, playerName, id }) => ({
-      prototypeId: versionPrototype.id,
-      userId,
-      playerName,
-      originalPlayerId: id,
-    })),
-    { transaction, returning: true }
-  );
-
   // マスタープロトタイプのパーツの取得
   const masterParts = await PartModel.findAll({
     where: {
@@ -181,12 +152,7 @@ export const createPrototypeVersion = async ({
       isReversible,
       isFlipped,
       canReverseCardOnDeck,
-      ownerId,
     }) => {
-      const newOwnerId = versionPlayers.find(
-        (player) => player.originalPlayerId === ownerId
-      )?.id;
-
       const versionPart = await PartModel.create(
         {
           type,
@@ -199,7 +165,6 @@ export const createPrototypeVersion = async ({
           originalPartId: id,
           isReversible,
           isFlipped,
-          ownerId: newOwnerId,
           canReverseCardOnDeck,
         },
         { transaction, returning: true }
@@ -273,24 +238,6 @@ export const createPrototypeInstance = async ({
     throw new Error('バージョンプロトタイプが見つかりません');
   }
 
-  // バージョンプロトタイプのプレイヤーの取得
-  const versionPlayers = await PlayerModel.findAll({
-    where: {
-      prototypeId: versionPrototype.id,
-    },
-  });
-
-  // プレイヤーの作成
-  const instancePlayers = await PlayerModel.bulkCreate(
-    versionPlayers.map(({ userId, playerName, id }) => ({
-      prototypeId: instancePrototype.id,
-      userId,
-      playerName,
-      originalPlayerId: id,
-    })),
-    { transaction, returning: true }
-  );
-
   // バージョンプロトタイプのパーツの取得
   const versionParts = await PartModel.findAll({
     where: {
@@ -318,12 +265,7 @@ export const createPrototypeInstance = async ({
       isReversible,
       isFlipped,
       canReverseCardOnDeck,
-      ownerId,
     }) => {
-      const newOwnerId = instancePlayers.find(
-        (player) => player.originalPlayerId === ownerId
-      )?.id;
-
       const instancePart = await PartModel.create(
         {
           type,
@@ -336,7 +278,6 @@ export const createPrototypeInstance = async ({
           originalPartId: id,
           isReversible,
           isFlipped,
-          ownerId: newOwnerId,
           canReverseCardOnDeck,
         },
         { transaction, returning: true }

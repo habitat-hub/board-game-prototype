@@ -3,11 +3,7 @@ import React, { forwardRef, useMemo, useRef, useEffect, useState } from 'react';
 import { Group, Rect, Text, Image } from 'react-konva';
 import useImage from 'use-image';
 
-import {
-  Part as PartType,
-  PartProperty as PropertyType,
-  Player,
-} from '@/api/types';
+import { Part as PartType, PartProperty as PropertyType } from '@/api/types';
 import { useCard } from '@/features/prototype/hooks/useCard';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { useDeck } from '@/features/prototype/hooks/useDeck';
@@ -17,7 +13,6 @@ interface Part2Props {
   part: PartType;
   properties: PropertyType[];
   images: Record<string, string>[];
-  players: Player[];
   isOtherPlayerCard: boolean;
   prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE';
   onDragStart: (e: Konva.KonvaEventObject<DragEvent>) => void;
@@ -36,7 +31,6 @@ const Part2 = forwardRef<PartHandle, Part2Props>(
     {
       part,
       properties,
-      players,
       isOtherPlayerCard = false,
       prototypeType,
       images,
@@ -113,11 +107,6 @@ const Part2 = forwardRef<PartHandle, Part2Props>(
         anim.stop();
       };
     }, [isReversing, isCard, setIsReversing]);
-
-    // 所持プレイヤー名
-    const ownerName = useMemo(() => {
-      return players.find((player) => player.id === part.ownerId)?.playerName;
-    }, [players, part.ownerId]);
 
     // 裏向き表示にする必要があるか
     const isFlippedNeeded = prototypeType === 'VERSION' && isOtherPlayerCard;
@@ -226,21 +215,6 @@ const Part2 = forwardRef<PartHandle, Part2Props>(
             padding={10}
             y={5}
           />
-        )}
-
-        {/* 所持プレイヤー名 - ハンドの場合 */}
-        {part.type === 'hand' && !isFlippedNeeded && ownerName && (
-          <Group x={part.width - 70} y={10}>
-            <Rect width={60} height={20} fill="#f5f5f5" cornerRadius={4} />
-            <Text
-              text={ownerName}
-              fontSize={10}
-              fill="#666"
-              width={60}
-              align="center"
-              y={5}
-            />
-          </Group>
         )}
 
         {/* 説明文 - フリップされていなければ表示 */}

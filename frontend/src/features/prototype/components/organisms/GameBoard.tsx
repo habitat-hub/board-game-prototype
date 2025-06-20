@@ -11,11 +11,7 @@ import React, {
 import { Stage, Layer, Group, Rect } from 'react-konva';
 
 import { useImages } from '@/api/hooks/useImages';
-import {
-  Part as PartType,
-  PartProperty as PropertyType,
-  Player,
-} from '@/api/types';
+import { Part as PartType, PartProperty as PropertyType } from '@/api/types';
 import DebugInfo from '@/features/prototype/components/atoms/DebugInfo';
 import GridLines from '@/features/prototype/components/atoms/GridLines';
 import { KonvaPartContextMenu } from '@/features/prototype/components/atoms/KonvaPartContextMenu';
@@ -43,7 +39,6 @@ interface GameBoardProps {
   groupId: string;
   parts: PartType[];
   properties: PropertyType[];
-  players: Player[];
   cursors: Record<string, CursorInfo>;
   prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE';
 }
@@ -54,7 +49,6 @@ export default function GameBoard({
   groupId,
   parts,
   properties,
-  players,
   cursors,
   prototypeType,
 }: GameBoardProps) {
@@ -714,7 +708,6 @@ export default function GameBoard({
                     key={part.id}
                     part={part}
                     properties={partProperties}
-                    players={players}
                     images={filteredImages}
                     prototypeType={prototypeType}
                     isActive={isActive}
@@ -747,7 +740,6 @@ export default function GameBoard({
         prototypeType={prototypeType}
         isVersionPrototype={isVersionPrototype}
         groupId={groupId}
-        players={players}
         onAddPart={handleAddPart}
       />
       {/* ショートカットヘルプパネル */}
@@ -771,7 +763,6 @@ export default function GameBoard({
           {/* プロパティサイドバー */}
           {selectedPartIds.length === 1 && (
             <PartPropertySidebar
-              players={players}
               selectedPartId={selectedPartIds[0]}
               parts={parts}
               properties={properties}
@@ -798,7 +789,6 @@ export default function GameBoard({
         prototypeType={prototypeType}
         parts={parts}
         properties={properties}
-        players={players}
         cursors={cursors}
         selectedPartIds={selectedPartIds}
       />

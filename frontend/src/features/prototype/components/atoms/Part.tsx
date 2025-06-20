@@ -3,11 +3,7 @@ import { FaRegEye } from 'react-icons/fa';
 import { TbCards } from 'react-icons/tb';
 import { VscSync, VscSyncIgnored } from 'react-icons/vsc';
 
-import {
-  Part as PartType,
-  PartProperty as PropertyType,
-  Player,
-} from '@/api/types';
+import { Part as PartType, PartProperty as PropertyType } from '@/api/types';
 import PartContextMenu from '@/features/prototype/components/atoms/PartContextMenu';
 import { useCard } from '@/features/prototype/hooks/useCard';
 import { useDeck } from '@/features/prototype/hooks/useDeck';
@@ -20,8 +16,6 @@ interface PartProps {
   properties: PropertyType[];
   // 画像データ
   images: Record<string, string>[];
-  // プレイヤー
-  players: Player[];
   // 他のプレイヤーのカードか
   isOtherPlayerCard?: boolean;
   // プロトタイプタイプ
@@ -45,7 +39,6 @@ const Part = forwardRef<PartHandle, PartProps>(
     {
       part,
       properties,
-      players,
       isOtherPlayerCard = false,
       prototypeType,
       images,
@@ -64,10 +57,8 @@ const Part = forwardRef<PartHandle, PartProps>(
     const isCard = part.type === 'card';
     const isDeck = part.type === 'deck';
 
-    // 所持プレイヤー名
-    const ownerName = useMemo(() => {
-      return players.find((player) => player.id === part.ownerId)?.playerName;
-    }, [players, part.ownerId]);
+    // Owner name functionality is not available since Player model was removed
+    const ownerName = part.ownerId ? `Owner: ${part.ownerId}` : undefined;
 
     // 裏向き表示にする必要があるか
     const isFlippedNeeded = prototypeType === 'VERSION' && isOtherPlayerCard;
