@@ -21,9 +21,12 @@ export default function ClientLayout({
   const [shouldRedirect, setShouldRedirect] = useState(false);
 
   // Canvas上で表示する場合はヘッダーを非表示にする
-  const isCanvas = /^\/prototypes\/groups\/[a-f0-9-]+\/[a-f0-9-]+\//.test(
-    pathname
-  );
+  // 正規表現: /groups/[groupId]/prototypes/[prototypeId]/(play|edit)(/old)?$ の形式にマッチ
+  // [a-f0-9-]+ は UUID形式の文字列（16進数とハイフン）を表す
+  const isGameBoard =
+    /^\/groups\/[a-f0-9-]+\/prototypes\/[a-f0-9-]+\/(play|edit)(\/old)?$/.test(
+      pathname
+    );
 
   useEffect(() => {
     // クライアントサイドでのみデバイスチェックを実行
@@ -68,9 +71,9 @@ export default function ClientLayout({
 
   return (
     <>
-      {!isCanvas && <WoodenCrateBackground />}
-      {!isCanvas && <Header height={HEADER_HEIGHT_PX} />}
-      <div style={{ paddingTop: isCanvas ? 0 : HEADER_HEIGHT_PX }}>
+      {!isGameBoard && <WoodenCrateBackground />}
+      {!isGameBoard && <Header height={HEADER_HEIGHT_PX} />}
+      <div style={{ paddingTop: isGameBoard ? 0 : HEADER_HEIGHT_PX }}>
         {children}
       </div>
     </>
