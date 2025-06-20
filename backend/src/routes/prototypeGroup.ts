@@ -774,48 +774,54 @@ router.get(
     const { prototypeGroupId } = req.params;
 
     try {
-      // UserRoleを取得
+      // UserRoleを関連データと共に取得（N+1問題を解決）
       const userRoles = await UserRoleModel.findAll({
         where: {
           resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
           resourceId: prototypeGroupId,
         },
+        include: [
+          {
+            model: UserModel,
+            as: 'User',
+            attributes: ['id', 'username'],
+          },
+          {
+            model: RoleModel,
+            as: 'Role',
+            attributes: ['name', 'description'],
+          },
+        ],
       });
 
-      // ユーザーごとにロールをグループ化するためのマップ
+      // ユーザーごとにロールをグループ化
       const roleMap = new Map();
+      userRoles.forEach((userRole) => {
+        // 関連データが存在することを確認
+        if (!userRole.User || !userRole.Role) {
+          console.warn(
+            'UserRole record missing associated User or Role data:',
+            userRole
+          );
+          return;
+        }
 
-      // 各UserRoleについて、関連するUserとRoleを個別に取得
-      for (const userRole of userRoles) {
-        const userId = userRole.userId;
-
-        // ユーザー情報を取得
-        const user = await UserModel.findByPk(userId, {
-          attributes: ['id', 'username'],
-        });
-
-        // ロール情報を取得
-        const role = await RoleModel.findByPk(userRole.roleId, {
-          attributes: ['name', 'description'],
-        });
-
-        if (user && role) {
-          if (!roleMap.has(userId)) {
-            roleMap.set(userId, {
-              userId,
-              user: {
-                id: user.id,
-                username: user.username,
-              },
-              roles: [],
-            });
-          }
-          roleMap.get(userId).roles.push({
-            name: role.name,
-            description: role.description,
+        const userId = userRole.User.id;
+        if (!roleMap.has(userId)) {
+          roleMap.set(userId, {
+            userId,
+            user: {
+              id: userRole.User.id,
+              username: userRole.User.username,
+            },
+            roles: [],
           });
         }
-      }
+        roleMap.get(userId).roles.push({
+          name: userRole.Role.name,
+          description: userRole.Role.description,
+        });
+      });
 
       res.json(Array.from(roleMap.values()));
     } catch (error) {
