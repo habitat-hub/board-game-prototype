@@ -11,10 +11,6 @@ class PrototypeModel extends Model {
   public name!: string;
   // プロトタイプタイプ
   public type!: 'MASTER' | 'VERSION' | 'INSTANCE';
-  // 最小プレイヤー数
-  public minPlayers!: number;
-  // 最大プレイヤー数
-  public maxPlayers!: number;
   // バージョン番号
   public versionNumber!: number;
 }
@@ -37,14 +33,6 @@ PrototypeModel.init(
     },
     type: {
       type: DataTypes.ENUM('MASTER', 'VERSION', 'INSTANCE'),
-      allowNull: false,
-    },
-    minPlayers: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    maxPlayers: {
-      type: DataTypes.INTEGER,
       allowNull: false,
     },
     versionNumber: {

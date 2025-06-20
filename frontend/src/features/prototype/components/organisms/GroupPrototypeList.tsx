@@ -3,13 +3,7 @@
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  FaCheck,
-  FaPenToSquare,
-  FaEye,
-  FaCopy,
-  FaUsers,
-} from 'react-icons/fa6';
+import { FaCheck, FaPenToSquare, FaEye, FaCopy } from 'react-icons/fa6';
 import { HiOutlinePencilAlt } from 'react-icons/hi';
 import { IoAdd, IoArrowBack, IoTrash } from 'react-icons/io5';
 
@@ -19,7 +13,6 @@ import { Prototype, PrototypeGroup, User } from '@/api/types';
 import AccessUsersCard from '@/features/prototype/components/molecules/AccessUsersCard';
 import CreateVersionButton from '@/features/prototype/components/molecules/CreateVersionButton';
 import PlayRoomCard from '@/features/prototype/components/molecules/PlayRoomCard';
-import { PLAYERS_MIN, PLAYERS_MAX } from '@/features/prototype/const';
 import { useUser } from '@/hooks/useUser';
 import formatDate from '@/utils/dateFormat';
 
@@ -40,11 +33,6 @@ const GroupPrototypeList: React.FC = () => {
   // 編集中のプロトタイプ名を管理するState
   const [nameEditingId, setNameEditingId] = useState<string>('');
   const [editedName, setEditedName] = useState<string>('');
-
-  // プレイヤー人数編集を管理するState
-  const [playersEditingId, setPlayersEditingId] = useState<string>('');
-  const [editedMinPlayers, setEditedMinPlayers] = useState<number>(4);
-  const [editedMaxPlayers, setEditedMaxPlayers] = useState<number>(4);
 
   // 参加ユーザーのリスト
   const [accessUsers, setAccessUsers] = useState<User[]>([]);
@@ -106,7 +94,6 @@ const GroupPrototypeList: React.FC = () => {
   const handleCreatePreviewPrototype = async (prototypeGroupId: string) => {
     await createPrototypeVersion(prototypeGroupId, {
       name: 'バージョン',
-      playerCount: 4,
       versionNumber: 1,
     });
     await getPrototypes();
@@ -123,7 +110,6 @@ const GroupPrototypeList: React.FC = () => {
   ) => {
     await createPrototypeInstance(prototypeGroupId, prototypeVersionId, {
       name: 'インスタンス',
-      playerCount: 4,
       versionNumber: 1,
     });
     await getPrototypes();
@@ -188,72 +174,6 @@ const GroupPrototypeList: React.FC = () => {
     } finally {
       // 編集モードを解除
       setNameEditingId('');
-    }
-  };
-
-  /**
-   * プレイヤー人数の編集モードを切り替える関数
-   * @param id プロトタイプID
-   * @param minPlayers 最小プレイヤー数
-   * @param maxPlayers 最大プレイヤー数
-   */
-  const handlePlayersEditToggle = (
-    id: string,
-    minPlayers: number,
-    maxPlayers: number
-  ) => {
-    if (playersEditingId === id) {
-      // 同じ項目を再度押した場合は編集モードを解除
-      setPlayersEditingId('');
-    } else {
-      // 編集モードにする
-      setPlayersEditingId(id);
-      setEditedMinPlayers(minPlayers);
-      setEditedMaxPlayers(maxPlayers);
-    }
-  };
-
-  /**
-   * プレイヤー人数の編集を完了する処理
-   */
-  const handlePlayersEditComplete = async () => {
-    try {
-      // 編集中のプロトタイプがない場合は処理を終了
-      if (!prototypeInfo?.master || !playersEditingId) return;
-
-      const masterPrototype = prototypeInfo.master;
-
-      // プレイヤー人数のバリデーション
-      if (editedMinPlayers < PLAYERS_MIN || editedMinPlayers > PLAYERS_MAX) {
-        alert(
-          `最小プレイヤー数は${PLAYERS_MIN}人以上、${PLAYERS_MAX}人以下に設定してください`
-        );
-        return;
-      }
-      if (
-        editedMaxPlayers < editedMinPlayers ||
-        editedMaxPlayers > PLAYERS_MAX
-      ) {
-        alert(
-          `最大プレイヤー数は最小プレイヤー数以上、${PLAYERS_MAX}人以下に設定してください`
-        );
-        return;
-      }
-
-      // プロトタイプのプレイヤー人数を更新
-      await updatePrototype(playersEditingId, {
-        name: masterPrototype.name,
-        minPlayers: editedMinPlayers,
-        maxPlayers: editedMaxPlayers,
-      });
-
-      // 一覧を更新
-      await getPrototypes();
-    } catch (error) {
-      console.error('Error updating player count:', error);
-    } finally {
-      // 編集モードを解除
-      setPlayersEditingId('');
     }
   };
 
@@ -384,82 +304,6 @@ const GroupPrototypeList: React.FC = () => {
           )}
         </h2>
         <div className="flex flex-col md:flex-row gap-6">
-          <div className="flex-1 bg-white/80 rounded-xl p-5 shadow-inner border border-wood-lightest/40">
-            <h3 className="text-sm uppercase tracking-wide text-wood-dark/70 mb-2 font-medium">
-              プレイヤー人数
-            </h3>
-
-            {prototypeInfo.master &&
-            playersEditingId === prototypeInfo.master.id ? (
-              <form
-                className="flex items-center gap-2"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handlePlayersEditComplete();
-                }}
-              >
-                <input
-                  type="number"
-                  value={editedMinPlayers === 0 ? '' : editedMinPlayers}
-                  onChange={(e) =>
-                    setEditedMinPlayers(
-                      e.target.value === '' ? 0 : Number(e.target.value)
-                    )
-                  }
-                  className="w-16 p-1 border border-wood-light rounded"
-                  autoFocus
-                  min={PLAYERS_MIN}
-                  max={PLAYERS_MAX}
-                />
-                <span>~</span>
-                <input
-                  type="number"
-                  value={editedMaxPlayers === 0 ? '' : editedMaxPlayers}
-                  onChange={(e) =>
-                    setEditedMaxPlayers(
-                      e.target.value === '' ? 0 : Number(e.target.value)
-                    )
-                  }
-                  className="w-16 p-1 border border-wood-light rounded"
-                  min={PLAYERS_MIN}
-                  max={PLAYERS_MAX}
-                />
-                <span className="text-wood-dark">人</span>
-                <button
-                  type="submit"
-                  className="ml-2 p-1.5 text-green-600 hover:text-green-700 rounded-md border border-green-500 hover:bg-green-50 transition-colors"
-                  title="編集完了"
-                >
-                  <FaCheck className="w-3.5 h-3.5" />
-                </button>
-              </form>
-            ) : (
-              <div className="flex items-center">
-                <FaUsers className="h-4 w-4 mr-2 text-wood-dark" />
-                <span className="text-2xl font-semibold text-wood-darkest">
-                  {prototypeInfo.master.minPlayers ===
-                  prototypeInfo.master.maxPlayers
-                    ? `${prototypeInfo.master.minPlayers}人`
-                    : `${prototypeInfo.master.minPlayers}〜${prototypeInfo.master.maxPlayers}人`}
-                </span>
-                <button
-                  onClick={() =>
-                    prototypeInfo.master &&
-                    handlePlayersEditToggle(
-                      prototypeInfo.master.id,
-                      prototypeInfo.master.minPlayers,
-                      prototypeInfo.master.maxPlayers
-                    )
-                  }
-                  className="ml-3 p-1.5 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-all"
-                  title="プレイヤー人数編集"
-                >
-                  <FaPenToSquare className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-          </div>
-
           {/* 参加ユーザーカード */}
           <AccessUsersCard
             accessUsers={accessUsers}
@@ -572,15 +416,6 @@ const GroupPrototypeList: React.FC = () => {
                         </h3>
                       )}
                       <div className="flex gap-2 items-center">
-                        {/* プレイヤー人数表示 */}
-                        <div className="text-sm text-wood-dark bg-wood-lightest/70 px-2 py-0.5 rounded-md border border-wood-light/20 flex items-center">
-                          <FaUsers className="h-3 w-3 mr-1" />
-                          <span>
-                            {prototype.minPlayers === prototype.maxPlayers
-                              ? `${prototype.minPlayers}人`
-                              : `${prototype.minPlayers}〜${prototype.maxPlayers}人`}
-                          </span>
-                        </div>
                         {prototype.type === 'VERSION' && (
                           <>
                             <Link
