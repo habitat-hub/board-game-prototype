@@ -17,6 +17,9 @@ import path from 'path';
 dotenv.config();
 
 import sequelize from './models';
+import { setupAssociations } from './database/associations';
+setupAssociations();
+
 import UserModel from './models/User';
 import authRoutes from './routes/auth';
 import prototypeRoutes from './routes/prototype';
@@ -86,8 +89,18 @@ const io = new Server(server, {
 });
 
 // データベース接続
-sequelize.sync().then(() => {
+sequelize.sync().then(async () => {
   console.log('Database connected');
+
+  // データベースの初期化が必要かチェックして実行
+  try {
+    const { initializeDatabaseIfNeeded } = await import(
+      './database/initializer'
+    );
+    await initializeDatabaseIfNeeded();
+  } catch (error) {
+    console.error('Failed to initialize database:', error);
+  }
 });
 
 // CORS設定
@@ -154,8 +167,8 @@ passport.use(
   )
 );
 
-passport.serializeUser((user: any, done) => {
-  done(null, user.id);
+passport.serializeUser((user: Express.User, done) => {
+  done(null, (user as UserModel).id);
 });
 passport.deserializeUser((id: number | number, done) => {
   UserModel.findByPk(id).then((user) => {
