@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaCheck, FaPenToSquare, FaEye, FaCopy } from 'react-icons/fa6';
+import { FaCheck, FaPenToSquare, FaEye } from 'react-icons/fa6';
 import { HiOutlinePencilAlt } from 'react-icons/hi';
 import { IoAdd, IoArrowBack, IoTrash } from 'react-icons/io5';
 
@@ -177,20 +177,6 @@ const GroupPrototypeList: React.FC = () => {
     }
   };
 
-  /**
-   * プロトタイプを複製する
-   * @param prototypeId プロトタイプID
-   */
-  const handleDuplicate = async () => {
-    try {
-      // TODO: 複製処理を実装
-      // await duplicatePrototype(prototypeId);
-      router.push('/groups'); // 複製後はプロトタイプ一覧へ
-    } catch (error) {
-      console.error('Error duplicating prototype:', error);
-    }
-  };
-
   // プロトタイプが存在しない場合
   if (!prototypeInfo?.master) return null;
 
@@ -259,46 +245,26 @@ const GroupPrototypeList: React.FC = () => {
           {prototypeInfo.master && (
             <div className="flex items-center gap-2">
               {user?.id === prototypeInfo?.group?.userId ? (
-                <>
-                  <button
-                    onClick={() => prototypeInfo.master && handleDuplicate()}
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/70 text-wood-dark hover:text-header rounded-md hover:bg-white transition-colors border border-wood-light/30"
-                    title="プロトタイプ複製"
-                  >
-                    <FaCopy className="w-4 h-4" />
-                    <span>複製</span>
-                  </button>
-                  <button
-                    onClick={() =>
-                      prototypeInfo.master &&
-                      router.push(`/groups/${groupId}/delete`)
-                    }
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/70 text-wood-dark hover:text-red-600 rounded-md hover:bg-white transition-colors border border-wood-light/30"
-                    title="プロトタイプ削除"
-                  >
-                    <IoTrash className="w-4 h-4" />
-                    <span>削除</span>
-                  </button>
-                </>
+                <button
+                  onClick={() =>
+                    prototypeInfo.master &&
+                    router.push(`/groups/${groupId}/delete`)
+                  }
+                  className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/70 text-wood-dark hover:text-red-600 rounded-md hover:bg-white transition-colors border border-wood-light/30"
+                  title="プロトタイプ削除"
+                >
+                  <IoTrash className="w-4 h-4" />
+                  <span>削除</span>
+                </button>
               ) : (
-                <>
-                  <button
-                    disabled
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/40 text-wood-light/50 cursor-not-allowed rounded-md border border-wood-light/20"
-                    title="プロトタイプのオーナーのみが複製できます"
-                  >
-                    <FaCopy className="w-4 h-4" />
-                    <span>複製</span>
-                  </button>
-                  <button
-                    disabled
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/40 text-wood-light/50 cursor-not-allowed rounded-md border border-wood-light/20"
-                    title="プロトタイプのオーナーのみが削除できます"
-                  >
-                    <IoTrash className="w-4 h-4" />
-                    <span>削除</span>
-                  </button>
-                </>
+                <button
+                  disabled
+                  className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white/40 text-wood-light/50 cursor-not-allowed rounded-md border border-wood-light/20"
+                  title="プロトタイプのオーナーのみが削除できます"
+                >
+                  <IoTrash className="w-4 h-4" />
+                  <span>削除</span>
+                </button>
               )}
             </div>
           )}
