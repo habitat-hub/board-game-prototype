@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, {
   useState,
   useEffect,
@@ -11,6 +12,7 @@ import React, {
 import { FaCheck } from 'react-icons/fa';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { FaBoxOpen, FaPenToSquare, FaPlus } from 'react-icons/fa6';
+import { RiLoaderLine } from 'react-icons/ri';
 
 import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
 import { usePrototypes } from '@/api/hooks/usePrototypes';
@@ -34,12 +36,15 @@ type SortOrder = 'asc' | 'desc';
  * @state isLoading - データ取得中のローディング状態を管理するState。
  */
 const PrototypeList: React.FC = () => {
+  const router = useRouter();
   const { updatePrototype } = usePrototypes();
-  const { getPrototypeGroups } = usePrototypeGroup();
+  const { getPrototypeGroups, createPrototypeGroup } = usePrototypeGroup();
   // UserContextからユーザー情報を取得
   const userContext = useContext(UserContext);
   // ローディング状態を管理するState
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  // プロトタイプ作成中フラグ
+  const [isCreating, setIsCreating] = useState<boolean>(false);
   // 編集中のプロトタイプのIDを管理するState
   const [nameEditingId, setNameEditingId] = useState<string>('');
   // 編集中のプロトタイプの名前を保持するState
@@ -59,6 +64,75 @@ const PrototypeList: React.FC = () => {
     key: 'createdAt',
     order: 'desc',
   });
+
+  /**
+   * ランダムなプロトタイプ名を生成する
+   * @returns ランダムなプロトタイプ名
+   */
+  const generateRandomPrototypeName = (): string => {
+    const adjectives = [
+      'エキサイティング',
+      'クリエイティブ',
+      'ファンタスティック',
+      'イノベーティブ',
+      'ダイナミック',
+      'ユニーク',
+      'アメージング',
+      'インスパイアリング',
+      'マジカル',
+      'レボリューショナリー',
+    ];
+
+    const nouns = [
+      'ゲーム',
+      'アドベンチャー',
+      'クエスト',
+      'チャレンジ',
+      'ジャーニー',
+      'ミッション',
+      'エクスペリエンス',
+      'ストーリー',
+      'ワールド',
+      'バトル',
+    ];
+
+    const randomAdjective =
+      adjectives[Math.floor(Math.random() * adjectives.length)];
+    const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
+
+    return `${randomAdjective}な${randomNoun}`;
+  };
+
+  /**
+   * 新しいプロトタイプを作成する
+   */
+  const handleCreatePrototype = async () => {
+    try {
+      setIsCreating(true);
+
+      // ランダムな名前でプロトタイプを作成
+      const randomName = generateRandomPrototypeName();
+      const group = await createPrototypeGroup({
+        name: randomName,
+      });
+
+      const masterPrototype = group.prototypes.find((p) => p.type === 'MASTER');
+
+      if (!masterPrototype) {
+        throw new Error('Cannot find a prototype with type "MASTER".');
+      }
+
+      // 編集ページへ遷移（成功時はページ遷移するのでsetIsCreating(false)は不要）
+      router.push(
+        `/groups/${group.prototypeGroup.id}/prototypes/${masterPrototype.id}/edit`
+      );
+    } catch (error) {
+      console.error('Error creating prototype:', error);
+      alert('プロトタイプの作成中にエラーが発生しました。');
+      // エラーが発生した場合のみローディング状態を解除
+      setIsCreating(false);
+    }
+  };
 
   /**
    * プロトタイプ名の編集モードを切り替える関数
@@ -315,15 +389,25 @@ const PrototypeList: React.FC = () => {
         </table>
       </div>
       {/* 新規プロトタイプ作成ボタン */}
-      <div className="mt-6 flex justify-center">
-        <Link
-          href="/prototypes/create"
-          className="flex items-center justify-center gap-3 bg-gradient-to-r from-header via-header-light to-header text-content py-3 px-6 rounded-full hover:from-header-light hover:via-header hover:to-header-light transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 group"
-          title="新規プロトタイプを作成"
+      <div className="mt-8 flex justify-center">
+        <button
+          onClick={handleCreatePrototype}
+          disabled={isCreating}
+          className={`w-full max-w-md bg-gradient-to-r from-header/90 to-header-light/90 text-white p-3 rounded-xl border border-header/20 font-medium transition-all duration-300 transform 
+            ${
+              isCreating
+                ? 'opacity-80 cursor-not-allowed'
+                : 'hover:shadow-xl hover:-translate-y-1'
+            }`}
         >
-          <FaPlus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-          <span className="font-bold">新しいプロトタイプを作成</span>
-        </Link>
+          <div className="flex items-center justify-center">
+            {isCreating && (
+              <RiLoaderLine className="w-5 h-5 mr-2 animate-spin" />
+            )}
+            <FaPlus className={`w-5 h-5 mr-2 ${isCreating ? 'hidden' : ''}`} />
+            <span>{isCreating ? '作成中...' : '新しいプロトタイプを作成'}</span>
+          </div>
+        </button>
       </div>
     </div>
   );
