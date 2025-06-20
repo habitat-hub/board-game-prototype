@@ -49,13 +49,20 @@ export async function createPrototypeGroup({
     where: { name: ROLE_TYPE.ADMIN },
   });
 
-  if (adminRole) {
+  if (!adminRole) {
+    throw new Error('管理者ロールが見つかりません');
+  }
+
+  try {
     await assignRole(
       userId,
       adminRole.id,
       RESOURCE_TYPES.PROTOTYPE_GROUP,
       prototypeGroup.id
     );
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`ロール割り当てに失敗しました: ${errorMessage}`);
   }
 
   return {
