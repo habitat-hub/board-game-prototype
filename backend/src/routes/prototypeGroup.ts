@@ -872,6 +872,8 @@ router.get(
  *         description: リクエストが不正です
  *       '404':
  *         description: ユーザーまたはロールが見つかりません
+ *       '409':
+ *         description: ユーザーは既にこのロールを持っています
  */
 router.post(
   '/:prototypeGroupId/roles',
@@ -899,6 +901,22 @@ router.post(
       });
       if (!role) {
         res.status(404).json({ error: 'ロールが見つかりません' });
+        return;
+      }
+
+      // 既存のロール割り当てをチェック
+      const existingRole = await UserRoleModel.findOne({
+        where: {
+          userId,
+          roleId: role.id,
+          resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
+          resourceId: prototypeGroupId,
+        },
+      });
+      if (existingRole) {
+        res
+          .status(409)
+          .json({ error: 'ユーザーは既にこのロールを持っています' });
         return;
       }
 
