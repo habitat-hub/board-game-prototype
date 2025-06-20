@@ -1,5 +1,4 @@
 import sequelize from '../../models/index';
-import { setupAssociations } from '../associations';
 import { seedRolesAndPermissions } from './001-roles-and-permissions';
 
 /**
@@ -8,9 +7,6 @@ import { seedRolesAndPermissions } from './001-roles-and-permissions';
 export async function runSeeders(force = false) {
   try {
     console.log('Starting database seeding...');
-
-    // アソシエーションを設定
-    setupAssociations();
 
     // データベース同期とテーブル作成を確実に実行
     await sequelize.sync({ force });

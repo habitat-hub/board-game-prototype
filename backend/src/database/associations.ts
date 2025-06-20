@@ -55,7 +55,7 @@ export function setupAssociations() {
     through: UserPermissionModel,
     foreignKey: 'userId',
     otherKey: 'permissionId',
-    as: 'permissions',
+    as: 'userPermissions',
     onDelete: 'CASCADE',
   });
 
@@ -63,7 +63,7 @@ export function setupAssociations() {
     through: UserPermissionModel,
     foreignKey: 'permissionId',
     otherKey: 'userId',
-    as: 'users',
+    as: 'permissionUsers',
     onDelete: 'CASCADE',
   });
 
@@ -88,7 +88,7 @@ export function setupAssociations() {
 
   RoleModel.hasMany(UserRoleModel, {
     foreignKey: 'roleId',
-    as: 'userRoles',
+    as: 'roleAssignments',
     onDelete: 'CASCADE',
   });
 
