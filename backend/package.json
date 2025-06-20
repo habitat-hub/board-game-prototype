@@ -14,7 +14,10 @@
     "prepare": "cd ../ && husky backend/.husky",
     "generate-swagger": "ts-node src/scripts/generateSwagger.ts",
     "generate-api-types": "npx swagger-typescript-api generate -p ./swagger-output.json -o ../frontend/src/api/types --extract-request-params --extract-request-body --extract-response-body --modular --axios",
-    "clean-up-unused-images": "ts-node src/scripts/cleanUpUnusedImages.ts"
+    "clean-up-unused-images": "ts-node src/scripts/cleanUpUnusedImages.ts",
+    "seed": "ts-node src/database/seed.ts",
+    "seed:force": "ts-node src/database/seed.ts --force",
+    "seed:verify": "ts-node src/database/verify-seed.ts"
   },
   "keywords": [],
   "author": "",

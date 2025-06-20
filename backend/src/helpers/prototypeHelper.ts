@@ -1,9 +1,33 @@
 import { Op } from 'sequelize';
-import AccessModel from '../models/Access';
 import PartModel from '../models/Part';
-import PrototypeModel from '../models/Prototype';
 import PrototypeGroupModel from '../models/PrototypeGroup';
-import UserModel from '../models/User';
+import PrototypeModel from '../models/Prototype';
+import { getAccessibleResourceIds } from './roleHelper';
+import { RESOURCE_TYPES, PERMISSION_ACTIONS } from '../const';
+
+/**
+ * アクセス可能なプロトタイプグループを取得する
+ *
+ * @param userId - ユーザーID
+ * @returns アクセス可能なプロトタイプグループ
+ */
+export async function getAccessiblePrototypeGroups({
+  userId,
+}: {
+  userId: string;
+}) {
+  // ユーザーがアクセス可能なプロトタイプグループIDを取得
+  const accessibleGroupIds = await getAccessibleResourceIds(
+    userId,
+    RESOURCE_TYPES.PROTOTYPE_GROUP,
+    PERMISSION_ACTIONS.READ
+  );
+
+  // アクセス可能なプロトタイプグループ
+  return await PrototypeGroupModel.findAll({
+    where: { id: { [Op.in]: accessibleGroupIds } },
+  });
+}
 
 /**
  * アクセス可能なプロトタイプを取得する
@@ -12,26 +36,21 @@ import UserModel from '../models/User';
  * @returns アクセス可能なプロトタイプ
  */
 export async function getAccessiblePrototypes({ userId }: { userId: string }) {
-  // アクセス権
-  const accesses = await AccessModel.findAll({
-    include: {
-      model: UserModel,
-      where: { id: userId },
+  const prototypeGroups = await getAccessiblePrototypeGroups({ userId });
+
+  const prototypes = await PrototypeModel.findAll({
+    where: {
+      prototypeGroupId: { [Op.in]: prototypeGroups.map(({ id }) => id) },
     },
   });
-  // アクセス可能なグループID
-  const accessibleGroupIds = accesses.map((access) => access.prototypeGroupId);
-  // アクセス可能なグループ
-  const accessibleGroups = await PrototypeGroupModel.findAll({
-    where: { id: { [Op.in]: accessibleGroupIds } },
-  });
-  // アクセス可能なプロトタイプID
-  const accessiblePrototypeIds = accessibleGroups.map(
-    (group) => group.prototypeId
-  );
-  // アクセス可能なプロトタイプ
-  return await PrototypeModel.findAll({
-    where: { id: { [Op.in]: accessiblePrototypeIds } },
+
+  return prototypeGroups.map((prototypeGroup) => {
+    return {
+      prototypeGroup,
+      prototypes: prototypes.filter(
+        ({ prototypeGroupId }) => prototypeGroupId === prototypeGroup.id
+      ),
+    };
   });
 }
 

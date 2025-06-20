@@ -1,14 +1,15 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
-import PrototypeVersionModel from './PrototypeVersion';
+import PrototypeModel from './Prototype';
+import UserModel from './User';
 
 class PartModel extends Model {
   // ID
   public id!: number;
   // タイプ
   public type!: 'token' | 'card' | 'hand' | 'deck' | 'area';
-  // プロトタイプバージョンID
-  public prototypeVersionId!: string;
+  // プロトタイプID
+  public prototypeId!: string;
   // 親パーツID
   public parentId!: number | null;
   // 位置
@@ -33,8 +34,8 @@ class PartModel extends Model {
   /**
    * 手札
    */
-  // 所有者ID
-  public ownerId: number | undefined;
+  // 所有者ID (ユーザーID)
+  public ownerId: string | undefined;
   /**
    * 山札
    */
@@ -53,13 +54,25 @@ PartModel.init(
       type: DataTypes.ENUM('token', 'card', 'hand', 'deck', 'area'),
       allowNull: false,
     },
-    prototypeVersionId: {
+    prototypeId: {
       type: DataTypes.UUID,
       allowNull: false,
+      references: {
+        model: 'Prototypes',
+        key: 'id',
+      },
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
     },
     parentId: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      references: {
+        model: 'Parts',
+        key: 'id',
+      },
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
     },
     position: {
       type: DataTypes.JSON,
@@ -84,6 +97,12 @@ PartModel.init(
     originalPartId: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      references: {
+        model: 'Parts',
+        key: 'id',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
     },
     isReversible: {
       type: DataTypes.BOOLEAN,
@@ -94,8 +113,14 @@ PartModel.init(
       allowNull: true,
     },
     ownerId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: true,
+      references: {
+        model: 'Users',
+        key: 'id',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
     },
     canReverseCardOnDeck: {
       type: DataTypes.BOOLEAN,
@@ -108,12 +133,21 @@ PartModel.init(
   }
 );
 
-PartModel.belongsTo(PrototypeVersionModel, {
-  foreignKey: 'prototypeVersionId',
+PartModel.belongsTo(PrototypeModel, {
+  foreignKey: 'prototypeId',
   onDelete: 'CASCADE',
 });
-PrototypeVersionModel.hasMany(PartModel, {
-  foreignKey: 'prototypeVersionId',
+PrototypeModel.hasMany(PartModel, {
+  foreignKey: 'prototypeId',
+});
+
+PartModel.belongsTo(UserModel, {
+  foreignKey: 'ownerId',
+  onDelete: 'SET NULL',
+});
+UserModel.hasMany(PartModel, {
+  foreignKey: 'ownerId',
+  onDelete: 'SET NULL',
 });
 
 export default PartModel;

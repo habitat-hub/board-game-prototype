@@ -97,10 +97,7 @@ export type CanvasState =
 
 // パーツを追加時のprops
 export interface AddPartProps {
-  part: Omit<
-    Part,
-    'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'
-  >;
+  part: Omit<Part, 'id' | 'prototypeId' | 'order' | 'createdAt' | 'updatedAt'>;
   properties: Omit<PartProperty, 'id' | 'createdAt' | 'updatedAt' | 'partId'>[];
 }
 

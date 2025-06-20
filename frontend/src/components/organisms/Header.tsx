@@ -19,9 +19,9 @@ const Header: React.FC<HeaderProps> = ({ height }) => {
    */
   const goToPrototypes = () => {
     // プロトタイプ一覧画面、またはログイン画面の場合
-    if (pathname === '/prototypes' || pathname === '/') return;
+    if (pathname === '/groups' || pathname === '/') return;
 
-    router.push('/prototypes');
+    router.push('/groups');
   };
 
   return (

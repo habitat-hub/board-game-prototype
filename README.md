@@ -67,39 +67,32 @@ npm ci
 
 ## 開発サーバー起動方法
 
-### フロントエンド
-
-```bash
-cd frontend
-npm run dev
-```
-
-#### データベース
+### データベース
 
 PostgreSQL サーバーを起動
 
 ```bash
 cd backend
-make start-db
+make up
 ```
 
 PostgreSQL サーバーを停止
 
 ```bash
 cd backend
-make stop-db
+make down
 ```
 
 PostgreSQL サーバーを停止&データ削除
 
 ```bash
 cd backend
-make clean-db
+make destroy
 ```
 
 補足
 
-「make stop-db」を実行した際にエラーが発生した場合「アクティビティモニター」から postgres と検索しヒットしたものを全て強制終了させてください。
+「make down」を実行した際にエラーが発生した場合「アクティビティモニター」から postgres と検索しヒットしたものを全て強制終了させてください。
 
 ### バックエンド
 
@@ -107,6 +100,13 @@ make clean-db
 
 ```bash
 cd backend
+npm run dev
+```
+
+### フロントエンド
+
+```bash
+cd frontend
 npm run dev
 ```
 

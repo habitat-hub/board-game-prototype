@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-import { Part, PartProperty, Player } from '@/api/types';
+import { Part, PartProperty } from '@/api/types';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { useMemoryUsage } from '@/features/prototype/hooks/useMemoryUsage';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
@@ -18,14 +18,13 @@ interface DebugInfoProps {
   };
   // Prototype info
   prototypeName: string;
-  prototypeVersionNumber: string;
-  isMasterPreview: boolean;
+  prototypeVersionNumber: number;
+  isVersionPrototype: boolean;
   groupId: string;
-  prototypeType: 'EDIT' | 'PREVIEW';
+  prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE';
   // Data
   parts: Part[];
   properties: PartProperty[];
-  players: Player[];
   cursors: Record<string, CursorInfo>;
   selectedPartIds: number[];
 }
@@ -34,12 +33,11 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
   camera,
   prototypeName,
   prototypeVersionNumber,
-  isMasterPreview,
+  isVersionPrototype,
   groupId,
   prototypeType,
   parts,
   properties,
-  players,
   cursors,
   selectedPartIds,
 }) => {
@@ -113,20 +111,10 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
             <div>Version: {prototypeVersionNumber || 'N/A'}</div>
             <div>Group ID: {groupId}</div>
             <div>Type: {prototypeType}</div>
-            <div>Is Master Preview: {isMasterPreview ? 'Yes' : 'No'}</div>
+            <div>Is Master Preview: {isVersionPrototype ? 'Yes' : 'No'}</div>
 
             <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
               <strong>Multiplayer</strong>
-            </div>
-            <div className="mb-2">
-              <div className="font-semibold">Players: {players.length}</div>
-              {players.length > 0 && (
-                <div className="ml-2.5 text-xs">
-                  <div>
-                    Names: {players.map((p) => p.playerName).join(', ')}
-                  </div>
-                </div>
-              )}
             </div>
             <div>
               <div className="font-semibold">
@@ -330,7 +318,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
                             ? part.order.toFixed(3)
                             : 'N/A'}
                         </div>
-                        <div>Version ID: {part.prototypeVersionId}</div>
+                        <div>Version ID: {part.prototypeId}</div>
                         {part.parentId !== undefined &&
                           part.parentId !== null && (
                             <div>Parent ID: {part.parentId}</div>

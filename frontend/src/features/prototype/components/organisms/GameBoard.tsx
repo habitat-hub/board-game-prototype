@@ -11,11 +11,7 @@ import React, {
 import { Stage, Layer, Group, Rect } from 'react-konva';
 
 import { useImages } from '@/api/hooks/useImages';
-import {
-  Part as PartType,
-  PartProperty as PropertyType,
-  Player,
-} from '@/api/types';
+import { Part as PartType, PartProperty as PropertyType } from '@/api/types';
 import DebugInfo from '@/features/prototype/components/atoms/DebugInfo';
 import GridLines from '@/features/prototype/components/atoms/GridLines';
 import { KonvaPartContextMenu } from '@/features/prototype/components/atoms/KonvaPartContextMenu';
@@ -24,7 +20,6 @@ import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
 import ShortcutHelpPanel from '@/features/prototype/components/molecules/ShortcutHelpPanel';
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
-import { VERSION_NUMBER } from '@/features/prototype/const';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
@@ -40,13 +35,12 @@ const DEFAULT_INITIAL_SCALE = 0.5;
 
 interface GameBoardProps {
   prototypeName: string;
-  prototypeVersionNumber?: string;
+  prototypeVersionNumber?: number;
   groupId: string;
   parts: PartType[];
   properties: PropertyType[];
-  players: Player[];
   cursors: Record<string, CursorInfo>;
-  prototypeType: 'EDIT' | 'PREVIEW';
+  prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE';
 }
 
 export default function GameBoard({
@@ -55,7 +49,6 @@ export default function GameBoard({
   groupId,
   parts,
   properties,
-  players,
   cursors,
   prototypeType,
 }: GameBoardProps) {
@@ -75,9 +68,7 @@ export default function GameBoard({
     null
   );
 
-  const isMasterPreview =
-    prototypeType === 'PREVIEW' &&
-    prototypeVersionNumber === VERSION_NUMBER.MASTER;
+  const isVersionPrototype = prototypeType === 'VERSION';
 
   const canvasSize = useMemo(
     () => ({
@@ -322,7 +313,7 @@ export default function GameBoard({
     e: Konva.KonvaEventObject<DragEvent>,
     partId: number
   ) => {
-    if (isMasterPreview) return;
+    if (isVersionPrototype) return;
     e.cancelBubble = true;
     const newSelected = selectedPartIds.includes(partId)
       ? selectedPartIds
@@ -405,7 +396,7 @@ export default function GameBoard({
     e: Konva.KonvaEventObject<DragEvent>,
     partId: number
   ) => {
-    if (isMasterPreview) return;
+    if (isVersionPrototype) return;
 
     measureOperation('Part Drag Update', () => {
       const position = e.target.position();
@@ -554,7 +545,7 @@ export default function GameBoard({
   }, [camera, viewportSize, constrainCamera]);
 
   useEffect(() => {
-    if (prototypeType !== 'EDIT') return;
+    if (prototypeType !== 'MASTER') return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Delete' || e.key === 'Backspace') {
         const active = document.activeElement;
@@ -717,7 +708,6 @@ export default function GameBoard({
                     key={part.id}
                     part={part}
                     properties={partProperties}
-                    players={players}
                     images={filteredImages}
                     prototypeType={prototypeType}
                     isActive={isActive}
@@ -748,9 +738,8 @@ export default function GameBoard({
         prototypeName={prototypeName}
         prototypeVersionNumber={prototypeVersionNumber}
         prototypeType={prototypeType}
-        isMasterPreview={isMasterPreview}
+        isVersionPrototype={isVersionPrototype}
         groupId={groupId}
-        players={players}
         onAddPart={handleAddPart}
       />
       {/* ショートカットヘルプパネル */}
@@ -769,12 +758,11 @@ export default function GameBoard({
         ]}
       />
 
-      {prototypeType === 'EDIT' && (
+      {prototypeType === 'MASTER' && (
         <>
           {/* プロパティサイドバー */}
           {selectedPartIds.length === 1 && (
             <PartPropertySidebar
-              players={players}
               selectedPartId={selectedPartIds[0]}
               parts={parts}
               properties={properties}
@@ -795,13 +783,12 @@ export default function GameBoard({
       <DebugInfo
         camera={camera}
         prototypeName={prototypeName}
-        prototypeVersionNumber={prototypeVersionNumber ?? ''}
-        isMasterPreview={isMasterPreview}
+        prototypeVersionNumber={prototypeVersionNumber ?? 0}
+        isVersionPrototype={isVersionPrototype}
         groupId={groupId}
         prototypeType={prototypeType}
         parts={parts}
         properties={properties}
-        players={players}
         cursors={cursors}
         selectedPartIds={selectedPartIds}
       />

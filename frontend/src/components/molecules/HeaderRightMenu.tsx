@@ -70,7 +70,7 @@ const HeaderRightMenu: React.FC<HeaderRightMenuProps> = ({ pathname }) => {
       {showLogout && (
         <div className="absolute right-0 top-full w-48 flex flex-col mt-2 shadow-xl rounded-lg overflow-hidden bg-amber-50 border border-amber-200 z-50">
           <Link
-            href="/prototypes"
+            href="/groups"
             className="block w-full text-amber-900 p-2.5 text-left hover:bg-amber-100 transition-colors duration-200"
           >
             プロトタイプ一覧

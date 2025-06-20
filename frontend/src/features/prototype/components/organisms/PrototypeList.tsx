@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, {
   useState,
   useEffect,
@@ -11,13 +12,15 @@ import React, {
 import { FaCheck } from 'react-icons/fa';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { FaBoxOpen, FaPenToSquare, FaPlus } from 'react-icons/fa6';
+import { GiWoodenSign } from 'react-icons/gi';
+import { RiLoaderLine } from 'react-icons/ri';
 
+import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
 import { usePrototypes } from '@/api/hooks/usePrototypes';
-import { Prototype } from '@/api/types';
+import { Prototype, PrototypeGroup } from '@/api/types';
 import { UserContext } from '@/contexts/UserContext';
 import formatDate from '@/utils/dateFormat';
 
-import EmptyPrototypeList from '../molecules/EmptyPrototypeList';
 import PrototypeListSkeleton from '../molecules/PrototypeListSkeleton';
 
 type SortKey = 'name' | 'createdAt';
@@ -33,17 +36,26 @@ type SortOrder = 'asc' | 'desc';
  * @state isLoading - データ取得中のローディング状態を管理するState。
  */
 const PrototypeList: React.FC = () => {
-  const { getPrototypes, updatePrototype } = usePrototypes();
+  const router = useRouter();
+  const { updatePrototype } = usePrototypes();
+  const { getPrototypeGroups, createPrototypeGroup } = usePrototypeGroup();
   // UserContextからユーザー情報を取得
   const userContext = useContext(UserContext);
   // ローディング状態を管理するState
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  // プロトタイプ作成中フラグ
+  const [isCreating, setIsCreating] = useState<boolean>(false);
   // 編集中のプロトタイプのIDを管理するState
   const [nameEditingId, setNameEditingId] = useState<string>('');
   // 編集中のプロトタイプの名前を保持するState
   const [editedName, setEditedName] = useState<string>('');
   // 編集用プロトタイプ
-  const [editPrototypes, setEditPrototypes] = useState<Prototype[]>([]);
+  const [prototypeList, setPrototypeList] = useState<
+    {
+      prototypeGroup: PrototypeGroup;
+      editPrototype: Prototype | undefined;
+    }[]
+  >([]);
   // ソート
   const [sort, setSort] = useState<{
     key: SortKey;
@@ -52,6 +64,75 @@ const PrototypeList: React.FC = () => {
     key: 'createdAt',
     order: 'desc',
   });
+
+  /**
+   * ランダムなプロトタイプ名を生成する
+   * @returns ランダムなプロトタイプ名
+   */
+  const generateRandomPrototypeName = (): string => {
+    const adjectives = [
+      'エキサイティング',
+      'クリエイティブ',
+      'ファンタスティック',
+      'イノベーティブ',
+      'ダイナミック',
+      'ユニーク',
+      'アメージング',
+      'インスパイアリング',
+      'マジカル',
+      'レボリューショナリー',
+    ];
+
+    const nouns = [
+      'ゲーム',
+      'アドベンチャー',
+      'クエスト',
+      'チャレンジ',
+      'ジャーニー',
+      'ミッション',
+      'エクスペリエンス',
+      'ストーリー',
+      'ワールド',
+      'バトル',
+    ];
+
+    const randomAdjective =
+      adjectives[Math.floor(Math.random() * adjectives.length)];
+    const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
+
+    return `${randomAdjective}な${randomNoun}`;
+  };
+
+  /**
+   * 新しいプロトタイプを作成する
+   */
+  const handleCreatePrototype = async () => {
+    try {
+      setIsCreating(true);
+
+      // ランダムな名前でプロトタイプを作成
+      const randomName = generateRandomPrototypeName();
+      const group = await createPrototypeGroup({
+        name: randomName,
+      });
+
+      const masterPrototype = group.prototypes.find((p) => p.type === 'MASTER');
+
+      if (!masterPrototype) {
+        throw new Error('Cannot find a prototype with type "MASTER".');
+      }
+
+      // 編集ページへ遷移（成功時はページ遷移するのでsetIsCreating(false)は不要）
+      router.push(
+        `/groups/${group.prototypeGroup.id}/prototypes/${masterPrototype.id}/edit`
+      );
+    } catch (error) {
+      console.error('Error creating prototype:', error);
+      alert('プロトタイプの作成中にエラーが発生しました。');
+      // エラーが発生した場合のみローディング状態を解除
+      setIsCreating(false);
+    }
+  };
 
   /**
    * プロトタイプ名の編集モードを切り替える関数
@@ -80,7 +161,9 @@ const PrototypeList: React.FC = () => {
     }
 
     try {
-      const prototype = editPrototypes.find((p) => p.id === nameEditingId);
+      const prototype = prototypeList.find(
+        ({ editPrototype }) => editPrototype?.id === nameEditingId
+      );
       if (!prototype) return;
 
       // 名前だけを更新
@@ -88,12 +171,7 @@ const PrototypeList: React.FC = () => {
         name: editedName,
       });
 
-      // ローカルの状態を更新
-      setEditPrototypes((currentPrototypes) =>
-        currentPrototypes.map((p) =>
-          p.id === nameEditingId ? { ...p, name: editedName } : p
-        )
-      );
+      fetchPrototypeGroups();
     } catch (error) {
       console.error('Error updating prototype name:', error);
     } finally {
@@ -105,24 +183,29 @@ const PrototypeList: React.FC = () => {
   /**
    * プロトタイプを取得する
    */
-  const fetchPrototypes = useCallback(async () => {
+  const fetchPrototypeGroups = useCallback(async () => {
     setIsLoading(true);
 
     try {
-      const response = await getPrototypes();
-      const filteredPrototypes = response.filter(({ type }) => type === 'EDIT');
-      setEditPrototypes(filteredPrototypes);
+      const response = await getPrototypeGroups();
+      const prototypeInfo = response.map(({ prototypeGroup, prototypes }) => {
+        return {
+          prototypeGroup,
+          editPrototype: prototypes.find(({ type }) => type === 'MASTER'),
+        };
+      });
+      setPrototypeList(prototypeInfo);
     } catch (error) {
       console.error('Error fetching prototypes:', error);
     } finally {
       setIsLoading(false); // ローディング終了
     }
-  }, [getPrototypes]);
+  }, [getPrototypeGroups]);
 
   // プロトタイプの取得
   useEffect(() => {
-    fetchPrototypes();
-  }, [fetchPrototypes]);
+    fetchPrototypeGroups();
+  }, [fetchPrototypeGroups]);
 
   /**
    * プロトタイプをソートする
@@ -130,21 +213,29 @@ const PrototypeList: React.FC = () => {
    * @returns ソートされたプロトタイプ
    */
   const sortPrototypes = useCallback(
-    (prototypes: Prototype[]) => {
-      return [...prototypes].sort((a, b) => {
+    (
+      prototypeList: {
+        prototypeGroup: PrototypeGroup;
+        editPrototype: Prototype | undefined;
+      }[]
+    ) => {
+      return [...prototypeList].sort((a, b) => {
         switch (sort.key) {
           // 名前順
           case 'name':
+            if (!a.editPrototype?.name || !b.editPrototype?.name) return 0;
             return sort.order === 'asc'
-              ? a.name.localeCompare(b.name)
-              : b.name.localeCompare(a.name);
+              ? a.editPrototype.name.localeCompare(b.editPrototype.name)
+              : b.editPrototype.name.localeCompare(a.editPrototype.name);
           // 作成日順
           case 'createdAt':
+            if (!a.editPrototype?.createdAt || !b.editPrototype?.createdAt)
+              return 0;
             return sort.order === 'asc'
-              ? new Date(b.createdAt).getTime() -
-                  new Date(a.createdAt).getTime()
-              : new Date(a.createdAt).getTime() -
-                  new Date(b.createdAt).getTime();
+              ? new Date(b.editPrototype.createdAt).getTime() -
+                  new Date(a.editPrototype.createdAt).getTime()
+              : new Date(a.editPrototype.createdAt).getTime() -
+                  new Date(b.editPrototype.createdAt).getTime();
           default:
             return 0;
         }
@@ -154,17 +245,48 @@ const PrototypeList: React.FC = () => {
   );
 
   // ソートされたプロトタイプ
-  const sortedPrototypes = useMemo(
-    () => sortPrototypes(editPrototypes),
-    [editPrototypes, sortPrototypes]
-  );
+  const sortedPrototypeList = useMemo(() => {
+    return sortPrototypes(prototypeList);
+  }, [prototypeList, sortPrototypes]);
 
   if (isLoading) {
     return <PrototypeListSkeleton />;
   }
 
-  if (sortedPrototypes.length === 0) {
-    return <EmptyPrototypeList />;
+  if (sortedPrototypeList.length === 0) {
+    return (
+      <div className="flex flex-col h-full justify-center items-center relative">
+        <div className="text-wood-light">
+          <GiWoodenSign className="w-[600px] h-[600px]" aria-hidden="true" />
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center flex-col">
+          <p className="text-4xl text-wood-darkest text-center w-full mb-12">
+            最初のプロトタイプを
+            <br />
+            作成しましょう
+          </p>
+          <button
+            onClick={handleCreatePrototype}
+            disabled={isCreating}
+            className="flex items-center justify-center gap-3 bg-gradient-to-r from-header via-header-light to-header text-content py-4 px-8 rounded-full hover:from-header-light hover:via-header hover:to-header-light transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 group text-xl font-bold animate-pulse disabled:opacity-80 disabled:cursor-not-allowed disabled:hover:transform-none"
+            title="新規プロトタイプを作成"
+          >
+            {isCreating ? (
+              <RiLoaderLine
+                className="w-6 h-6 animate-spin"
+                aria-hidden="true"
+              />
+            ) : (
+              <FaPlus
+                className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300"
+                aria-hidden="true"
+              />
+            )}
+            <span>{isCreating ? '作成中...' : 'KIBAKOの世界へ飛び込む！'}</span>
+          </button>
+        </div>
+      </div>
+    );
   }
 
   /**
@@ -212,13 +334,12 @@ const PrototypeList: React.FC = () => {
                   {getSortIcon('name')}
                 </button>
               </th>
-              <th className="text-left p-4 w-36">プレイヤー人数</th>
-              <th className="text-left p-4 w-32">
+              <th className="text-left p-4 w-56">
                 <button
                   onClick={() => handleSort('createdAt')}
                   className="flex items-center gap-1 hover:text-header transition-colors duration-200 w-full"
                 >
-                  作成日
+                  作成日時
                   {getSortIcon('createdAt')}
                 </button>
               </th>
@@ -227,106 +348,98 @@ const PrototypeList: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-wood-lightest/20">
-            {sortedPrototypes.map(
-              ({
-                id,
-                groupId,
-                name,
-                minPlayers,
-                maxPlayers,
-                createdAt,
-                userId,
-              }) => {
-                const isNameEditing = nameEditingId === id; // 現在の項目が編集中かどうかを判定
-                return (
-                  <tr key={id}>
-                    <td className="p-4">
-                      {isNameEditing ? (
-                        <form
-                          className="text-wood-darkest flex items-center"
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            handleNameEditComplete();
-                          }}
-                        >
-                          <input
-                            type="text"
-                            value={editedName}
-                            onChange={(e) => setEditedName(e.target.value)}
-                            className="w-[80%] p-1 border border-wood-light rounded"
-                            autoFocus
-                          />
-                          <button
-                            type="submit"
-                            className="ml-2 p-1.5 text-green-600 hover:text-green-700 rounded-md border border-green-500 hover:bg-green-50 transition-colors"
-                            title="編集完了"
-                          >
-                            <FaCheck className="w-3.5 h-3.5" />
-                          </button>
-                        </form>
-                      ) : (
-                        <div className="flex items-center">
-                          <Link
-                            href={`prototypes/groups/${groupId}`}
-                            className="text-wood-darkest font-medium"
-                          >
-                            {name}
-                          </Link>
-                          <button
-                            onClick={() => handleNameEditToggle(id, name)}
-                            className="ml-2 p-1 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors"
-                            title="プロトタイプ名を編集"
-                          >
-                            <FaPenToSquare className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center">
-                        <span className="text-wood-dark">
-                          {minPlayers !== maxPlayers
-                            ? `${minPlayers} ~ ${maxPlayers}`
-                            : `${minPlayers}`}
-                        </span>
-                        <span className="text-wood-dark">人</span>
-                      </div>
-                    </td>
-                    <td className="p-4 text-sm text-wood">
-                      {formatDate(createdAt)}
-                    </td>
-                    <td className="p-4 text-sm text-wood">
-                      {userContext?.user?.id === userId
-                        ? '自分'
-                        : '他のユーザー'}
-                    </td>
-                    <td className="p-4 flex justify-center gap-2">
-                      <Link
-                        href={`prototypes/groups/${groupId}`}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
-                        title="プロトタイプを開く"
+            {sortedPrototypeList.map(({ editPrototype, prototypeGroup }) => {
+              if (!editPrototype) return null;
+              const { id, name, createdAt } = editPrototype;
+              const isNameEditing = nameEditingId === id;
+              return (
+                <tr key={id}>
+                  <td className="p-4">
+                    {isNameEditing ? (
+                      <form
+                        className="text-wood-darkest flex items-center"
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          handleNameEditComplete();
+                        }}
                       >
-                        <FaBoxOpen className="w-4 h-4" />
-                        <span>開く</span>
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              }
-            )}
+                        <input
+                          type="text"
+                          value={editedName}
+                          onChange={(e) => setEditedName(e.target.value)}
+                          className="w-[80%] p-1 border border-wood-light rounded"
+                          autoFocus
+                        />
+                        <button
+                          type="submit"
+                          className="ml-2 p-1.5 text-green-600 hover:text-green-700 rounded-md border border-green-500 hover:bg-green-50 transition-colors"
+                          title="編集完了"
+                        >
+                          <FaCheck className="w-3.5 h-3.5" />
+                        </button>
+                      </form>
+                    ) : (
+                      <div className="flex items-center">
+                        <Link
+                          href={`/groups/${prototypeGroup.id}`}
+                          className="text-wood-darkest font-medium"
+                        >
+                          {name}
+                        </Link>
+                        <button
+                          onClick={() => handleNameEditToggle(id, name)}
+                          className="ml-2 p-1 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors"
+                          title="プロトタイプ名を編集"
+                        >
+                          <FaPenToSquare className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                  <td className="p-4 text-sm text-wood">
+                    {formatDate(createdAt, true)}
+                  </td>
+                  <td className="p-4 text-sm text-wood">
+                    {userContext?.user?.id === prototypeGroup.userId
+                      ? '自分'
+                      : '他のユーザー'}
+                  </td>
+                  <td className="p-4 flex justify-center gap-2">
+                    <Link
+                      href={`groups/${prototypeGroup.id}`}
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
+                      title="プロトタイプを開く"
+                    >
+                      <FaBoxOpen className="w-4 h-4" />
+                      <span>開く</span>
+                    </Link>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
       {/* 新規プロトタイプ作成ボタン */}
-      <div className="mt-6 flex justify-center">
-        <Link
-          href="/prototypes/create"
-          className="flex items-center justify-center gap-3 bg-gradient-to-r from-header via-header-light to-header text-content py-3 px-6 rounded-full hover:from-header-light hover:via-header hover:to-header-light transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 group"
-          title="新規プロトタイプを作成"
+      <div className="mt-8 flex justify-center">
+        <button
+          onClick={handleCreatePrototype}
+          disabled={isCreating}
+          className={`w-full max-w-md bg-gradient-to-r from-header/90 to-header-light/90 text-white p-3 rounded-xl border border-header/20 font-medium transition-all duration-300 transform 
+            ${
+              isCreating
+                ? 'opacity-80 cursor-not-allowed'
+                : 'hover:shadow-xl hover:-translate-y-1'
+            }`}
         >
-          <FaPlus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-          <span className="font-bold">新しいプロトタイプを作成</span>
-        </Link>
+          <div className="flex items-center justify-center">
+            {isCreating && (
+              <RiLoaderLine className="w-5 h-5 mr-2 animate-spin" />
+            )}
+            <FaPlus className={`w-5 h-5 mr-2 ${isCreating ? 'hidden' : ''}`} />
+            <span>{isCreating ? '作成中...' : '新しいプロトタイプを作成'}</span>
+          </div>
+        </button>
       </div>
     </div>
   );

@@ -6,7 +6,7 @@
  *
  * @example
  * formatDate('2021-01-01') // '2021/01/01'
- * formatDate('2021-01-01', true) // '2021/01/01 00:00'
+ * formatDate('2021-01-01', true) // '2021/01/01 00:00:00'
  */
 export default function formatDate(
   dateString: string,
@@ -20,6 +20,7 @@ export default function formatDate(
     ...(withTime && {
       hour: '2-digit',
       minute: '2-digit',
+      second: '2-digit',
     }),
   });
 }

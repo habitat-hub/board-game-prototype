@@ -11,11 +11,7 @@ import React, {
 import { AiOutlineTool } from 'react-icons/ai';
 
 import { useImages } from '@/api/hooks/useImages';
-import {
-  Part as PartType,
-  PartProperty as PropertyType,
-  Player,
-} from '@/api/types';
+import { Part as PartType, PartProperty as PropertyType } from '@/api/types';
 import Part from '@/features/prototype/components/atoms/Part';
 import RandomNumberTool from '@/features/prototype/components/atoms/RandomNumberTool';
 import { Cursor } from '@/features/prototype/components/Cursor';
@@ -23,7 +19,6 @@ import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
 import ShortcutHelpPanel from '@/features/prototype/components/molecules/ShortcutHelpPanel';
 import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
-import { VERSION_NUMBER } from '@/features/prototype/const';
 import { useCanvasEvents } from '@/features/prototype/hooks/useCanvasEvents';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { useSocket } from '@/features/prototype/hooks/useSocket';
@@ -36,19 +31,17 @@ interface CanvasProps {
   // プロトタイプ名
   prototypeName: string;
   // プロトタイプバージョン番号
-  prototypeVersionNumber?: string;
+  prototypeVersionNumber?: number;
   // グループID
   groupId: string;
   // パーツ
   parts: PartType[];
   // パーツのプロパティ
   properties: PropertyType[];
-  // プレイヤー
-  players: Player[];
   // カーソル
   cursors: Record<string, CursorInfo>;
   // プロトタイプの種類
-  prototypeType: 'EDIT' | 'PREVIEW';
+  prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE';
 }
 
 export default function Canvas({
@@ -57,7 +50,6 @@ export default function Canvas({
   groupId,
   parts,
   properties,
-  players,
   cursors,
   prototypeType,
 }: CanvasProps) {
@@ -110,37 +102,10 @@ export default function Canvas({
   });
 
   // マスタープレビューかどうか
-  const isMasterPreview =
-    prototypeType === 'PREVIEW' &&
-    prototypeVersionNumber === VERSION_NUMBER.MASTER;
+  const isVersionPrototype = prototypeType === 'VERSION';
 
-  // 他のプレイヤーのカード
-  const otherPlayerCards = useMemo(() => {
-    if (!user) return [];
-
-    // 自分以外が設定されているプレイヤー
-    const playerIds = players
-      .filter((player) => player.userId !== user.id)
-      .map((player) => player.id);
-    // 自分以外がオーナーの手札
-    const otherPlayerHandIds = parts
-      .filter(
-        (part) =>
-          part.type === 'hand' &&
-          part.ownerId != null &&
-          playerIds.includes(part.ownerId)
-      )
-      .map((part) => part.id);
-    // 自分以外がオーナーのカード
-    return parts
-      .filter(
-        (part) =>
-          part.type === 'card' &&
-          part.parentId != null &&
-          otherPlayerHandIds.includes(part.parentId)
-      )
-      .map((part) => part.id);
-  }, [parts, players, user]);
+  // Other player cards are not supported anymore since Player model was removed
+  const otherPlayerCards: number[] = [];
 
   // 選択したパーツが更新されたら、最新化
   useEffect(() => {
@@ -371,7 +336,7 @@ export default function Canvas({
    * @param partId - パーツID
    */
   const handlePartMouseDown = (e: React.MouseEvent, partId: number) => {
-    if (isMasterPreview) return;
+    if (isVersionPrototype) return;
 
     onPartMouseDown(e, partId);
   };
@@ -469,7 +434,6 @@ export default function Canvas({
                       part={part}
                       properties={filteredProperties}
                       images={filteredImages}
-                      players={players}
                       prototypeType={prototypeType}
                       isOtherPlayerCard={otherPlayerCards.includes(part.id)}
                       onMouseDown={(e) => handlePartMouseDown(e, part.id)}
@@ -480,7 +444,7 @@ export default function Canvas({
                         partId: number;
                         type: 'front' | 'back' | 'backmost' | 'frontmost';
                       }) => {
-                        if (isMasterPreview) return;
+                        if (isVersionPrototype) return;
 
                         dispatch({
                           type: 'CHANGE_ORDER',
@@ -545,13 +509,12 @@ export default function Canvas({
         prototypeName={prototypeName}
         prototypeVersionNumber={prototypeVersionNumber}
         prototypeType={prototypeType}
-        isMasterPreview={isMasterPreview}
+        isVersionPrototype={isVersionPrototype}
         groupId={groupId}
-        players={players}
         onAddPart={handleAddPart}
       />
 
-      {prototypeType === 'EDIT' && (
+      {prototypeType === 'MASTER' && (
         <>
           {/* ショートカットヘルプパネル */}
           <ShortcutHelpPanel
@@ -572,7 +535,6 @@ export default function Canvas({
           {/* プロパティサイドバー */}
           {selectedPartIds.length === 1 && (
             <PartPropertySidebar
-              players={players}
               selectedPartId={selectedPartIds[0]}
               parts={parts}
               properties={properties}

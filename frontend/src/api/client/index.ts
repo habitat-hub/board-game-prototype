@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { setupResponseInterceptor } from './interceptors';
+import { setupInterceptors } from './interceptors';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -9,6 +9,6 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-setupResponseInterceptor(axiosInstance);
+setupInterceptors(axiosInstance);
 
 export default axiosInstance;

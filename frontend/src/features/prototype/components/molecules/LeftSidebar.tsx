@@ -5,7 +5,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { BiArea } from 'react-icons/bi';
 import {
   Gi3dMeeple,
@@ -15,61 +15,51 @@ import {
 } from 'react-icons/gi';
 import { IoArrowBack, IoMenu } from 'react-icons/io5';
 
-import { usePrototypes } from '@/api/hooks/usePrototypes';
-import { Part, PartProperty, Player, User } from '@/api/types';
-import Dropdown from '@/components/atoms/Dropdown';
+import { Part, PartProperty } from '@/api/types';
 import TextIconButton from '@/components/atoms/TextIconButton';
 import { PART_DEFAULT_CONFIG } from '@/features/prototype/const';
-import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { AddPartProps } from '@/features/prototype/type';
 
 export default function LeftSidebar({
   prototypeName,
   prototypeVersionNumber,
   prototypeType,
-  isMasterPreview,
+  isVersionPrototype,
   groupId,
-  players,
   onAddPart,
 }: {
   // プロトタイプ名
   prototypeName: string;
   // プロトタイプバージョン番号（プレビューモード時のみ使用）
-  prototypeVersionNumber?: string;
+  prototypeVersionNumber?: number;
   // プロトタイプタイプ（'preview'または'edit'）
-  prototypeType: 'PREVIEW' | 'EDIT';
+  prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE';
   // マスタープレビューかどうか（プレビューモード時のみ使用）
-  isMasterPreview: boolean;
+  isVersionPrototype: boolean;
   // グループID
   groupId: string;
-  // プレイヤー
-  players: Player[];
   // パーツを追加時の処理（編集モード時のみ使用）
   onAddPart?: ({ part, properties }: AddPartProps) => void;
 }) {
-  const { dispatch } = usePartReducer();
-  const { getAccessUsersByGroup } = usePrototypes();
   const router = useRouter();
 
   // 左サイドバーが最小化されているか
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
-  // グループにアクセス可能なユーザー（プレビューモード時のみ使用）
-  const [accessibleUsers, setAccessibleUsers] = useState<User[]>([]);
 
   // 左サイドバーのヘッダーコンポーネント
   const LeftSidebarHeader = ({
     prototypeName,
     prototypeVersionNumber,
     prototypeType,
-    isMasterPreview,
+    isVersionPrototype,
     groupId,
     isMinimized,
     onToggle,
   }: {
     prototypeName: string;
-    prototypeVersionNumber?: string;
-    prototypeType: 'PREVIEW' | 'EDIT';
-    isMasterPreview: boolean;
+    prototypeVersionNumber?: number;
+    prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE';
+    isVersionPrototype: boolean;
     groupId: string;
     isMinimized: boolean;
     onToggle: () => void;
@@ -77,7 +67,7 @@ export default function LeftSidebar({
     return (
       <div className="flex h-[48px] items-center justify-between px-2 py-4">
         <button
-          onClick={() => router.push(`/prototypes/groups/${groupId}`)}
+          onClick={() => router.push(`/groups/${groupId}`)}
           className="p-2 hover:bg-wood-lightest/20 rounded-full transition-colors flex-shrink-0"
           title="戻る"
         >
@@ -90,15 +80,15 @@ export default function LeftSidebar({
           >
             {prototypeName}
           </h2>
-          {prototypeVersionNumber && prototypeType === 'PREVIEW' && (
+          {prototypeVersionNumber && prototypeType === 'VERSION' && (
             <span className="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-600 rounded-md min-w-1 border border-blue-600 flex-shrink-0">
-              {isMasterPreview
+              {isVersionPrototype
                 ? 'プレビュー'
-                : `プレイルーム${prototypeVersionNumber.replace('.0.0', '')}`}
+                : `プレイルーム${prototypeVersionNumber}`}
             </span>
           )}
         </div>
-        {(prototypeType === 'EDIT' || !isMasterPreview) && (
+        {(prototypeType === 'MASTER' || !isVersionPrototype) && (
           <button
             onClick={onToggle}
             aria-label={isMinimized ? 'サイドバーを展開' : 'サイドバーを最小化'}
@@ -110,15 +100,6 @@ export default function LeftSidebar({
       </div>
     );
   };
-
-  // グループにアクセス可能なユーザーを取得（プレビューモード時のみ）
-  useEffect(() => {
-    if (prototypeType === 'PREVIEW' && !isMasterPreview) {
-      getAccessUsersByGroup(groupId).then((response) => {
-        setAccessibleUsers(response);
-      });
-    }
-  }, [groupId, getAccessUsersByGroup, prototypeType, isMasterPreview]);
 
   /**
    * パーツを作成する（編集モード時のみ）
@@ -141,7 +122,7 @@ export default function LeftSidebar({
     // 新しいパーツ
     const newPart: Omit<
       Part,
-      'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'
+      'id' | 'prototypeId' | 'order' | 'createdAt' | 'updatedAt'
     > = {
       type: partType,
       parentId: undefined,
@@ -160,7 +141,7 @@ export default function LeftSidebar({
         newPart.isFlipped = false;
       },
       hand: () => {
-        newPart.ownerId = players[0].id;
+        // 手札作成時の処理（現在は何もしない）
       },
       token: () => {},
       deck: () => {},
@@ -199,61 +180,8 @@ export default function LeftSidebar({
 
   // プレビューモードのコンテンツをレンダリング
   const renderPreviewContent = () => {
-    if (isMasterPreview) return null;
-
-    return (
-      <>
-        <div className="border-b border-wood-light/30" />
-        <div className="flex flex-col gap-2 p-4">
-          <div className="flex flex-col items-start justify-between mb-2">
-            <span className="text-xs font-medium uppercase tracking-wide text-wood-dark/70">
-              プレイヤー割り当て
-            </span>
-            <details className="text-xs">
-              <summary className="cursor-pointer text-wood-dark/60 hover:text-wood-dark">
-                詳細
-              </summary>
-              <div className="p-2 mt-1 bg-wood-lightest/20 rounded-md text-wood-dark/80">
-                手札のプレイヤー番号とユーザーを紐づけます。
-              </div>
-            </details>
-          </div>
-          <div className="flex flex-col gap-1">
-            {players.map((player) => (
-              <div key={player.id}>
-                <p className="text-[9px] font-medium text-wood-dark mb-1">
-                  {player.playerName}
-                </p>
-                <div className="flex w-full mb-2">
-                  <Dropdown
-                    value={
-                      accessibleUsers.find((user) => user.id === player.userId)
-                        ?.username || 'プレイヤーを選択'
-                    }
-                    onChange={(value: string) => {
-                      const userId = accessibleUsers.find(
-                        (user) => user.username === value
-                      )?.id;
-                      dispatch({
-                        type: 'UPDATE_PLAYER_USER',
-                        payload: {
-                          playerId: player.id,
-                          userId: userId ?? null,
-                        },
-                      });
-                    }}
-                    options={[
-                      'プレイヤーを選択',
-                      ...accessibleUsers.map((user) => user.username),
-                    ]}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </>
-    );
+    if (isVersionPrototype) return null;
+    return null; // 現在プレビューモードでは何も表示しない
   };
 
   // 編集モードのコンテンツをレンダリング
@@ -304,7 +232,7 @@ export default function LeftSidebar({
         prototypeName={prototypeName}
         prototypeVersionNumber={prototypeVersionNumber}
         prototypeType={prototypeType}
-        isMasterPreview={isMasterPreview}
+        isVersionPrototype={isVersionPrototype}
         groupId={groupId}
         isMinimized={isLeftSidebarMinimized}
         onToggle={toggleSidebar}
@@ -312,8 +240,8 @@ export default function LeftSidebar({
 
       {!isLeftSidebarMinimized && (
         <>
-          {prototypeType === 'PREVIEW' && renderPreviewContent()}
-          {prototypeType === 'EDIT' && renderEditContent()}
+          {prototypeType === 'VERSION' && renderPreviewContent()}
+          {prototypeType === 'MASTER' && renderEditContent()}
         </>
       )}
     </div>

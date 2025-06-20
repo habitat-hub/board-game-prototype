@@ -65,26 +65,6 @@ export const swaggerSchemas = {
             }
       }
 },
-      Access: {
-      "type": "object",
-      "properties": {
-            "id": {
-                  "type": "integer"
-            },
-            "prototypeGroupId": {
-                  "type": "string",
-                  "format": "uuid"
-            },
-            "name": {
-                  "type": "string"
-            }
-      },
-      "required": [
-            "id",
-            "prototypeGroupId",
-            "name"
-      ]
-},
       Image: {
       "type": "object",
       "properties": {
@@ -142,7 +122,7 @@ export const swaggerSchemas = {
                         "area"
                   ]
             },
-            "prototypeVersionId": {
+            "prototypeId": {
                   "type": "string",
                   "format": "uuid"
             },
@@ -178,7 +158,8 @@ export const swaggerSchemas = {
                   "type": "boolean"
             },
             "ownerId": {
-                  "type": "integer"
+                  "type": "string",
+                  "format": "uuid"
             },
             "canReverseCardOnDeck": {
                   "type": "boolean"
@@ -193,7 +174,7 @@ export const swaggerSchemas = {
       "required": [
             "id",
             "type",
-            "prototypeVersionId",
+            "prototypeId",
             "position",
             "width",
             "height",
@@ -250,124 +231,19 @@ export const swaggerSchemas = {
             "updatedAt"
       ]
 },
-      Player: {
+      Permission: {
       "type": "object",
       "properties": {
             "id": {
                   "type": "integer"
-            },
-            "prototypeVersionId": {
-                  "type": "string",
-                  "format": "uuid"
-            },
-            "userId": {
-                  "type": "string",
-                  "format": "uuid"
-            },
-            "playerName": {
-                  "type": "string"
-            },
-            "originalPlayerId": {
-                  "type": "integer"
-            },
-            "createdAt": {
-                  "type": "string"
-            },
-            "updatedAt": {
-                  "type": "string"
-            }
-      },
-      "required": [
-            "id",
-            "prototypeVersionId",
-            "playerName",
-            "createdAt",
-            "updatedAt"
-      ]
-},
-      Prototype: {
-      "type": "object",
-      "properties": {
-            "id": {
-                  "type": "string",
-                  "format": "uuid"
-            },
-            "userId": {
-                  "type": "string",
-                  "format": "uuid"
             },
             "name": {
                   "type": "string"
             },
-            "type": {
-                  "type": "string",
-                  "enum": [
-                        "EDIT",
-                        "PREVIEW"
-                  ]
-            },
-            "masterPrototypeId": {
-                  "type": "string",
-                  "format": "uuid"
-            },
-            "groupId": {
-                  "type": "string",
-                  "format": "uuid"
-            },
-            "minPlayers": {
-                  "type": "integer"
-            },
-            "maxPlayers": {
-                  "type": "integer"
-            },
-            "createdAt": {
+            "resource": {
                   "type": "string"
             },
-            "updatedAt": {
-                  "type": "string"
-            }
-      },
-      "required": [
-            "id",
-            "userId",
-            "name",
-            "type",
-            "groupId",
-            "minPlayers",
-            "maxPlayers",
-            "createdAt",
-            "updatedAt"
-      ]
-},
-      PrototypeGroup: {
-      "type": "object",
-      "properties": {
-            "id": {
-                  "type": "string",
-                  "format": "uuid"
-            },
-            "prototypeId": {
-                  "type": "string",
-                  "format": "uuid"
-            }
-      },
-      "required": [
-            "id",
-            "prototypeId"
-      ]
-},
-      PrototypeVersion: {
-      "type": "object",
-      "properties": {
-            "id": {
-                  "type": "string",
-                  "format": "uuid"
-            },
-            "prototypeId": {
-                  "type": "string",
-                  "format": "uuid"
-            },
-            "versionNumber": {
+            "action": {
                   "type": "string"
             },
             "description": {
@@ -382,10 +258,119 @@ export const swaggerSchemas = {
       },
       "required": [
             "id",
-            "prototypeId",
+            "name",
+            "resource",
+            "action",
+            "createdAt",
+            "updatedAt"
+      ]
+},
+      Prototype: {
+      "type": "object",
+      "properties": {
+            "id": {
+                  "type": "string",
+                  "format": "uuid"
+            },
+            "prototypeGroupId": {
+                  "type": "string",
+                  "format": "uuid"
+            },
+            "name": {
+                  "type": "string"
+            },
+            "type": {
+                  "type": "string",
+                  "enum": [
+                        "MASTER",
+                        "VERSION",
+                        "INSTANCE"
+                  ]
+            },
+            "versionNumber": {
+                  "type": "integer"
+            },
+            "createdAt": {
+                  "type": "string"
+            },
+            "updatedAt": {
+                  "type": "string"
+            }
+      },
+      "required": [
+            "id",
+            "prototypeGroupId",
+            "name",
+            "type",
             "versionNumber",
             "createdAt",
             "updatedAt"
+      ]
+},
+      PrototypeGroup: {
+      "type": "object",
+      "properties": {
+            "id": {
+                  "type": "string",
+                  "format": "uuid"
+            },
+            "userId": {
+                  "type": "string",
+                  "format": "uuid"
+            },
+            "createdAt": {
+                  "type": "string"
+            },
+            "updatedAt": {
+                  "type": "string"
+            }
+      },
+      "required": [
+            "id",
+            "userId",
+            "createdAt",
+            "updatedAt"
+      ]
+},
+      Role: {
+      "type": "object",
+      "properties": {
+            "id": {
+                  "type": "integer"
+            },
+            "name": {
+                  "type": "string"
+            },
+            "description": {
+                  "type": "string"
+            },
+            "createdAt": {
+                  "type": "string"
+            },
+            "updatedAt": {
+                  "type": "string"
+            }
+      },
+      "required": [
+            "id",
+            "name",
+            "createdAt",
+            "updatedAt"
+      ]
+},
+      RolePermission: {
+      "type": "object",
+      "properties": {
+            "roleId": {
+                  "type": "integer"
+            },
+            "permissionId": {
+                  "type": "integer"
+            }
+      },
+      "required": [
+            "roleId",
+            "permissionId"
       ]
 },
       User: {
@@ -412,20 +397,52 @@ export const swaggerSchemas = {
             "updatedAt"
       ]
 },
-      UserAccess: {
+      UserPermission: {
       "type": "object",
       "properties": {
             "userId": {
                   "type": "string",
                   "format": "uuid"
             },
-            "accessId": {
+            "permissionId": {
                   "type": "integer"
             }
       },
       "required": [
             "userId",
-            "accessId"
+            "permissionId"
+      ]
+},
+      UserRole: {
+      "type": "object",
+      "properties": {
+            "userId": {
+                  "type": "string",
+                  "format": "uuid"
+            },
+            "roleId": {
+                  "type": "integer"
+            },
+            "resourceType": {
+                  "type": "string"
+            },
+            "resourceId": {
+                  "type": "string"
+            },
+            "createdAt": {
+                  "type": "string"
+            },
+            "updatedAt": {
+                  "type": "string"
+            }
+      },
+      "required": [
+            "userId",
+            "roleId",
+            "resourceType",
+            "resourceId",
+            "createdAt",
+            "updatedAt"
       ]
 },
     }

@@ -18,8 +18,8 @@ function Login() {
       .then((user) => {
         // ユーザーデータが存在する場合はログイン済みと判断
         if (user && user.id) {
-          // /prototypes にリダイレクト
-          router.replace('/prototypes');
+          // /groups にリダイレクト
+          router.replace('/groups');
         } else {
           // ユーザーがログインしていない場合はローディングを終了
           setIsLoading(false);

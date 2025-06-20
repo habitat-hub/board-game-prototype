@@ -4,30 +4,37 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { IoArrowBack, IoTrash } from 'react-icons/io5';
 
-import { usePrototypes } from '@/api/hooks/usePrototypes';
-import { Prototype } from '@/api/types';
+import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
+import { Prototype, PrototypeGroup } from '@/api/types';
 import { useUser } from '@/hooks/useUser';
 
 const DeletePrototypeConfirmation = () => {
   const router = useRouter();
   const { user } = useUser();
-  const { prototypeId } = useParams<{ prototypeId: string }>();
-  const { getPrototype, deletePrototype } = usePrototypes();
-  const [prototype, setPrototype] = useState<Prototype | null>(null);
+  const { groupId } = useParams<{ groupId: string }>();
+  const { getPrototypeGroup, deletePrototypeGroup } = usePrototypeGroup();
+  const [prototypeGroup, setPrototypeGroup] = useState<PrototypeGroup | null>(
+    null
+  );
+  const [masterPrototype, setMasterPrototype] = useState<Prototype | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchPrototype = async () => {
+    const fetchPrototypeGroup = async () => {
       try {
         setIsLoading(true);
-        const prototype = await getPrototype(prototypeId);
-        setPrototype(prototype);
-
+        const { prototypeGroup, prototypes } = await getPrototypeGroup(groupId);
+        setPrototypeGroup(prototypeGroup);
+        setMasterPrototype(
+          prototypes.find(({ type }) => type === 'MASTER') || null
+        );
         // ユーザーがプロトタイプのオーナーでない場合はリダイレクト
-        if (user && prototype.userId !== user.id) {
-          router.push('/prototypes');
+        if (user && prototypeGroup.userId !== user.id) {
+          router.push('/groups');
         }
       } catch (err) {
         setError('プロトタイプの取得に失敗しました');
@@ -40,15 +47,15 @@ const DeletePrototypeConfirmation = () => {
     if (!user) {
       router.push('/login'); // 未ログインの場合はログインページへリダイレクト
     } else {
-      fetchPrototype();
+      fetchPrototypeGroup();
     }
-  }, [prototypeId, getPrototype, user, router]);
+  }, [groupId, getPrototypeGroup, user, router]);
 
   const handleDelete = async () => {
     try {
       setIsDeleting(true);
-      await deletePrototype(prototypeId);
-      router.push('/prototypes');
+      await deletePrototypeGroup(groupId);
+      router.push('/groups');
     } catch (err) {
       setError('プロトタイプの削除に失敗しました');
       console.error('Error deleting prototype:', err);
@@ -83,7 +90,7 @@ const DeletePrototypeConfirmation = () => {
     );
   }
 
-  if (!prototype) {
+  if (!prototypeGroup) {
     return (
       <div className="max-w-3xl mx-auto mt-16 p-8 bg-white rounded-xl shadow-lg">
         <div className="text-center text-gray-600">
@@ -91,7 +98,7 @@ const DeletePrototypeConfirmation = () => {
         </div>
         <div className="mt-4 text-center">
           <button
-            onClick={() => router.push('/prototypes')}
+            onClick={() => router.push('/groups')}
             className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
           >
             プロトタイプ一覧へ戻る
@@ -131,15 +138,7 @@ const DeletePrototypeConfirmation = () => {
         <h2 className="text-xl font-semibold mb-4">削除するプロトタイプ</h2>
         <div className="mb-4">
           <div className="text-sm text-gray-500">プロトタイプ名</div>
-          <div className="text-lg font-medium">{prototype.name}</div>
-        </div>
-        <div className="mb-4">
-          <div className="text-sm text-gray-500">プレイヤー人数</div>
-          <div>
-            {prototype.minPlayers === prototype.maxPlayers
-              ? `${prototype.minPlayers}人`
-              : `${prototype.minPlayers}〜${prototype.maxPlayers}人`}
-          </div>
+          <div className="text-lg font-medium">{masterPrototype?.name}</div>
         </div>
       </div>
 
