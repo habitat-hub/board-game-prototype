@@ -2,6 +2,10 @@ import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
 import { RESOURCE_TYPES } from '../const';
 
+// 関連モデルの型をインポート（循環参照を避けるため遅延インポートまたは型のみ）
+import type UserModel from './User';
+import type RoleModel from './Role';
+
 class UserRoleModel extends Model {
   // ユーザーID
   public userId!: string;
@@ -11,6 +15,10 @@ class UserRoleModel extends Model {
   public resourceType!: string;
   // リソースID
   public resourceId!: string;
+
+  // 関連モデル（eager loadingで取得される場合）
+  public User?: UserModel;
+  public Role?: RoleModel;
 }
 
 UserRoleModel.init(
