@@ -77,7 +77,7 @@ export default function LeftSidebar({
     return (
       <div className="flex h-[48px] items-center justify-between px-2 py-4">
         <button
-          onClick={() => router.push(`/prototypes/groups/${groupId}`)}
+          onClick={() => router.push(`/groups/${groupId}`)}
           className="p-2 hover:bg-wood-lightest/20 rounded-full transition-colors flex-shrink-0"
           title="戻る"
         >

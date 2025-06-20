@@ -28,7 +28,7 @@ const UserInvite: React.FC = () => {
     <div className="max-w-md mx-auto p-4 bg-white rounded-lg shadow mt-16">
       <div className="flex items-center relative mb-6">
         <button
-          onClick={() => router.push(`/prototypes/groups/${groupId}`)}
+          onClick={() => router.push(`/groups/${groupId}`)}
           className="p-2 hover:bg-content-secondary rounded-full transition-colors absolute left-0"
           title="プロトタイプ管理へ戻る"
         >

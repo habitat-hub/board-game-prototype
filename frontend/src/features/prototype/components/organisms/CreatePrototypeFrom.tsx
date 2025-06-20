@@ -57,7 +57,7 @@ const CreatePrototypeForm: React.FC = () => {
 
       // グループページへ遷移する
       router.push(
-        `/prototypes/groups/${group.prototypeGroup.id}/${masterPrototype.id}/edit`
+        `/groups/${group.prototypeGroup.id}/prototypes/${masterPrototype.id}/edit`
       );
     } catch (error) {
       console.error('Error creating prototype:', error);
@@ -71,7 +71,7 @@ const CreatePrototypeForm: React.FC = () => {
     <div className="max-w-md mx-auto mt-16 relative">
       <div className="flex items-center gap-4 mb-8">
         <Link
-          href="/prototypes"
+          href="/groups"
           className="p-2 hover:bg-content-secondary rounded-full transition-colors"
           title="プロトタイプ一覧へ戻る"
         >
