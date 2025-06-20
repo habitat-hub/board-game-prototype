@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import React from 'react';
 import { BsDoorOpenFill } from 'react-icons/bs';
-import { FaUsers } from 'react-icons/fa';
 import { IoTrash } from 'react-icons/io5';
 
 import { Prototype, PrototypeGroup } from '@/api/types';
@@ -52,18 +51,6 @@ const PlayRoomCard: React.FC<PlayRoomCardProps> = ({
               {formatDate(prototype.createdAt, true)}
             </div>
           </div>
-
-          {/* プレイヤー人数情報 */}
-          {prototype && (
-            <div className="flex items-center gap-1 mt-2 text-xs text-wood-dark">
-              <FaUsers className="h-3 w-3" />
-              <span>
-                {prototype.minPlayers === prototype.maxPlayers
-                  ? `${prototype.minPlayers}人`
-                  : `${prototype.minPlayers}〜${prototype.maxPlayers}人`}
-              </span>
-            </div>
-          )}
         </div>
       </div>
     </Link>

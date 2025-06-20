@@ -273,12 +273,6 @@ export const swaggerSchemas = {
                         "INSTANCE"
                   ]
             },
-            "minPlayers": {
-                  "type": "integer"
-            },
-            "maxPlayers": {
-                  "type": "integer"
-            },
             "versionNumber": {
                   "type": "integer"
             },
@@ -294,8 +288,6 @@ export const swaggerSchemas = {
             "prototypeGroupId",
             "name",
             "type",
-            "minPlayers",
-            "maxPlayers",
             "versionNumber",
             "createdAt",
             "updatedAt"

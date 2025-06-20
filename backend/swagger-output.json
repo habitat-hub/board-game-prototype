@@ -275,12 +275,6 @@
               "INSTANCE"
             ]
           },
-          "minPlayers": {
-            "type": "integer"
-          },
-          "maxPlayers": {
-            "type": "integer"
-          },
           "versionNumber": {
             "type": "integer"
           },
@@ -296,8 +290,6 @@
           "prototypeGroupId",
           "name",
           "type",
-          "minPlayers",
-          "maxPlayers",
           "versionNumber",
           "createdAt",
           "updatedAt"
@@ -879,9 +871,6 @@
                 "properties": {
                   "name": {
                     "type": "string"
-                  },
-                  "playerCount": {
-                    "type": "integer"
                   }
                 }
               }
@@ -949,9 +938,6 @@
                 "properties": {
                   "name": {
                     "type": "string"
-                  },
-                  "playerCount": {
-                    "type": "integer"
                   },
                   "versionNumber": {
                     "type": "integer"
@@ -1031,9 +1017,6 @@
                 "properties": {
                   "name": {
                     "type": "string"
-                  },
-                  "playerCount": {
-                    "type": "integer"
                   },
                   "versionNumber": {
                     "type": "integer"

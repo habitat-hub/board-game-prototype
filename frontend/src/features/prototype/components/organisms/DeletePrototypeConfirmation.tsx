@@ -140,14 +140,6 @@ const DeletePrototypeConfirmation = () => {
           <div className="text-sm text-gray-500">プロトタイプ名</div>
           <div className="text-lg font-medium">{masterPrototype?.name}</div>
         </div>
-        <div className="mb-4">
-          <div className="text-sm text-gray-500">プレイヤー人数</div>
-          <div>
-            {masterPrototype?.minPlayers === masterPrototype?.maxPlayers
-              ? `${masterPrototype?.minPlayers}人`
-              : `${masterPrototype?.minPlayers}〜${masterPrototype?.maxPlayers}人`}
-          </div>
-        </div>
       </div>
 
       <div className="flex justify-between gap-4">
