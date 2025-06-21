@@ -1,6 +1,7 @@
 import UserRoleModel from '../models/UserRole';
 import RoleModel from '../models/Role';
 import PermissionModel from '../models/Permission';
+import { Transaction } from 'sequelize';
 
 /**
  * ユーザーが特定のリソースに対して権限を持っているかチェック
@@ -82,7 +83,8 @@ export async function assignRole(
   userId: string,
   roleId: number,
   resourceType: string,
-  resourceId: string
+  resourceId: string,
+  transaction?: Transaction
 ): Promise<void> {
   // 既存のレコードを確認
   const existingRole = await UserRoleModel.findOne({
@@ -92,16 +94,73 @@ export async function assignRole(
       resourceType,
       resourceId,
     },
+    transaction,
   });
 
+  if (existingRole) {
+    return;
+  }
+
   // 既存のレコードがない場合のみ作成
-  if (!existingRole) {
-    await UserRoleModel.create({
-      userId,
-      roleId,
-      resourceType,
-      resourceId,
+  try {
+    await UserRoleModel.create(
+      {
+        userId,
+        roleId,
+        resourceType,
+        resourceId,
+      },
+      { transaction }
+    );
+  } catch (error) {
+    console.error('Failed to create UserRole:', {
+      error: error instanceof Error ? error.message : String(error),
+      data: { userId, roleId, resourceType, resourceId },
     });
+
+    // Sequelize ValidationErrorの詳細を出力
+    if (error && typeof error === 'object' && 'name' in error) {
+      const sequelizeError = error as {
+        name: string;
+        errors?: Array<{
+          path: string;
+          value: unknown;
+          message: string;
+          type: string;
+          validatorKey: string;
+          validatorArgs: unknown;
+        }>;
+        fields?: Record<string, unknown>;
+        table?: string;
+        parent?: { detail?: string; message?: string };
+      };
+      if (
+        sequelizeError.name === 'SequelizeValidationError' &&
+        sequelizeError.errors
+      ) {
+        console.error(
+          'Validation errors:',
+          sequelizeError.errors.map((err) => ({
+            field: err.path,
+            value: err.value,
+            message: err.message,
+            type: err.type,
+            validatorKey: err.validatorKey,
+            validatorArgs: err.validatorArgs,
+          }))
+        );
+      }
+      if (sequelizeError.name === 'SequelizeUniqueConstraintError') {
+        console.error('Unique constraint error:', {
+          fields: sequelizeError.fields,
+          table: sequelizeError.table,
+          parent:
+            sequelizeError.parent?.detail || sequelizeError.parent?.message,
+        });
+      }
+    }
+
+    throw error;
   }
 }
 

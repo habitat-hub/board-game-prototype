@@ -58,7 +58,8 @@ export async function createPrototypeGroup({
       userId,
       adminRole.id,
       RESOURCE_TYPES.PROTOTYPE_GROUP,
-      prototypeGroup.id
+      prototypeGroup.id,
+      transaction
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

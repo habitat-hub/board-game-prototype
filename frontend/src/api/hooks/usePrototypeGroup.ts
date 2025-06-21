@@ -156,6 +156,24 @@ export const usePrototypeGroup = () => {
     []
   );
 
+  /**
+   * プロトタイプグループのロール更新
+   */
+  const updateRoleInPrototypeGroup = useCallback(
+    async (
+      prototypeGroupId: string,
+      userId: string,
+      data: { roleName: string }
+    ) => {
+      return await prototypeGroupService.updateRoleInPrototypeGroup(
+        prototypeGroupId,
+        userId,
+        data
+      );
+    },
+    []
+  );
+
   return {
     getPrototypeGroups,
     createPrototypeGroup,
@@ -169,5 +187,6 @@ export const usePrototypeGroup = () => {
     getPrototypeGroupRoles,
     addRoleToPrototypeGroup,
     removeRoleFromPrototypeGroup,
+    updateRoleInPrototypeGroup,
   };
 };

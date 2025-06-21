@@ -9,7 +9,7 @@ import { ROLE_TYPE, PERMISSION_ACTIONS, RESOURCE_TYPES } from '../../const';
 const INITIAL_ROLES = [
   {
     name: ROLE_TYPE.ADMIN,
-    description: 'システム管理者 - 全機能にアクセス可能',
+    description: '管理者 - 全機能にアクセス可能',
   },
   {
     name: ROLE_TYPE.EDITOR,

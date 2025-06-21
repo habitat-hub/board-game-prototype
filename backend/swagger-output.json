@@ -399,25 +399,12 @@
           "updatedAt"
         ]
       },
-      "UserPermission": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "permissionId": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "userId",
-          "permissionId"
-        ]
-      },
       "UserRole": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "integer"
+          },
           "userId": {
             "type": "string",
             "format": "uuid"
@@ -439,6 +426,7 @@
           }
         },
         "required": [
+          "id",
           "userId",
           "roleId",
           "resourceType",
@@ -1685,6 +1673,64 @@
         "responses": {
           "200": {
             "description": "ロールが削除されました"
+          },
+          "404": {
+            "description": "ユーザーまたはロールが見つかりません"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "PrototypeGroups"
+        ],
+        "summary": "プロトタイプグループのロールを更新",
+        "description": "ユーザーのプロトタイプグループロールを変更します。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "prototypeGroupId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "プロトタイプグループのID"
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ユーザーのID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "roleName": {
+                    "type": "string",
+                    "enum": [
+                      "admin",
+                      "editor",
+                      "viewer"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ロールが更新されました"
+          },
+          "400": {
+            "description": "リクエストが不正です"
           },
           "404": {
             "description": "ユーザーまたはロールが見つかりません"

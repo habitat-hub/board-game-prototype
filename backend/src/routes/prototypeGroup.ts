@@ -1031,4 +1031,170 @@ router.delete(
   }
 );
 
+/**
+ * @swagger
+ * /api/prototype-groups/{prototypeGroupId}/roles/{userId}:
+ *   put:
+ *     tags: [PrototypeGroups]
+ *     summary: プロトタイプグループのロールを更新
+ *     description: ユーザーのプロトタイプグループロールを変更します。
+ *     parameters:
+ *       - in: path
+ *         name: prototypeGroupId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: プロトタイプグループのID
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ユーザーのID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               roleName:
+ *                 type: string
+ *                 enum: [admin, editor, viewer]
+ *     responses:
+ *       '200':
+ *         description: ロールが更新されました
+ *       '400':
+ *         description: リクエストが不正です
+ *       '404':
+ *         description: ユーザーまたはロールが見つかりません
+ */
+router.put(
+  '/:prototypeGroupId/roles/:userId',
+  checkPrototypeGroupManagePermission,
+  async (req: Request, res: Response) => {
+    const { prototypeGroupId, userId } = req.params;
+    const { roleName } = req.body;
+
+    if (!roleName) {
+      res.status(400).json({ error: 'ロール名は必須です' });
+      return;
+    }
+
+    try {
+      // ユーザーが存在するかチェック
+      const user = await UserModel.findByPk(userId);
+      if (!user) {
+        res.status(404).json({ error: 'ユーザーが見つかりません' });
+        return;
+      }
+
+      // 新しいロールが存在するかチェック
+      const newRole = await RoleModel.findOne({
+        where: { name: roleName },
+      });
+      if (!newRole) {
+        res.status(404).json({ error: 'ロールが見つかりません' });
+        return;
+      }
+
+      // プロトタイプグループの作成者の場合、管理者権限は変更不可
+      const prototypeGroup =
+        await PrototypeGroupModel.findByPk(prototypeGroupId);
+      if (prototypeGroup && prototypeGroup.userId === userId) {
+        res.status(400).json({
+          error: 'プロトタイプグループの作成者のロールは変更できません',
+        });
+        return;
+      }
+
+      // 現在のロールを取得
+      const currentUserRoles = await UserRoleModel.findAll({
+        where: {
+          userId,
+          resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
+          resourceId: prototypeGroupId,
+        },
+        include: [{ model: RoleModel, as: 'Role' }],
+      });
+
+      if (currentUserRoles.length === 0) {
+        res.status(404).json({
+          error: 'ユーザーはこのプロトタイプグループのロールを持っていません',
+        });
+        return;
+      }
+
+      // 管理者ロールを変更する場合の特別チェック
+      const adminRole = await RoleModel.findOne({ where: { name: 'admin' } });
+      const hasAdminRole = currentUserRoles.some(
+        (userRole) => userRole.Role && userRole.Role.name === 'admin'
+      );
+
+      if (hasAdminRole && roleName !== 'admin' && adminRole) {
+        // 最後の管理者かチェック
+        const adminCount = await UserRoleModel.count({
+          where: {
+            roleId: adminRole.id,
+            resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
+            resourceId: prototypeGroupId,
+          },
+        });
+
+        if (adminCount <= 1) {
+          res.status(400).json({
+            error: '最後の管理者のロールは変更できません',
+          });
+          return;
+        }
+      }
+
+      // 現在のロールがすでに新しいロールと同じかチェック
+      const hasTargetRole = currentUserRoles.some(
+        (userRole) => userRole.Role && userRole.Role.name === roleName
+      );
+
+      if (hasTargetRole) {
+        res.status(400).json({
+          error: 'ユーザーは既にこのロールを持っています',
+        });
+        return;
+      }
+
+      // トランザクションを使用してロールを更新
+      await sequelize.transaction(async (transaction) => {
+        // 既存のロールを削除
+        await UserRoleModel.destroy({
+          where: {
+            userId,
+            resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
+            resourceId: prototypeGroupId,
+          },
+          transaction,
+        });
+
+        // 新しいロールを追加
+        await UserRoleModel.create(
+          {
+            userId,
+            roleId: newRole.id,
+            resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
+            resourceId: prototypeGroupId,
+          },
+          { transaction }
+        );
+      });
+
+      res.json({
+        message: `ユーザーのロールを${roleName}に更新しました`,
+        userId,
+        roleName,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+    }
+  }
+);
+
 export default router;
