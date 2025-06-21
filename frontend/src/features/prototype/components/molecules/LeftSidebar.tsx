@@ -7,23 +7,13 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
-import { BiArea } from 'react-icons/bi';
 import { BsBoxSeam } from 'react-icons/bs';
-import {
-  Gi3dMeeple,
-  GiCard10Clubs,
-  GiPokerHand,
-  GiStoneBlock,
-} from 'react-icons/gi';
 import { HiPuzzlePiece } from 'react-icons/hi2';
 import { IoArrowBack, IoMenu, IoAdd } from 'react-icons/io5';
 import { MdMeetingRoom } from 'react-icons/md';
 
 import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
-import { Part, PartProperty, Prototype, PrototypeGroup } from '@/api/types';
-import TextIconButton from '@/components/atoms/TextIconButton';
-import { PART_DEFAULT_CONFIG } from '@/features/prototype/const';
-import { AddPartProps } from '@/features/prototype/type';
+import { Prototype, PrototypeGroup } from '@/api/types';
 import formatDate from '@/utils/dateFormat';
 
 export default function LeftSidebar({
@@ -32,7 +22,6 @@ export default function LeftSidebar({
   prototypeType,
   isVersionPrototype,
   groupId,
-  onAddPart,
 }: {
   // プロトタイプ名
   prototypeName: string;
@@ -44,8 +33,6 @@ export default function LeftSidebar({
   isVersionPrototype: boolean;
   // グループID
   groupId: string;
-  // パーツを追加時の処理（編集モード時のみ使用）
-  onAddPart?: ({ part, properties }: AddPartProps) => void;
 }) {
   const router = useRouter();
   const { getPrototypeGroup, createPrototypeVersion, createPrototypeInstance } =
@@ -189,79 +176,6 @@ export default function LeftSidebar({
     );
   };
 
-  /**
-   * パーツを作成する（編集モード時のみ）
-   * @param partType - パーツのタイプ
-   */
-  const handleCreatePart = (
-    partType: 'card' | 'token' | 'hand' | 'deck' | 'area'
-  ) => {
-    if (!onAddPart) return;
-
-    // パーツの初期設定情報
-    const partConfig = Object.values(PART_DEFAULT_CONFIG).find(
-      (part) => part.type === partType
-    );
-    // パーツの初期設定情報が存在しない場合
-    if (!partConfig) {
-      return;
-    }
-
-    // 新しいパーツ
-    const newPart: Omit<
-      Part,
-      'id' | 'prototypeId' | 'order' | 'createdAt' | 'updatedAt'
-    > = {
-      type: partType,
-      parentId: undefined,
-      position: { x: 0, y: 0 }, // 仮の位置（GameBoardのhandleAddPartで上書きされる）
-      width: partConfig.width,
-      height: partConfig.height,
-      configurableTypeAsChild: partConfig.configurableTypeAsChild,
-      originalPartId: undefined,
-    };
-
-    // パーツタイプ別の設定を適用
-    const typeSpecificConfigs = {
-      card: () => {
-        newPart.isReversible =
-          'isReversible' in partConfig && partConfig.isReversible;
-        newPart.isFlipped = false;
-      },
-      hand: () => {
-        // 手札作成時の処理（現在は何もしない）
-      },
-      token: () => {},
-      deck: () => {},
-      area: () => {},
-    };
-
-    // パーツタイプに応じた処理を実行
-    typeSpecificConfigs[partType]();
-
-    // パーツの共通プロパティ
-    const commonProperties = {
-      name: partConfig.name,
-      description: partConfig.description,
-      color: partConfig.color,
-      textColor: partConfig.textColor,
-    };
-
-    // カードの場合は表裏両方のプロパティを作成、それ以外は表面のみ
-    const newPartProperties: Omit<
-      PartProperty,
-      'id' | 'partId' | 'createdAt' | 'updatedAt'
-    >[] =
-      partType === 'card'
-        ? [
-            { side: 'front', ...commonProperties },
-            { side: 'back', ...commonProperties },
-          ]
-        : [{ side: 'front', ...commonProperties }];
-
-    onAddPart({ part: newPart, properties: newPartProperties });
-  };
-
   const toggleSidebar = () => {
     setIsLeftSidebarMinimized(!isLeftSidebarMinimized);
   };
@@ -401,57 +315,8 @@ export default function LeftSidebar({
                   </div>
                 ))}
               </div>
-            ) : (
-              <div className="text-center py-2 text-wood-dark/70">
-                <p className="text-xs">バージョンがありません</p>
-              </div>
-            )}
+            ) : null}
           </div>
-
-          {/* 全体のプロトタイプがない場合のメッセージ */}
-          {prototypeInfo.versions.length === 0 && (
-            <div className="text-center py-2 text-wood-dark/70">
-              <p className="text-xs">バージョンがありません</p>
-            </div>
-          )}
-        </div>
-      </>
-    );
-  };
-
-  // 編集モードのコンテンツをレンダリング
-  const renderEditContent = () => {
-    return (
-      <>
-        <div className="border-b border-wood-light/30" />
-        <div className="flex flex-col gap-2 p-2 overflow-y-auto scrollbar-hide">
-          <span className="mb-1 text-xs font-medium uppercase tracking-wide text-wood-dark/70">
-            パーツ
-          </span>
-          {Object.values(PART_DEFAULT_CONFIG).map((part) => {
-            const icon =
-              part.type === 'card' ? (
-                <GiCard10Clubs className="h-4 w-4 text-wood-dark" />
-              ) : part.type === 'token' ? (
-                <Gi3dMeeple className="h-4 w-4 text-wood-dark" />
-              ) : part.type === 'hand' ? (
-                <GiPokerHand className="h-4 w-4 text-wood-dark" />
-              ) : part.type === 'deck' ? (
-                <GiStoneBlock className="h-4 w-4 text-wood-dark" />
-              ) : part.type === 'area' ? (
-                <BiArea className="h-4 w-4 text-wood-dark" />
-              ) : null;
-
-            return (
-              <TextIconButton
-                key={part.type}
-                text={part.name}
-                isSelected={false}
-                icon={icon}
-                onClick={() => handleCreatePart(part.type)}
-              />
-            );
-          })}
         </div>
       </>
     );
@@ -473,12 +338,7 @@ export default function LeftSidebar({
         onToggle={toggleSidebar}
       />
 
-      {!isLeftSidebarMinimized && (
-        <>
-          {renderPrototypeListContent()}
-          {prototypeType === 'MASTER' && renderEditContent()}
-        </>
-      )}
+      {!isLeftSidebarMinimized && <>{renderPrototypeListContent()}</>}
     </div>
   );
 }
