@@ -262,6 +262,12 @@ export type PrototypeGroupsRolesCreateData = any;
 
 export type PrototypeGroupsRolesDeleteData = any;
 
+export interface PrototypeGroupsRolesUpdatePayload {
+  roleName?: 'admin' | 'editor' | 'viewer';
+}
+
+export type PrototypeGroupsRolesUpdateData = any;
+
 export interface UsersSearchListParams {
   /** 検索するユーザー名 */
   username: string;

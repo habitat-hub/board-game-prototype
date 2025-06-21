@@ -14,6 +14,7 @@ import {
   FaSearch,
   FaUser,
   FaTimes,
+  FaCog,
 } from 'react-icons/fa';
 import { IoArrowBack, IoClose } from 'react-icons/io5';
 
@@ -31,6 +32,19 @@ const RoleManagement: React.FC = () => {
   } | null>(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
+  // 編集モード用の状態
+  const [editMode, setEditMode] = useState<{
+    isEditing: boolean;
+    userId: string | null;
+    username: string | null;
+    currentRole: string | null;
+  }>({
+    isEditing: false,
+    userId: null,
+    username: null,
+    currentRole: null,
+  });
+
   const {
     // データ
     userRoles,
@@ -47,6 +61,7 @@ const RoleManagement: React.FC = () => {
 
     // ハンドラー
     handleAddRole,
+    handleUpdateRole,
     handleRemoveRole,
     handleConfirmRemove,
     handleCancelRemove,
@@ -75,6 +90,46 @@ const RoleManagement: React.FC = () => {
     setSelectedUser(null);
     setSearchTerm('');
     updateRoleForm({ selectedUserId: '' });
+  };
+
+  // 編集モード開始
+  const handleStartEdit = (
+    userId: string,
+    username: string,
+    currentRole: string
+  ) => {
+    setEditMode({
+      isEditing: true,
+      userId,
+      username,
+      currentRole,
+    });
+    updateRoleForm({
+      selectedUserId: userId,
+      selectedRole: currentRole as 'admin' | 'editor' | 'viewer',
+    });
+  };
+
+  // 編集モードキャンセル
+  const handleCancelEdit = () => {
+    setEditMode({
+      isEditing: false,
+      userId: null,
+      username: null,
+      currentRole: null,
+    });
+    setSelectedUser(null);
+    setSearchTerm('');
+    updateRoleForm({ selectedUserId: '', selectedRole: 'viewer' });
+  };
+
+  // 権限更新実行
+  const handleUpdateRoleWithReset = async () => {
+    if (editMode.userId && roleForm.selectedRole) {
+      await handleUpdateRole(editMode.userId, roleForm.selectedRole);
+      // 更新成功後に編集モードをリセット
+      handleCancelEdit();
+    }
   };
 
   // 権限追加のハンドラー（ユーザー選択状態もクリア）
@@ -131,115 +186,133 @@ const RoleManagement: React.FC = () => {
 
       {/* ユーザー権限管理 */}
       <div className="mb-8">
-        {/* 権限追加フォーム */}
+        {/* 権限追加・更新フォーム */}
         <div className="mb-4">
           {/* フォーム内容 */}
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
             {/* ヘッダー */}
             <div className="mb-3">
               <div className="flex items-center gap-2">
-                <FaPlus className="h-4 w-4 text-wood-dark" />
-                <h3 className="text-lg font-medium text-wood-dark">
-                  新しいユーザーを追加
-                </h3>
+                {editMode.isEditing ? (
+                  <>
+                    <h3 className="text-lg font-medium text-wood-dark">
+                      {editMode.username} の権限を変更
+                    </h3>
+                    <button
+                      onClick={handleCancelEdit}
+                      className="ml-auto p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded transition-colors"
+                      title="編集をキャンセル"
+                    >
+                      <FaTimes className="h-4 w-4" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-lg font-medium text-wood-dark">
+                      新しいユーザーを追加
+                    </h3>
+                  </>
+                )}
               </div>
             </div>
 
             <div className="space-y-3">
-              {/* ユーザー検索 */}
-              <div>
-                <label className="block text-sm font-medium text-wood-dark mb-1">
-                  ユーザー検索
-                </label>
-                <div className="relative">
-                  {/* 選択されたユーザー表示 */}
-                  {selectedUser ? (
-                    <div className="w-full p-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-wood-light flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {/* ユーザーアバター */}
-                        <div className="w-6 h-6 bg-gradient-to-br from-wood-light to-wood rounded-full flex items-center justify-center text-white font-medium text-xs">
-                          {selectedUser.username.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-wood-dark">
-                            {selectedUser.username}
+              {/* ユーザー検索（編集モード時は非表示） */}
+              {!editMode.isEditing && (
+                <div>
+                  <label className="block text-sm font-medium text-wood-dark mb-1">
+                    ユーザー検索
+                  </label>
+                  <div className="relative">
+                    {/* 選択されたユーザー表示 */}
+                    {selectedUser ? (
+                      <div className="w-full p-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-wood-light flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {/* ユーザーアバター */}
+                          <div className="w-6 h-6 bg-gradient-to-br from-wood-light to-wood rounded-full flex items-center justify-center text-white font-medium text-xs">
+                            {selectedUser.username.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-wood-dark">
+                              {selectedUser.username}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <button
-                        onClick={handleClearUser}
-                        disabled={loading}
-                        className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
-                        title="選択を解除"
-                      >
-                        <FaTimes className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      {/* 検索入力 */}
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={searchTerm}
-                          onChange={(e) => {
-                            setSearchTerm(e.target.value);
-                            setShowUserDropdown(true);
-                          }}
-                          onFocus={() => setShowUserDropdown(true)}
-                          placeholder="ユーザー名を入力..."
-                          className="w-full p-2 pl-8 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wood-light focus:border-transparent"
+                        <button
+                          onClick={handleClearUser}
                           disabled={loading}
-                        />
-                        <FaSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3" />
+                          className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                          title="選択を解除"
+                        >
+                          <FaTimes className="h-3 w-3" />
+                        </button>
                       </div>
-
-                      {/* 検索結果ドロップダウン */}
-                      {showUserDropdown && (
-                        <>
-                          {/* 背景オーバーレイ */}
-                          <div
-                            className="fixed inset-0 z-10"
-                            onClick={() => setShowUserDropdown(false)}
+                    ) : (
+                      <>
+                        {/* 検索入力 */}
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => {
+                              setSearchTerm(e.target.value);
+                              setShowUserDropdown(true);
+                            }}
+                            onFocus={() => setShowUserDropdown(true)}
+                            placeholder="ユーザー名を入力..."
+                            className="w-full p-2 pl-8 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wood-light focus:border-transparent"
+                            disabled={loading}
                           />
+                          <FaSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3" />
+                        </div>
 
-                          {/* ドロップダウンメニュー */}
-                          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-20 max-h-48 overflow-auto">
-                            {filteredUsers.length > 0 ? (
-                              <div className="py-1">
-                                {filteredUsers.map((user) => (
-                                  <button
-                                    key={user.id}
-                                    onClick={() => handleUserSelect(user)}
-                                    className="w-full px-3 py-2 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 group"
-                                  >
-                                    {/* ユーザーアバター */}
-                                    <div className="w-6 h-6 bg-gradient-to-br from-wood-light to-wood rounded-full flex items-center justify-center text-white font-medium text-xs group-hover:shadow-md transition-shadow">
-                                      {user.username.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div className="text-sm font-medium text-wood-dark">
-                                      {user.username}
-                                    </div>
-                                  </button>
-                                ))}
-                              </div>
-                            ) : (
-                              <div className="px-3 py-4 text-center text-wood">
-                                <FaUser className="h-6 w-6 text-gray-300 mx-auto mb-1" />
-                                <div className="text-xs">
-                                  {searchTerm
-                                    ? `"${searchTerm}" に一致するユーザーが見つかりません`
-                                    : 'ユーザーが見つかりません'}
+                        {/* 検索結果ドロップダウン */}
+                        {showUserDropdown && (
+                          <>
+                            {/* 背景オーバーレイ */}
+                            <div
+                              className="fixed inset-0 z-10"
+                              onClick={() => setShowUserDropdown(false)}
+                            />
+
+                            {/* ドロップダウンメニュー */}
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-20 max-h-48 overflow-auto">
+                              {filteredUsers.length > 0 ? (
+                                <div className="py-1">
+                                  {filteredUsers.map((user) => (
+                                    <button
+                                      key={user.id}
+                                      onClick={() => handleUserSelect(user)}
+                                      className="w-full px-3 py-2 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 group"
+                                    >
+                                      {/* ユーザーアバター */}
+                                      <div className="w-6 h-6 bg-gradient-to-br from-wood-light to-wood rounded-full flex items-center justify-center text-white font-medium text-xs group-hover:shadow-md transition-shadow">
+                                        {user.username.charAt(0).toUpperCase()}
+                                      </div>
+                                      <div className="text-sm font-medium text-wood-dark">
+                                        {user.username}
+                                      </div>
+                                    </button>
+                                  ))}
                                 </div>
-                              </div>
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </>
-                  )}
+                              ) : (
+                                <div className="px-3 py-4 text-center text-wood">
+                                  <FaUser className="h-6 w-6 text-gray-300 mx-auto mb-1" />
+                                  <div className="text-xs">
+                                    {searchTerm
+                                      ? `"${searchTerm}" に一致するユーザーが見つかりません`
+                                      : 'ユーザーが見つかりません'}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* 権限選択 */}
               <div>
@@ -323,116 +396,213 @@ const RoleManagement: React.FC = () => {
                 </div>
               </div>
 
-              {/* 追加ボタン（中央下） */}
+              {/* 追加・更新ボタン（中央下） */}
               <div className="flex justify-center pt-1">
-                <button
-                  onClick={handleAddRoleWithReset}
-                  disabled={!roleForm.selectedUserId || loading}
-                  className="px-6 py-2 bg-wood-light hover:bg-wood text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  {loading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      <span className="text-sm">追加中...</span>
-                    </>
-                  ) : (
-                    <>
-                      <FaPlus className="h-3 w-3" />
-                      <span className="text-sm">追加</span>
-                    </>
-                  )}
-                </button>
+                {editMode.isEditing ? (
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleCancelEdit}
+                      disabled={loading}
+                      className="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      <span className="text-sm">キャンセル</span>
+                    </button>
+                    <button
+                      onClick={handleUpdateRoleWithReset}
+                      disabled={loading}
+                      className="px-6 py-2 bg-wood-light hover:bg-wood text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {loading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          <span className="text-sm">更新中...</span>
+                        </>
+                      ) : (
+                        <span className="text-sm">権限を更新</span>
+                      )}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleAddRoleWithReset}
+                    disabled={!roleForm.selectedUserId || loading}
+                    className="px-6 py-2 bg-wood-light hover:bg-wood text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {loading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <span className="text-sm">追加中...</span>
+                      </>
+                    ) : (
+                      <>
+                        <FaPlus className="h-3 w-3" />
+                        <span className="text-sm">追加</span>
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* 現在のユーザー権限一覧 - コンパクトカードタイプ */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        {/* 現在のユーザー権限一覧 - 拡張カードタイプ */}
+        <div
+          className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 transition-all ${
+            editMode.isEditing ? 'opacity-40 pointer-events-none' : ''
+          }`}
+        >
           {userRoles.map((userRole) => {
             const removeCheck = canRemoveUserRole(userRole.userId, userRoles);
             const primaryRole = userRole.roles[0]; // 最初の権限を表示用として使用
+            const isCreator = creator && creator.id === userRole.userId;
+            const hasAdminRole = userRole.roles.some(
+              (role) => role.name === 'admin'
+            );
+            const adminCount = userRoles.filter((ur) =>
+              ur.roles.some((role) => role.name === 'admin')
+            ).length;
+            const isLastAdmin = hasAdminRole && adminCount <= 1;
 
             return (
               <div
                 key={userRole.userId}
-                className={`bg-white border border-gray-200 rounded-lg p-3 transition-all hover:shadow-md ${
-                  loading ? 'opacity-60' : ''
-                }`}
+                className={`bg-white border border-gray-200 rounded-lg p-4 transition-all ${
+                  !editMode.isEditing ? 'hover:shadow-md' : ''
+                } ${loading ? 'opacity-60' : ''}`}
               >
-                {/* ヘッダー：アイコン・権限・削除ボタン */}
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-1.5">
-                    {userRole.roles.some((role) => role.name === 'admin') ? (
-                      <FaUserShield className="h-4 w-4 text-red-600" />
-                    ) : userRole.roles.some(
-                        (role) => role.name === 'editor'
-                      ) ? (
-                      <FaEdit className="h-4 w-4 text-blue-600" />
-                    ) : (
-                      <FaEye className="h-4 w-4 text-gray-600" />
-                    )}
-                    <span
-                      className={`text-xs px-1.5 py-0.5 rounded font-medium ${
-                        primaryRole.name === 'admin'
-                          ? 'bg-red-100 text-red-700'
-                          : primaryRole.name === 'editor'
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'bg-gray-100 text-gray-700'
-                      }`}
-                    >
-                      {primaryRole.name.charAt(0).toUpperCase() +
-                        primaryRole.name.slice(1)}
-                    </span>
+                {/* ヘッダー：ユーザー情報 */}
+                <div className="flex items-center gap-3 mb-3">
+                  {/* ユーザーアバター */}
+                  <div className="w-10 h-10 bg-gradient-to-br from-wood-light to-wood rounded-full flex items-center justify-center text-white font-medium text-sm">
+                    {userRole.user.username.charAt(0).toUpperCase()}
                   </div>
 
-                  {/* 削除ボタン */}
-                  <button
-                    onClick={() => handleRemoveRole(userRole.userId)}
-                    className={`p-1 rounded transition-colors ${
-                      removeCheck.canRemove && !loading
-                        ? 'text-gray-400 hover:text-red-500 hover:bg-red-50'
-                        : 'text-gray-300 cursor-not-allowed'
-                    }`}
-                    title={
-                      loading
-                        ? '処理中...'
-                        : removeCheck.canRemove
-                          ? '権限を削除'
-                          : removeCheck.reason
-                    }
-                    disabled={loading || !removeCheck.canRemove}
-                  >
-                    {loading ? (
-                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-wood-light"></div>
-                    ) : (
-                      <FaTrash className="h-3 w-3" />
-                    )}
-                  </button>
-                </div>
-
-                {/* ユーザー名 */}
-                <div className="mb-1">
-                  <div className="flex items-center gap-1">
-                    <div className="font-medium text-wood-dark text-sm leading-tight">
-                      {userRole.user.username}
-                    </div>
-                    {creator && creator.id === userRole.userId && (
-                      <div className="flex-shrink-0" title="作成者">
-                        <FaUserShield className="h-3 w-3 text-yellow-600" />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <div className="font-medium text-wood-dark">
+                        {userRole.user.username}
                       </div>
-                    )}
+                      {isCreator && (
+                        <div className="flex-shrink-0" title="作成者">
+                          <FaUserShield className="h-4 w-4 text-yellow-600" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 現在の権限表示 */}
+                    <div className="flex items-center gap-1.5 mt-1">
+                      {hasAdminRole ? (
+                        <FaUserShield className="h-3 w-3 text-red-600" />
+                      ) : userRole.roles.some(
+                          (role) => role.name === 'editor'
+                        ) ? (
+                        <FaEdit className="h-3 w-3 text-blue-600" />
+                      ) : (
+                        <FaEye className="h-3 w-3 text-gray-600" />
+                      )}
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded font-medium ${
+                          primaryRole.name === 'admin'
+                            ? 'bg-red-100 text-red-700'
+                            : primaryRole.name === 'editor'
+                              ? 'bg-blue-100 text-blue-700'
+                              : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {primaryRole.name.charAt(0).toUpperCase() +
+                          primaryRole.name.slice(1)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* アクションボタン群 */}
+                  <div className="flex gap-1">
+                    {/* 変更ボタン */}
+                    <button
+                      onClick={() =>
+                        handleStartEdit(
+                          userRole.userId,
+                          userRole.user.username,
+                          primaryRole.name
+                        )
+                      }
+                      className={`p-2 rounded transition-colors ${
+                        !isCreator && !loading && !editMode.isEditing
+                          ? 'text-gray-400 hover:text-blue-500 hover:bg-blue-50'
+                          : 'text-gray-300 cursor-not-allowed'
+                      }`}
+                      title={
+                        loading
+                          ? '処理中...'
+                          : editMode.isEditing
+                            ? '編集モード中は変更できません'
+                            : isCreator
+                              ? '作成者の権限は変更できません'
+                              : '権限を変更'
+                      }
+                      disabled={loading || !!isCreator || editMode.isEditing}
+                    >
+                      {loading ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-wood-light"></div>
+                      ) : (
+                        <FaCog className="h-4 w-4" />
+                      )}
+                    </button>
+
+                    {/* 削除ボタン */}
+                    <button
+                      onClick={() => handleRemoveRole(userRole.userId)}
+                      className={`p-2 rounded transition-colors ${
+                        removeCheck.canRemove && !loading && !editMode.isEditing
+                          ? 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+                          : 'text-gray-300 cursor-not-allowed'
+                      }`}
+                      title={
+                        loading
+                          ? '処理中...'
+                          : editMode.isEditing
+                            ? '編集モード中は削除できません'
+                            : removeCheck.canRemove
+                              ? '権限を削除'
+                              : removeCheck.reason
+                      }
+                      disabled={
+                        loading || !removeCheck.canRemove || editMode.isEditing
+                      }
+                    >
+                      {loading ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-wood-light"></div>
+                      ) : (
+                        <FaTrash className="h-4 w-4" />
+                      )}
+                    </button>
                   </div>
                 </div>
 
                 {/* 複数権限がある場合の表示 */}
                 {userRole.roles.length > 1 && (
-                  <div className="text-xs text-wood">
-                    +{' '}
-                    {userRole.roles
-                      .slice(1)
-                      .map((role) => role.name)
-                      .join(', ')}
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <div className="text-xs text-gray-500">
+                      その他の権限:{' '}
+                      {userRole.roles
+                        .slice(1)
+                        .map((role) => role.name)
+                        .join(', ')}
+                    </div>
+                  </div>
+                )}
+
+                {/* 制限の説明 */}
+                {(isCreator || isLastAdmin) && (
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <div className="text-xs text-gray-500 flex items-center gap-1">
+                      <FaInfoCircle className="h-3 w-3" />
+                      {isCreator && '作成者の権限は変更できません'}
+                      {isLastAdmin &&
+                        !isCreator &&
+                        '最後の管理者の権限は変更できません'}
+                    </div>
                   </div>
                 )}
               </div>
@@ -441,9 +611,9 @@ const RoleManagement: React.FC = () => {
 
           {/* 空の状態 */}
           {userRoles.length === 0 && !loading && (
-            <div className="col-span-full flex flex-col items-center justify-center py-8 text-wood">
-              <FaUserShield className="h-10 w-10 text-gray-300 mb-3" />
-              <p className="text-base font-medium mb-1">
+            <div className="col-span-full flex flex-col items-center justify-center py-12 text-wood">
+              <FaUserShield className="h-12 w-12 text-gray-300 mb-4" />
+              <p className="text-lg font-medium mb-2">
                 ユーザー権限が設定されていません
               </p>
               <p className="text-sm text-gray-500">
