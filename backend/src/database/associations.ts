@@ -10,7 +10,6 @@ import PermissionModel from '../models/Permission';
 import RolePermissionModel from '../models/RolePermission';
 import UserModel from '../models/User';
 import UserRoleModel from '../models/UserRole';
-import UserPermissionModel from '../models/UserPermission';
 
 /**
  * すべてのモデル関連を設定
@@ -47,23 +46,6 @@ export function setupAssociations() {
     foreignKey: 'roleId',
     otherKey: 'userId',
     as: 'users',
-    onDelete: 'CASCADE',
-  });
-
-  // User ↔ Permission (Many-to-Many through UserPermission)
-  UserModel.belongsToMany(PermissionModel, {
-    through: UserPermissionModel,
-    foreignKey: 'userId',
-    otherKey: 'permissionId',
-    as: 'userPermissions',
-    onDelete: 'CASCADE',
-  });
-
-  PermissionModel.belongsToMany(UserModel, {
-    through: UserPermissionModel,
-    foreignKey: 'permissionId',
-    otherKey: 'userId',
-    as: 'permissionUsers',
     onDelete: 'CASCADE',
   });
 
