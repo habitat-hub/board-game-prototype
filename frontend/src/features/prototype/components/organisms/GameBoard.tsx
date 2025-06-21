@@ -741,7 +741,6 @@ export default function GameBoard({
         prototypeType={prototypeType}
         isVersionPrototype={isVersionPrototype}
         groupId={groupId}
-        onAddPart={handleAddPart}
       />
       {/* ショートカットヘルプパネル */}
       <ShortcutHelpPanel
