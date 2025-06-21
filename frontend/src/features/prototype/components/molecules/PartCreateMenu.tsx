@@ -129,17 +129,17 @@ export default function PartCreateMenu({
   ];
 
   return (
-    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-[10000] flex items-center justify-center rounded-xl bg-white shadow-lg border border-gray-200 p-2">
+    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-[10000] flex items-center justify-center rounded-xl bg-content shadow-lg border border-wood-light/30 p-2">
       <div className="flex items-center justify-center gap-2">
         {partTypes.map((partType) => (
           <button
             key={partType.type}
             onClick={() => handleCreatePart(partType.type)}
-            className="group relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-md"
+            className="group relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-wood to-wood-dark hover:from-wood-dark hover:to-wood-darkest rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-md"
             title={`${partType.name}を作成`}
           >
             {partType.icon}
-            <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+            <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-header text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
               {partType.name}
             </div>
           </button>
