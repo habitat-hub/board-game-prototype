@@ -17,6 +17,7 @@ import GridLines from '@/features/prototype/components/atoms/GridLines';
 import { KonvaPartContextMenu } from '@/features/prototype/components/atoms/KonvaPartContextMenu';
 import Part2 from '@/features/prototype/components/atoms/Part2';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
+import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
 import ShortcutHelpPanel from '@/features/prototype/components/molecules/ShortcutHelpPanel';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
@@ -760,6 +761,9 @@ export default function GameBoard({
 
       {prototypeType === 'MASTER' && (
         <>
+          {/* フローティングパーツ作成メニュー */}
+          <PartCreateMenu onAddPart={handleAddPart} />
+
           {/* プロパティサイドバー */}
           {selectedPartIds.length === 1 && (
             <PartPropertySidebar
