@@ -34,7 +34,10 @@ export function setupAssociations() {
 
   // User ↔ Role (Many-to-Many through UserRole)
   UserModel.belongsToMany(RoleModel, {
-    through: UserRoleModel,
+    through: {
+      model: UserRoleModel,
+      unique: false,
+    },
     foreignKey: 'userId',
     otherKey: 'roleId',
     as: 'roles',
@@ -42,7 +45,10 @@ export function setupAssociations() {
   });
 
   RoleModel.belongsToMany(UserModel, {
-    through: UserRoleModel,
+    through: {
+      model: UserRoleModel,
+      unique: false,
+    },
     foreignKey: 'roleId',
     otherKey: 'userId',
     as: 'users',

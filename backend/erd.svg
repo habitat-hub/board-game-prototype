@@ -30,50 +30,53 @@
 <!-- RolePermission -->
 <g id="node3" class="node">
 <title>RolePermission</title>
-<polygon fill="#add8e6" stroke="transparent" points="1274,-445 1274,-467 1384,-467 1384,-445 1274,-445"/>
-<polygon fill="none" stroke="#000000" points="1274,-445 1274,-467 1384,-467 1384,-445 1274,-445"/>
-<text text-anchor="start" x="1297.3355" y="-454" font-family="Times,serif" font-weight="bold" font-size="10.00" fill="#000000">RolePermission</text>
-<polygon fill="none" stroke="#000000" points="1274,-423 1274,-445 1384,-445 1384,-423 1274,-423"/>
-<text text-anchor="start" x="1279" y="-432" font-family="Times,serif" text-decoration="underline" font-size="10.00" fill="#000000">roleId</text>
-<text text-anchor="start" x="1302.876" y="-432" font-family="Times,serif" font-size="10.00" fill="#000000">: NUMBER</text>
-<polygon fill="none" stroke="#000000" points="1274,-401 1274,-423 1384,-423 1384,-401 1274,-401"/>
-<text text-anchor="start" x="1278.8675" y="-410" font-family="Times,serif" text-decoration="underline" font-size="10.00" fill="#000000">permissionId</text>
-<text text-anchor="start" x="1331.0795" y="-410" font-family="Times,serif" font-size="10.00" fill="#000000">: NUMBER</text>
+<polygon fill="#add8e6" stroke="transparent" points="1274,-448 1274,-470 1384,-470 1384,-448 1274,-448"/>
+<polygon fill="none" stroke="#000000" points="1274,-448 1274,-470 1384,-470 1384,-448 1274,-448"/>
+<text text-anchor="start" x="1297.3355" y="-457" font-family="Times,serif" font-weight="bold" font-size="10.00" fill="#000000">RolePermission</text>
+<polygon fill="none" stroke="#000000" points="1274,-426 1274,-448 1384,-448 1384,-426 1274,-426"/>
+<text text-anchor="start" x="1279" y="-435" font-family="Times,serif" text-decoration="underline" font-size="10.00" fill="#000000">roleId</text>
+<text text-anchor="start" x="1302.876" y="-435" font-family="Times,serif" font-size="10.00" fill="#000000">: NUMBER</text>
+<polygon fill="none" stroke="#000000" points="1274,-404 1274,-426 1384,-426 1384,-404 1274,-404"/>
+<text text-anchor="start" x="1278.8675" y="-413" font-family="Times,serif" text-decoration="underline" font-size="10.00" fill="#000000">permissionId</text>
+<text text-anchor="start" x="1331.0795" y="-413" font-family="Times,serif" font-size="10.00" fill="#000000">: NUMBER</text>
 </g>
 <!-- Role&#45;&gt;RolePermission -->
 <g id="edge1" class="edge">
 <title>Role&#45;&gt;RolePermission</title>
-<path fill="none" stroke="#0000ff" d="M1141.5336,-374.68C1177.7947,-386.1541 1224.346,-400.8843 1261.9883,-412.7955"/>
-<polygon fill="#0000ff" stroke="#0000ff" points="1141.4686,-374.6595 1131.6568,-365.8908 1135.7481,-372.8493 1130.0277,-371.0392 1130.0277,-371.0392 1130.0277,-371.0392 1135.7481,-372.8493 1128.3985,-376.1876 1141.4686,-374.6595 1141.4686,-374.6595"/>
-<polygon fill="#0000ff" stroke="#0000ff" points="1262.4315,-412.9357 1272.2433,-421.7044 1268.152,-414.7458 1273.8724,-416.556 1273.8724,-416.556 1273.8724,-416.556 1268.152,-414.7458 1275.5015,-411.4076 1262.4315,-412.9357 1262.4315,-412.9357"/>
+<path fill="none" stroke="#0000ff" d="M1141.5336,-375.3985C1177.7947,-387.3139 1224.346,-402.6106 1261.9883,-414.9799"/>
+<polygon fill="#0000ff" stroke="#0000ff" points="1141.428,-375.3638 1131.7135,-366.4875 1135.7278,-373.4907 1130.0277,-371.6176 1130.0277,-371.6176 1130.0277,-371.6176 1135.7278,-373.4907 1128.3419,-376.7477 1141.428,-375.3638 1141.428,-375.3638"/>
+<polygon fill="#0000ff" stroke="#0000ff" points="1262.4721,-415.1388 1272.1866,-424.0152 1268.1723,-417.0119 1273.8724,-418.8851 1273.8724,-418.8851 1273.8724,-418.8851 1268.1723,-417.0119 1275.5582,-413.7549 1262.4721,-415.1388 1262.4721,-415.1388"/>
 </g>
 <!-- UserRole -->
 <g id="node5" class="node">
 <title>UserRole</title>
-<polygon fill="#add8e6" stroke="transparent" points="1277,-332 1277,-354 1382,-354 1382,-332 1277,-332"/>
-<polygon fill="none" stroke="#000000" points="1277,-332 1277,-354 1382,-354 1382,-332 1277,-332"/>
-<text text-anchor="start" x="1310.6185" y="-341" font-family="Times,serif" font-weight="bold" font-size="10.00" fill="#000000">UserRole</text>
-<polygon fill="none" stroke="#000000" points="1277,-310 1277,-332 1382,-332 1382,-310 1277,-310"/>
-<text text-anchor="start" x="1282" y="-319" font-family="Times,serif" text-decoration="underline" font-size="10.00" fill="#000000">userId</text>
-<text text-anchor="start" x="1306.986" y="-319" font-family="Times,serif" font-size="10.00" fill="#000000">: UUID</text>
-<polygon fill="none" stroke="#000000" points="1277,-288 1277,-310 1382,-310 1382,-288 1277,-288"/>
-<text text-anchor="start" x="1282" y="-297" font-family="Times,serif" text-decoration="underline" font-size="10.00" fill="#000000">roleId</text>
-<text text-anchor="start" x="1305.876" y="-297" font-family="Times,serif" font-size="10.00" fill="#000000">: NUMBER</text>
-<polygon fill="none" stroke="#000000" points="1277,-266 1277,-288 1382,-288 1382,-266 1277,-266"/>
-<text text-anchor="start" x="1281.6025" y="-274" font-family="Times,serif" font-size="10.00" fill="#000000">resourceType: STRING</text>
-<polygon fill="none" stroke="#000000" points="1277,-244 1277,-266 1382,-266 1382,-244 1277,-244"/>
-<text text-anchor="start" x="1282" y="-252" font-family="Times,serif" font-size="10.00" fill="#000000">resourceId: STRING</text>
-<polygon fill="none" stroke="#000000" points="1277,-222 1277,-244 1382,-244 1382,-222 1277,-222"/>
-<text text-anchor="start" x="1282" y="-230" font-family="Times,serif" font-size="10.00" fill="#000000">createdAt: DATE</text>
-<polygon fill="none" stroke="#000000" points="1277,-200 1277,-222 1382,-222 1382,-200 1277,-200"/>
-<text text-anchor="start" x="1282" y="-208" font-family="Times,serif" font-size="10.00" fill="#000000">updatedAt: DATE</text>
+<polygon fill="#add8e6" stroke="transparent" points="1277,-341 1277,-363 1382,-363 1382,-341 1277,-341"/>
+<polygon fill="none" stroke="#000000" points="1277,-341 1277,-363 1382,-363 1382,-341 1277,-341"/>
+<text text-anchor="start" x="1310.6185" y="-350" font-family="Times,serif" font-weight="bold" font-size="10.00" fill="#000000">UserRole</text>
+<polygon fill="none" stroke="#000000" points="1277,-319 1277,-341 1382,-341 1382,-319 1277,-319"/>
+<text text-anchor="start" x="1282" y="-328" font-family="Times,serif" text-decoration="underline" font-size="10.00" fill="#000000">id</text>
+<text text-anchor="start" x="1289.779" y="-328" font-family="Times,serif" font-size="10.00" fill="#000000">: NUMBER</text>
+<polygon fill="none" stroke="#000000" points="1277,-297 1277,-319 1382,-319 1382,-297 1277,-297"/>
+<text text-anchor="start" x="1282" y="-306" font-family="Times,serif" font-style="italic" text-decoration="underline" font-size="10.00" fill="#000000">userId</text>
+<text text-anchor="start" x="1306.986" y="-306" font-family="Times,serif" font-size="10.00" fill="#000000">: UUID</text>
+<polygon fill="none" stroke="#000000" points="1277,-275 1277,-297 1382,-297 1382,-275 1277,-275"/>
+<text text-anchor="start" x="1282" y="-284" font-family="Times,serif" font-style="italic" text-decoration="underline" font-size="10.00" fill="#000000">roleId</text>
+<text text-anchor="start" x="1305.876" y="-284" font-family="Times,serif" font-size="10.00" fill="#000000">: NUMBER</text>
+<polygon fill="none" stroke="#000000" points="1277,-253 1277,-275 1382,-275 1382,-253 1277,-253"/>
+<text text-anchor="start" x="1281.6025" y="-261" font-family="Times,serif" font-size="10.00" fill="#000000">resourceType: STRING</text>
+<polygon fill="none" stroke="#000000" points="1277,-231 1277,-253 1382,-253 1382,-231 1277,-231"/>
+<text text-anchor="start" x="1282" y="-239" font-family="Times,serif" font-size="10.00" fill="#000000">resourceId: STRING</text>
+<polygon fill="none" stroke="#000000" points="1277,-209 1277,-231 1382,-231 1382,-209 1277,-209"/>
+<text text-anchor="start" x="1282" y="-217" font-family="Times,serif" font-size="10.00" fill="#000000">createdAt: DATE</text>
+<polygon fill="none" stroke="#000000" points="1277,-187 1277,-209 1382,-209 1382,-187 1277,-187"/>
+<text text-anchor="start" x="1282" y="-195" font-family="Times,serif" font-size="10.00" fill="#000000">updatedAt: DATE</text>
 </g>
 <!-- Role&#45;&gt;UserRole -->
 <g id="edge2" class="edge">
 <title>Role&#45;&gt;UserRole</title>
-<path fill="none" stroke="#0000ff" d="M1141.5124,-337.0873C1178.7495,-325.1533 1226.8441,-309.7396 1264.9985,-297.5116"/>
-<polygon fill="#0000ff" stroke="#0000ff" points="1141.4552,-337.1056 1128.3796,-335.6256 1135.7414,-338.9368 1130.0277,-340.768 1130.0277,-340.768 1130.0277,-340.768 1135.7414,-338.9368 1131.6758,-345.9104 1141.4552,-337.1056 1141.4552,-337.1056"/>
-<polygon fill="#0000ff" stroke="#0000ff" points="1277.7793,-297.826 1265.0699,-297.4888 1275.2156,-289.8268 1277.7793,-297.826"/>
+<path fill="none" stroke="#0000ff" d="M1141.5124,-336.6085C1178.7495,-324.3724 1226.8441,-308.5685 1264.9985,-296.0309"/>
+<polygon fill="#0000ff" stroke="#0000ff" points="1141.428,-336.6362 1128.3419,-335.2523 1135.7278,-338.5093 1130.0277,-340.3824 1130.0277,-340.3824 1130.0277,-340.3824 1135.7278,-338.5093 1131.7135,-345.5125 1141.428,-336.6362 1141.428,-336.6362"/>
+<polygon fill="#0000ff" stroke="#0000ff" points="1277.8086,-296.2425 1265.0971,-295.9986 1275.1862,-288.2623 1277.8086,-296.2425"/>
 </g>
 <!-- Permission -->
 <g id="node2" class="node">
@@ -100,9 +103,9 @@
 <!-- Permission&#45;&gt;RolePermission -->
 <g id="edge3" class="edge">
 <title>Permission&#45;&gt;RolePermission</title>
-<path fill="none" stroke="#0000ff" d="M1141.0168,-519.4122C1177.6494,-502.7678 1224.9346,-481.2833 1262.9159,-464.026"/>
-<polygon fill="#0000ff" stroke="#0000ff" points="1140.9528,-519.4412 1127.7939,-519.4889 1135.4903,-521.9233 1130.0277,-524.4053 1130.0277,-524.4053 1130.0277,-524.4053 1135.4903,-521.9233 1132.2615,-529.3216 1140.9528,-519.4412 1140.9528,-519.4412"/>
-<polygon fill="#0000ff" stroke="#0000ff" points="1262.9472,-464.0119 1276.1062,-463.9642 1268.4098,-461.5298 1273.8724,-459.0478 1273.8724,-459.0478 1273.8724,-459.0478 1268.4098,-461.5298 1271.6386,-454.1315 1262.9472,-464.0119 1262.9472,-464.0119"/>
+<path fill="none" stroke="#0000ff" d="M1141.0168,-520.1244C1177.4921,-503.9954 1224.5289,-483.1961 1262.4264,-466.4382"/>
+<polygon fill="#0000ff" stroke="#0000ff" points="1141.0026,-520.1306 1127.8438,-520.045 1135.5151,-522.5572 1130.0277,-524.9837 1130.0277,-524.9837 1130.0277,-524.9837 1135.5151,-522.5572 1132.2116,-529.9224 1141.0026,-520.1306 1141.0026,-520.1306"/>
+<polygon fill="#0000ff" stroke="#0000ff" points="1262.8975,-466.23 1276.0563,-466.3156 1268.385,-463.8034 1273.8724,-461.3769 1273.8724,-461.3769 1273.8724,-461.3769 1268.385,-463.8034 1271.6885,-456.4382 1262.8975,-466.23 1262.8975,-466.23"/>
 </g>
 <!-- User -->
 <g id="node4" class="node">
@@ -125,9 +128,9 @@
 <!-- User&#45;&gt;UserRole -->
 <g id="edge4" class="edge">
 <title>User&#45;&gt;UserRole</title>
-<path fill="none" stroke="#0000ff" d="M1138.6425,-208.2705C1176.1298,-221.8055 1225.5329,-239.6427 1264.6152,-253.7535"/>
-<polygon fill="#0000ff" stroke="#0000ff" points="1138.4261,-208.1925 1128.9731,-199.0381 1132.7827,-206.1548 1127.1393,-204.1172 1127.1393,-204.1172 1127.1393,-204.1172 1132.7827,-206.1548 1125.3054,-209.1963 1138.4261,-208.1925 1138.4261,-208.1925"/>
-<polygon fill="#0000ff" stroke="#0000ff" points="1274.7003,-261.8602 1264.8398,-253.8346 1277.553,-253.9594 1274.7003,-261.8602"/>
+<path fill="none" stroke="#0000ff" d="M1138.6425,-207.815C1176.1298,-221.0458 1225.5329,-238.4822 1264.6152,-252.2759"/>
+<polygon fill="#0000ff" stroke="#0000ff" points="1138.4552,-207.749 1128.9365,-198.6629 1132.7972,-205.752 1127.1393,-203.755 1127.1393,-203.755 1127.1393,-203.755 1132.7972,-205.752 1125.342,-208.8472 1138.4552,-207.749 1138.4552,-207.749"/>
+<polygon fill="#0000ff" stroke="#0000ff" points="1274.7288,-260.2994 1264.8108,-252.3449 1277.5245,-252.3783 1274.7288,-260.2994"/>
 </g>
 <!-- Image -->
 <g id="node6" class="node">

@@ -7,6 +7,8 @@ import type UserModel from './User';
 import type RoleModel from './Role';
 
 class UserRoleModel extends Model {
+  // ID（自動生成される主キー）
+  public id!: number;
   // ユーザーID
   public userId!: string;
   // ロールID
@@ -23,6 +25,11 @@ class UserRoleModel extends Model {
 
 UserRoleModel.init(
   {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
     userId: {
       type: DataTypes.UUID,
       allowNull: false,
@@ -63,16 +70,19 @@ UserRoleModel.init(
       {
         unique: true,
         fields: ['userId', 'roleId', 'resourceType', 'resourceId'],
-        name: 'user_role_resource_unique',
+        name: 'user_role_resource_unique_constraint',
       },
       {
         fields: ['userId'],
+        name: 'user_role_user_id_index',
       },
       {
         fields: ['roleId'],
+        name: 'user_role_role_id_index',
       },
       {
         fields: ['userId', 'resourceType', 'resourceId'],
+        name: 'user_role_user_resource_index',
       },
     ],
   }
