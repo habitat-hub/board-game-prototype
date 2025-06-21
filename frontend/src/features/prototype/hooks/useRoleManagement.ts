@@ -37,6 +37,7 @@ export const useRoleManagement = (groupId: string) => {
     getPrototypeGroupRoles,
     addRoleToPrototypeGroup,
     removeRoleFromPrototypeGroup,
+    updateRoleInPrototypeGroup,
     getPrototypeGroup,
   } = usePrototypeGroup();
 
@@ -150,6 +151,24 @@ export const useRoleManagement = (groupId: string) => {
     [addRoleToPrototypeGroup, groupId, fetchUserRoles, fetchAllUsers, showToast]
   );
 
+  // ロール更新
+  const updateRole = useCallback(
+    async (userId: string, roleName: 'admin' | 'editor' | 'viewer') => {
+      try {
+        setLoading(true);
+        await updateRoleInPrototypeGroup(groupId, userId, { roleName });
+        await fetchUserRoles(); // 一覧を再取得
+        showToast(`ユーザーのロールを${roleName}に変更しました。`, 'success');
+      } catch (error) {
+        console.error('Error updating role:', error);
+        showToast('ロールの変更に失敗しました。', 'error');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [updateRoleInPrototypeGroup, groupId, fetchUserRoles, showToast]
+  );
+
   // ユーザーのロール削除が可能かチェック
   const canRemoveUserRole = useCallback(
     (targetUserId: string, userRoles: UserRole[]) => {
@@ -235,6 +254,13 @@ export const useRoleManagement = (groupId: string) => {
     }
   }, [roleForm.selectedUserId, roleForm.selectedRole, addRole]);
 
+  const handleUpdateRole = useCallback(
+    async (userId: string, newRole: 'admin' | 'editor' | 'viewer') => {
+      await updateRole(userId, newRole);
+    },
+    [updateRole]
+  );
+
   const handleRemoveRole = useCallback(
     (userId: string) => {
       const removeCheck = canRemoveUserRole(userId, userRoles);
@@ -299,6 +325,7 @@ export const useRoleManagement = (groupId: string) => {
     // 基本操作
     addRole,
     removeRole,
+    updateRole,
     canRemoveUserRole,
     refetch: fetchUserRoles,
 
@@ -309,6 +336,7 @@ export const useRoleManagement = (groupId: string) => {
 
     // ハンドラー
     handleAddRole,
+    handleUpdateRole,
     handleRemoveRole,
     handleConfirmRemove,
     handleCancelRemove,
