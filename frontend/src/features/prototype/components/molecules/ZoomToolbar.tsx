@@ -25,11 +25,11 @@ export default function ZoomToolbar({
   const zoomPercentage = Math.floor(zoomValue * 100);
 
   return (
-    <div className="fixed bottom-4 right-4 z-[10000] flex items-center justify-center rounded-lg bg-gray-300 p-1">
-      <div className="flex items-center justify-center gap-3">
+    <div className="fixed bottom-4 right-4 z-[10000] flex items-center justify-center rounded-xl bg-white shadow-lg border border-gray-200 p-2">
+      <div className="flex items-center justify-center gap-2">
         <div className="flex items-center justify-center">
           <ZoomOutButton onClick={zoomOut} disabled={!canZoomOut} />
-          <div className="mx-2 px-2 text-sm font-medium text-gray-700 bg-white rounded-md min-w-[45px] text-center">
+          <div className="mx-3 px-3 py-1 text-sm font-semibold text-gray-800 bg-gray-50 rounded-lg min-w-[50px] text-center border border-gray-200">
             {`${zoomPercentage}`}%
           </div>
           <ZoomInButton onClick={zoomIn} disabled={!canZoomIn} />
