@@ -133,12 +133,6 @@ export interface User {
   updatedAt: string;
 }
 
-export interface UserPermission {
-  /** @format uuid */
-  userId: string;
-  permissionId: number;
-}
-
 export interface UserRole {
   id: number;
   /** @format uuid */

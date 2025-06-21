@@ -397,22 +397,6 @@ export const swaggerSchemas = {
             "updatedAt"
       ]
 },
-      UserPermission: {
-      "type": "object",
-      "properties": {
-            "userId": {
-                  "type": "string",
-                  "format": "uuid"
-            },
-            "permissionId": {
-                  "type": "integer"
-            }
-      },
-      "required": [
-            "userId",
-            "permissionId"
-      ]
-},
       UserRole: {
       "type": "object",
       "properties": {
