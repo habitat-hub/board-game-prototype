@@ -156,7 +156,7 @@ export default function LeftSidebar({
             {prototypeName}
           </h2>
           {prototypeVersionNumber && prototypeType === 'VERSION' && (
-            <span className="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-600 rounded-md min-w-1 border border-blue-600 flex-shrink-0">
+            <span className="px-1.5 py-0.5 text-[10px] bg-amber-100 text-amber-600 rounded-md min-w-1 border border-amber-600 flex-shrink-0">
               {isVersionPrototype
                 ? 'プレビュー'
                 : `プレイルーム${prototypeVersionNumber}`}
@@ -191,25 +191,47 @@ export default function LeftSidebar({
           {/* マスタープロトタイプ */}
           {prototypeInfo.master && (
             <div className="mb-2">
-              <Link
-                href={`/groups/${groupId}/prototypes/${prototypeInfo.master.id}/edit`}
-                className="block bg-white/80 rounded-lg p-2 border border-wood-light/30 hover:bg-white/90 hover:border-wood-light/50 transition-all group"
-                title={prototypeInfo.master.name}
-              >
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 bg-wood-lightest/40 rounded-lg group-hover:bg-wood-lightest/60 transition-colors">
-                    <BsBoxSeam className="h-5 w-5 text-wood-dark group-hover:text-header transition-colors" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium text-wood-darkest text-sm">
-                      コンポーネント編集
-                    </h4>
-                    <p className="text-xs text-wood-dark/70 mt-1">
-                      パーツとプロパティの編集
-                    </p>
+              {prototypeType === 'MASTER' ? (
+                // 現在コンポーネント編集中
+                <div className="block bg-gradient-to-r from-amber-50 to-amber-100 rounded-lg p-2 border-2 border-amber-300 shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 bg-amber-200 rounded-lg">
+                      <BsBoxSeam className="h-5 w-5 text-amber-700" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-medium text-amber-800 text-sm flex items-center gap-1">
+                        コンポーネント編集
+                        <span className="px-2 py-0.5 text-xs bg-amber-200 text-amber-700 rounded-full border border-amber-300">
+                          編集中
+                        </span>
+                      </h4>
+                      <p className="text-xs text-amber-700/80 mt-1">
+                        パーツとプロパティの編集
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </Link>
+              ) : (
+                <Link
+                  href={`/groups/${groupId}/prototypes/${prototypeInfo.master.id}/edit`}
+                  className="block bg-white/80 rounded-lg p-2 border border-wood-light/30 hover:bg-white/90 hover:border-wood-light/50 transition-all group"
+                  title={prototypeInfo.master.name}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 bg-wood-lightest/40 rounded-lg group-hover:bg-wood-lightest/60 transition-colors">
+                      <BsBoxSeam className="h-5 w-5 text-wood-dark group-hover:text-header transition-colors" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-medium text-wood-darkest text-sm">
+                        コンポーネント編集
+                      </h4>
+                      <p className="text-xs text-wood-dark/70 mt-1">
+                        パーツとプロパティの編集
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              )}
             </div>
           )}
 
@@ -218,22 +240,22 @@ export default function LeftSidebar({
             {/* バージョン作成ボタン */}
             <button
               onClick={handleCreateVersion}
-              className="w-full mb-2 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border border-blue-200 hover:border-blue-300 rounded-lg p-2 transition-all group"
+              className="w-full mb-2 bg-gradient-to-r from-amber-50 to-yellow-50 hover:from-amber-100 hover:to-yellow-100 border border-amber-200 hover:border-amber-300 rounded-lg p-2 transition-all group"
               title="コンポーネントを配置してゲームバージョンを作成"
             >
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
-                  <HiPuzzlePiece className="h-5 w-5 text-blue-600 group-hover:text-blue-700 transition-colors" />
+                <div className="p-1.5 bg-amber-100 rounded-lg group-hover:bg-amber-200 transition-colors">
+                  <HiPuzzlePiece className="h-5 w-5 text-amber-600 group-hover:text-amber-700 transition-colors" />
                 </div>
                 <div className="flex-1 text-left">
-                  <h4 className="font-medium text-blue-700 text-xs">
+                  <h4 className="font-medium text-amber-700 text-xs">
                     新しいゲーム配置を作成
                   </h4>
-                  <p className="text-xs text-blue-600/80 mt-1">
-                    コンポーネントを配置してゲームを準備
+                  <p className="text-xs text-amber-600/80 mt-1">
+                    初期配置にしてプレイ準備
                   </p>
                 </div>
-                <IoAdd className="h-4 w-4 text-blue-600 group-hover:text-blue-700 transition-colors" />
+                <IoAdd className="h-4 w-4 text-amber-600 group-hover:text-amber-700 transition-colors" />
               </div>
             </button>
             {prototypeInfo.versions.length > 0 ? (
