@@ -15,7 +15,7 @@ import { Part as PartType, PartProperty as PropertyType } from '@/api/types';
 import DebugInfo from '@/features/prototype/components/atoms/DebugInfo';
 import GridLines from '@/features/prototype/components/atoms/GridLines';
 import { KonvaPartContextMenu } from '@/features/prototype/components/atoms/KonvaPartContextMenu';
-import Part2 from '@/features/prototype/components/atoms/Part2';
+import Part from '@/features/prototype/components/atoms/Part';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
@@ -705,7 +705,7 @@ export default function GameBoard({
                 const filteredImages = filteredImagesMap[part.id] || [];
                 const isActive = selectedPartIds.includes(part.id);
                 return (
-                  <Part2
+                  <Part
                     key={part.id}
                     part={part}
                     properties={partProperties}

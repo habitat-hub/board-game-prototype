@@ -9,7 +9,7 @@ import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { useDeck } from '@/features/prototype/hooks/useDeck';
 import { PartHandle } from '@/features/prototype/type';
 
-interface Part2Props {
+interface PartProps {
   part: PartType;
   properties: PropertyType[];
   images: Record<string, string>[];
@@ -26,7 +26,7 @@ interface Part2Props {
   isActive: boolean;
 }
 
-const Part2 = forwardRef<PartHandle, Part2Props>(
+const Part = forwardRef<PartHandle, PartProps>(
   (
     {
       part,
@@ -267,6 +267,6 @@ const Part2 = forwardRef<PartHandle, Part2Props>(
     );
   }
 );
-Part2.displayName = 'Part2';
+Part.displayName = 'Part';
 
-export default Part2;
+export default Part;
