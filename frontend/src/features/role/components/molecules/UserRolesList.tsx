@@ -1,22 +1,14 @@
 import React from 'react';
 import { FaUserShield } from 'react-icons/fa';
 
+import { User } from '@/api/types/data-contracts';
+
 import UserRoleCard from './UserRoleCard';
 
 interface UserRole {
   userId: string;
-  user: {
-    id: string;
-    username: string;
-    createdAt: string;
-    updatedAt: string;
-  };
+  user: User;
   roles: Array<{ name: string; description: string }>;
-}
-
-interface User {
-  id: string;
-  username: string;
 }
 
 interface UserRolesListProps {
