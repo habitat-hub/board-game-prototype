@@ -86,7 +86,7 @@ export async function assignRole(
   resourceId: string,
   transaction?: Transaction
 ): Promise<void> {
-  // 既存のレコードを確認（完全一致）
+  // 既存のレコードを確認
   const existingRole = await UserRoleModel.findOne({
     where: {
       userId,
@@ -99,24 +99,6 @@ export async function assignRole(
 
   if (existingRole) {
     return;
-  }
-
-  // 部分的な重複チェック（同じリソースタイプでの重複を防ぐ）
-  const partialMatch = await UserRoleModel.findOne({
-    where: {
-      userId,
-      roleId,
-      resourceType,
-    },
-    transaction,
-  });
-
-  if (partialMatch) {
-    // 同じリソースタイプで既にロールが割り当てられている場合
-    // 異なるリソースIDなら許可、同じリソースIDなら重複なので拒否
-    if (partialMatch.resourceId === resourceId) {
-      return;
-    }
   }
 
   // 既存のレコードがない場合のみ作成
