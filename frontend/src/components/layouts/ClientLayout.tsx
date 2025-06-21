@@ -21,10 +21,10 @@ export default function ClientLayout({
   const [shouldRedirect, setShouldRedirect] = useState(false);
 
   // Canvas上で表示する場合はヘッダーを非表示にする
-  // 正規表現: /groups/[groupId]/prototypes/[prototypeId]/(play|edit)(/old)?$ の形式にマッチ
+  // 正規表現: /groups/[groupId]/prototypes/[prototypeId]/(play|edit)$ の形式にマッチ
   // [a-f0-9-]+ は UUID形式の文字列（16進数とハイフン）を表す
   const isGameBoard =
-    /^\/groups\/[a-f0-9-]+\/prototypes\/[a-f0-9-]+\/(play|edit)(\/old)?$/.test(
+    /^\/groups\/[a-f0-9-]+\/prototypes\/[a-f0-9-]+\/(play|edit)$/.test(
       pathname
     );
 
