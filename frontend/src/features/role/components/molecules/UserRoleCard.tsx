@@ -4,7 +4,7 @@ import { FaUserShield, FaInfoCircle, FaCog, FaTrash } from 'react-icons/fa';
 import RoleBadge from '../atoms/RoleBadge';
 import UserAvatar from '../atoms/UserAvatar';
 
-interface UserRole {
+interface UserRoleWithDetails {
   userId: string;
   user: {
     id: string;
@@ -16,7 +16,7 @@ interface UserRole {
 }
 
 interface UserRoleCardProps {
-  userRole: UserRole;
+  userRole: UserRoleWithDetails;
   isCreator: boolean;
   isLastAdmin: boolean;
   canRemove: boolean;
