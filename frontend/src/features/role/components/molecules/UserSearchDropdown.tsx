@@ -1,22 +1,21 @@
 import React from 'react';
 import { FaSearch, FaUser, FaTimes } from 'react-icons/fa';
 
+import { User } from '@/api/types';
+
 import UserAvatar from '../atoms/UserAvatar';
 
-interface User {
-  id: string;
-  username: string;
-}
+type UserSearchUser = Pick<User, 'id' | 'username'>;
 
 interface UserSearchDropdownProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  selectedUser: User | null;
-  onUserSelect: (user: User) => void;
+  selectedUser: UserSearchUser | null;
+  onUserSelect: (user: UserSearchUser) => void;
   onClearUser: () => void;
   showDropdown: boolean;
   onToggleDropdown: (show: boolean) => void;
-  filteredUsers: User[];
+  filteredUsers: UserSearchUser[];
   loading?: boolean;
 }
 
