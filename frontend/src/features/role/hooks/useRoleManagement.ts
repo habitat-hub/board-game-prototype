@@ -227,7 +227,6 @@ export const useRoleManagement = (groupId: string) => {
         showToast('ユーザーのロールを削除しました。', 'success');
       } catch (error: unknown) {
         console.error('Error removing role:', error);
-        // バックエンドからのエラーメッセージを表示
         const errorMessage = 'ロールの削除に失敗しました。';
         showToast(errorMessage, 'error');
       } finally {
