@@ -19,7 +19,7 @@ import Part2 from '@/features/prototype/components/atoms/Part2';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
 import ShortcutHelpPanel from '@/features/prototype/components/molecules/ShortcutHelpPanel';
-import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
+import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
@@ -772,7 +772,7 @@ export default function GameBoard({
           )}
         </>
       )}
-      <ToolsBar
+      <ZoomToolbar
         zoomIn={handleZoomIn}
         zoomOut={handleZoomOut}
         canZoomIn={camera.scale < MAX_SCALE}
