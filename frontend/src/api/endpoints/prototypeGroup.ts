@@ -164,4 +164,19 @@ export const prototypeGroupService = {
     );
     return response.data;
   },
+
+  /**
+   * プロトタイプグループのロール更新
+   */
+  updateRoleInPrototypeGroup: async (
+    prototypeGroupId: string,
+    userId: string,
+    data: { roleName: string }
+  ): Promise<void> => {
+    const response = await axiosInstance.put(
+      `/api/prototype-groups/${prototypeGroupId}/roles/${userId}`,
+      data
+    );
+    return response.data;
+  },
 };

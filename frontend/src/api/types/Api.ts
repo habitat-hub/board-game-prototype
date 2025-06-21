@@ -35,6 +35,8 @@ import {
   PrototypeGroupsRolesCreatePayload,
   PrototypeGroupsRolesDeleteData,
   PrototypeGroupsRolesListData,
+  PrototypeGroupsRolesUpdateData,
+  PrototypeGroupsRolesUpdatePayload,
   PrototypeGroupsVersionCreateData,
   PrototypeGroupsVersionCreatePayload,
   PrototypesDeleteData,
@@ -434,6 +436,27 @@ export class Api<
     this.request<PrototypeGroupsRolesDeleteData, void>({
       path: `/api/prototype-groups/${prototypeGroupId}/roles/${userId}`,
       method: 'DELETE',
+      ...params,
+    });
+  /**
+   * @description ユーザーのプロトタイプグループロールを変更します。
+   *
+   * @tags PrototypeGroups
+   * @name PrototypeGroupsRolesUpdate
+   * @summary プロトタイプグループのロールを更新
+   * @request PUT:/api/prototype-groups/{prototypeGroupId}/roles/{userId}
+   */
+  prototypeGroupsRolesUpdate = (
+    prototypeGroupId: string,
+    userId: string,
+    data: PrototypeGroupsRolesUpdatePayload,
+    params: RequestParams = {}
+  ) =>
+    this.request<PrototypeGroupsRolesUpdateData, void>({
+      path: `/api/prototype-groups/${prototypeGroupId}/roles/${userId}`,
+      method: 'PUT',
+      body: data,
+      type: ContentType.Json,
       ...params,
     });
   /**

@@ -133,13 +133,8 @@ export interface User {
   updatedAt: string;
 }
 
-export interface UserPermission {
-  /** @format uuid */
-  userId: string;
-  permissionId: number;
-}
-
 export interface UserRole {
+  id: number;
   /** @format uuid */
   userId: string;
   roleId: number;
@@ -260,6 +255,12 @@ export interface PrototypeGroupsRolesCreatePayload {
 export type PrototypeGroupsRolesCreateData = any;
 
 export type PrototypeGroupsRolesDeleteData = any;
+
+export interface PrototypeGroupsRolesUpdatePayload {
+  roleName?: 'admin' | 'editor' | 'viewer';
+}
+
+export type PrototypeGroupsRolesUpdateData = any;
 
 export interface UsersSearchListParams {
   /** 検索するユーザー名 */

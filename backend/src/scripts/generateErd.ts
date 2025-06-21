@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import sequelizeErd from 'sequelize-erd';
 import sequelize from '../models'; // Sequelizeインスタンスをインポート
+import { setupAssociations } from '../database/associations'; // アソシエーション設定をインポート
 import { writeFileSync } from 'fs';
 
 const modelsDir = path.join(__dirname, '../models');
@@ -19,6 +20,9 @@ const modelsDir = path.join(__dirname, '../models');
         model.initModel(sequelize);
       }
     });
+
+  // アソシエーションを設定
+  setupAssociations();
 
   const svg = await sequelizeErd({
     source: sequelize,

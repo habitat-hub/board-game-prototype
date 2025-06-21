@@ -1,9 +1,9 @@
 import { Metadata } from 'next';
 
-import RoleManagement from '@/features/prototype/components/organisms/RoleManagement';
+import RoleManagement from '@/features/role/components/organisms/RoleManagement';
 
 export const metadata: Metadata = {
-  title: 'ロール管理',
+  title: '権限設定',
 };
 
 export const runtime = 'edge';

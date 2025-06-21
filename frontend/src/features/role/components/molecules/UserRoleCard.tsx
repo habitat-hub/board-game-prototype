@@ -1,0 +1,156 @@
+import React from 'react';
+import { FaUserShield, FaInfoCircle, FaCog, FaTrash } from 'react-icons/fa';
+
+import RoleBadge from '../atoms/RoleBadge';
+import UserAvatar from '../atoms/UserAvatar';
+
+interface UserRole {
+  userId: string;
+  user: {
+    id: string;
+    username: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  roles: Array<{ name: string; description: string }>;
+}
+
+interface UserRoleCardProps {
+  userRole: UserRole;
+  isCreator: boolean;
+  isLastAdmin: boolean;
+  canRemove: boolean;
+  removeReason: string;
+  onEdit: (userId: string, username: string, roleName: string) => void;
+  onRemove: (userId: string) => void;
+  loading: boolean;
+  editMode: boolean;
+}
+
+const UserRoleCard: React.FC<UserRoleCardProps> = ({
+  userRole,
+  isCreator,
+  isLastAdmin,
+  canRemove,
+  removeReason,
+  onEdit,
+  onRemove,
+  loading,
+  editMode,
+}) => {
+  const primaryRole = userRole.roles[0];
+
+  return (
+    <div
+      className={`bg-white border border-gray-200 rounded-lg p-4 transition-all ${
+        !editMode ? 'hover:shadow-md' : ''
+      } ${loading ? 'opacity-60' : ''}`}
+    >
+      {/* ヘッダー：ユーザー情報 */}
+      <div className="flex items-center gap-3 mb-3">
+        <UserAvatar username={userRole.user.username} size="lg" />
+
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <div className="font-medium text-wood-dark">
+              {userRole.user.username}
+            </div>
+            {isCreator && (
+              <div className="flex-shrink-0" title="作成者">
+                <FaUserShield className="h-4 w-4 text-yellow-600" />
+              </div>
+            )}
+          </div>
+
+          {/* 現在の権限表示 */}
+          <div className="mt-1">
+            <RoleBadge roleName={primaryRole.name} />
+          </div>
+        </div>
+
+        {/* アクションボタン群 */}
+        <div className="flex gap-1">
+          {/* 変更ボタン */}
+          <button
+            onClick={() =>
+              onEdit(userRole.userId, userRole.user.username, primaryRole.name)
+            }
+            className={`p-2 rounded transition-colors ${
+              !isCreator && !loading && !editMode
+                ? 'text-gray-400 hover:text-blue-500 hover:bg-blue-50'
+                : 'text-gray-300 cursor-not-allowed'
+            }`}
+            title={
+              loading
+                ? '処理中...'
+                : editMode
+                  ? '編集モード中は変更できません'
+                  : isCreator
+                    ? '作成者の権限は変更できません'
+                    : '権限を変更'
+            }
+            disabled={loading || !!isCreator || editMode}
+          >
+            {loading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-wood-light"></div>
+            ) : (
+              <FaCog className="h-4 w-4" />
+            )}
+          </button>
+
+          {/* 削除ボタン */}
+          <button
+            onClick={() => onRemove(userRole.userId)}
+            className={`p-2 rounded transition-colors ${
+              canRemove && !loading && !editMode
+                ? 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+                : 'text-gray-300 cursor-not-allowed'
+            }`}
+            title={
+              loading
+                ? '処理中...'
+                : editMode
+                  ? '編集モード中は削除できません'
+                  : canRemove
+                    ? '権限を削除'
+                    : removeReason
+            }
+            disabled={loading || !canRemove || editMode}
+          >
+            {loading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-wood-light"></div>
+            ) : (
+              <FaTrash className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* 複数権限がある場合の表示 */}
+      {userRole.roles.length > 1 && (
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <div className="text-xs text-gray-500">
+            その他の権限:{' '}
+            {userRole.roles
+              .slice(1)
+              .map((role) => role.name)
+              .join(', ')}
+          </div>
+        </div>
+      )}
+
+      {/* 制限の説明 */}
+      {(isCreator || isLastAdmin) && (
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <div className="text-xs text-gray-500 flex items-center gap-1">
+            <FaInfoCircle className="h-3 w-3" />
+            {isCreator && '作成者の権限は変更できません'}
+            {isLastAdmin && !isCreator && '最後の管理者の権限は変更できません'}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default UserRoleCard;
