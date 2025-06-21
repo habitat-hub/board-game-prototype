@@ -69,7 +69,7 @@ UserRoleModel.init(
     indexes: [
       {
         unique: true,
-        fields: ['userId', 'roleId', 'resourceType', 'resourceId'],
+        fields: ['userId', 'resourceType', 'resourceId'],
         name: 'user_role_resource_unique_constraint',
       },
       {
@@ -81,8 +81,8 @@ UserRoleModel.init(
         name: 'user_role_role_id_index',
       },
       {
-        fields: ['userId', 'resourceType', 'resourceId'],
-        name: 'user_role_user_resource_index',
+        fields: ['userId', 'roleId', 'resourceType', 'resourceId'],
+        name: 'user_role_full_index',
       },
     ],
   }
