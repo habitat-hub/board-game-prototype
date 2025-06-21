@@ -11,6 +11,22 @@ interface UserRole {
   roles: Array<{ name: string; description: string }>;
 }
 
+interface ToastState {
+  message: string;
+  type: 'success' | 'error' | 'warning';
+  show: boolean;
+}
+
+interface ConfirmDialogState {
+  userId: string;
+  userName: string;
+}
+
+interface RoleFormState {
+  selectedUserId: string | null;
+  selectedRole: 'admin' | 'editor' | 'viewer';
+}
+
 /**
  * ロール管理関連のロジックを管理するカスタムフック
  */
@@ -24,11 +40,47 @@ export const useRoleManagement = (groupId: string) => {
     getPrototypeGroup,
   } = usePrototypeGroup();
 
+  // データ状態
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [groupDetail, setGroupDetail] =
     useState<PrototypeGroupsDetailData | null>(null);
+  const [creator, setCreator] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // UI状態
+  const [roleForm, setRoleForm] = useState<RoleFormState>({
+    selectedUserId: null,
+    selectedRole: 'viewer',
+  });
+  const [toast, setToast] = useState<ToastState>({
+    message: '',
+    type: 'success',
+    show: false,
+  });
+  const [confirmDialog, setConfirmDialog] = useState<{
+    show: boolean;
+    data: ConfirmDialogState | null;
+  }>({
+    show: false,
+    data: null,
+  });
+
+  // トーストメッセージを表示する関数
+  const showToast = useCallback(
+    (message: string, type: 'success' | 'error' | 'warning') => {
+      setToast({ message, type, show: true });
+      setTimeout(() => {
+        setToast((prev) => ({ ...prev, show: false }));
+      }, 3000);
+    },
+    []
+  );
+
+  // トーストを閉じる関数
+  const closeToast = useCallback(() => {
+    setToast((prev) => ({ ...prev, show: false }));
+  }, []);
 
   // ユーザーロール一覧を取得
   const fetchUserRoles = useCallback(async () => {
@@ -38,21 +90,36 @@ export const useRoleManagement = (groupId: string) => {
       setUserRoles(response);
     } catch (error) {
       console.error('Error fetching user roles:', error);
-      alert('ロール一覧の取得に失敗しました。');
+      showToast('ロール一覧の取得に失敗しました。', 'error');
     } finally {
       setLoading(false);
     }
-  }, [getPrototypeGroupRoles, groupId]);
+  }, [getPrototypeGroupRoles, groupId, showToast]);
 
   // グループ詳細を取得
   const fetchGroupDetail = useCallback(async () => {
     try {
       const response = await getPrototypeGroup(groupId);
       setGroupDetail(response);
+
+      // 作成者の情報を取得
+      if (response.prototypeGroup?.userId) {
+        try {
+          const usersResponse = await searchUsers({ username: '' });
+          const creatorUser = usersResponse.find(
+            (user) => user.id === response.prototypeGroup?.userId
+          );
+          if (creatorUser) {
+            setCreator(creatorUser);
+          }
+        } catch (error) {
+          console.error('Error fetching creator info:', error);
+        }
+      }
     } catch (error) {
       console.error('Error fetching group detail:', error);
     }
-  }, [getPrototypeGroup, groupId]);
+  }, [getPrototypeGroup, groupId, searchUsers]);
 
   // 全ユーザーを取得（検索用）
   const fetchAllUsers = useCallback(async () => {
@@ -66,20 +133,21 @@ export const useRoleManagement = (groupId: string) => {
 
   // ロールを追加
   const addRole = useCallback(
-    async (userId: string, roleName: 'admin' | 'editor') => {
+    async (userId: string, roleName: 'admin' | 'editor' | 'viewer') => {
       try {
         setLoading(true);
         await addRoleToPrototypeGroup(groupId, { userId, roleName });
         await fetchUserRoles(); // 一覧を再取得
-        alert(`ユーザーに${roleName}ロールを追加しました。`);
+        await fetchAllUsers(); // ユーザー検索用リストを再取得
+        showToast(`ユーザーに${roleName}ロールを追加しました。`, 'success');
       } catch (error) {
         console.error('Error adding role:', error);
-        alert('ロールの追加に失敗しました。');
+        showToast('ロールの追加に失敗しました。', 'error');
       } finally {
         setLoading(false);
       }
     },
-    [addRoleToPrototypeGroup, groupId, fetchUserRoles]
+    [addRoleToPrototypeGroup, groupId, fetchUserRoles, fetchAllUsers, showToast]
   );
 
   // ユーザーのロール削除が可能かチェック
@@ -129,25 +197,79 @@ export const useRoleManagement = (groupId: string) => {
     [currentUser, groupDetail]
   );
 
-  // ロールを削除（エラーハンドリング改善）
+  // ロール削除（エラーハンドリング改善）
   const removeRole = useCallback(
     async (userId: string) => {
       try {
         setLoading(true);
         await removeRoleFromPrototypeGroup(groupId, userId);
         await fetchUserRoles(); // 一覧を再取得
-        alert('ユーザーのロールを削除しました。');
+        await fetchAllUsers(); // ユーザー検索用リストを再取得
+        showToast('ユーザーのロールを削除しました。', 'success');
       } catch (error: unknown) {
         console.error('Error removing role:', error);
         // バックエンドからのエラーメッセージを表示
         const errorMessage = 'ロールの削除に失敗しました。';
-        alert(errorMessage);
+        showToast(errorMessage, 'error');
       } finally {
         setLoading(false);
       }
     },
-    [removeRoleFromPrototypeGroup, groupId, fetchUserRoles]
+    [
+      removeRoleFromPrototypeGroup,
+      groupId,
+      fetchUserRoles,
+      fetchAllUsers,
+      showToast,
+    ]
   );
+
+  // ハンドラー関数群
+  const handleAddRole = useCallback(async () => {
+    if (roleForm.selectedUserId && roleForm.selectedRole) {
+      await addRole(roleForm.selectedUserId, roleForm.selectedRole);
+      setRoleForm({
+        selectedUserId: null,
+        selectedRole: 'viewer',
+      });
+    }
+  }, [roleForm.selectedUserId, roleForm.selectedRole, addRole]);
+
+  const handleRemoveRole = useCallback(
+    (userId: string) => {
+      const removeCheck = canRemoveUserRole(userId, userRoles);
+
+      if (!removeCheck.canRemove) {
+        showToast(removeCheck.reason, 'warning');
+        return;
+      }
+
+      // 確認ダイアログを表示
+      const user = userRoles.find((ur) => ur.userId === userId);
+      if (user) {
+        setConfirmDialog({
+          show: true,
+          data: { userId, userName: user.user.username },
+        });
+      }
+    },
+    [userRoles, canRemoveUserRole, showToast]
+  );
+
+  const handleConfirmRemove = useCallback(async () => {
+    if (confirmDialog.data) {
+      await removeRole(confirmDialog.data.userId);
+      setConfirmDialog({ show: false, data: null });
+    }
+  }, [confirmDialog.data, removeRole]);
+
+  const handleCancelRemove = useCallback(() => {
+    setConfirmDialog({ show: false, data: null });
+  }, []);
+
+  const updateRoleForm = useCallback((updates: Partial<RoleFormState>) => {
+    setRoleForm((prev) => ({ ...prev, ...updates }));
+  }, []);
 
   // 初期化時にロール一覧、全ユーザー、グループ詳細を取得
   useEffect(() => {
@@ -167,13 +289,30 @@ export const useRoleManagement = (groupId: string) => {
       ?.name || '';
 
   return {
+    // データ
     userRoles,
     availableUsers,
     masterPrototypeName,
+    creator,
     loading,
+
+    // 基本操作
     addRole,
     removeRole,
     canRemoveUserRole,
     refetch: fetchUserRoles,
+
+    // UI状態
+    roleForm,
+    toast,
+    confirmDialog,
+
+    // ハンドラー
+    handleAddRole,
+    handleRemoveRole,
+    handleConfirmRemove,
+    handleCancelRemove,
+    updateRoleForm,
+    closeToast,
   };
 };
