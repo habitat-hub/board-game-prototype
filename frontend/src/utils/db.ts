@@ -2,6 +2,7 @@ import { openDB } from 'idb';
 
 const DB_NAME = 'BoardGamePrototype';
 const STORE_NAME = 'images';
+const IMAGE_DELETE_GRACE_DAYS = 3;
 
 // IndexedDBの初期化関数
 export const getIndexedDb = async () => {
@@ -76,9 +77,6 @@ export const updateImageParamsInIndexedDb = async (
     // ここでは、エラーをコンソールに出力するだけにしています
   }
 };
-
-// 画像の削除猶予期間（日数）
-export const IMAGE_DELETE_GRACE_DAYS = 0;
 
 //以下の条件を満たす画像を全てIndexedDBから削除する
 // 1. 削除フラグがオン
