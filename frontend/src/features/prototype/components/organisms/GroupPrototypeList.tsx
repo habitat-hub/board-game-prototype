@@ -15,6 +15,7 @@ import CreateVersionButton from '@/features/prototype/components/molecules/Creat
 import PlayRoomCard from '@/features/prototype/components/molecules/PlayRoomCard';
 import { useUser } from '@/hooks/useUser';
 import formatDate from '@/utils/dateFormat';
+import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
 
 const GroupPrototypeList: React.FC = () => {
   const router = useRouter();
@@ -86,6 +87,17 @@ const GroupPrototypeList: React.FC = () => {
     getPrototypes();
     fetchAccessUsers();
   }, [getPrototypes, fetchAccessUsers]);
+
+  // 1日に1回、IndexedDBから期限切れの画像を削除する
+  useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+    const lastRun = localStorage.getItem('deleteExpiredImagesLastRun');
+
+    if (lastRun !== today) {
+      deleteExpiredImagesFromIndexedDb();
+      localStorage.setItem('deleteExpiredImagesLastRun', today);
+    }
+  }, []);
 
   /**
    * プレビュー版プロトタイプを作成する
