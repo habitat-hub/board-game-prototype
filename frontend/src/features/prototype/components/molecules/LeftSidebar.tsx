@@ -306,7 +306,7 @@ export default function LeftSidebar({
                           </button>
                         </div>
                       ) : (
-                        <div className="flex items-center justify-center">
+                        <div className="flex items-center justify-start">
                           <button
                             onClick={() => handleCreateRoom(version.id)}
                             className="group"
