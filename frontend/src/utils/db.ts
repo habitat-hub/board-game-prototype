@@ -92,7 +92,7 @@ export const deleteExpiredImagesFromIndexedDb = async (): Promise<void> => {
     );
 
     const expiredRecords = records.filter(
-      (record: any) =>
+      (record) =>
         record.isDeleted === true &&
         record.deletedAt &&
         new Date(record.deletedAt) < threshold
@@ -100,7 +100,6 @@ export const deleteExpiredImagesFromIndexedDb = async (): Promise<void> => {
 
     for (const record of expiredRecords) {
       await db.delete(STORE_NAME, record.id);
-      console.log(`ID: ${record.id} の画像をIndexedDBから完全削除しました`);
     }
   } catch (error) {
     console.error('期限切れ画像のIndexedDB削除に失敗:', error);
@@ -122,7 +121,6 @@ export const resetImageParamsInIndexedDb = async (
       record.isDeleted = false;
       record.deletedAt = null;
       await db.put(STORE_NAME, record);
-      console.log(`ID: ${id}の画像の削除フラグと削除日時をリセットしました`);
     }
   } catch (error) {
     // エラー時は何もしない
