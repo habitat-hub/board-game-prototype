@@ -1,36 +1,28 @@
-import React, { forwardRef, useMemo } from 'react';
-import { FaRegEye } from 'react-icons/fa';
-import { TbCards } from 'react-icons/tb';
-import { VscSync, VscSyncIgnored } from 'react-icons/vsc';
+import Konva from 'konva';
+import React, { forwardRef, useMemo, useRef, useEffect, useState } from 'react';
+import { Group, Rect, Text, Image } from 'react-konva';
+import useImage from 'use-image';
 
 import { Part as PartType, PartProperty as PropertyType } from '@/api/types';
-import PartContextMenu from '@/features/prototype/components/atoms/PartContextMenu';
 import { useCard } from '@/features/prototype/hooks/useCard';
+import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { useDeck } from '@/features/prototype/hooks/useDeck';
 import { PartHandle } from '@/features/prototype/type';
 
 interface PartProps {
-  // パーツタイプ
   part: PartType;
-  // プロパティ
   properties: PropertyType[];
-  // 画像データ
   images: Record<string, string>[];
-  // 他のプレイヤーのカードか
-  isOtherPlayerCard?: boolean;
-  // プロトタイプタイプ
+  isOtherPlayerCard: boolean;
   prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE';
-  // マウスダウン時のコールバック
-  onMouseDown: (e: React.MouseEvent, partId: number) => void;
-  // 移動順序を変更するコールバック
-  onMoveOrder: ({
-    partId,
-    type,
-  }: {
-    partId: number;
-    type: 'front' | 'back' | 'backmost' | 'frontmost';
-  }) => void;
-  // アクティブか
+  onDragStart: (e: Konva.KonvaEventObject<DragEvent>) => void;
+  onDragMove: (e: Konva.KonvaEventObject<DragEvent>, partId: number) => void;
+  onDragEnd: (e: Konva.KonvaEventObject<DragEvent>, partId: number) => void;
+  onClick: (e: Konva.KonvaEventObject<MouseEvent>) => void;
+  onContextMenu: (
+    e: Konva.KonvaEventObject<PointerEvent>,
+    partId: number
+  ) => void;
   isActive: boolean;
 }
 
@@ -42,229 +34,239 @@ const Part = forwardRef<PartHandle, PartProps>(
       isOtherPlayerCard = false,
       prototypeType,
       images,
-      onMouseDown,
-      onMoveOrder,
+      onDragStart,
+      onDragMove,
+      onDragEnd,
+      onClick,
+      onContextMenu,
       isActive = false,
     },
     ref
   ) => {
+    const groupRef = useRef<Konva.Group>(null);
     const { isFlipped, isReversing, setIsReversing, reverseCard } = useCard(
       part,
       ref
     );
     const { shuffleDeck } = useDeck(part);
+    const [scaleX, setScaleX] = useState(1);
+    const { showDebugInfo } = useDebugMode();
+
+    // 要素のドラッグ開始時に最前面に移動する処理を追加（INSTANCEモードのみ）
+    useEffect(() => {
+      if (!groupRef.current || prototypeType !== 'INSTANCE') return;
+
+      const currentGroup = groupRef.current;
+
+      // ドラッグ開始時のハンドラーを追加（INSTANCEモードのみ）
+      currentGroup.on('dragstart', () => {
+        // ドラッグ中のノードを最前面に移動
+        currentGroup.moveToTop();
+      });
+
+      return () => {
+        // クリーンアップ
+        currentGroup.off('dragstart');
+      };
+    }, [prototypeType]);
 
     const isCard = part.type === 'card';
     const isDeck = part.type === 'deck';
 
-    // Owner name functionality is not available since Player model was removed
-    const ownerName = part.ownerId ? `Owner: ${part.ownerId}` : undefined;
+    // アニメーション用のエフェクト
+    useEffect(() => {
+      if (!isCard || !isReversing || !groupRef.current) return;
+
+      // フリップアニメーション
+      const anim = new Konva.Animation((frame) => {
+        if (!frame || !groupRef.current) return;
+
+        const duration = 200; // アニメーション時間 (ミリ秒)
+        const timePassed = frame.time % duration;
+        const progress = timePassed / duration;
+
+        if (progress < 0.5) {
+          // 最初の半分：縮小
+          setScaleX(1 - progress * 2);
+        } else {
+          // 後半：拡大
+          setScaleX((progress - 0.5) * 2);
+        }
+
+        // アニメーション終了
+        if (frame.time >= duration) {
+          anim.stop();
+          setScaleX(1);
+          setIsReversing(false);
+        }
+      }, groupRef.current.getLayer());
+
+      anim.start();
+
+      return () => {
+        anim.stop();
+      };
+    }, [isReversing, isCard, setIsReversing]);
 
     // 裏向き表示にする必要があるか
     const isFlippedNeeded = prototypeType === 'VERSION' && isOtherPlayerCard;
 
-    // 対象面（表or裏）のプロパティを取得
+    // 対象面（表or裏）のプロパティを取得 (ローカルの isFlipped 状態を使用)
     const targetProperty = useMemo(() => {
-      const side = part.isFlipped ? 'back' : 'front';
+      const side = isFlipped ? 'back' : 'front';
       return properties.find((p) => p.side === side);
-    }, [part, properties]);
+    }, [isFlipped, properties]);
+
+    // 有効な画像URLの値を取得する関数
+    const getValidImageURL = (imageId?: string | null) => {
+      if (!imageId) return null;
+      const targetImage = images.find((image) => image[imageId]);
+      return targetImage ? targetImage[imageId] : null;
+    };
 
     // 有効な画像URLの値
-    const validImageURL = useMemo(() => {
-      const imageId = targetProperty?.imageId;
-      if (!imageId) return null;
+    const validImageURL = getValidImageURL(targetProperty?.imageId);
 
-      const targetImage = images.find((image) => image[imageId]);
-      if (targetImage) {
-        return targetImage[imageId];
-      }
-      return null;
-    }, [targetProperty?.imageId, images]);
+    // 画像をロード
+    const [image] = useImage(validImageURL || '');
 
-    // 背景パターンのID
-    const bgPatternId: string = `bgPattern-${targetProperty?.partId}-${targetProperty?.side}`;
+    // ロードされた画像の状態を追跡
+    const imageLoaded = !!image && validImageURL;
 
     const handleDoubleClick = () => {
-      // カードやデッキでない場合
-      if (!isCard && !isDeck) return;
+      const isInteractivePart = isCard || isDeck;
+      if (!isInteractivePart) return;
 
-      // デッキの場合
       if (isDeck) {
         shuffleDeck();
         return;
       }
 
-      // カードの場合
-      // 裏向き固定の場合
-      if (isFlippedNeeded) return;
-      reverseCard(!isFlipped, true);
+      if (isCard && !isFlippedNeeded) {
+        reverseCard(!isFlipped, true);
+        return;
+      }
+    };
+
+    // 中央を軸にして反転させるための設定
+    const offsetX = part.width / 2;
+
+    // コンテキストメニュー用ハンドラー
+    const handleContextMenu = (e: Konva.KonvaEventObject<PointerEvent>) => {
+      e.evt.preventDefault();
+      onContextMenu(e, part.id);
     };
 
     return (
-      <svg
-        key={part.id}
-        onDoubleClick={handleDoubleClick}
-        onMouseDown={(e) => onMouseDown(e, part.id)}
-        className="cursor-move border group relative"
-        style={{
-          transformOrigin: 'center center',
-          transformStyle: 'preserve-3d',
-        }}
+      <Group
+        ref={groupRef}
+        name={`part-${part.id}`}
+        x={part.position.x + offsetX}
+        y={part.position.y}
+        width={part.width}
+        height={part.height}
+        offsetX={offsetX}
+        draggable
+        scaleX={scaleX}
+        onDragStart={onDragStart}
+        onDragMove={(e) => onDragMove(e, part.id)}
+        onDragEnd={(e) => onDragEnd(e, part.id)}
+        onClick={onClick}
+        onDblClick={handleDoubleClick}
+        onContextMenu={handleContextMenu}
       >
-        {/* ツールチップ */}
-        <title>{targetProperty?.description}</title>
-
-        {/* 画像設定その1 */}
-        {validImageURL && (
-          <defs>
-            <pattern
-              id={bgPatternId}
-              patternUnits="userSpaceOnUse"
-              width={part.width}
-              height={part.height}
-            >
-              <image
-                xlinkHref={validImageURL}
-                x="0"
-                y="0"
-                width={part.width}
-                height={part.height}
-              />
-            </pattern>
-          </defs>
-        )}
-        {/* パーツの枠 */}
-        <rect
-          id={part.id.toString()}
-          onTransitionEnd={() => setIsReversing(false)}
-          style={{
-            stroke: 'gray',
-            strokeDasharray: part.type === 'area' ? '4' : 'none',
-            fill: validImageURL
-              ? `url(#${bgPatternId})`
-              : targetProperty?.color || 'white', // 条件付きで背景を設定
-            opacity: part.type === 'area' ? 0.6 : 1,
-            transform: `
-            translate(${part.position.x}px, ${part.position.y}px)
-            translate(${part.width / 2}px, ${part.height / 2}px)
-            rotateY(${!isFlippedNeeded && isFlipped ? 180 : 0}deg)
-            translate(${-part.width / 2}px, ${-part.height / 2}px)
-          `,
-            transition: isReversing ? 'transform 0.6s' : 'none',
-            transformStyle: 'preserve-3d',
-          }}
+        {/* パーツの背景 */}
+        <Rect
           width={part.width}
           height={part.height}
-          rx={10}
+          fill={imageLoaded ? 'white' : targetProperty?.color || 'white'}
+          stroke={'grey'}
+          strokeWidth={1}
+          cornerRadius={isCard ? 10 : 4}
+          opacity={part.type === 'area' ? 0.6 : 1}
+          dash={part.type === 'area' ? [4, 4] : undefined}
+          shadowColor={isActive ? 'rgba(59, 130, 246, 1)' : 'transparent'}
+          shadowBlur={isActive ? 10 : 0}
+          shadowOffsetX={0}
+          shadowOffsetY={0}
         />
 
-        {/* リサイズ用のアイコン */}
-        {isActive && (
-          <g
-            style={{
-              transform: `translate(${part.position.x}px, ${part.position.y}px)`,
-            }}
-          >
-            {/* 右下 */}
-            <rect
-              data-resize-direction="southEast"
-              x={part.width - 8}
-              y={part.height - 8}
-              width="16"
-              height="16"
-              fill="white"
-              stroke="#94a3b8"
-              strokeWidth="1"
-              className="cursor-se-resize"
-            />
-          </g>
-        )}
-
-        {/* パーツの情報オーバーレイ */}
-        <foreignObject
-          x={part.position.x}
-          y={part.position.y}
-          width={part.width}
-          height={part.height}
-        >
-          <div className="h-full w-full p-2">
-            {/* ヘッダー部分 */}
-            {!isFlippedNeeded && (
-              <div className="flex items-center justify-between">
-                {/* パーツ名 */}
-                <p
-                  className={`flex-1 truncate ${part.type === 'token' ? 'text-xs' : 'text-sm'} font-medium`}
-                  style={{
-                    color: targetProperty?.textColor || 'black',
-                  }}
-                >
-                  {targetProperty?.name}
-                </p>
-                {/* 所持プレイヤー名 */}
-                {part.type === 'hand' && (
-                  <div className="ml-2 flex items-center gap-1 rounded bg-gray-100 px-1.5 py-0.5">
-                    <FaRegEye className="h-3 w-3 text-gray-500" />
-                    <span className="text-[10px] text-gray-600">
-                      {ownerName}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* フッター部分（アイコン類） */}
-            <div className="absolute bottom-2 right-2 flex items-center gap-2 opacity-60 transition-opacity group-hover:opacity-100">
-              {/* シャッフル可能アイコン */}
-              {isDeck && <TbCards className="h-4 w-4 text-gray-600" />}
-
-              {/* カードの場合はシャッフル可能/不可アイコン */}
-              {isCard &&
-                (part.isReversible ? (
-                  <VscSync className="h-4 w-4 text-gray-600" />
-                ) : (
-                  <VscSyncIgnored className="h-4 w-4 text-gray-600" />
-                ))}
-            </div>
-          </div>
-        </foreignObject>
-
-        {/* アクティブ時の枠 */}
-        {isActive && (
-          <rect
-            id={`${part.id}-border`}
-            style={{
-              stroke: '#47f5bb',
-              fill: 'none',
-              strokeWidth: 2,
-              transform: `
-            translate(${part.position.x - 4}px, ${part.position.y - 4}px)
-            translate(${part.width / 2 + 4}px, ${part.height / 2 + 4}px)
-            rotateY(${!isFlippedNeeded && isFlipped ? 180 : 0}deg)
-            translate(-${part.width / 2 + 4}px, -${part.height / 2 + 4}px)
-          `,
-              transition: isReversing ? 'transform 0.6s' : 'none',
-              transformStyle: 'preserve-3d',
-            }}
-            width={part.width + 8}
-            height={part.height + 8}
-            rx={12}
+        {/* 画像があれば表示 */}
+        {imageLoaded && (
+          <Image
+            image={image}
+            width={part.width}
+            height={part.height}
+            cornerRadius={isCard ? 10 : 4}
+            opacity={part.type === 'area' ? 0.6 : 1}
+            alt={targetProperty?.name || 'Game part'}
           />
         )}
 
-        {/* コンテキストメニュー */}
-        <foreignObject
-          x={part.position.x}
-          y={part.position.y}
-          width={part.width}
-          height={part.height}
-        >
-          <PartContextMenu onMoveOrder={onMoveOrder} partId={part.id} />
-        </foreignObject>
-      </svg>
+        {/* パーツの名前 - フリップされていなければ表示 */}
+        {!isFlippedNeeded && (
+          <Text
+            text={targetProperty?.name || ''}
+            fontSize={part.type === 'token' ? 12 : 14}
+            fontStyle="bold"
+            fill={targetProperty?.textColor || 'black'}
+            width={part.width}
+            align="center"
+            padding={10}
+            y={5}
+          />
+        )}
+
+        {/* 説明文 - フリップされていなければ表示 */}
+        {!isFlippedNeeded && targetProperty?.description && (
+          <Text
+            text={targetProperty.description}
+            fontSize={10}
+            fill={targetProperty.textColor || '#666'}
+            width={part.width - 20}
+            align="center"
+            y={part.height / 2}
+            x={10}
+            wrap="word"
+            ellipsis={true}
+          />
+        )}
+
+        {/* タイプを示す小さなアイコン */}
+        <Group x={part.width - 30} y={part.height - 25}>
+          {isDeck && <Text text="⠿" fontSize={14} fill="#666" />}
+          {isCard && (
+            <Text
+              text={part.isReversible ? '↻' : ''}
+              fontSize={14}
+              fill="#666"
+            />
+          )}
+        </Group>
+
+        {/* デバッグ情報: ID と順序（order） - showDebugInfoがtrueの場合のみ表示 */}
+        {showDebugInfo && (
+          <Group x={5} y={5}>
+            <Rect
+              width={85}
+              height={20}
+              fill="rgba(0, 0, 0, 0.7)"
+              cornerRadius={4}
+            />
+            <Text
+              text={`ID:${part.id} / O:${typeof part.order === 'number' ? part.order.toFixed(2) : 'N/A'}`}
+              fontSize={10}
+              fill="white"
+              width={85}
+              align="center"
+              y={5}
+            />
+          </Group>
+        )}
+      </Group>
     );
   }
 );
-
 Part.displayName = 'Part';
 
 export default Part;

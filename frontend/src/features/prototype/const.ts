@@ -30,7 +30,7 @@ export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
   // トークン
   TOKEN: {
     type: 'token',
-    name: 'token',
+    name: 'トークン',
     width: 50,
     height: 50,
     description: '',

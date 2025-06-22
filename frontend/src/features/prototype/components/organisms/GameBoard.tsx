@@ -15,11 +15,12 @@ import { Part as PartType, PartProperty as PropertyType } from '@/api/types';
 import DebugInfo from '@/features/prototype/components/atoms/DebugInfo';
 import GridLines from '@/features/prototype/components/atoms/GridLines';
 import { KonvaPartContextMenu } from '@/features/prototype/components/atoms/KonvaPartContextMenu';
-import Part2 from '@/features/prototype/components/atoms/Part2';
+import Part from '@/features/prototype/components/atoms/Part';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
+import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
 import ShortcutHelpPanel from '@/features/prototype/components/molecules/ShortcutHelpPanel';
-import ToolsBar from '@/features/prototype/components/molecules/ToolBar';
+import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
@@ -704,7 +705,7 @@ export default function GameBoard({
                 const filteredImages = filteredImagesMap[part.id] || [];
                 const isActive = selectedPartIds.includes(part.id);
                 return (
-                  <Part2
+                  <Part
                     key={part.id}
                     part={part}
                     properties={partProperties}
@@ -740,7 +741,6 @@ export default function GameBoard({
         prototypeType={prototypeType}
         isVersionPrototype={isVersionPrototype}
         groupId={groupId}
-        onAddPart={handleAddPart}
       />
       {/* ショートカットヘルプパネル */}
       <ShortcutHelpPanel
@@ -760,6 +760,9 @@ export default function GameBoard({
 
       {prototypeType === 'MASTER' && (
         <>
+          {/* フローティングパーツ作成メニュー */}
+          <PartCreateMenu onAddPart={handleAddPart} />
+
           {/* プロパティサイドバー */}
           {selectedPartIds.length === 1 && (
             <PartPropertySidebar
@@ -772,7 +775,7 @@ export default function GameBoard({
           )}
         </>
       )}
-      <ToolsBar
+      <ZoomToolbar
         zoomIn={handleZoomIn}
         zoomOut={handleZoomOut}
         canZoomIn={camera.scale < MAX_SCALE}
