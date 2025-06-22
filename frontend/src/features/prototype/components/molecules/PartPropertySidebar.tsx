@@ -25,10 +25,11 @@ import { COLORS, TEXT_COLORS } from '@/features/prototype/const';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import {
   AddPartProps,
+  DeleteImageProps,
   PartPropertyUpdate,
   PartPropertyWithImage,
 } from '@/features/prototype/type';
-import { saveImageToIndexedDb, updateImageParamsInIndexedDb } from '@/utils/db';
+import { saveImageToIndexedDb } from '@/utils/db';
 
 export default function PartPropertySidebar({
   selectedPartId,
@@ -36,6 +37,7 @@ export default function PartPropertySidebar({
   properties,
   onAddPart,
   onDeletePart,
+  onDeleteImage,
 }: {
   // 選択中のパーツID
   selectedPartId: number | null;
@@ -47,6 +49,14 @@ export default function PartPropertySidebar({
   onAddPart: ({ part, properties }: AddPartProps) => void;
   // パーツを削除時の処理
   onDeletePart: () => void;
+  // 画像をクリア時の処理
+  onDeleteImage: ({
+    imageId,
+    prototypeId,
+    partId,
+    side,
+    emitUpdate,
+  }: DeleteImageProps) => void;
 }) {
   const [uploadedImage, setUploadedImage] = useState<{
     id: string;
@@ -181,15 +191,22 @@ export default function PartPropertySidebar({
   };
 
   // ファイルクリアボタンがクリックされた時の処理
-  const handleFileClearClick = () => {
-    // キャッシュデータの削除日時および削除フラグを更新する
-    updateImageParamsInIndexedDb(uploadedImage?.id || '', true, new Date());
+  const handleFileClearClick = async () => {
+    if (
+      !uploadedImage?.id ||
+      !currentProperty?.side ||
+      !selectedPart?.id ||
+      !currentProperty?.imageId
+    )
+      return;
 
-    // TODO: 画像削除APIを呼び出す処理を追加する（バックエンド側の修正PRで実装）
-    // 他のパーツで画像を使用している可能性があるのでここで画像の削除はできない
-    // imageIdの紐付けのみクリアする
-    setUploadedImage(null); // アップロードした画像をクリア
-    handleUpdateProperty({ imageId: null }); // プロパティから画像IDを削除
+    onDeleteImage({
+      imageId: uploadedImage.id,
+      prototypeId: selectedPart.prototypeId,
+      partId: selectedPart.id,
+      side: currentProperty.side,
+      emitUpdate: 'true', // 更新をemitする
+    });
   };
 
   /**

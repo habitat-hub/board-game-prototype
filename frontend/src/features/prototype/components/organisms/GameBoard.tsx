@@ -24,12 +24,13 @@ import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
-import { AddPartProps } from '@/features/prototype/type';
+import { AddPartProps, DeleteImageProps } from '@/features/prototype/type';
 import { CursorInfo } from '@/features/prototype/types/cursor';
 import {
   getImageFromIndexedDb,
   resetImageParamsInIndexedDb,
   saveImageToIndexedDb,
+  updateImageParamsInIndexedDb,
 } from '@/utils/db';
 
 const GRID_SIZE = 50;
@@ -62,7 +63,7 @@ export default function GameBoard({
     width: window.innerWidth,
     height: window.innerHeight,
   });
-  const { fetchImage } = useImages();
+  const { fetchImage, deleteImage } = useImages();
   const { dispatch } = usePartReducer();
   const { measureOperation } = usePerformanceTracker();
   const [images, setImages] = useState<Record<string, string>>({});
@@ -503,13 +504,44 @@ export default function GameBoard({
     [dispatch, camera, viewportSize, measureOperation]
   );
 
+  const handleDeleteImage = useCallback(
+    async ({
+      imageId,
+      prototypeId,
+      partId,
+      side,
+      emitUpdate,
+    }: DeleteImageProps) => {
+      updateImageParamsInIndexedDb(imageId, true, new Date());
+      await deleteImage(imageId, { prototypeId, partId, side, emitUpdate });
+    },
+    [deleteImage]
+  );
+
   const handleDeletePart = useCallback(() => {
     if (selectedPartIds.length === 0) return;
+    //パーツ削除時に、画像削除処理も実行
+    selectedPartIds.forEach((partId) => {
+      const selectedPart = parts.find((p) => p.id === partId);
+      const partProperties = properties.filter((p) => p.partId === partId);
+      partProperties.forEach((property) => {
+        if (property.imageId && selectedPart?.prototypeId) {
+          handleDeleteImage({
+            imageId: property.imageId,
+            prototypeId: selectedPart.prototypeId,
+            partId,
+            side: property.side,
+            emitUpdate: 'false', //後続の処理でemitするためイベントは発火しない
+          });
+        }
+      });
+    });
+
     selectedPartIds.forEach((partId) => {
       dispatch({ type: 'DELETE_PART', payload: { partId } });
     });
     setSelectedPartIds([]);
-  }, [dispatch, selectedPartIds]);
+  }, [handleDeleteImage, parts, properties, dispatch, selectedPartIds]);
 
   const handleZoomIn = useCallback(() => {
     const scaleBy = 1.1;
@@ -776,6 +808,7 @@ export default function GameBoard({
               properties={properties}
               onAddPart={handleAddPart}
               onDeletePart={handleDeletePart}
+              onDeleteImage={handleDeleteImage}
             />
           )}
         </>

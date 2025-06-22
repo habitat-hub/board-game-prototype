@@ -110,3 +110,12 @@ export interface PartPropertyWithImage extends PartProperty {
 export type PartPropertyUpdate = Omit<Partial<PartProperty>, 'imageId'> & {
   imageId?: string | null;
 };
+
+// 画像削除時のprops
+export interface DeleteImageProps {
+  imageId: string;
+  partId: number;
+  side: 'front' | 'back';
+  prototypeId: string;
+  emitUpdate: 'true' | 'false';
+}
