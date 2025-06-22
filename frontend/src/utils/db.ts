@@ -117,7 +117,7 @@ export const resetImageParamsInIndexedDb = async (
   try {
     const db = await getIndexedDb();
     const record = await db.get(STORE_NAME, id);
-    if (record.isDeleted) {
+    if (record && record.isDeleted) {
       record.isDeleted = false;
       record.deletedAt = null;
       await db.put(STORE_NAME, record);
