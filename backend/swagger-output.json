@@ -704,10 +704,55 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "prototypeId",
+            "in": "query",
+            "required": true,
+            "description": "プロトタイプID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "partId",
+            "in": "query",
+            "required": true,
+            "description": "パーツID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "side",
+            "in": "query",
+            "required": true,
+            "description": "面（front または back）",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "front",
+                "back"
+              ]
+            }
+          },
+          {
+            "name": "emitUpdate",
+            "in": "query",
+            "required": false,
+            "description": "更新をemitするかどうか（デフォルトはfalse）",
+            "schema": {
+              "type": "string",
+              "enum": [
+                true,
+                false
+              ],
+              "default": false
+            }
           }
         ],
         "responses": {
-          "204": {
+          "200": {
             "description": "画像が正常に削除されました"
           },
           "400": {
