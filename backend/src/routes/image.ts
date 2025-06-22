@@ -199,7 +199,7 @@ router.get(
  *         required: true
  *         description: パーツID
  *         schema:
- *           type: string
+ *           type: number
  *       - name: side
  *         in: query
  *         required: true

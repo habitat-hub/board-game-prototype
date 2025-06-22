@@ -720,7 +720,7 @@
             "required": true,
             "description": "パーツID",
             "schema": {
-              "type": "string"
+              "type": "number"
             }
           },
           {

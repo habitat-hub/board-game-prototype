@@ -170,7 +170,7 @@ export interface ImagesDeleteParams {
   /** プロトタイプID */
   prototypeId: string;
   /** パーツID */
-  partId: string;
+  partId: number;
   /** 面（front または back） */
   side: 'front' | 'back';
   /**
