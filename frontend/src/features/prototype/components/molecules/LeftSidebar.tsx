@@ -255,7 +255,7 @@ export default function LeftSidebar({
                       <Link
                         href={`/prototypes/${version.id}/versions/${version.id}/play`}
                         className="flex items-center gap-2 hover:bg-wood-lightest/20 rounded-md p-1 -m-1 transition-all"
-                        title="プレビュー"
+                        title={`${formatDate(version.createdAt, true)}版`}
                       >
                         <div className="p-1 text-wood hover:text-header rounded-md transition-all">
                           <HiPuzzlePiece className="h-4 w-4" />
@@ -297,10 +297,10 @@ export default function LeftSidebar({
                             className="flex-shrink-0 group"
                             title="新しいルーム作成"
                           >
-                            <div className="bg-white/40 rounded-lg p-1.5 border border-dashed border-wood-light/30 hover:bg-white/60 hover:border-wood-light/50 transition-all w-12 h-12 flex flex-col items-center justify-center">
-                              <IoAdd className="h-5 w-5 text-wood-dark group-hover:text-header transition-colors" />
-                              <span className="text-xs font-medium text-wood-dark/70 mt-0.5">
-                                追加
+                            <div className="bg-white/40 rounded-lg p-1.5 border border-dashed border-wood-light/30 hover:bg-white/60 hover:border-wood-light/50 transition-all w-16 h-12 flex flex-col items-center justify-center">
+                              <MdMeetingRoom className="h-4 w-4 text-wood-dark group-hover:text-header transition-colors" />
+                              <span className="text-[10px] font-medium text-wood-dark/70 mt-0.5">
+                                ルーム作成
                               </span>
                             </div>
                           </button>
@@ -312,10 +312,10 @@ export default function LeftSidebar({
                             className="group"
                             title="最初のルーム作成"
                           >
-                            <div className="bg-white/40 rounded-lg p-1.5 border border-dashed border-wood-light/30 hover:bg-white/60 hover:border-wood-light/50 transition-all w-12 h-12 flex flex-col items-center justify-center">
-                              <IoAdd className="h-5 w-5 text-wood-dark group-hover:text-header transition-colors" />
-                              <span className="text-xs font-medium text-wood-dark/70 mt-0.5">
-                                作成
+                            <div className="bg-white/40 rounded-lg p-1.5 border border-dashed border-wood-light/30 hover:bg-white/60 hover:border-wood-light/50 transition-all w-16 h-12 flex flex-col items-center justify-center">
+                              <MdMeetingRoom className="h-4 w-4 text-wood-dark group-hover:text-header transition-colors" />
+                              <span className="text-[10px] font-medium text-wood-dark/70 mt-0.5">
+                                ルーム作成
                               </span>
                             </div>
                           </button>
