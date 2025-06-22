@@ -518,24 +518,29 @@ export default function GameBoard({
     [deleteImage]
   );
 
-  const handleDeletePart = useCallback(() => {
+  const handleDeletePart = useCallback(async () => {
     if (selectedPartIds.length === 0) return;
-    //パーツ削除時に、画像削除処理も実行
-    selectedPartIds.forEach((partId) => {
-      const selectedPart = parts.find((p) => p.id === partId);
-      const partProperties = properties.filter((p) => p.partId === partId);
-      partProperties.forEach((property) => {
-        if (property.imageId && selectedPart?.prototypeId) {
-          handleDeleteImage({
-            imageId: property.imageId,
-            prototypeId: selectedPart.prototypeId,
-            partId,
-            side: property.side,
-            emitUpdate: 'false', //後続の処理でemitするためイベントは発火しない
-          });
-        }
-      });
-    });
+
+    const deleteImagePromises = selectedPartIds
+      .map((partId) => {
+        const selectedPart = parts.find((p) => p.id === partId);
+        const partProperties = properties.filter((p) => p.partId === partId);
+        if (!selectedPart?.prototypeId) return [];
+        return partProperties
+          .filter((property) => property.imageId)
+          .map((property) =>
+            handleDeleteImage({
+              imageId: property.imageId!,
+              prototypeId: selectedPart.prototypeId,
+              partId,
+              side: property.side,
+              emitUpdate: 'false',
+            })
+          );
+      })
+      .flat();
+
+    await Promise.all(deleteImagePromises);
 
     selectedPartIds.forEach((partId) => {
       dispatch({ type: 'DELETE_PART', payload: { partId } });
