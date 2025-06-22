@@ -93,6 +93,8 @@ const io = new Server(server, {
   },
 });
 
+app.set('io', io);
+
 // データベース接続
 sequelize
   .sync()

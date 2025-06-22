@@ -17,6 +17,7 @@ import {
   ImagesCreateData,
   ImagesCreatePayload,
   ImagesDeleteData,
+  ImagesDeleteParams,
   ImagesDetailData,
   PrototypeGroupsAccessUsersListData,
   PrototypeGroupsCreateData,
@@ -94,13 +95,17 @@ export class Api<
    * @summary 画像削除
    * @request DELETE:/api/images/{imageId}
    */
-  imagesDelete = (imageId: string, params: RequestParams = {}) =>
+  imagesDelete = (
+    { imageId, ...query }: ImagesDeleteParams,
+    params: RequestParams = {}
+  ) =>
     this.request<
       ImagesDeleteData,
       Error400Response | Error404Response | Error500Response
     >({
       path: `/api/images/${imageId}`,
       method: 'DELETE',
+      query: query,
       ...params,
     });
   /**

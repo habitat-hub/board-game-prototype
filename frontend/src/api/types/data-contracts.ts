@@ -166,6 +166,22 @@ export type ImagesCreateData = Image;
 /** @format binary */
 export type ImagesDetailData = File;
 
+export interface ImagesDeleteParams {
+  /** プロトタイプID */
+  prototypeId: string;
+  /** パーツID */
+  partId: string;
+  /** 面（front または back） */
+  side: 'front' | 'back';
+  /**
+   * 更新をemitするかどうか（デフォルトはfalse）
+   * @default false
+   */
+  emitUpdate?: 'true' | 'false';
+  /** 削除する画像のID */
+  imageId: string;
+}
+
 export type ImagesDeleteData = any;
 
 export interface PrototypesDetailData {
