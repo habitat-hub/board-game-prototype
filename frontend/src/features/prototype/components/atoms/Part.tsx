@@ -52,13 +52,13 @@ const Part = forwardRef<PartHandle, PartProps>(
     const [scaleX, setScaleX] = useState(1);
     const { showDebugInfo } = useDebugMode();
 
-    // 要素のドラッグ開始時に最前面に移動する処理を追加（PREVIEWモードのみ）
+    // 要素のドラッグ開始時に最前面に移動する処理を追加（INSTANCEモードのみ）
     useEffect(() => {
-      if (!groupRef.current || prototypeType !== 'VERSION') return;
+      if (!groupRef.current || prototypeType !== 'INSTANCE') return;
 
       const currentGroup = groupRef.current;
 
-      // ドラッグ開始時のハンドラーを追加（PREVIEWモードのみ）
+      // ドラッグ開始時のハンドラーを追加（INSTANCEモードのみ）
       currentGroup.on('dragstart', () => {
         // ドラッグ中のノードを最前面に移動
         currentGroup.moveToTop();
