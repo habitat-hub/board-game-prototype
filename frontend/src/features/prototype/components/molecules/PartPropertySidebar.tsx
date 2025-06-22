@@ -28,7 +28,7 @@ import {
   PartPropertyUpdate,
   PartPropertyWithImage,
 } from '@/features/prototype/type';
-import { saveImageToIndexedDb } from '@/utils/db';
+import { saveImageToIndexedDb, updateImageParamsInIndexedDb } from '@/utils/db';
 
 export default function PartPropertySidebar({
   selectedPartId,
@@ -49,6 +49,7 @@ export default function PartPropertySidebar({
   onDeletePart: () => void;
 }) {
   const [uploadedImage, setUploadedImage] = useState<{
+    id: string;
     displayName: string;
   } | null>(null); // アップロードした画像の情報を管理
   const [isUploading, setIsUploading] = useState(false); // ローディング状態を管理
@@ -81,6 +82,7 @@ export default function PartPropertySidebar({
       setUploadedImage(() => {
         if (!currentProperty.image) return null;
         return {
+          id: currentProperty.image.id,
           displayName: currentProperty.image.displayName,
         };
       });
@@ -180,6 +182,10 @@ export default function PartPropertySidebar({
 
   // ファイルクリアボタンがクリックされた時の処理
   const handleFileClearClick = () => {
+    // キャッシュデータの削除日時および削除フラグを更新する
+    updateImageParamsInIndexedDb(uploadedImage?.id || '', true, new Date());
+
+    // TODO: 画像削除APIを呼び出す処理を追加する（バックエンド側の修正PRで実装）
     // 他のパーツで画像を使用している可能性があるのでここで画像の削除はできない
     // imageIdの紐付けのみクリアする
     setUploadedImage(null); // アップロードした画像をクリア
@@ -209,6 +215,7 @@ export default function PartPropertySidebar({
         await saveImageToIndexedDb(response.id, image);
         // アップロードした画像の情報を状態に保存(今後の拡張を考慮して、オブジェクトで管理)
         setUploadedImage({
+          id: response.id,
           displayName: response.displayName,
         });
         // プロパティを更新
