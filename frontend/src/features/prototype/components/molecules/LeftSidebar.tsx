@@ -124,9 +124,6 @@ export default function LeftSidebar({
   // 左サイドバーのヘッダーコンポーネント
   const LeftSidebarHeader = ({
     prototypeName,
-    prototypeVersionNumber,
-    prototypeType,
-    isVersionPrototype,
     groupId,
     isMinimized,
     onToggle,
@@ -155,23 +152,14 @@ export default function LeftSidebar({
           >
             {prototypeName}
           </h2>
-          {prototypeVersionNumber && prototypeType === 'VERSION' && (
-            <span className="px-1.5 py-0.5 text-[10px] bg-amber-100 text-amber-600 rounded-md min-w-1 border border-amber-600 flex-shrink-0">
-              {isVersionPrototype
-                ? 'プレビュー'
-                : `プレイルーム${prototypeVersionNumber}`}
-            </span>
-          )}
         </div>
-        {(prototypeType === 'MASTER' || !isVersionPrototype) && (
-          <button
-            onClick={onToggle}
-            aria-label={isMinimized ? 'サイドバーを展開' : 'サイドバーを最小化'}
-            className="p-1 rounded-full transition-transform hover:scale-110"
-          >
-            <IoMenu className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
-          </button>
-        )}
+        <button
+          onClick={onToggle}
+          aria-label={isMinimized ? 'サイドバーを展開' : 'サイドバーを最小化'}
+          className="p-1 rounded-full transition-transform hover:scale-110"
+        >
+          <IoMenu className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
+        </button>
       </div>
     );
   };
