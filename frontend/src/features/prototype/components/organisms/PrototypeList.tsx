@@ -147,11 +147,6 @@ const PrototypeList: React.FC = () => {
    * masterプロトタイプの名前をAPIで更新する
    */
   const handleNameEditComplete = async (newName: string) => {
-    // 入力値のバリデーション
-    if (!newName.trim()) {
-      throw new Error('プロトタイプ名を入力してください');
-    }
-
     // 変更がない場合は何もしない
     const currentPrototype = prototypeList.find(
       ({ editPrototype }) => editPrototype?.id === nameEditingId
@@ -191,14 +186,6 @@ const PrototypeList: React.FC = () => {
     }
   };
 
-  // バリデーション関数
-  const validatePrototypeName = (value: string): string | null => {
-    if (!value.trim()) {
-      return 'プロトタイプ名を入力してください';
-    }
-    return null;
-  };
-
   /**
    * プロトタイプを取得する
    */
@@ -220,6 +207,14 @@ const PrototypeList: React.FC = () => {
       setIsLoading(false); // ローディング終了
     }
   }, [getPrototypeGroups]);
+
+  // プロトタイプ名のバリデーション関数
+  const validatePrototypeName = (value: string): string | null => {
+    if (!value.trim()) {
+      return 'プロトタイプ名を入力してください';
+    }
+    return null;
+  };
 
   // プロトタイプの取得
   useEffect(() => {
