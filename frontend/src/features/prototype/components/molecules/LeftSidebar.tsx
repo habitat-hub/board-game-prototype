@@ -137,7 +137,7 @@ export default function LeftSidebar({
     onToggle: () => void;
   }) => {
     return (
-      <div className="flex h-[48px] items-center justify-between px-1 py-2">
+      <div className="flex h-[48px] items-center justify-between p-2">
         <button
           onClick={() => router.push(`/groups/${groupId}`)}
           className="p-1 hover:bg-wood-lightest/20 rounded-full transition-colors flex-shrink-0"
