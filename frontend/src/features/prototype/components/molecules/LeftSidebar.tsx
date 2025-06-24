@@ -124,9 +124,6 @@ export default function LeftSidebar({
   // 左サイドバーのヘッダーコンポーネント
   const LeftSidebarHeader = ({
     prototypeName,
-    prototypeVersionNumber,
-    prototypeType,
-    isVersionPrototype,
     groupId,
     isMinimized,
     onToggle,
@@ -140,7 +137,7 @@ export default function LeftSidebar({
     onToggle: () => void;
   }) => {
     return (
-      <div className="flex h-[48px] items-center justify-between px-1 py-2">
+      <div className="flex h-[48px] items-center justify-between p-2">
         <button
           onClick={() => router.push(`/groups/${groupId}`)}
           className="p-1 hover:bg-wood-lightest/20 rounded-full transition-colors flex-shrink-0"
@@ -155,23 +152,14 @@ export default function LeftSidebar({
           >
             {prototypeName}
           </h2>
-          {prototypeVersionNumber && prototypeType === 'VERSION' && (
-            <span className="px-1.5 py-0.5 text-[10px] bg-amber-100 text-amber-600 rounded-md min-w-1 border border-amber-600 flex-shrink-0">
-              {isVersionPrototype
-                ? 'プレビュー'
-                : `プレイルーム${prototypeVersionNumber}`}
-            </span>
-          )}
         </div>
-        {(prototypeType === 'MASTER' || !isVersionPrototype) && (
-          <button
-            onClick={onToggle}
-            aria-label={isMinimized ? 'サイドバーを展開' : 'サイドバーを最小化'}
-            className="p-1 rounded-full transition-transform hover:scale-110"
-          >
-            <IoMenu className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
-          </button>
-        )}
+        <button
+          onClick={onToggle}
+          aria-label={isMinimized ? 'サイドバーを展開' : 'サイドバーを最小化'}
+          className="p-1 rounded-full transition-transform hover:scale-110"
+        >
+          <IoMenu className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
+        </button>
       </div>
     );
   };
@@ -187,157 +175,187 @@ export default function LeftSidebar({
     return (
       <>
         <div className="border-b border-wood-light/30" />
-        <div className="flex flex-col gap-2 p-2 overflow-y-auto scrollbar-hide">
-          {/* マスタープロトタイプ */}
-          {prototypeInfo.master && (
-            <div className="mb-2">
-              {prototypeType === 'MASTER' ? (
-                // 現在コンポーネント編集中
-                <div className="block bg-gradient-to-r from-amber-50 to-amber-100 rounded-lg p-2 border-2 border-amber-300 shadow-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-amber-200 rounded-lg">
-                      <BsBoxSeam className="h-5 w-5 text-amber-700" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-amber-800 text-sm flex items-center gap-1">
-                        コンポーネント編集
-                        <span className="px-2 py-0.5 text-xs bg-amber-200 text-amber-700 rounded-full border border-amber-300">
-                          編集中
-                        </span>
-                      </h4>
-                      <p className="text-xs text-amber-700/80 mt-1">
-                        パーツとプロパティの編集
-                      </p>
-                    </div>
-                  </div>
+        <div className="p-3 overflow-y-auto scrollbar-hide">
+          {/* ワークフロー表示 */}
+          <div className="space-y-3">
+            {/* STEP 1: コンポーネント設計 */}
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-6 h-6 rounded-full bg-blue-100 border-2 border-blue-300 flex items-center justify-center">
+                  <span className="text-xs font-bold text-blue-600">1</span>
                 </div>
-              ) : (
-                <Link
-                  href={`/groups/${groupId}/prototypes/${prototypeInfo.master.id}/edit`}
-                  className="block bg-white/80 rounded-lg p-2 border border-wood-light/30 hover:bg-white/90 hover:border-wood-light/50 transition-all group"
-                  title={prototypeInfo.master.name}
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-wood-lightest/40 rounded-lg group-hover:bg-wood-lightest/60 transition-colors">
-                      <BsBoxSeam className="h-5 w-5 text-wood-dark group-hover:text-header transition-colors" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-wood-darkest text-sm">
-                        コンポーネント編集
-                      </h4>
-                      <p className="text-xs text-wood-dark/70 mt-1">
-                        パーツとプロパティの編集
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              )}
-            </div>
-          )}
-
-          {/* バージョン一覧 */}
-          <div className="mb-2">
-            {/* バージョン作成ボタン */}
-            <button
-              onClick={handleCreateVersion}
-              className="w-full mb-2 bg-gradient-to-r from-amber-50 to-yellow-50 hover:from-amber-100 hover:to-yellow-100 border border-amber-200 hover:border-amber-300 rounded-lg p-2 transition-all group"
-              title="コンポーネントを配置してゲームバージョンを作成"
-            >
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-amber-100 rounded-lg group-hover:bg-amber-200 transition-colors">
-                  <HiPuzzlePiece className="h-5 w-5 text-amber-600 group-hover:text-amber-700 transition-colors" />
-                </div>
-                <div className="flex-1 text-left">
-                  <h4 className="font-medium text-amber-700 text-xs">
-                    新しいゲーム配置を作成
-                  </h4>
-                  <p className="text-xs text-amber-600/80 mt-1">
-                    初期配置にしてプレイ準備
-                  </p>
-                </div>
-                <IoAdd className="h-4 w-4 text-amber-600 group-hover:text-amber-700 transition-colors" />
+                <h3 className="text-sm font-semibold text-wood-darkest">
+                  コンポーネント設計
+                </h3>
               </div>
-            </button>
-            {prototypeInfo.versions.length > 0 ? (
-              <div className="space-y-2">
-                {prototypeInfo.versions.map((version) => (
-                  <div key={version.id} className="space-y-1">
-                    {/* バージョン情報 */}
-                    <div className="bg-white/80 rounded-lg p-2 border border-wood-light/30">
-                      <Link
-                        href={`/prototypes/${version.id}/versions/${version.id}/play`}
-                        className="flex items-center gap-2 hover:bg-wood-lightest/20 rounded-md p-1 -m-1 transition-all"
-                        title="プレビュー"
-                      >
-                        <div className="p-1 text-wood hover:text-header rounded-md transition-all">
-                          <HiPuzzlePiece className="h-4 w-4" />
+
+              {prototypeInfo.master && (
+                <div className="ml-8 mb-4">
+                  {prototypeType === 'MASTER' ? (
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-3 border-2 border-blue-200 shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <BsBoxSeam className="h-5 w-5 text-blue-600" />
                         </div>
-                        <div>
-                          <h4 className="font-medium text-wood-darkest text-sm">
-                            {formatDate(version.createdAt, true)}版
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium text-blue-800 text-sm">
+                              パーツ・プロパティ編集
+                            </h4>
+                            <span className="px-2 py-1 text-xs bg-blue-200 text-blue-700 rounded-full font-medium">
+                              編集中
+                            </span>
+                          </div>
+                          <p className="text-xs text-blue-700/70 mt-1">
+                            ゲームの基本要素を定義
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <Link
+                      href={`/groups/${groupId}/prototypes/${prototypeInfo.master.id}/edit`}
+                      className="block bg-white/90 hover:bg-blue-50/50 rounded-xl p-3 border border-blue-200/50 hover:border-blue-300 transition-all group shadow-sm"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+                          <BsBoxSeam className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-medium text-blue-800 text-sm">
+                            パーツ・プロパティ編集
                           </h4>
+                          <p className="text-xs text-blue-700/70 mt-1">
+                            ゲームの基本要素を定義
+                          </p>
                         </div>
-                      </Link>
-                    </div>
+                      </div>
+                    </Link>
+                  )}
+                </div>
+              )}
 
-                    {/* このバージョンのルーム一覧 */}
-                    <div className="ml-2">
-                      {/* ルーム一覧 */}
-                      {prototypeInfo.instancesByVersion[version.id]?.length >
-                      0 ? (
-                        <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-1">
-                          {prototypeInfo.instancesByVersion[version.id].map(
-                            (instance) => (
-                              <Link
-                                key={instance.id}
-                                href={`/prototypes/${instance.id}/instances/${instance.id}/play`}
-                                className="flex-shrink-0 group"
-                                title={instance.name}
-                              >
-                                <div className="bg-white/60 rounded-lg p-1.5 border border-wood-light/20 hover:bg-white/80 hover:border-wood-light/40 transition-all w-12 h-12 flex flex-col items-center justify-center">
-                                  <MdMeetingRoom className="h-5 w-5 text-wood-dark group-hover:text-header transition-colors" />
-                                  <span className="text-xs font-medium text-wood-darkest mt-0.5">
-                                    v{instance.versionNumber}
-                                  </span>
-                                </div>
-                              </Link>
-                            )
-                          )}
-                          {/* 新しいルーム作成ボタン */}
-                          <button
-                            onClick={() => handleCreateRoom(version.id)}
-                            className="flex-shrink-0 group"
-                            title="新しいルーム作成"
-                          >
-                            <div className="bg-white/40 rounded-lg p-1.5 border border-dashed border-wood-light/30 hover:bg-white/60 hover:border-wood-light/50 transition-all w-12 h-12 flex flex-col items-center justify-center">
-                              <IoAdd className="h-5 w-5 text-wood-dark group-hover:text-header transition-colors" />
-                              <span className="text-xs font-medium text-wood-dark/70 mt-0.5">
-                                追加
-                              </span>
-                            </div>
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center">
-                          <button
-                            onClick={() => handleCreateRoom(version.id)}
-                            className="group"
-                            title="最初のルーム作成"
-                          >
-                            <div className="bg-white/40 rounded-lg p-1.5 border border-dashed border-wood-light/30 hover:bg-white/60 hover:border-wood-light/50 transition-all w-12 h-12 flex flex-col items-center justify-center">
-                              <IoAdd className="h-5 w-5 text-wood-dark group-hover:text-header transition-colors" />
-                              <span className="text-xs font-medium text-wood-dark/70 mt-0.5">
-                                作成
-                              </span>
-                            </div>
-                          </button>
-                        </div>
-                      )}
+              {/* 矢印 */}
+              <div className="ml-3 flex justify-center">
+                <div className="w-0.5 h-4 bg-gradient-to-b from-blue-300 to-green-300"></div>
+              </div>
+            </div>
+
+            {/* STEP 2: ゲーム配置作成 */}
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-6 h-6 rounded-full bg-green-100 border-2 border-green-300 flex items-center justify-center">
+                  <span className="text-xs font-bold text-green-600">2</span>
+                </div>
+                <h3 className="text-sm font-semibold text-wood-darkest">
+                  ゲーム配置作成
+                </h3>
+              </div>
+
+              <div className="ml-8 mb-4 space-y-3">
+                {/* 新規作成ボタン */}
+                <button
+                  onClick={handleCreateVersion}
+                  className="w-full bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 border-2 border-dashed border-green-300 hover:border-green-400 rounded-xl p-3 transition-all group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
+                      <IoAdd className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <h4 className="font-medium text-green-700 text-sm">
+                        新しい配置を作成
+                      </h4>
+                      <p className="text-xs text-green-600/80 mt-1">
+                        コンポーネントを配置してゲーム準備
+                      </p>
                     </div>
                   </div>
-                ))}
+                </button>
+
+                {/* 既存のバージョン一覧 */}
+                {prototypeInfo.versions.length > 0 && (
+                  <div className="space-y-2">
+                    <h5 className="text-xs font-medium text-wood-dark/70 uppercase tracking-wide">
+                      作成済み配置
+                    </h5>
+                    {prototypeInfo.versions.map((version) => (
+                      <div
+                        key={version.id}
+                        className="bg-white/90 rounded-lg border border-green-200/50 overflow-hidden shadow-sm"
+                      >
+                        <Link
+                          href={`/prototypes/${version.id}/versions/${version.id}/play`}
+                          className="block p-3 hover:bg-green-50/50 transition-all"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-1.5 bg-green-100 rounded-md">
+                              <HiPuzzlePiece className="h-4 w-4 text-green-600" />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-medium text-green-800 text-sm">
+                                {formatDate(version.createdAt, true)}版
+                              </h4>
+                              <p className="text-xs text-green-700/70">
+                                初期配置を準備
+                              </p>
+                            </div>
+                          </div>
+                        </Link>
+
+                        {/* このバージョンのルーム */}
+                        <div className="bg-green-50/30 px-3 pb-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-4 h-4 rounded-full bg-orange-100 border border-orange-300 flex items-center justify-center">
+                              <span className="text-xs font-bold text-orange-600">
+                                3
+                              </span>
+                            </div>
+                            <span className="text-xs font-medium text-orange-700">
+                              プレイルーム
+                            </span>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            {prototypeInfo.instancesByVersion[version.id]?.map(
+                              (instance) => (
+                                <Link
+                                  key={instance.id}
+                                  href={`/prototypes/${instance.id}/instances/${instance.id}/play`}
+                                  className="group"
+                                  title={`${instance.name} (Room ${instance.versionNumber})`}
+                                >
+                                  <div className="bg-white border border-orange-200 hover:border-orange-300 rounded-lg p-2 transition-all min-w-[60px] text-center group-hover:shadow-sm">
+                                    <MdMeetingRoom className="h-4 w-4 text-orange-600 mx-auto mb-1" />
+                                    <span className="text-xs font-medium text-orange-700 block">
+                                      R{instance.versionNumber}
+                                    </span>
+                                  </div>
+                                </Link>
+                              )
+                            )}
+
+                            {/* ルーム作成ボタン */}
+                            <button
+                              onClick={() => handleCreateRoom(version.id)}
+                              className="group min-w-[60px]"
+                              title="新しいルーム作成"
+                            >
+                              <div className="bg-white/60 border-2 border-dashed border-orange-300 hover:border-orange-400 hover:bg-white/80 rounded-lg p-2 transition-all text-center">
+                                <IoAdd className="h-4 w-4 text-orange-500 mx-auto mb-1" />
+                                <span className="text-xs font-medium text-orange-600/80 block">
+                                  作成
+                                </span>
+                              </div>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            ) : null}
+            </div>
           </div>
         </div>
       </>

@@ -1,6 +1,8 @@
 import UserRoleModel from '../models/UserRole';
 import RoleModel from '../models/Role';
 import PermissionModel from '../models/Permission';
+import PrototypeModel from '../models/Prototype';
+import { RESOURCE_TYPES } from '../const';
 import { Transaction } from 'sequelize';
 
 /**
@@ -41,6 +43,42 @@ export async function hasPermission(
   // リソース固有の権限がある場合
   if (resourceSpecificRoles.length > 0) {
     return true;
+  }
+
+  // プロトタイプの場合、プロトタイプグループの権限を継承
+  if (resource === RESOURCE_TYPES.PROTOTYPE && resourceId) {
+    const prototype = await PrototypeModel.findByPk(resourceId);
+    if (prototype) {
+      // プロトタイプグループの権限をチェック
+      const prototypeGroupRoles = await UserRoleModel.findAll({
+        where: {
+          userId,
+          resourceId: prototype.prototypeGroupId,
+        },
+        include: [
+          {
+            model: RoleModel,
+            as: 'Role',
+            include: [
+              {
+                model: PermissionModel,
+                as: 'permissions',
+                where: {
+                  resource: RESOURCE_TYPES.PROTOTYPE_GROUP,
+                  action,
+                },
+                required: true,
+              },
+            ],
+            required: true,
+          },
+        ],
+      });
+
+      if (prototypeGroupRoles.length > 0) {
+        return true;
+      }
+    }
   }
 
   // グローバル権限をチェック（resourceId が null の場合）
