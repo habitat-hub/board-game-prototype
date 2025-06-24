@@ -27,7 +27,7 @@ export const prototypeGroupService = {
    */
   createPrototypeGroup: async (
     data: PrototypeGroupsCreatePayload
-  ): Promise<PrototypeGroup> => {
+  ): Promise<Prototype> => {
     const response = await axiosInstance.post('/api/prototype-groups', data);
     return response.data;
   },

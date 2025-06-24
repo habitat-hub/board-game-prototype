@@ -928,7 +928,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PrototypeGroup"
+                  "$ref": "#/components/schemas/Prototype"
                 }
               }
             }

@@ -83,7 +83,7 @@ router.get('/', async (req: Request, res: Response) => {
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/PrototypeGroup'
+ *               $ref: '#/components/schemas/Prototype'
  *       '400':
  *         description: リクエストが不正です
  *         content:

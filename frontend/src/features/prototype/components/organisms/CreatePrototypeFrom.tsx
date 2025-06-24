@@ -55,7 +55,7 @@ const CreatePrototypeForm: React.FC = () => {
       setError(null);
 
       // グループページへ遷移する
-      router.push(`/prototypes/groups/${newPrototype.id}`);
+      router.push(`/prototypes/groups/${newPrototype.prototypeGroupId}`);
     } catch (error) {
       console.error('Error creating prototype:', error);
       setError('エラーが発生しました。');
