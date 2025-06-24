@@ -388,8 +388,24 @@ function handleShuffleDeck(socket: Socket, io: Server) {
     const { prototypeId } = socket.data as SocketData;
 
     try {
-      const cardsOnDeck = await PartModel.findAll({
-        where: { prototypeId, type: 'card', parentId: deckId },
+      const deck = await PartModel.findByPk(deckId);
+      if (!deck || deck.type !== 'deck') return;
+
+      const cards = await PartModel.findAll({
+        where: { prototypeId, type: 'card' },
+      });
+      // カードの中心がデッキパーツ内にあるカードを取得
+      const cardsOnDeck = cards.filter((card) => {
+        const cardCenter = {
+          x: card.position.x + card.width / 2,
+          y: card.position.y + card.height / 2,
+        };
+        return (
+          deck.position.x <= cardCenter.x &&
+          cardCenter.x <= deck.position.x + deck.width &&
+          deck.position.y <= cardCenter.y &&
+          cardCenter.y <= deck.position.y + deck.height
+        );
       });
       await shuffleDeck(cardsOnDeck);
       await emitUpdatedPartsAndProperties(io, prototypeId);
