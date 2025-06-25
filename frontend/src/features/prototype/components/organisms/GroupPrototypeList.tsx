@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
 import { FaCheck, FaPenToSquare, FaEye } from 'react-icons/fa6';
 import { HiOutlinePencilAlt } from 'react-icons/hi';
-import { IoAdd, IoArrowBack, IoTrash } from 'react-icons/io5';
+import { IoArrowBack, IoTrash } from 'react-icons/io5';
 
 import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
 import { usePrototypes } from '@/api/hooks/usePrototypes';
@@ -20,12 +20,8 @@ const GroupPrototypeList: React.FC = () => {
   const router = useRouter();
   const { user } = useUser();
   const { deletePrototype, updatePrototype } = usePrototypes();
-  const {
-    getPrototypeGroup,
-    getAccessUsersByGroup,
-    createPrototypeVersion,
-    createPrototypeInstance,
-  } = usePrototypeGroup();
+  const { getPrototypeGroup, getAccessUsersByGroup, createPrototypeVersion } =
+    usePrototypeGroup();
 
   // グループID
   const { groupId } = useParams<{ groupId: string }>();
@@ -94,22 +90,6 @@ const GroupPrototypeList: React.FC = () => {
   const handleCreatePreviewPrototype = async (prototypeGroupId: string) => {
     await createPrototypeVersion(prototypeGroupId, {
       name: 'バージョン',
-      versionNumber: 1,
-    });
-    await getPrototypes();
-  };
-
-  /**
-   * 新しいルームを作成する
-   * @param prototypeId プロトタイプのID
-   * @param prototypeIdプロトタイプのバージョンのID
-   */
-  const handleCreateRoom = async (
-    prototypeGroupId: string,
-    prototypeVersionId: string
-  ) => {
-    await createPrototypeInstance(prototypeGroupId, prototypeVersionId, {
-      name: 'インスタンス',
       versionNumber: 1,
     });
     await getPrototypes();
@@ -415,7 +395,7 @@ const GroupPrototypeList: React.FC = () => {
                       </div>
                     </div>
 
-                    {prototype.type !== 'VERSION' && prototypeInfo.group ? (
+                    {prototype.type !== 'VERSION' && prototypeInfo.group && (
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         <PlayRoomCard
                           key={prototype.id}
@@ -423,60 +403,6 @@ const GroupPrototypeList: React.FC = () => {
                           onDelete={handleDeleteRoom}
                           prototypeGroup={prototypeInfo.group}
                         />
-
-                        {/* 新しいルームを作成する空のカード */}
-                        <button
-                          onClick={() => {
-                            const masterVersion = prototype.type === 'VERSION';
-                            if (masterVersion && prototypeInfo.group) {
-                              handleCreateRoom(
-                                prototypeInfo.group.id,
-                                prototype.id
-                              );
-                            }
-                          }}
-                          aria-label="新しいルーム作成"
-                          className="cursor-pointer"
-                        >
-                          <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-dashed border-wood-light/60 group h-full">
-                            <div className="flex flex-col items-center justify-center h-full p-6">
-                              <div className="w-12 h-12 rounded-full bg-wood-lightest/50 flex items-center justify-center mb-2 group-hover:bg-wood-lightest transition-colors">
-                                <IoAdd className="h-6 w-6 text-wood-dark group-hover:text-header transition-colors" />
-                              </div>
-                              <h3 className="font-medium text-wood-dark group-hover:text-header transition-colors">
-                                新しいルーム作成
-                              </h3>
-                            </div>
-                          </div>
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {/* 新しいルームを作成する空のカード - プレイルームが無い場合 */}
-                        <button
-                          onClick={() => {
-                            const masterVersion = prototype.type === 'VERSION';
-                            if (masterVersion && prototypeInfo.group) {
-                              handleCreateRoom(
-                                prototypeInfo.group.id,
-                                prototype.id
-                              );
-                            }
-                          }}
-                          aria-label="新しいルーム作成"
-                          className="cursor-pointer"
-                        >
-                          <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-dashed border-wood-light/60 group h-full">
-                            <div className="flex flex-col items-center justify-center h-full p-6">
-                              <div className="w-12 h-12 rounded-full bg-wood-lightest/50 flex items-center justify-center mb-2 group-hover:bg-wood-lightest transition-colors">
-                                <IoAdd className="h-6 w-6 text-wood-dark group-hover:text-header transition-colors" />
-                              </div>
-                              <h3 className="font-medium text-wood-dark group-hover:text-header transition-colors">
-                                新しいルーム作成
-                              </h3>
-                            </div>
-                          </div>
-                        </button>
                       </div>
                     )}
                   </div>

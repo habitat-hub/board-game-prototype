@@ -35,8 +35,7 @@ export default function LeftSidebar({
   groupId: string;
 }) {
   const router = useRouter();
-  const { getPrototypeGroup, createPrototypeVersion, createPrototypeInstance } =
-    usePrototypeGroup();
+  const { getPrototypeGroup, createPrototypeVersion } = usePrototypeGroup();
 
   // 左サイドバーが最小化されているか
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
@@ -102,21 +101,6 @@ export default function LeftSidebar({
       await getPrototypes(); // 一覧を更新
     } catch (error) {
       console.error('Error creating version:', error);
-    }
-  };
-
-  /**
-   * ルーム（インスタンス）を作成する
-   */
-  const handleCreateRoom = async (versionId: string) => {
-    try {
-      await createPrototypeInstance(groupId, versionId, {
-        name: 'ルーム',
-        versionNumber: 1,
-      });
-      await getPrototypes(); // 一覧を更新
-    } catch (error) {
-      console.error('Error creating room:', error);
     }
   };
 
@@ -336,7 +320,7 @@ export default function LeftSidebar({
 
                             {/* ルーム作成ボタン */}
                             <button
-                              onClick={() => handleCreateRoom(version.id)}
+                              onClick={() => {}}
                               className="group min-w-[60px]"
                               title="新しいルーム作成"
                             >
