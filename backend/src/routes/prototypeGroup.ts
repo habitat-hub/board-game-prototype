@@ -9,7 +9,6 @@ import {
 import { getAccessiblePrototypes } from '../helpers/prototypeHelper';
 import sequelize from '../models';
 import {
-  createPrototypeInstance,
   createPrototypeGroup,
   createPrototypeVersion,
 } from '../factories/prototypeFactory';
@@ -185,89 +184,6 @@ router.post(
     try {
       const newPrototype = await createPrototypeVersion({
         prototypeGroupId: req.params.prototypeGroupId,
-        name,
-        versionNumber,
-        transaction,
-      });
-
-      await transaction.commit();
-      res.status(201).json(newPrototype);
-    } catch (error) {
-      await transaction.rollback();
-      console.error(error);
-      res.status(500).json({ error: '予期せぬエラーが発生しました' });
-    }
-  }
-);
-
-/**
- * @swagger
- * /api/prototype-groups/{prototypeGroupId}/{prototypeVersionId}/instance:
- *   post:
- *     tags: [PrototypeGroups]
- *     summary: プロトタイプインスタンス作成
- *     description: 指定されたプロトタイプグループのプロトタイプインスタンスを作成します。
- *     parameters:
- *       - name: prototypeGroupId
- *         in: path
- *         required: true
- *         description: プロトタイプグループのID
- *         schema:
- *           type: string
- *       - name: prototypeVersionId
- *         in: path
- *         required: true
- *         description: プロトタイプバージョンのID
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               versionNumber:
- *                 type: integer
- *     responses:
- *       '200':
- *         description: プロトタイプインスタンスを作成しました
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Prototype'
- *       '404':
- *         description: プロトタイプグループが見つかりません
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error404Response'
- *       '500':
- *         description: サーバーエラー
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error500Response'
- */
-router.post(
-  '/:prototypeGroupId/:prototypeVersionId/instance',
-  checkPrototypeGroupReadPermission,
-  async (req: Request, res: Response) => {
-    const { name, versionNumber } = req.body;
-    if (!name || !versionNumber) {
-      res.status(400).json({
-        error: 'プロトタイプ名、バージョン番号が必要です',
-      });
-      return;
-    }
-
-    const transaction = await sequelize.transaction();
-    try {
-      const newPrototype = await createPrototypeInstance({
-        prototypeGroupId: req.params.prototypeGroupId,
-        prototypeVersionId: req.params.prototypeVersionId,
         name,
         versionNumber,
         transaction,
