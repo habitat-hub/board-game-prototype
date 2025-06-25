@@ -218,5 +218,80 @@ export const createPrototypeInstance = async ({
     },
     { transaction }
   );
+
+  // バージョンプロトタイプの取得
+  const versionPrototype = await PrototypeModel.findByPk(
+    sourceVersionPrototypeId
+  );
+  if (!versionPrototype) {
+    throw new Error('バージョンプロトタイプが見つかりません');
+  }
+
+  // バージョンプロトタイプのパーツの取得
+  const versionParts = await PartModel.findAll({
+    where: {
+      prototypeId: versionPrototype.id,
+    },
+  });
+
+  // バージョンプロトタイプのパーツのプロパティの取得
+  const versionPartProperties = await PartPropertyModel.findAll({
+    where: {
+      partId: versionParts.map((part) => part.id),
+    },
+  });
+
+  // パーツの作成
+  versionParts.map(
+    async ({
+      id,
+      type,
+      parentId,
+      position,
+      width,
+      height,
+      configurableTypeAsChild,
+      isReversible,
+      isFlipped,
+      canReverseCardOnDeck,
+    }) => {
+      const instancePart = await PartModel.create(
+        {
+          type,
+          prototypeId: instancePrototype.id,
+          parentId,
+          position,
+          width,
+          height,
+          configurableTypeAsChild,
+          originalPartId: id,
+          isReversible,
+          isFlipped,
+          canReverseCardOnDeck,
+        },
+        { transaction, returning: true }
+      );
+
+      const partProperties = versionPartProperties.filter(
+        ({ partId }) => partId === id
+      );
+      partProperties.map(
+        async ({ side, name, description, color, textColor, imageId }) => {
+          await PartPropertyModel.create(
+            {
+              partId: instancePart.id,
+              side,
+              name,
+              description,
+              color,
+              textColor,
+              imageId,
+            },
+            { transaction }
+          );
+        }
+      );
+    }
+  );
   return instancePrototype;
 };
