@@ -69,8 +69,7 @@ export default function LeftSidebar({
       versions.forEach((version) => {
         instancesByVersion[version.id] = instances.filter((_instance) => {
           // インスタンスがどのバージョンから作られたかを判定
-          // 実際のデータ構造に応じて調整が必要かもしれません
-          return true; // 暫定的にすべてのインスタンスを各バージョンに含める
+          return _instance.sourceVersionPrototypeId === version.id;
         });
       });
 
