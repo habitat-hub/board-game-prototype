@@ -11,6 +11,7 @@ import sequelize from '../models';
 import {
   createPrototypeGroup,
   createPrototypeVersion,
+  createPrototypeInstance,
 } from '../factories/prototypeFactory';
 import PrototypeModel from '../models/Prototype';
 import { Op } from 'sequelize';
@@ -182,15 +183,25 @@ router.post(
 
     const transaction = await sequelize.transaction();
     try {
-      const newPrototype = await createPrototypeVersion({
+      // VERSION作成
+      const versionPrototype = await createPrototypeVersion({
         prototypeGroupId: req.params.prototypeGroupId,
         name,
         versionNumber,
         transaction,
       });
-
+      // INSTANCE作成
+      const instancePrototype = await createPrototypeInstance({
+        prototypeGroupId: req.params.prototypeGroupId,
+        sourceVersionPrototypeId: versionPrototype.id,
+        name: `${name}（ルーム）`,
+        versionNumber,
+        transaction,
+      });
       await transaction.commit();
-      res.status(201).json(newPrototype);
+      res
+        .status(201)
+        .json({ version: versionPrototype, instance: instancePrototype });
     } catch (error) {
       await transaction.rollback();
       console.error(error);

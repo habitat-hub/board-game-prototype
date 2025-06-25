@@ -13,6 +13,8 @@ class PrototypeModel extends Model {
   public type!: 'MASTER' | 'VERSION' | 'INSTANCE';
   // バージョン番号
   public versionNumber!: number;
+  // 紐付くバージョンID（INSTANCE用）
+  public sourceVersionPrototypeId?: string;
 }
 
 PrototypeModel.init(
@@ -44,6 +46,17 @@ PrototypeModel.init(
     versionNumber: {
       type: DataTypes.INTEGER,
       allowNull: false,
+    },
+    sourceVersionPrototypeId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'Prototypes',
+        key: 'id',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+      comment: 'このインスタンスがどのバージョンから作られたか',
     },
   },
   {

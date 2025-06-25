@@ -184,3 +184,39 @@ export const createPrototypeVersion = async ({
 
   return versionPrototype;
 };
+
+/**
+ * プロトタイプインスタンスを作成する
+ *
+ * @param prototypeGroupId - プロトタイプグループID
+ * @param sourceVersionPrototypeId - 紐付くバージョンID
+ * @param name - プロトタイプ名
+ * @param versionNumber - バージョン番号
+ * @param transaction - トランザクション
+ * @returns 作成したインスタンスプロトタイプ
+ */
+export const createPrototypeInstance = async ({
+  prototypeGroupId,
+  sourceVersionPrototypeId,
+  name,
+  versionNumber,
+  transaction,
+}: {
+  prototypeGroupId: string;
+  sourceVersionPrototypeId: string;
+  name: string;
+  versionNumber: number;
+  transaction: Transaction;
+}) => {
+  const instancePrototype = await PrototypeModel.create(
+    {
+      prototypeGroupId,
+      name,
+      type: 'INSTANCE',
+      versionNumber,
+      sourceVersionPrototypeId,
+    },
+    { transaction }
+  );
+  return instancePrototype;
+};

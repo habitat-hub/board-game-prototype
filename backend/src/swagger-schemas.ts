@@ -290,6 +290,10 @@ export const swaggerSchemas = {
             "versionNumber": {
                   "type": "integer"
             },
+            "sourceVersionPrototypeId": {
+                  "type": "string",
+                  "format": "uuid"
+            },
             "createdAt": {
                   "type": "string"
             },
