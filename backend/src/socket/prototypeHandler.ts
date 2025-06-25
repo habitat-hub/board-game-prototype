@@ -119,14 +119,18 @@ function handleAddPart(socket: Socket, io: Server) {
       const { prototypeId } = socket.data as SocketData;
 
       try {
-        const maxOrder: number = await PartModel.max('order', {
+        const maxOrder: number | null = await PartModel.max('order', {
           where: { prototypeId },
         });
+
+        // maxOrderがnullの場合（まだパーツが存在しない場合）は1、
+        // そうでなければmaxOrder + 1を使用
+        const newOrder = maxOrder === null ? 1 : maxOrder + 1;
 
         const newPart = await PartModel.create({
           ...part,
           prototypeId,
-          order: (maxOrder + 1) / 2,
+          order: newOrder,
         });
 
         const propertyCreationPromises = properties.map((property) => {
