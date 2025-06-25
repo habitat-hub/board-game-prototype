@@ -9,7 +9,7 @@ import React, {
   useMemo,
   useContext,
 } from 'react';
-import { FaSort, FaSortDown, FaSortUp, FaUserPlus } from 'react-icons/fa';
+import { FaSort, FaSortDown, FaSortUp, FaUserShield } from 'react-icons/fa';
 import { FaBoxOpen, FaPlus } from 'react-icons/fa6';
 import { GiWoodenSign } from 'react-icons/gi';
 import { IoTrash } from 'react-icons/io5';
@@ -432,31 +432,27 @@ const PrototypeList: React.FC = () => {
                     <Link
                       href={`groups/${prototypeGroup.id}`}
                       className="flex items-center gap-2 px-3 py-1 text-sm text-wood hover:text-header rounded border border-wood-light/20 hover:bg-wood-lightest/20 whitespace-nowrap"
-                      title="プロトタイプを開く"
+                      title="プロトタイプを編集する"
                     >
                       <FaBoxOpen className="w-4 h-4" />
-                      <span>開く</span>
+                      <span>編集</span>
                     </Link>
                     <button
                       onClick={() =>
-                        router.push(
-                          `/prototypes/groups/${prototypeGroup.id}/invite`
-                        )
+                        router.push(`/groups/${prototypeGroup.id}/roles`)
                       }
                       className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
-                      title="他ユーザー招待"
+                      title="プロトタイプの権限を設定する"
                     >
-                      <FaUserPlus className="h-4 w-4" />
-                      <span>招待</span>
+                      <FaUserShield className="h-4 w-4" />
+                      <span>権限</span>
                     </button>
                     <button
                       onClick={() =>
-                        router.push(
-                          `/prototypes/groups/${prototypeGroup.id}/delete`
-                        )
+                        router.push(`/groups/${prototypeGroup.id}/delete`)
                       }
-                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
-                      title="プロトタイプ削除"
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-red-500 rounded-md hover:bg-red-50 transition-colors border border-wood-light/20"
+                      title="プロトタイプを削除する"
                     >
                       <IoTrash className="w-4 h-4" />
                       <span>削除</span>
