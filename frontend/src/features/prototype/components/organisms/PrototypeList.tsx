@@ -9,17 +9,19 @@ import React, {
   useMemo,
   useContext,
 } from 'react';
-import { FaCheck } from 'react-icons/fa';
-import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
-import { FaBoxOpen, FaPenToSquare, FaPlus } from 'react-icons/fa6';
+import { FaSort, FaSortDown, FaSortUp, FaUserShield } from 'react-icons/fa';
+import { FaBoxOpen, FaPlus } from 'react-icons/fa6';
 import { GiWoodenSign } from 'react-icons/gi';
+import { IoTrash } from 'react-icons/io5';
 import { RiLoaderLine } from 'react-icons/ri';
 
 import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Prototype, PrototypeGroup } from '@/api/types';
 import { UserContext } from '@/contexts/UserContext';
+import useInlineEdit from '@/hooks/useInlineEdit';
 import formatDate from '@/utils/dateFormat';
+import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
 
 import PrototypeListSkeleton from '../molecules/PrototypeListSkeleton';
 
@@ -29,11 +31,12 @@ type SortOrder = 'asc' | 'desc';
 /**
  * PrototypeListコンポーネントで使用される各種Stateの説明:
  *
- * @state nameEditingId - 現在プロトタイプ名を編集中のIDを管理するState。
- * @state editedName - 編集中のプロトタイプの名前を保持するState。
- * @state editPrototypes - 編集可能なプロトタイプのリストを保持するState。
- * @state sort - プロトタイプのソート条件（キーと順序）を管理するState。
  * @state isLoading - データ取得中のローディング状態を管理するState。
+ * @state isCreating - プロトタイプ作成中のローディング状態を管理するState。
+ * @state prototypeList - プロトタイプグループとプロトタイプのリストを保持するState。
+ * @state sort - プロトタイプのソート条件（キーと順序）を管理するState。
+ *
+ * 編集機能はuseInlineEditカスタムフックで管理されています。
  */
 const PrototypeList: React.FC = () => {
   const router = useRouter();
@@ -41,19 +44,26 @@ const PrototypeList: React.FC = () => {
   const { getPrototypeGroups, createPrototypeGroup } = usePrototypeGroup();
   // UserContextからユーザー情報を取得
   const userContext = useContext(UserContext);
+  // インライン編集フック
+  const {
+    editingId: nameEditingId,
+    editedValue: editedName,
+    setEditedValue: setEditedName,
+    isEditing,
+    startEditing: handleNameEditToggle,
+    handleKeyDown,
+    handleSubmit,
+    handleBlur,
+  } = useInlineEdit();
   // ローディング状態を管理するState
   const [isLoading, setIsLoading] = useState<boolean>(true);
   // プロトタイプ作成中フラグ
   const [isCreating, setIsCreating] = useState<boolean>(false);
-  // 編集中のプロトタイプのIDを管理するState
-  const [nameEditingId, setNameEditingId] = useState<string>('');
-  // 編集中のプロトタイプの名前を保持するState
-  const [editedName, setEditedName] = useState<string>('');
   // 編集用プロトタイプ
   const [prototypeList, setPrototypeList] = useState<
     {
       prototypeGroup: PrototypeGroup;
-      editPrototype: Prototype | undefined;
+      masterPrototype: Prototype | undefined;
     }[]
   >([]);
   // ソート
@@ -64,6 +74,17 @@ const PrototypeList: React.FC = () => {
     key: 'createdAt',
     order: 'desc',
   });
+
+  // 1日に1回、IndexedDBから期限切れの画像を削除する
+  useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+    const lastRun = localStorage.getItem('deleteExpiredImagesLastRun');
+
+    if (lastRun !== today) {
+      deleteExpiredImagesFromIndexedDb();
+      localStorage.setItem('deleteExpiredImagesLastRun', today);
+    }
+  }, []);
 
   /**
    * ランダムなプロトタイプ名を生成する
@@ -135,48 +156,46 @@ const PrototypeList: React.FC = () => {
   };
 
   /**
-   * プロトタイプ名の編集モードを切り替える関数
-   * @param id プロトタイプID
-   * @param name プロトタイプ名
-   */
-  const handleNameEditToggle = (id: string, name: string) => {
-    if (nameEditingId === id) {
-      // 同じ項目を再度押した場合は編集モードを解除
-      setNameEditingId('');
-    } else {
-      // 編集モードにする
-      setNameEditingId(id);
-      setEditedName(name);
-    }
-  };
-
-  /**
    * プロトタイプ名の編集を完了する処理
+   * masterプロトタイプの名前をAPIで更新する
    */
-  const handleNameEditComplete = async () => {
-    // 入力値のバリデーション
-    if (!editedName.trim()) {
-      alert('プロトタイプ名を入力してください');
+  const handleNameEditComplete = async (newName: string) => {
+    // 変更がない場合は何もしない
+    const currentPrototype = prototypeList.find(
+      ({ masterPrototype }) => masterPrototype?.id === nameEditingId
+    );
+    if (currentPrototype?.masterPrototype?.name === newName.trim()) {
       return;
     }
 
     try {
       const prototype = prototypeList.find(
-        ({ editPrototype }) => editPrototype?.id === nameEditingId
+        ({ masterPrototype }) => masterPrototype?.id === nameEditingId
       );
       if (!prototype) return;
 
-      // 名前だけを更新
+      // masterプロトタイプの名前をAPIで更新
       await updatePrototype(nameEditingId, {
-        name: editedName,
+        name: newName.trim(),
       });
 
-      fetchPrototypeGroups();
+      setPrototypeList((prevList) =>
+        prevList.map((item) => {
+          if (item.masterPrototype?.id === nameEditingId) {
+            return {
+              ...item,
+              masterPrototype: {
+                ...item.masterPrototype,
+                name: newName.trim(),
+              },
+            };
+          }
+          return item;
+        })
+      );
     } catch (error) {
       console.error('Error updating prototype name:', error);
-    } finally {
-      // 編集モードを解除
-      setNameEditingId('');
+      throw new Error('プロトタイプ名の更新中にエラーが発生しました。');
     }
   };
 
@@ -191,7 +210,7 @@ const PrototypeList: React.FC = () => {
       const prototypeInfo = response.map(({ prototypeGroup, prototypes }) => {
         return {
           prototypeGroup,
-          editPrototype: prototypes.find(({ type }) => type === 'MASTER'),
+          masterPrototype: prototypes.find(({ type }) => type === 'MASTER'),
         };
       });
       setPrototypeList(prototypeInfo);
@@ -201,6 +220,14 @@ const PrototypeList: React.FC = () => {
       setIsLoading(false); // ローディング終了
     }
   }, [getPrototypeGroups]);
+
+  // プロトタイプ名のバリデーション関数
+  const validatePrototypeName = (value: string): string | null => {
+    if (!value.trim()) {
+      return 'プロトタイプ名を入力してください';
+    }
+    return null;
+  };
 
   // プロトタイプの取得
   useEffect(() => {
@@ -216,26 +243,26 @@ const PrototypeList: React.FC = () => {
     (
       prototypeList: {
         prototypeGroup: PrototypeGroup;
-        editPrototype: Prototype | undefined;
+        masterPrototype: Prototype | undefined;
       }[]
     ) => {
       return [...prototypeList].sort((a, b) => {
         switch (sort.key) {
           // 名前順
           case 'name':
-            if (!a.editPrototype?.name || !b.editPrototype?.name) return 0;
+            if (!a.masterPrototype?.name || !b.masterPrototype?.name) return 0;
             return sort.order === 'asc'
-              ? a.editPrototype.name.localeCompare(b.editPrototype.name)
-              : b.editPrototype.name.localeCompare(a.editPrototype.name);
+              ? a.masterPrototype.name.localeCompare(b.masterPrototype.name)
+              : b.masterPrototype.name.localeCompare(a.masterPrototype.name);
           // 作成日順
           case 'createdAt':
-            if (!a.editPrototype?.createdAt || !b.editPrototype?.createdAt)
+            if (!a.masterPrototype?.createdAt || !b.masterPrototype?.createdAt)
               return 0;
             return sort.order === 'asc'
-              ? new Date(b.editPrototype.createdAt).getTime() -
-                  new Date(a.editPrototype.createdAt).getTime()
-              : new Date(a.editPrototype.createdAt).getTime() -
-                  new Date(b.editPrototype.createdAt).getTime();
+              ? new Date(b.masterPrototype.createdAt).getTime() -
+                  new Date(a.masterPrototype.createdAt).getTime()
+              : new Date(a.masterPrototype.createdAt).getTime() -
+                  new Date(b.masterPrototype.createdAt).getTime();
           default:
             return 0;
         }
@@ -334,7 +361,7 @@ const PrototypeList: React.FC = () => {
                   {getSortIcon('name')}
                 </button>
               </th>
-              <th className="text-left p-4 w-56">
+              <th className="text-left p-4">
                 <button
                   onClick={() => handleSort('createdAt')}
                   className="flex items-center gap-1 hover:text-header transition-colors duration-200 w-full"
@@ -343,58 +370,67 @@ const PrototypeList: React.FC = () => {
                   {getSortIcon('createdAt')}
                 </button>
               </th>
-              <th className="text-left p-4 w-32">作成者</th>
-              <th className="text-center p-4 w-30"></th>
+              <th className="text-left p-4">作成者</th>
+              <th className="text-center p-4">操作</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-wood-lightest/20">
-            {sortedPrototypeList.map(({ editPrototype, prototypeGroup }) => {
-              if (!editPrototype) return null;
-              const { id, name, createdAt } = editPrototype;
-              const isNameEditing = nameEditingId === id;
+            {sortedPrototypeList.map(({ masterPrototype, prototypeGroup }) => {
+              if (!masterPrototype) return null;
+              const { id, name, createdAt } = masterPrototype;
+              const isNameEditing = isEditing(id);
               return (
                 <tr key={id}>
-                  <td className="p-4">
-                    {isNameEditing ? (
-                      <form
-                        className="text-wood-darkest flex items-center"
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          handleNameEditComplete();
-                        }}
-                      >
-                        <input
-                          type="text"
-                          value={editedName}
-                          onChange={(e) => setEditedName(e.target.value)}
-                          className="w-[80%] p-1 border border-wood-light rounded"
-                          autoFocus
-                        />
-                        <button
-                          type="submit"
-                          className="ml-2 p-1.5 text-green-600 hover:text-green-700 rounded-md border border-green-500 hover:bg-green-50 transition-colors"
-                          title="編集完了"
+                  <td className="p-4 min-w-0">
+                    <div className="w-full">
+                      {isNameEditing ? (
+                        <form
+                          className="w-full"
+                          onSubmit={(e) =>
+                            handleSubmit(
+                              e,
+                              handleNameEditComplete,
+                              validatePrototypeName
+                            )
+                          }
                         >
-                          <FaCheck className="w-3.5 h-3.5" />
-                        </button>
-                      </form>
-                    ) : (
-                      <div className="flex items-center">
-                        <Link
-                          href={`/groups/${prototypeGroup.id}`}
-                          className="text-wood-darkest font-medium"
-                        >
-                          {name}
-                        </Link>
+                          <input
+                            type="text"
+                            value={editedName}
+                            onChange={(e) => setEditedName(e.target.value)}
+                            onBlur={() =>
+                              handleBlur(
+                                handleNameEditComplete,
+                                validatePrototypeName
+                              ).catch((error) => {
+                                console.error('Error in onBlur:', error);
+                                alert(error.message || 'エラーが発生しました');
+                              })
+                            }
+                            onKeyDown={(e) =>
+                              handleKeyDown(
+                                e,
+                                handleNameEditComplete,
+                                validatePrototypeName
+                              ).catch((error) => {
+                                console.error('Error in onKeyDown:', error);
+                                alert(error.message || 'エラーが発生しました');
+                              })
+                            }
+                            className="w-full text-wood-darkest font-medium bg-transparent border border-transparent rounded-md p-2 -m-2 focus:outline-none focus:bg-white focus:border-header focus:shadow-sm transition-all"
+                            autoFocus
+                          />
+                        </form>
+                      ) : (
                         <button
                           onClick={() => handleNameEditToggle(id, name)}
-                          className="ml-2 p-1 text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors"
-                          title="プロトタイプ名を編集"
+                          className="w-full text-wood-darkest font-medium hover:text-header transition-colors cursor-pointer p-2 -m-2 rounded-md hover:bg-wood-lightest/20 text-left truncate"
+                          title="クリックして編集"
                         >
-                          <FaPenToSquare className="w-4 h-4" />
+                          {name}
                         </button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </td>
                   <td className="p-4 text-sm text-wood">
                     {formatDate(createdAt, true)}
@@ -406,13 +442,33 @@ const PrototypeList: React.FC = () => {
                   </td>
                   <td className="p-4 flex justify-center gap-2">
                     <Link
-                      href={`groups/${prototypeGroup.id}`}
-                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
-                      title="プロトタイプを開く"
+                      href={`groups/${prototypeGroup.id}/prototypes/${id}/edit`}
+                      className="flex items-center gap-2 px-3 py-1 text-sm text-wood hover:text-header rounded border border-wood-light/20 hover:bg-wood-lightest/20 whitespace-nowrap"
+                      title="プロトタイプを編集する"
                     >
                       <FaBoxOpen className="w-4 h-4" />
-                      <span>開く</span>
+                      <span>編集</span>
                     </Link>
+                    <button
+                      onClick={() =>
+                        router.push(`/groups/${prototypeGroup.id}/roles`)
+                      }
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
+                      title="プロトタイプの権限を設定する"
+                    >
+                      <FaUserShield className="h-4 w-4" />
+                      <span>権限</span>
+                    </button>
+                    <button
+                      onClick={() =>
+                        router.push(`/groups/${prototypeGroup.id}/delete`)
+                      }
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-red-500 rounded-md hover:bg-red-50 transition-colors border border-wood-light/20"
+                      title="プロトタイプを削除する"
+                    >
+                      <IoTrash className="w-4 h-4" />
+                      <span>削除</span>
+                    </button>
                   </td>
                 </tr>
               );

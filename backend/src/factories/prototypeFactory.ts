@@ -186,38 +186,43 @@ export const createPrototypeVersion = async ({
 };
 
 /**
- * インスタンスプロトタイプを作成する
+ * プロトタイプインスタンスを作成する
  *
  * @param prototypeGroupId - プロトタイプグループID
+ * @param sourceVersionPrototypeId - 紐付くバージョンID
  * @param name - プロトタイプ名
+ * @param versionNumber - バージョン番号
  * @param transaction - トランザクション
+ * @returns 作成したインスタンスプロトタイプ
  */
 export const createPrototypeInstance = async ({
   prototypeGroupId,
-  prototypeVersionId,
+  sourceVersionPrototypeId,
   name,
-  versionNumber = PROTOTYPE_VERSION.INITIAL,
+  versionNumber,
   transaction,
 }: {
   prototypeGroupId: string;
-  prototypeVersionId: string;
+  sourceVersionPrototypeId: string;
   name: string;
   versionNumber: number;
   transaction: Transaction;
 }) => {
-  // インスタンスプロトタイプの作成
   const instancePrototype = await PrototypeModel.create(
     {
       prototypeGroupId,
       name,
       type: 'INSTANCE',
       versionNumber,
+      sourceVersionPrototypeId,
     },
     { transaction }
   );
 
   // バージョンプロトタイプの取得
-  const versionPrototype = await PrototypeModel.findByPk(prototypeVersionId);
+  const versionPrototype = await PrototypeModel.findByPk(
+    sourceVersionPrototypeId
+  );
   if (!versionPrototype) {
     throw new Error('バージョンプロトタイプが見つかりません');
   }
@@ -288,6 +293,5 @@ export const createPrototypeInstance = async ({
       );
     }
   );
-
   return instancePrototype;
 };

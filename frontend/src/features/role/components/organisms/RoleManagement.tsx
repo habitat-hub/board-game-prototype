@@ -137,9 +137,9 @@ const RoleManagement: React.FC = () => {
       <div className="max-w-4xl mx-auto p-4 bg-white rounded-lg shadow mt-16">
         <div className="flex items-center relative mb-6">
           <button
-            onClick={() => router.push(`/groups/${groupId}`)}
+            onClick={() => router.back()}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors absolute left-0"
-            title="プロトタイプ管理へ戻る"
+            title="戻る"
           >
             <IoArrowBack className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
           </button>
@@ -158,9 +158,9 @@ const RoleManagement: React.FC = () => {
     <div className="max-w-4xl mx-auto p-4 bg-white rounded-lg shadow mt-16">
       <div className="flex items-center relative mb-6">
         <button
-          onClick={() => router.push(`/groups/${groupId}`)}
+          onClick={() => router.back()}
           className="p-2 hover:bg-gray-100 rounded-full transition-colors absolute left-0"
-          title="プロトタイプ管理へ戻る"
+          title="戻る"
         >
           <IoArrowBack className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
         </button>

@@ -31,10 +31,10 @@ const TextInput: React.FC<TextInputProps> = ({
     // 複数行入力の場合、Enterキー以外の場合は何もしない
     if (multiline || e.key !== 'Enter') return;
 
-    onChange(inputValue);
-
-    // 日本語変換用のEnterキーの場合
+    // 日本語変換中のEnterキーの場合は何もしない
     if (isComposing) return;
+
+    onChange(inputValue);
     // フォーカスを外す
     (e.currentTarget as HTMLElement).blur();
   };

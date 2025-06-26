@@ -3,7 +3,6 @@ import {
   Prototype,
   PrototypeGroup,
   PrototypeGroupsCreatePayload,
-  PrototypeGroupsInstanceCreatePayload,
   PrototypeGroupsInviteCreatePayload,
   PrototypeGroupsVersionCreatePayload,
   User,
@@ -43,20 +42,6 @@ export const prototypeGroupService = {
   ): Promise<Prototype> => {
     const response = await axiosInstance.post(
       `/api/prototype-groups/${prototypeGroupId}/version`,
-      data
-    );
-    return response.data;
-  },
-  /**
-   * プロトタイプインスタンス作成
-   */
-  createPrototypeInstance: async (
-    prototypeGroupId: string,
-    prototypeVersionId: string,
-    data: PrototypeGroupsInstanceCreatePayload
-  ): Promise<Prototype> => {
-    const response = await axiosInstance.post(
-      `/api/prototype-groups/${prototypeGroupId}/${prototypeVersionId}/instance`,
       data
     );
     return response.data;
