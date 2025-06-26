@@ -2,7 +2,9 @@ import { openDB } from 'idb';
 
 const DB_NAME = 'BoardGamePrototype';
 const STORE_NAME = 'images';
+const IMAGE_DELETE_GRACE_DAYS = 3;
 
+// IndexedDBの初期化関数
 export const getIndexedDb = async () => {
   try {
     return await openDB(DB_NAME, 1, {
@@ -21,10 +23,16 @@ export const getIndexedDb = async () => {
   }
 };
 
+// IndexedDBに画像を保存する関数
 export const saveImageToIndexedDb = async (id: string, imageBlob: Blob) => {
   try {
     const db = await getIndexedDb();
-    await db.put(STORE_NAME, { id, imageBlob });
+    await db.put(STORE_NAME, {
+      id,
+      imageBlob,
+      deletedAt: null,
+      isDeleted: false,
+    });
   } catch (error) {
     // TODO: エラーハンドリングを追加
     // 例えば、IndexedDBのストレージが逼迫している場合など
@@ -34,6 +42,8 @@ export const saveImageToIndexedDb = async (id: string, imageBlob: Blob) => {
   }
 };
 
+// IndexedDBから画像を取得する関数
+// 画像が存在しない場合はnullを返す
 export const getImageFromIndexedDb = async (
   id: string
 ): Promise<Blob | null> => {
@@ -44,5 +54,75 @@ export const getImageFromIndexedDb = async (
   } catch (error) {
     console.error(`ID: ${id}の画像をIndexedDBから取得できませんでした:`, error);
     return null; // エラー時はnullを返す
+  }
+};
+
+// IndexedDBの画像の削除フラグ、削除日時を更新する関数
+export const updateImageParamsInIndexedDb = async (
+  id: string,
+  isDeleted: boolean = false,
+  deletedAt: Date | null = null
+): Promise<void> => {
+  try {
+    const db = await getIndexedDb();
+    const record = await db.get(STORE_NAME, id);
+    if (record) {
+      record.isDeleted = isDeleted;
+      record.deletedAt = deletedAt;
+      await db.put(STORE_NAME, record);
+    }
+  } catch (error) {
+    console.error(`ID: ${id}の画像をIndexedDBで更新できませんでした:`, error);
+    // エラー時は何もしない
+    // ここでは、エラーをコンソールに出力するだけにしています
+  }
+};
+
+//以下の条件を満たす画像を全てIndexedDBから削除する
+// 1. 削除フラグがオン
+// 2. 削除日時が設定されており、かつ削除日時が現在日時-削除猶予期間（日数）以上前の画像
+export const deleteExpiredImagesFromIndexedDb = async (): Promise<void> => {
+  try {
+    const db = await getIndexedDb();
+    const records = await db.getAll(STORE_NAME);
+
+    const now = new Date();
+    const threshold = new Date(
+      now.getTime() - IMAGE_DELETE_GRACE_DAYS * 24 * 60 * 60 * 1000
+    );
+
+    const expiredRecords = records.filter(
+      (record) =>
+        record.isDeleted === true &&
+        record.deletedAt &&
+        new Date(record.deletedAt) < threshold
+    );
+
+    for (const record of expiredRecords) {
+      await db.delete(STORE_NAME, record.id);
+    }
+  } catch (error) {
+    console.error('期限切れ画像のIndexedDB削除に失敗:', error);
+  }
+};
+
+// IndexedDBの削除日時、削除フラグをリセットする関数
+// 画像が複数のパーツから参照されていた場合に、
+// あるパーツAでは画像が削除され、他のパーツBでは画像が使用されている場合は
+// パーツBの画像を再度取得したタイミングで前述の項目をリセットする
+// 本関数を呼び出してから、getImageFromIndexedDb(id)を呼び出すこと
+export const resetImageParamsInIndexedDb = async (
+  id: string
+): Promise<void> => {
+  try {
+    const db = await getIndexedDb();
+    const record = await db.get(STORE_NAME, id);
+    if (record && record.isDeleted) {
+      record.isDeleted = false;
+      record.deletedAt = null;
+      await db.put(STORE_NAME, record);
+    }
+  } catch (error) {
+    // エラー時は何もしない
   }
 };

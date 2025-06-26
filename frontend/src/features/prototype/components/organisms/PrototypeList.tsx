@@ -21,6 +21,7 @@ import { Prototype, PrototypeGroup } from '@/api/types';
 import { UserContext } from '@/contexts/UserContext';
 import useInlineEdit from '@/hooks/useInlineEdit';
 import formatDate from '@/utils/dateFormat';
+import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
 
 import PrototypeListSkeleton from '../molecules/PrototypeListSkeleton';
 
@@ -73,6 +74,17 @@ const PrototypeList: React.FC = () => {
     key: 'createdAt',
     order: 'desc',
   });
+
+  // 1日に1回、IndexedDBから期限切れの画像を削除する
+  useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+    const lastRun = localStorage.getItem('deleteExpiredImagesLastRun');
+
+    if (lastRun !== today) {
+      deleteExpiredImagesFromIndexedDb();
+      localStorage.setItem('deleteExpiredImagesLastRun', today);
+    }
+  }, []);
 
   /**
    * ランダムなプロトタイプ名を生成する
