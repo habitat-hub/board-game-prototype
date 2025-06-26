@@ -430,7 +430,7 @@ const PrototypeList: React.FC = () => {
                   </td>
                   <td className="p-4 flex justify-center gap-2">
                     <Link
-                      href={`groups/${prototypeGroup.id}`}
+                      href={`groups/${prototypeGroup.id}/prototypes/${id}/edit`}
                       className="flex items-center gap-2 px-3 py-1 text-sm text-wood hover:text-header rounded border border-wood-light/20 hover:bg-wood-lightest/20 whitespace-nowrap"
                       title="プロトタイプを編集する"
                     >
