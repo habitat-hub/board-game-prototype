@@ -13,7 +13,6 @@ export const cleanupImageIfUnused = async (
   partId: string,
   side: 'front' | 'back'
 ): Promise<{ deleted: boolean }> => {
-  // 他で使われていないかチェック（COUNT(*)が2以上の場合に削除する）
   const [result] = (await sequelize.query(
     `SELECT COUNT(*) AS "count" FROM "PartProperties" WHERE "imageId" = :imageId`,
     { replacements: { imageId }, type: QueryTypes.SELECT }
