@@ -62,7 +62,7 @@ const PrototypeList: React.FC = () => {
   const [prototypeList, setPrototypeList] = useState<
     {
       prototypeGroup: PrototypeGroup;
-      editPrototype: Prototype | undefined;
+      masterPrototype: Prototype | undefined;
     }[]
   >([]);
   // ソート
@@ -150,15 +150,15 @@ const PrototypeList: React.FC = () => {
   const handleNameEditComplete = async (newName: string) => {
     // 変更がない場合は何もしない
     const currentPrototype = prototypeList.find(
-      ({ editPrototype }) => editPrototype?.id === nameEditingId
+      ({ masterPrototype }) => masterPrototype?.id === nameEditingId
     );
-    if (currentPrototype?.editPrototype?.name === newName.trim()) {
+    if (currentPrototype?.masterPrototype?.name === newName.trim()) {
       return;
     }
 
     try {
       const prototype = prototypeList.find(
-        ({ editPrototype }) => editPrototype?.id === nameEditingId
+        ({ masterPrototype }) => masterPrototype?.id === nameEditingId
       );
       if (!prototype) return;
 
@@ -169,11 +169,11 @@ const PrototypeList: React.FC = () => {
 
       setPrototypeList((prevList) =>
         prevList.map((item) => {
-          if (item.editPrototype?.id === nameEditingId) {
+          if (item.masterPrototype?.id === nameEditingId) {
             return {
               ...item,
-              editPrototype: {
-                ...item.editPrototype,
+              masterPrototype: {
+                ...item.masterPrototype,
                 name: newName.trim(),
               },
             };
@@ -198,7 +198,7 @@ const PrototypeList: React.FC = () => {
       const prototypeInfo = response.map(({ prototypeGroup, prototypes }) => {
         return {
           prototypeGroup,
-          editPrototype: prototypes.find(({ type }) => type === 'MASTER'),
+          masterPrototype: prototypes.find(({ type }) => type === 'MASTER'),
         };
       });
       setPrototypeList(prototypeInfo);
@@ -231,26 +231,26 @@ const PrototypeList: React.FC = () => {
     (
       prototypeList: {
         prototypeGroup: PrototypeGroup;
-        editPrototype: Prototype | undefined;
+        masterPrototype: Prototype | undefined;
       }[]
     ) => {
       return [...prototypeList].sort((a, b) => {
         switch (sort.key) {
           // 名前順
           case 'name':
-            if (!a.editPrototype?.name || !b.editPrototype?.name) return 0;
+            if (!a.masterPrototype?.name || !b.masterPrototype?.name) return 0;
             return sort.order === 'asc'
-              ? a.editPrototype.name.localeCompare(b.editPrototype.name)
-              : b.editPrototype.name.localeCompare(a.editPrototype.name);
+              ? a.masterPrototype.name.localeCompare(b.masterPrototype.name)
+              : b.masterPrototype.name.localeCompare(a.masterPrototype.name);
           // 作成日順
           case 'createdAt':
-            if (!a.editPrototype?.createdAt || !b.editPrototype?.createdAt)
+            if (!a.masterPrototype?.createdAt || !b.masterPrototype?.createdAt)
               return 0;
             return sort.order === 'asc'
-              ? new Date(b.editPrototype.createdAt).getTime() -
-                  new Date(a.editPrototype.createdAt).getTime()
-              : new Date(a.editPrototype.createdAt).getTime() -
-                  new Date(b.editPrototype.createdAt).getTime();
+              ? new Date(b.masterPrototype.createdAt).getTime() -
+                  new Date(a.masterPrototype.createdAt).getTime()
+              : new Date(a.masterPrototype.createdAt).getTime() -
+                  new Date(b.masterPrototype.createdAt).getTime();
           default:
             return 0;
         }
@@ -363,9 +363,9 @@ const PrototypeList: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-wood-lightest/20">
-            {sortedPrototypeList.map(({ editPrototype, prototypeGroup }) => {
-              if (!editPrototype) return null;
-              const { id, name, createdAt } = editPrototype;
+            {sortedPrototypeList.map(({ masterPrototype, prototypeGroup }) => {
+              if (!masterPrototype) return null;
+              const { id, name, createdAt } = masterPrototype;
               const isNameEditing = isEditing(id);
               return (
                 <tr key={id}>
