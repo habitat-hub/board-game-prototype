@@ -9,9 +9,10 @@ import React, {
   useMemo,
   useContext,
 } from 'react';
-import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
+import { FaSort, FaSortDown, FaSortUp, FaUserShield } from 'react-icons/fa';
 import { FaBoxOpen, FaPlus } from 'react-icons/fa6';
 import { GiWoodenSign } from 'react-icons/gi';
+import { IoTrash } from 'react-icons/io5';
 import { RiLoaderLine } from 'react-icons/ri';
 
 import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
@@ -339,7 +340,7 @@ const PrototypeList: React.FC = () => {
         <table className="w-full border-collapse">
           <thead className="bg-content-secondary border-b border-wood-lightest/30">
             <tr className="text-sm font-medium text-wood-dark">
-              <th className="text-left p-4" style={{ width: '40%' }}>
+              <th className="text-left p-4">
                 <button
                   onClick={() => handleSort('name')}
                   className="flex items-center gap-1 hover:text-header transition-colors duration-200 w-full"
@@ -348,7 +349,7 @@ const PrototypeList: React.FC = () => {
                   {getSortIcon('name')}
                 </button>
               </th>
-              <th className="text-left p-4" style={{ width: '25%' }}>
+              <th className="text-left p-4">
                 <button
                   onClick={() => handleSort('createdAt')}
                   className="flex items-center gap-1 hover:text-header transition-colors duration-200 w-full"
@@ -357,10 +358,8 @@ const PrototypeList: React.FC = () => {
                   {getSortIcon('createdAt')}
                 </button>
               </th>
-              <th className="text-left p-4" style={{ width: '15%' }}>
-                作成者
-              </th>
-              <th className="text-center p-4" style={{ width: '20%' }}></th>
+              <th className="text-left p-4">作成者</th>
+              <th className="text-center p-4">操作</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-wood-lightest/20">
@@ -370,7 +369,7 @@ const PrototypeList: React.FC = () => {
               const isNameEditing = isEditing(id);
               return (
                 <tr key={id}>
-                  <td className="p-4 min-w-0" style={{ width: '40%' }}>
+                  <td className="p-4 min-w-0">
                     <div className="w-full">
                       {isNameEditing ? (
                         <form
@@ -421,32 +420,43 @@ const PrototypeList: React.FC = () => {
                       )}
                     </div>
                   </td>
-                  <td
-                    className="p-4 text-sm text-wood"
-                    style={{ width: '25%' }}
-                  >
+                  <td className="p-4 text-sm text-wood">
                     {formatDate(createdAt, true)}
                   </td>
-                  <td
-                    className="p-4 text-sm text-wood"
-                    style={{ width: '15%' }}
-                  >
+                  <td className="p-4 text-sm text-wood">
                     {userContext?.user?.id === prototypeGroup.userId
                       ? '自分'
                       : '他のユーザー'}
                   </td>
-                  <td
-                    className="p-4 flex justify-center gap-2"
-                    style={{ width: '20%' }}
-                  >
+                  <td className="p-4 flex justify-center gap-2">
                     <Link
                       href={`groups/${prototypeGroup.id}`}
                       className="flex items-center gap-2 px-3 py-1 text-sm text-wood hover:text-header rounded border border-wood-light/20 hover:bg-wood-lightest/20 whitespace-nowrap"
-                      title="プロトタイプを開く"
+                      title="プロトタイプを編集する"
                     >
                       <FaBoxOpen className="w-4 h-4" />
-                      <span>開く</span>
+                      <span>編集</span>
                     </Link>
+                    <button
+                      onClick={() =>
+                        router.push(`/groups/${prototypeGroup.id}/roles`)
+                      }
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
+                      title="プロトタイプの権限を設定する"
+                    >
+                      <FaUserShield className="h-4 w-4" />
+                      <span>権限</span>
+                    </button>
+                    <button
+                      onClick={() =>
+                        router.push(`/groups/${prototypeGroup.id}/delete`)
+                      }
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-red-500 rounded-md hover:bg-red-50 transition-colors border border-wood-light/20"
+                      title="プロトタイプを削除する"
+                    >
+                      <IoTrash className="w-4 h-4" />
+                      <span>削除</span>
+                    </button>
                   </td>
                 </tr>
               );
