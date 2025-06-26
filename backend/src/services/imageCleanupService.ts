@@ -24,6 +24,7 @@ export const cleanupImageIfUnused = async (
       ? parseInt(result.count, 10)
       : result.count;
 
+  // 他のパーツでもそのimageIdが使われている場合
   if (count > 1) {
     // PartPropertyのimageIdのみクリアする
     await sequelize.query(
