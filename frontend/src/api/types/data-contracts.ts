@@ -99,6 +99,8 @@ export interface Prototype {
   name: string;
   type: 'MASTER' | 'VERSION' | 'INSTANCE';
   versionNumber: number;
+  /** @format uuid */
+  sourceVersionPrototypeId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -175,13 +177,6 @@ export interface PrototypeGroupsVersionCreatePayload {
 }
 
 export type PrototypeGroupsVersionCreateData = Prototype;
-
-export interface PrototypeGroupsInstanceCreatePayload {
-  name?: string;
-  versionNumber?: number;
-}
-
-export type PrototypeGroupsInstanceCreateData = Prototype;
 
 export interface PrototypeGroupsDetailData {
   prototypeGroup?: PrototypeGroup;

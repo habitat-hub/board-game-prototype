@@ -3,7 +3,6 @@ import { useCallback } from 'react';
 import { prototypeGroupService } from '@/api/endpoints/prototypeGroup';
 import {
   PrototypeGroupsCreatePayload,
-  PrototypeGroupsInstanceCreatePayload,
   PrototypeGroupsInviteCreatePayload,
   PrototypeGroupsVersionCreatePayload,
 } from '@/api/types';
@@ -36,24 +35,6 @@ export const usePrototypeGroup = () => {
     ) => {
       return await prototypeGroupService.createPrototypeVersion(
         prototypeGroupId,
-        data
-      );
-    },
-    []
-  );
-
-  /**
-   * プロトタイプインスタンス作成
-   */
-  const createPrototypeInstance = useCallback(
-    async (
-      prototypeGroupId: string,
-      prototypeVersionId: string,
-      data: PrototypeGroupsInstanceCreatePayload
-    ) => {
-      return await prototypeGroupService.createPrototypeInstance(
-        prototypeGroupId,
-        prototypeVersionId,
         data
       );
     },
@@ -178,7 +159,6 @@ export const usePrototypeGroup = () => {
     getPrototypeGroups,
     createPrototypeGroup,
     createPrototypeVersion,
-    createPrototypeInstance,
     getPrototypeGroup,
     getAccessUsersByGroup,
     inviteToPrototypeGroup,

@@ -292,6 +292,10 @@
           "versionNumber": {
             "type": "integer"
           },
+          "sourceVersionPrototypeId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "createdAt": {
             "type": "string"
           },
@@ -1025,85 +1029,6 @@
         "responses": {
           "200": {
             "description": "プロトタイプバージョンを作成しました",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Prototype"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "プロトタイプグループが見つかりません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error404Response"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "サーバーエラー",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error500Response"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/prototype-groups/{prototypeGroupId}/{prototypeVersionId}/instance": {
-      "post": {
-        "tags": [
-          "PrototypeGroups"
-        ],
-        "summary": "プロトタイプインスタンス作成",
-        "description": "指定されたプロトタイプグループのプロトタイプインスタンスを作成します。",
-        "parameters": [
-          {
-            "name": "prototypeGroupId",
-            "in": "path",
-            "required": true,
-            "description": "プロトタイプグループのID",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "prototypeVersionId",
-            "in": "path",
-            "required": true,
-            "description": "プロトタイプバージョンのID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "versionNumber": {
-                    "type": "integer"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "プロトタイプインスタンスを作成しました",
             "content": {
               "application/json": {
                 "schema": {

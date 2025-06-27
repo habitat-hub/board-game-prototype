@@ -26,7 +26,11 @@ import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { AddPartProps } from '@/features/prototype/type';
 import { CursorInfo } from '@/features/prototype/types/cursor';
-import { getImageFromIndexedDb, saveImageToIndexedDb } from '@/utils/db';
+import {
+  getImageFromIndexedDb,
+  resetImageParamsInIndexedDb,
+  saveImageToIndexedDb,
+} from '@/utils/db';
 
 const GRID_SIZE = 50;
 const CANVAS_SIZE = 5000;
@@ -577,6 +581,7 @@ export default function GameBoard({
 
       const imageResults = await Promise.all(
         uniqueImageIds.map(async (imageId) => {
+          await resetImageParamsInIndexedDb(imageId);
           const cachedImage = await getImageFromIndexedDb(imageId);
           if (cachedImage) {
             const url = URL.createObjectURL(cachedImage);

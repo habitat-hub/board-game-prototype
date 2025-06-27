@@ -119,14 +119,18 @@ function handleAddPart(socket: Socket, io: Server) {
       const { prototypeId } = socket.data as SocketData;
 
       try {
-        const maxOrder: number = await PartModel.max('order', {
+        const maxOrder: number | null = await PartModel.max('order', {
           where: { prototypeId },
         });
+
+        // maxOrderがnullの場合（まだパーツが存在しない場合）は1、
+        // そうでなければmaxOrder + 1を使用
+        const newOrder = maxOrder === null ? 1 : maxOrder + 1;
 
         const newPart = await PartModel.create({
           ...part,
           prototypeId,
-          order: (maxOrder + 1) / 2,
+          order: newOrder,
         });
 
         const propertyCreationPromises = properties.map((property) => {
@@ -388,8 +392,24 @@ function handleShuffleDeck(socket: Socket, io: Server) {
     const { prototypeId } = socket.data as SocketData;
 
     try {
-      const cardsOnDeck = await PartModel.findAll({
-        where: { prototypeId, type: 'card', parentId: deckId },
+      const deck = await PartModel.findByPk(deckId);
+      if (!deck || deck.type !== 'deck') return;
+
+      const cards = await PartModel.findAll({
+        where: { prototypeId, type: 'card' },
+      });
+      // カードの中心がデッキパーツ内にあるカードを取得
+      const cardsOnDeck = cards.filter((card) => {
+        const cardCenter = {
+          x: card.position.x + card.width / 2,
+          y: card.position.y + card.height / 2,
+        };
+        return (
+          deck.position.x <= cardCenter.x &&
+          cardCenter.x <= deck.position.x + deck.width &&
+          deck.position.y <= cardCenter.y &&
+          cardCenter.y <= deck.position.y + deck.height
+        );
       });
       await shuffleDeck(cardsOnDeck);
       await emitUpdatedPartsAndProperties(io, prototypeId);

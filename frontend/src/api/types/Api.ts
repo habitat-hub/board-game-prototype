@@ -24,8 +24,6 @@ import {
   PrototypeGroupsDeleteData,
   PrototypeGroupsDetailData,
   PrototypeGroupsDuplicateCreateData,
-  PrototypeGroupsInstanceCreateData,
-  PrototypeGroupsInstanceCreatePayload,
   PrototypeGroupsInviteCreateData,
   PrototypeGroupsInviteCreatePayload,
   PrototypeGroupsInviteDeleteData,
@@ -149,31 +147,6 @@ export class Api<
       Error404Response | Error500Response
     >({
       path: `/api/prototype-groups/${prototypeGroupId}/version`,
-      method: 'POST',
-      body: data,
-      type: ContentType.Json,
-      format: 'json',
-      ...params,
-    });
-  /**
-   * @description 指定されたプロトタイプグループのプロトタイプインスタンスを作成します。
-   *
-   * @tags PrototypeGroups
-   * @name PrototypeGroupsInstanceCreate
-   * @summary プロトタイプインスタンス作成
-   * @request POST:/api/prototype-groups/{prototypeGroupId}/{prototypeVersionId}/instance
-   */
-  prototypeGroupsInstanceCreate = (
-    prototypeGroupId: string,
-    prototypeVersionId: string,
-    data: PrototypeGroupsInstanceCreatePayload,
-    params: RequestParams = {}
-  ) =>
-    this.request<
-      PrototypeGroupsInstanceCreateData,
-      Error404Response | Error500Response
-    >({
-      path: `/api/prototype-groups/${prototypeGroupId}/${prototypeVersionId}/instance`,
       method: 'POST',
       body: data,
       type: ContentType.Json,
