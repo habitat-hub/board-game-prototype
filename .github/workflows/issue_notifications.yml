@@ -5,14 +5,19 @@ on:
   issues:
     types: [opened, closed]
 
+permissions:
+  issues: read
+
 jobs:
   notify-discord:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Send notification to Discord
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           ACTION: ${{ github.event.action }}
           NUMBER: ${{ github.event.issue.number }}
