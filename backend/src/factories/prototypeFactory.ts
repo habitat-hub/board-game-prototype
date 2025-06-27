@@ -119,6 +119,7 @@ export const createPrototypeVersion = async ({
     where: {
       prototypeId: masterPrototype.id,
     },
+    transaction,
   });
 
   // マスタープロトタイプのパーツのプロパティの取得
@@ -126,6 +127,7 @@ export const createPrototypeVersion = async ({
     where: {
       partId: masterParts.map((part) => part.id),
     },
+    transaction,
   });
 
   // VERSION用パーツとプロパティのコピー
@@ -180,7 +182,15 @@ export const createPrototypeVersion = async ({
     { transaction }
   );
 
-  for (const versionPart of masterParts) {
+  // バージョンプロトタイプのパーツを取得
+  const versionParts = await PartModel.findAll({
+    where: {
+      prototypeId: versionPrototype.id,
+    },
+    transaction,
+  });
+
+  for (const versionPart of versionParts) {
     const instancePart = await PartModel.create(
       {
         type: versionPart.type,
@@ -199,10 +209,14 @@ export const createPrototypeVersion = async ({
       { transaction, returning: true }
     );
 
-    const partProperties = masterPartProperties.filter(
-      ({ partId }) => partId === versionPart.id
-    );
-    for (const prop of partProperties) {
+    // バージョンパーツのプロパティを取得
+    const versionPartProperties = await PartPropertyModel.findAll({
+      where: {
+        partId: versionPart.id,
+      },
+      transaction,
+    });
+    for (const prop of versionPartProperties) {
       await PartPropertyModel.create(
         {
           partId: instancePart.id,
