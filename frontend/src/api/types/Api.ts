@@ -53,109 +53,42 @@ export class Api<
   SecurityDataType = unknown,
 > extends HttpClient<SecurityDataType> {
   /**
-   * @description S3に画像をアップロードし、画像のメタデータを保存します。
+   * @description ユーザー名でユーザーを検索します。
    *
-   * @tags Images
-   * @name ImagesCreate
-   * @summary 画像アップロード
-   * @request POST:/api/images
+   * @tags Users
+   * @name UsersSearchList
+   * @summary ユーザー検索
+   * @request GET:/api/users/search
    */
-  imagesCreate = (data: ImagesCreatePayload, params: RequestParams = {}) =>
-    this.request<ImagesCreateData, Error400Response | Error500Response>({
-      path: `/api/images`,
-      method: 'POST',
-      body: data,
-      type: ContentType.FormData,
-      format: 'json',
-      ...params,
-    });
-  /**
-   * @description S3から指定された画像を取得し、画像データを直接返します。
-   *
-   * @tags Images
-   * @name ImagesDetail
-   * @summary 画像取得
-   * @request GET:/api/images/{imageId}
-   */
-  imagesDetail = (imageId: string, params: RequestParams = {}) =>
-    this.request<
-      ImagesDetailData,
-      Error400Response | Error404Response | Error500Response
-    >({
-      path: `/api/images/${imageId}`,
-      method: 'GET',
-      format: 'blob',
-      ...params,
-    });
-  /**
-   * @description S3から指定された画像を削除します。
-   *
-   * @tags Images
-   * @name ImagesDelete
-   * @summary 画像削除
-   * @request DELETE:/api/images/{imageId}
-   */
-  imagesDelete = (
-    { imageId, ...query }: ImagesDeleteParams,
+  usersSearchList = (
+    query: UsersSearchListParams,
     params: RequestParams = {}
   ) =>
-    this.request<
-      ImagesDeleteData,
-      Error400Response | Error404Response | Error500Response
-    >({
-      path: `/api/images/${imageId}`,
-      method: 'DELETE',
+    this.request<UsersSearchListData, any>({
+      path: `/api/users/search`,
+      method: 'GET',
       query: query,
-      ...params,
-    });
-  /**
-   * @description 指定されたIDのプロトタイプを取得します。
-   *
-   * @tags Prototypes
-   * @name PrototypesDetail
-   * @summary 特定のプロトタイプ取得
-   * @request GET:/api/prototypes/{prototypeId}
-   */
-  prototypesDetail = (prototypeId: string, params: RequestParams = {}) =>
-    this.request<PrototypesDetailData, Error404Response>({
-      path: `/api/prototypes/${prototypeId}`,
-      method: 'GET',
       format: 'json',
       ...params,
     });
   /**
-   * @description 指定されたIDのプロトタイプを更新します。
+   * @description ユーザー名を更新します。
    *
-   * @tags Prototypes
-   * @name PrototypesUpdate
-   * @summary プロトタイプ更新
-   * @request PUT:/api/prototypes/{prototypeId}
+   * @tags Users
+   * @name UsersUpdate
+   * @summary ユーザー情報更新
+   * @request PUT:/api/users/{userId}
    */
-  prototypesUpdate = (
-    prototypeId: string,
-    data: PrototypesUpdatePayload,
+  usersUpdate = (
+    userId: string,
+    data: UsersUpdatePayload,
     params: RequestParams = {}
   ) =>
-    this.request<PrototypesUpdateData, Error404Response>({
-      path: `/api/prototypes/${prototypeId}`,
+    this.request<UsersUpdateData, void>({
+      path: `/api/users/${userId}`,
       method: 'PUT',
       body: data,
       type: ContentType.Json,
-      format: 'json',
-      ...params,
-    });
-  /**
-   * @description 指定されたIDのプロトタイプを削除します。
-   *
-   * @tags Prototypes
-   * @name PrototypesDelete
-   * @summary プロトタイプ削除
-   * @request DELETE:/api/prototypes/{prototypeId}
-   */
-  prototypesDelete = (prototypeId: string, params: RequestParams = {}) =>
-    this.request<PrototypesDeleteData, Error404Response>({
-      path: `/api/prototypes/${prototypeId}`,
-      method: 'DELETE',
       format: 'json',
       ...params,
     });
@@ -438,43 +371,110 @@ export class Api<
       ...params,
     });
   /**
-   * @description ユーザー名でユーザーを検索します。
+   * @description 指定されたIDのプロトタイプを取得します。
    *
-   * @tags Users
-   * @name UsersSearchList
-   * @summary ユーザー検索
-   * @request GET:/api/users/search
+   * @tags Prototypes
+   * @name PrototypesDetail
+   * @summary 特定のプロトタイプ取得
+   * @request GET:/api/prototypes/{prototypeId}
    */
-  usersSearchList = (
-    query: UsersSearchListParams,
-    params: RequestParams = {}
-  ) =>
-    this.request<UsersSearchListData, any>({
-      path: `/api/users/search`,
+  prototypesDetail = (prototypeId: string, params: RequestParams = {}) =>
+    this.request<PrototypesDetailData, Error404Response>({
+      path: `/api/prototypes/${prototypeId}`,
       method: 'GET',
-      query: query,
       format: 'json',
       ...params,
     });
   /**
-   * @description ユーザー名を更新します。
+   * @description 指定されたIDのプロトタイプを更新します。
    *
-   * @tags Users
-   * @name UsersUpdate
-   * @summary ユーザー情報更新
-   * @request PUT:/api/users/{userId}
+   * @tags Prototypes
+   * @name PrototypesUpdate
+   * @summary プロトタイプ更新
+   * @request PUT:/api/prototypes/{prototypeId}
    */
-  usersUpdate = (
-    userId: string,
-    data: UsersUpdatePayload,
+  prototypesUpdate = (
+    prototypeId: string,
+    data: PrototypesUpdatePayload,
     params: RequestParams = {}
   ) =>
-    this.request<UsersUpdateData, void>({
-      path: `/api/users/${userId}`,
+    this.request<PrototypesUpdateData, Error404Response>({
+      path: `/api/prototypes/${prototypeId}`,
       method: 'PUT',
       body: data,
       type: ContentType.Json,
       format: 'json',
+      ...params,
+    });
+  /**
+   * @description 指定されたIDのプロトタイプを削除します。
+   *
+   * @tags Prototypes
+   * @name PrototypesDelete
+   * @summary プロトタイプ削除
+   * @request DELETE:/api/prototypes/{prototypeId}
+   */
+  prototypesDelete = (prototypeId: string, params: RequestParams = {}) =>
+    this.request<PrototypesDeleteData, Error404Response>({
+      path: `/api/prototypes/${prototypeId}`,
+      method: 'DELETE',
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description S3に画像をアップロードし、画像のメタデータを保存します。
+   *
+   * @tags Images
+   * @name ImagesCreate
+   * @summary 画像アップロード
+   * @request POST:/api/images
+   */
+  imagesCreate = (data: ImagesCreatePayload, params: RequestParams = {}) =>
+    this.request<ImagesCreateData, Error400Response | Error500Response>({
+      path: `/api/images`,
+      method: 'POST',
+      body: data,
+      type: ContentType.FormData,
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description S3から指定された画像を取得し、画像データを直接返します。
+   *
+   * @tags Images
+   * @name ImagesDetail
+   * @summary 画像取得
+   * @request GET:/api/images/{imageId}
+   */
+  imagesDetail = (imageId: string, params: RequestParams = {}) =>
+    this.request<
+      ImagesDetailData,
+      Error400Response | Error404Response | Error500Response
+    >({
+      path: `/api/images/${imageId}`,
+      method: 'GET',
+      format: 'blob',
+      ...params,
+    });
+  /**
+   * @description S3から指定された画像を削除します。
+   *
+   * @tags Images
+   * @name ImagesDelete
+   * @summary 画像削除
+   * @request DELETE:/api/images/{imageId}
+   */
+  imagesDelete = (
+    { imageId, ...query }: ImagesDeleteParams,
+    params: RequestParams = {}
+  ) =>
+    this.request<
+      ImagesDeleteData,
+      Error400Response | Error404Response | Error500Response
+    >({
+      path: `/api/images/${imageId}`,
+      method: 'DELETE',
+      query: query,
       ...params,
     });
 }
