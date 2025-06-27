@@ -145,7 +145,7 @@ const PrototypeList: React.FC = () => {
 
       // 編集ページへ遷移（成功時はページ遷移するのでsetIsCreating(false)は不要）
       router.push(
-        `/groups/${group.prototypeGroup.id}/prototypes/${masterPrototype.id}/edit`
+        `/groups/${group.prototypeGroup.id}/prototypes/${masterPrototype.id}`
       );
     } catch (error) {
       console.error('Error creating prototype:', error);
@@ -442,7 +442,7 @@ const PrototypeList: React.FC = () => {
                   </td>
                   <td className="p-4 flex justify-center gap-2">
                     <Link
-                      href={`groups/${prototypeGroup.id}/prototypes/${id}/edit`}
+                      href={`groups/${prototypeGroup.id}/prototypes/${id}`}
                       className="flex items-center gap-2 px-3 py-1 text-sm text-wood hover:text-header rounded border border-wood-light/20 hover:bg-wood-lightest/20 whitespace-nowrap"
                       title="プロトタイプを編集する"
                     >

@@ -21,10 +21,9 @@ export default function ClientLayout({
   // Canvas上で表示する場合はヘッダーを非表示にする
   // 正規表現: /groups/[groupId]/prototypes/[prototypeId]/(play|edit)$ の形式にマッチ
   // [a-f0-9-]+ は UUID形式の文字列（16進数とハイフン）を表す
-  const isGameBoard =
-    /^\/groups\/[a-f0-9-]+\/prototypes\/[a-f0-9-]+\/(play|edit)$/.test(
-      pathname
-    );
+  const isGameBoard = /^\/groups\/[a-f0-9-]+\/prototypes\/[a-f0-9-]+/.test(
+    pathname
+  );
 
   useEffect(() => {
     // クライアントサイドでのみデバイスチェックを実行

@@ -19,6 +19,7 @@ import formatDate from '@/utils/dateFormat';
 export default function LeftSidebar({
   prototypeName,
   groupId,
+  prototypeType,
 }: {
   // プロトタイプ名
   prototypeName: string;
@@ -115,6 +116,32 @@ export default function LeftSidebar({
     setIsLeftSidebarMinimized(!isLeftSidebarMinimized);
   };
 
+  // タイプバッジの表示
+  const renderTypeBadge = () => {
+    switch (prototypeType) {
+      case 'MASTER':
+        return (
+          <span className="ml-2 px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-700 border border-amber-200">
+            編集中
+          </span>
+        );
+      case 'INSTANCE':
+        return (
+          <span className="ml-2 px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200">
+            ルーム
+          </span>
+        );
+      case 'VERSION':
+        return (
+          <span className="ml-2 px-2 py-0.5 rounded text-xs font-bold bg-gray-100 text-gray-600 border border-gray-200">
+            バージョン
+          </span>
+        );
+      default:
+        return null;
+    }
+  };
+
   // 新デザイン: 「作る」「遊ぶ」
   const renderSidebarContent = () => {
     if (!prototypeInfo) return null;
@@ -130,7 +157,7 @@ export default function LeftSidebar({
             <button
               onClick={() =>
                 router.push(
-                  `/groups/${groupId}/prototypes/${prototypeInfo.master?.id}/edit`
+                  `/groups/${groupId}/prototypes/${prototypeInfo.master?.id}`
                 )
               }
               className="flex items-center gap-3 bg-gradient-to-r from-amber-50 to-amber-100 hover:from-amber-100 hover:to-amber-200 border-2 border-amber-200 rounded-xl p-3 transition-all shadow-sm"
@@ -154,7 +181,7 @@ export default function LeftSidebar({
               {prototypeInfo.instances.map((instance) => (
                 <div key={instance.id} className="relative flex-shrink-0">
                   <Link
-                    href={`/groups/${groupId}/prototypes/${instance.id}/play`}
+                    href={`/groups/${groupId}/prototypes/${instance.id}`}
                     className="group"
                     title={`${instance.name} (Room ${instance.versionNumber})`}
                   >
@@ -244,6 +271,7 @@ export default function LeftSidebar({
           >
             {prototypeName}
           </h2>
+          {renderTypeBadge()}
         </div>
         <button
           onClick={toggleSidebar}
