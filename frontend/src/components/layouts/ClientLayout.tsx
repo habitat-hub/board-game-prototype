@@ -7,8 +7,6 @@ import * as UAParser from 'ua-parser-js';
 import Header from '@/components/organisms/Header';
 import { WoodenCrateBackground } from '@/features/prototype/components/atoms/WoodenCrateBackground';
 
-export const HEADER_HEIGHT_PX = 80;
-
 export default function ClientLayout({
   children,
 }: Readonly<{
@@ -70,12 +68,10 @@ export default function ClientLayout({
   }
 
   return (
-    <>
+    <div className="bg-kibako-tertiary min-h-screen">
       {!isGameBoard && <WoodenCrateBackground />}
-      {!isGameBoard && <Header height={HEADER_HEIGHT_PX} />}
-      <div style={{ paddingTop: isGameBoard ? 0 : HEADER_HEIGHT_PX }}>
-        {children}
-      </div>
-    </>
+      {!isGameBoard && <Header />}
+      <main>{children}</main>
+    </div>
   );
 }
