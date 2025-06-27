@@ -7,6 +7,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: 'sm' | 'md' | 'lg';
   href?: string;
   className?: string;
+  isLoading?: boolean;
 }
 
 export default function Button({
@@ -15,6 +16,7 @@ export default function Button({
   size = 'md',
   href,
   className = '',
+  isLoading = false,
   ...props
 }: ButtonProps) {
   const baseStyles =
@@ -34,15 +36,24 @@ export default function Button({
 
   const buttonClasses = `${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`;
 
-  if (href) {
-    return (
-      <Link href={href} className={buttonClasses}>
-        {children}
-      </Link>
-    );
-  }
-
-  return (
+  return isLoading ? (
+    // ローディング中(3つのドットを点滅表示)
+    <button className={buttonClasses} {...props}>
+      {/* NOTE: ローディング中は子要素を非表示にする(ボタンの横幅を維持するためinvisibleを使用) */}
+      <div className="invisible h-0">{children}</div>
+      <div className="flex items-center justify-center gap-2">
+        <span className="animate-pulse text-lg">・</span>
+        <span className="animate-pulse text-lg">・</span>
+        <span className="animate-pulse text-lg">・</span>
+      </div>
+    </button>
+  ) : href ? (
+    // リンク
+    <Link href={href} className={buttonClasses}>
+      {children}
+    </Link>
+  ) : (
+    // ボタン
     <button className={buttonClasses} {...props}>
       {children}
     </button>
