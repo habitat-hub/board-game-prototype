@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
 
-import { ImagesDeleteParams } from '../types';
-
 import { imagesService } from '@/api/endpoints/images';
+
+import { ImagesDeleteParams } from '../types';
 
 export const useImages = () => {
   /**
