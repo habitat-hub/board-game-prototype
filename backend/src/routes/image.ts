@@ -254,7 +254,7 @@ router.delete(
       }
 
       if (!prototypeId || !partId || !side) {
-        throw new ValidationError('partId、sideおよびsideの指定が必要です');
+        throw new ValidationError('prototypeId、partId、sideの指定が必要です');
       }
       // TODO: 画像のアクセス権を確認するロジックを追加(例: ユーザーがその画像にアクセスできるかどうか)
       // ここでは単純にユーザーが認証されているかどうかを確認
@@ -267,7 +267,7 @@ router.delete(
       }
       const result = await cleanupImageIfUnused(
         imageId,
-        partId as string,
+        String(partId),
         side as 'front' | 'back'
       );
       // UPDATE_PARTSをemit
