@@ -273,7 +273,7 @@ export interface ImagesDeleteParams {
    * 更新をemitするかどうか（デフォルトはfalse）
    * @default false
    */
-  emitUpdate?: 'true' | 'false';
+  emitUpdate: 'true' | 'false';
   /** 削除する画像のID */
   imageId: string;
 }

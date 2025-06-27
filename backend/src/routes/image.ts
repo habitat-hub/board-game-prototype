@@ -209,7 +209,7 @@ router.get(
  *           enum: [front, back]
  *       - name: emitUpdate
  *         in: query
- *         required: false
+ *         required: true
  *         description: 更新をemitするかどうか（デフォルトはfalse）
  *         schema:
  *           type: string
