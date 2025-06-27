@@ -1,36 +1,27 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import * as UAParser from 'ua-parser-js';
 
 import Header from '@/components/organisms/Header';
 import { WoodenCrateBackground } from '@/features/prototype/components/atoms/WoodenCrateBackground';
+import { useClientPathInfo } from '@/hooks/useClientPathInfo';
 
 export default function ClientLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
   const router = useRouter();
+  const { isGameBoardPath, isUnsupportedDevicePath } = useClientPathInfo();
   // 初期値をfalseにすることでSSRとクライアント側のレンダリングを一致させる
   const [isCheckingDevice, setIsCheckingDevice] = useState(false);
   const [shouldRedirect, setShouldRedirect] = useState(false);
 
-  // Canvas上で表示する場合はヘッダーを非表示にする
-  // 正規表現: /groups/[groupId]/prototypes/[prototypeId]/(play|edit)$ の形式にマッチ
-  // [a-f0-9-]+ は UUID形式の文字列（16進数とハイフン）を表す
-  const isGameBoard = /^\/groups\/[a-f0-9-]+\/prototypes\/[a-f0-9-]+/.test(
-    pathname
-  );
-
   useEffect(() => {
     // クライアントサイドでのみデバイスチェックを実行
-    if (
-      typeof window !== 'undefined' &&
-      !pathname.includes('/unsupported-device')
-    ) {
+    if (typeof window !== 'undefined' && !isUnsupportedDevicePath) {
       setIsCheckingDevice(true);
 
       const parser = new UAParser.UAParser();
@@ -40,21 +31,21 @@ export default function ClientLayout({
       // モバイルまたはタブレットの場合にリダイレクトフラグを設定
       if (
         (deviceType === 'mobile' || deviceType === 'tablet') &&
-        pathname !== '/unsupported-device'
+        !isUnsupportedDevicePath
       ) {
         setShouldRedirect(true);
       }
 
       setIsCheckingDevice(false);
     }
-  }, [pathname]);
+  }, [isUnsupportedDevicePath]);
 
   // リダイレクトが必要な場合は実行
   useEffect(() => {
-    if (shouldRedirect && pathname !== '/unsupported-device') {
+    if (shouldRedirect && !isUnsupportedDevicePath) {
       router.push('/unsupported-device');
     }
-  }, [shouldRedirect, router, pathname]);
+  }, [shouldRedirect, isUnsupportedDevicePath, router]);
 
   // デバイスチェック中は読み込み表示を返すことで、
   // サーバーサイドレンダリングとの整合性を保つ
@@ -68,8 +59,8 @@ export default function ClientLayout({
 
   return (
     <div className="bg-kibako-tertiary min-h-screen">
-      {!isGameBoard && <WoodenCrateBackground />}
-      {!isGameBoard && <Header />}
+      {!isGameBoardPath && <WoodenCrateBackground />}
+      {!isGameBoardPath && <Header />}
       <main>{children}</main>
     </div>
   );
