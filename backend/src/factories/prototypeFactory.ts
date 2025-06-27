@@ -73,14 +73,13 @@ export async function createPrototypeGroup({
 }
 
 /**
- * プロトタイプバージョンを作成する
+ * プロトタイプバージョンを作成する（MASTERをコピーし、INSTANCEも同時に作成）
  *
  * @param prototypeGroupId - プロトタイプグループID
  * @param name - プロトタイプ名
- * @param type - プロトタイプタイプ
  * @param versionNumber - バージョン番号
  * @param transaction - トランザクション
- * @returns 作成したプロトタイプ
+ * @returns 作成したバージョンプロトタイプとインスタンスプロトタイプ
  */
 export const createPrototypeVersion = async ({
   prototypeGroupId,
@@ -93,17 +92,6 @@ export const createPrototypeVersion = async ({
   versionNumber: number;
   transaction: Transaction;
 }) => {
-  // バージョンプロトトタイプの作成
-  const versionPrototype = await PrototypeModel.create(
-    {
-      prototypeGroupId,
-      name,
-      type: 'VERSION',
-      versionNumber,
-    },
-    { transaction }
-  );
-
   // マスタープロトタイプの取得
   const masterPrototype = await PrototypeModel.findOne({
     where: {
@@ -114,6 +102,17 @@ export const createPrototypeVersion = async ({
   if (!masterPrototype) {
     throw new Error('マスタープロトタイプが見つかりません');
   }
+
+  // バージョンプロトタイプの作成
+  const versionPrototype = await PrototypeModel.create(
+    {
+      prototypeGroupId,
+      name,
+      type: 'VERSION',
+      versionNumber,
+    },
+    { transaction }
+  );
 
   // マスタープロトタイプのパーツの取得
   const masterParts = await PartModel.findAll({
@@ -129,169 +128,95 @@ export const createPrototypeVersion = async ({
     },
   });
 
-  // パーツの作成
-  masterParts.map(
-    async ({
-      id,
-      type,
-      parentId,
-      position,
-      width,
-      height,
-      configurableTypeAsChild,
-      isReversible,
-      isFlipped,
-      canReverseCardOnDeck,
-    }) => {
-      const versionPart = await PartModel.create(
-        {
-          type,
-          prototypeId: versionPrototype.id,
-          parentId,
-          position,
-          width,
-          height,
-          configurableTypeAsChild,
-          originalPartId: id,
-          isReversible,
-          isFlipped,
-          canReverseCardOnDeck,
-        },
-        { transaction, returning: true }
-      );
+  // VERSION用パーツとプロパティのコピー
+  const versionPartIdMap: Record<string, string> = {};
+  for (const masterPart of masterParts) {
+    const versionPart = await PartModel.create(
+      {
+        type: masterPart.type,
+        prototypeId: versionPrototype.id,
+        parentId: masterPart.parentId,
+        position: masterPart.position,
+        width: masterPart.width,
+        height: masterPart.height,
+        order: masterPart.order,
+        configurableTypeAsChild: masterPart.configurableTypeAsChild,
+        originalPartId: masterPart.id,
+        isReversible: masterPart.isReversible,
+        isFlipped: masterPart.isFlipped,
+        canReverseCardOnDeck: masterPart.canReverseCardOnDeck,
+      },
+      { transaction, returning: true }
+    );
+    versionPartIdMap[String(masterPart.id)] = String(versionPart.id);
 
-      const partProperties = masterPartProperties.filter(
-        ({ partId }) => partId === id
-      );
-      partProperties.map(
-        async ({ side, name, description, color, textColor, imageId }) => {
-          await PartPropertyModel.create(
-            {
-              partId: versionPart.id,
-              side,
-              name,
-              description,
-              color,
-              textColor,
-              imageId,
-            },
-            { transaction }
-          );
-        }
+    const partProperties = masterPartProperties.filter(
+      ({ partId }) => partId === masterPart.id
+    );
+    for (const prop of partProperties) {
+      await PartPropertyModel.create(
+        {
+          partId: versionPart.id,
+          side: prop.side,
+          name: prop.name,
+          description: prop.description,
+          color: prop.color,
+          textColor: prop.textColor,
+          imageId: prop.imageId,
+        },
+        { transaction }
       );
     }
-  );
+  }
 
-  return versionPrototype;
-};
-
-/**
- * プロトタイプインスタンスを作成する
- *
- * @param prototypeGroupId - プロトタイプグループID
- * @param sourceVersionPrototypeId - 紐付くバージョンID
- * @param name - プロトタイプ名
- * @param versionNumber - バージョン番号
- * @param transaction - トランザクション
- * @returns 作成したインスタンスプロトタイプ
- */
-export const createPrototypeInstance = async ({
-  prototypeGroupId,
-  sourceVersionPrototypeId,
-  name,
-  versionNumber,
-  transaction,
-}: {
-  prototypeGroupId: string;
-  sourceVersionPrototypeId: string;
-  name: string;
-  versionNumber: number;
-  transaction: Transaction;
-}) => {
   const instancePrototype = await PrototypeModel.create(
     {
       prototypeGroupId,
-      name,
+      name: `${name}（ルーム）`,
       type: 'INSTANCE',
       versionNumber,
-      sourceVersionPrototypeId,
+      sourceVersionPrototypeId: versionPrototype.id,
     },
     { transaction }
   );
 
-  // バージョンプロトタイプの取得
-  const versionPrototype = await PrototypeModel.findByPk(
-    sourceVersionPrototypeId
-  );
-  if (!versionPrototype) {
-    throw new Error('バージョンプロトタイプが見つかりません');
-  }
+  for (const versionPart of masterParts) {
+    const instancePart = await PartModel.create(
+      {
+        type: versionPart.type,
+        prototypeId: instancePrototype.id,
+        parentId: versionPart.parentId,
+        position: versionPart.position,
+        width: versionPart.width,
+        height: versionPart.height,
+        order: versionPart.order,
+        configurableTypeAsChild: versionPart.configurableTypeAsChild,
+        originalPartId: versionPart.id,
+        isReversible: versionPart.isReversible,
+        isFlipped: versionPart.isFlipped,
+        canReverseCardOnDeck: versionPart.canReverseCardOnDeck,
+      },
+      { transaction, returning: true }
+    );
 
-  // バージョンプロトタイプのパーツの取得
-  const versionParts = await PartModel.findAll({
-    where: {
-      prototypeId: versionPrototype.id,
-    },
-  });
-
-  // バージョンプロトタイプのパーツのプロパティの取得
-  const versionPartProperties = await PartPropertyModel.findAll({
-    where: {
-      partId: versionParts.map((part) => part.id),
-    },
-  });
-
-  // パーツの作成
-  versionParts.map(
-    async ({
-      id,
-      type,
-      parentId,
-      position,
-      width,
-      height,
-      configurableTypeAsChild,
-      isReversible,
-      isFlipped,
-      canReverseCardOnDeck,
-    }) => {
-      const instancePart = await PartModel.create(
+    const partProperties = masterPartProperties.filter(
+      ({ partId }) => partId === versionPart.id
+    );
+    for (const prop of partProperties) {
+      await PartPropertyModel.create(
         {
-          type,
-          prototypeId: instancePrototype.id,
-          parentId,
-          position,
-          width,
-          height,
-          configurableTypeAsChild,
-          originalPartId: id,
-          isReversible,
-          isFlipped,
-          canReverseCardOnDeck,
+          partId: instancePart.id,
+          side: prop.side,
+          name: prop.name,
+          description: prop.description,
+          color: prop.color,
+          textColor: prop.textColor,
+          imageId: prop.imageId,
         },
-        { transaction, returning: true }
-      );
-
-      const partProperties = versionPartProperties.filter(
-        ({ partId }) => partId === id
-      );
-      partProperties.map(
-        async ({ side, name, description, color, textColor, imageId }) => {
-          await PartPropertyModel.create(
-            {
-              partId: instancePart.id,
-              side,
-              name,
-              description,
-              color,
-              textColor,
-              imageId,
-            },
-            { transaction }
-          );
-        }
+        { transaction }
       );
     }
-  );
-  return instancePrototype;
+  }
+
+  return { versionPrototype, instancePrototype };
 };
