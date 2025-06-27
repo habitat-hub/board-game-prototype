@@ -1,3 +1,8 @@
+// 必要なモジュールをインポート
+import * as github from "@actions/github";
+import * as core from "@actions/core";
+import fetch from "node-fetch";
+
 try {
   // 通知タイプに応じて文言と色を切り替え
   const content =
