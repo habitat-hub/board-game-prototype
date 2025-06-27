@@ -14,7 +14,7 @@ import { useUser } from '@/hooks/useUser';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
-export default function PrototypeEdit() {
+export default function PrototypeTemplate() {
   const router = useRouter();
   const { getPrototypeGroup } = usePrototypeGroup();
   const { user } = useUser();
@@ -85,21 +85,25 @@ export default function PrototypeEdit() {
   // プロトタイプが存在しない場合
   if (!prototype) return null;
 
+  const selectedPrototype = prototype.prototypes.find(
+    (p) => p.id === prototypeId
+  );
+  const prototypeName = selectedPrototype?.name || '';
+  const prototypeType = selectedPrototype?.type;
+
+  if (!prototypeType) return null;
+
   return (
     <SocketProvider socket={socket}>
       <PrototypeIdProvider prototypeId={prototypeId}>
         <GameBoard
-          prototypeName={
-            prototype.prototypes.find(
-              (prototype) => prototype.id === prototypeId
-            )?.name || ''
-          }
+          prototypeName={prototypeName}
           parts={parts}
           properties={properties}
           cursors={cursors}
           prototypeVersionNumber={versionNumber}
           groupId={groupId}
-          prototypeType="MASTER"
+          prototypeType={prototypeType}
         />
       </PrototypeIdProvider>
     </SocketProvider>
