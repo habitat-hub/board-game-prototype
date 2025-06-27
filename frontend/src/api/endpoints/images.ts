@@ -1,6 +1,10 @@
 import axiosInstance from '@/api/client';
 
-import { ImagesCreateData, ImagesDeleteData } from '../types';
+import {
+  ImagesCreateData,
+  ImagesDeleteData,
+  ImagesDeleteParams,
+} from '../types';
 
 export const imagesService = {
   /*
@@ -22,8 +26,14 @@ export const imagesService = {
   /*
    * 画像データ削除
    */
-  deleteImage: async (imageId: string): Promise<ImagesDeleteData> => {
-    const response = await axiosInstance.delete(`/api/images/${imageId}`);
+  deleteImage: async (
+    imageId: string,
+    params: Omit<ImagesDeleteParams, 'imageId'>
+  ): Promise<ImagesDeleteData> => {
+    const query = `?prototypeId=${params.prototypeId}&partId=${params.partId}&side=${params.side}&emitUpdate=${params.emitUpdate}`;
+    const response = await axiosInstance.delete(
+      `/api/images/${imageId}${query}`
+    );
     return response.data;
   },
 };

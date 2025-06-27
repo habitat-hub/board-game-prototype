@@ -57,7 +57,10 @@ async function fetchPartsAndProperties(prototypeId: string) {
  * @param io - Server
  * @param {string} prototypeId- プロトタイプバージョンID
  */
-async function emitUpdatedPartsAndProperties(io: Server, prototypeId: string) {
+export async function emitUpdatedPartsAndProperties(
+  io: Server,
+  prototypeId: string
+) {
   const { parts, properties } = await fetchPartsAndProperties(prototypeId);
   io.to(prototypeId).emit('UPDATE_PARTS', { parts, properties });
 }

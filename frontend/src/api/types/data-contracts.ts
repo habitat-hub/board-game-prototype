@@ -146,41 +146,19 @@ export interface UserRole {
   updatedAt: string;
 }
 
-export type LogoutCreateData = SuccessResponse;
-
-export interface UserListData {
-  id?: string;
-  username?: string;
+export interface UsersSearchListParams {
+  /** 検索するユーザー名 */
+  username: string;
 }
 
-export interface ImagesCreatePayload {
-  /**
-   * アップロードする画像ファイル
-   * @format binary
-   */
-  image?: File;
+export type UsersSearchListData = User[];
+
+export interface UsersUpdatePayload {
+  /** 新しいユーザー名 */
+  username: string;
 }
 
-export type ImagesCreateData = Image;
-
-/** @format binary */
-export type ImagesDetailData = File;
-
-export type ImagesDeleteData = any;
-
-export interface PrototypesDetailData {
-  prototype?: Prototype;
-}
-
-export interface PrototypesUpdatePayload {
-  name?: string;
-  minPlayers?: number;
-  maxPlayers?: number;
-}
-
-export type PrototypesUpdateData = Prototype;
-
-export type PrototypesDeleteData = SuccessResponse;
+export type UsersUpdateData = User;
 
 export type PrototypeGroupsListData = {
   prototypeGroup?: PrototypeGroup;
@@ -257,16 +235,54 @@ export interface PrototypeGroupsRolesUpdatePayload {
 
 export type PrototypeGroupsRolesUpdateData = any;
 
-export interface UsersSearchListParams {
-  /** 検索するユーザー名 */
-  username: string;
+export interface PrototypesDetailData {
+  prototype?: Prototype;
 }
 
-export type UsersSearchListData = User[];
-
-export interface UsersUpdatePayload {
-  /** 新しいユーザー名 */
-  username: string;
+export interface PrototypesUpdatePayload {
+  name?: string;
+  minPlayers?: number;
+  maxPlayers?: number;
 }
 
-export type UsersUpdateData = User;
+export type PrototypesUpdateData = Prototype;
+
+export type PrototypesDeleteData = SuccessResponse;
+
+export interface ImagesCreatePayload {
+  /**
+   * アップロードする画像ファイル
+   * @format binary
+   */
+  image?: File;
+}
+
+export type ImagesCreateData = Image;
+
+/** @format binary */
+export type ImagesDetailData = File;
+
+export interface ImagesDeleteParams {
+  /** プロトタイプID */
+  prototypeId: string;
+  /** パーツID */
+  partId: number;
+  /** 面（front または back） */
+  side: 'front' | 'back';
+  /**
+   * 更新をemitするかどうか（デフォルトはfalse）
+   * @default false
+   */
+  emitUpdate: 'true' | 'false';
+  /** 削除する画像のID */
+  imageId: string;
+}
+
+export type ImagesDeleteData = any;
+
+export type LogoutCreateData = SuccessResponse;
+
+export interface UserListData {
+  id?: string;
+  username?: string;
+}
