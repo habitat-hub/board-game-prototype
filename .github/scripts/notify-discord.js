@@ -1,6 +1,4 @@
 // 必要なモジュールをインポート
-import * as github from "@actions/github";
-import * as core from "@actions/core";
 import fetch from "node-fetch";
 
 try {
@@ -18,14 +16,29 @@ try {
   // コメントリスト取得
   const [owner, repo] = process.env.REPO.split("/");
   const issue_number = process.env.NUMBER;
-  const comments = await github.rest.issues.listComments({
-    owner,
-    repo,
-    issue_number,
-  });
-  const commentTexts = comments.data
-    .map((c) => `- ${c.user.login}: ${c.body}`)
-    .join("\n");
+  let commentTexts = "";
+  try {
+    const commentsRes = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/issues/${issue_number}/comments`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+          Accept: "application/vnd.github.v3+json",
+          "User-Agent": "notify-discord-script",
+        },
+      }
+    );
+    if (commentsRes.ok) {
+      const comments = await commentsRes.json();
+      commentTexts = comments
+        .map((c) => `- ${c.user.login}: ${c.body}`)
+        .join("\n");
+    } else {
+      commentTexts = "(Failed to fetch comments)";
+    }
+  } catch (e) {
+    commentTexts = "(Error fetching comments)";
+  }
 
   // Discord 向けペイロードを作成
   const payload = {
@@ -58,5 +71,5 @@ try {
   console.log("Discord notification sent successfully");
 } catch (error) {
   console.error("Failed to send Discord notification:", error);
-  core.setFailed(error.message);
+  process.exit(1);
 }
