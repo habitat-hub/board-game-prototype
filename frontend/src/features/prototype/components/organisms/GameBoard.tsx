@@ -724,7 +724,7 @@ export default function GameBoard({
               y={0}
               width={canvasSize.width}
               height={canvasSize.height}
-              fill="#f5f5f5"
+              fill={gameBoardMode === GameBoardMode.PLAY ? '#fff' : '#f5f5f5'}
               draggable
               onDragMove={handleDragMove}
               onClick={handleBackgroundClick}
