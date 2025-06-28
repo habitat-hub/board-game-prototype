@@ -169,7 +169,7 @@ export const createPrototypeVersion = async ({
   const instancePrototype = await PrototypeModel.create(
     {
       projectId,
-      name: `${name}（ルーム）`,
+      name,
       type: 'INSTANCE',
       versionNumber,
       sourceVersionPrototypeId: versionPrototype.id,
