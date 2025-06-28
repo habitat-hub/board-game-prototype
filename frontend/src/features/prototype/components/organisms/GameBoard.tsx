@@ -730,11 +730,13 @@ export default function GameBoard({
               onClick={handleBackgroundClick}
             />
             {/* 背景グリッド */}
-            <GridLines
-              camera={camera}
-              viewportSize={viewportSize}
-              gridSize={GRID_SIZE}
-            />
+            {gameBoardMode === GameBoardMode.CREATE && (
+              <GridLines
+                camera={camera}
+                viewportSize={viewportSize}
+                gridSize={GRID_SIZE}
+              />
+            )}
 
             {/* パーツの表示（orderが大きいほど後で描画=前面に表示） */}
             {[...parts]
