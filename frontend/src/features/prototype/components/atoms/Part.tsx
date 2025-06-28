@@ -8,13 +8,14 @@ import { useCard } from '@/features/prototype/hooks/useCard';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { useDeck } from '@/features/prototype/hooks/useDeck';
 import { PartHandle } from '@/features/prototype/type';
+import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
 
 interface PartProps {
   part: PartType;
   properties: PropertyType[];
   images: Record<string, string>[];
   isOtherPlayerCard: boolean;
-  prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE';
+  gameBoardMode: GameBoardMode;
   onDragStart: (e: Konva.KonvaEventObject<DragEvent>) => void;
   onDragMove: (e: Konva.KonvaEventObject<DragEvent>, partId: number) => void;
   onDragEnd: (e: Konva.KonvaEventObject<DragEvent>, partId: number) => void;
@@ -32,7 +33,7 @@ const Part = forwardRef<PartHandle, PartProps>(
       part,
       properties,
       isOtherPlayerCard = false,
-      prototypeType,
+      gameBoardMode,
       images,
       onDragStart,
       onDragMove,
@@ -52,13 +53,13 @@ const Part = forwardRef<PartHandle, PartProps>(
     const [scaleX, setScaleX] = useState(1);
     const { showDebugInfo } = useDebugMode();
 
-    // 要素のドラッグ開始時に最前面に移動する処理を追加（INSTANCEモードのみ）
+    // 要素のドラッグ開始時に最前面に移動する処理を追加（PLAYモードのみ）
     useEffect(() => {
-      if (!groupRef.current || prototypeType !== 'INSTANCE') return;
+      if (!groupRef.current || gameBoardMode !== GameBoardMode.PLAY) return;
 
       const currentGroup = groupRef.current;
 
-      // ドラッグ開始時のハンドラーを追加（INSTANCEモードのみ）
+      // ドラッグ開始時のハンドラーを追加（PLAYモードのみ）
       currentGroup.on('dragstart', () => {
         // ドラッグ中のノードを最前面に移動
         currentGroup.moveToTop();
@@ -68,7 +69,7 @@ const Part = forwardRef<PartHandle, PartProps>(
         // クリーンアップ
         currentGroup.off('dragstart');
       };
-    }, [prototypeType]);
+    }, [gameBoardMode, groupRef]);
 
     const isCard = part.type === 'card';
     const isDeck = part.type === 'deck';
@@ -109,7 +110,8 @@ const Part = forwardRef<PartHandle, PartProps>(
     }, [isReversing, isCard, setIsReversing]);
 
     // 裏向き表示にする必要があるか
-    const isFlippedNeeded = prototypeType === 'VERSION' && isOtherPlayerCard;
+    const isFlippedNeeded =
+      gameBoardMode === GameBoardMode.PREVIEW && isOtherPlayerCard;
 
     // 対象面（表or裏）のプロパティを取得 (ローカルの isFlipped 状態を使用)
     const targetProperty = useMemo(() => {

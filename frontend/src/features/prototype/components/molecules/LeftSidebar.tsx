@@ -14,22 +14,16 @@ import { MdMeetingRoom, MdDelete } from 'react-icons/md';
 import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Prototype, PrototypeGroup } from '@/api/types';
+import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
 import formatDate from '@/utils/dateFormat';
 
 export default function LeftSidebar({
   prototypeName,
+  gameBoardMode,
   groupId,
-  prototypeType,
 }: {
-  // プロトタイプ名
   prototypeName: string;
-  // プロトタイプバージョン番号（プレビューモード時のみ使用）
-  prototypeVersionNumber?: number;
-  // プロトタイプタイプ（'preview'または'edit'）
-  prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE';
-  // マスタープレビューかどうか（プレビューモード時のみ使用）
-  isVersionPrototype: boolean;
-  // グループID
+  gameBoardMode: GameBoardMode;
   groupId: string;
 }) {
   const router = useRouter();
@@ -118,23 +112,26 @@ export default function LeftSidebar({
 
   // タイプバッジの表示
   const renderTypeBadge = () => {
-    switch (prototypeType) {
-      case 'MASTER':
+    switch (gameBoardMode) {
+      case GameBoardMode.CREATE:
         return (
-          <span className="ml-2 px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-700 border border-amber-200">
-            編集中
+          <span
+            className="ml-2 px-2 py-0.5 rounded text
+            -xs font-bold bg-amber-100 text-amber-700 border border-amber-200"
+          >
+            作成中
           </span>
         );
-      case 'INSTANCE':
-        return (
-          <span className="ml-2 px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200">
-            ルーム
-          </span>
-        );
-      case 'VERSION':
+      case GameBoardMode.PREVIEW:
         return (
           <span className="ml-2 px-2 py-0.5 rounded text-xs font-bold bg-gray-100 text-gray-600 border border-gray-200">
-            バージョン
+            プレビュー
+          </span>
+        );
+      case GameBoardMode.PLAY:
+        return (
+          <span className="ml-2 px-2 py-0.5 rounded text-xs font-bold bg-green-100 text-green-700 border border-green-200">
+            プレイ中
           </span>
         );
       default:

@@ -89,11 +89,8 @@ export default function PrototypeTemplate() {
     (p) => p.id === prototypeId
   );
   const prototypeName = selectedPrototype?.name || '';
-  const prototypeType = selectedPrototype?.type;
-  if (!prototypeType) return null;
-
   const getGameBoardMode = (
-    prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE'
+    prototypeType?: 'MASTER' | 'VERSION' | 'INSTANCE'
   ): GameBoardMode => {
     switch (prototypeType) {
       case 'MASTER':
@@ -106,7 +103,7 @@ export default function PrototypeTemplate() {
         return GameBoardMode.PREVIEW;
     }
   };
-  const mode = getGameBoardMode(prototypeType);
+  const mode = getGameBoardMode(selectedPrototype?.type);
 
   return (
     <SocketProvider socket={socket}>
@@ -118,8 +115,7 @@ export default function PrototypeTemplate() {
           cursors={cursors}
           prototypeVersionNumber={versionNumber}
           groupId={groupId}
-          prototypeType={prototypeType}
-          mode={mode}
+          gameBoardMode={mode}
         />
       </PrototypeIdProvider>
     </SocketProvider>
