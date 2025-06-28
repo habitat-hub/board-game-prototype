@@ -91,8 +91,10 @@ export default function LeftSidebar({
     setIsRoomCreating(true);
     try {
       // バージョン作成
+      const now = new Date();
+      const name = `${formatDate(now, true)}版`;
       await createPrototypeVersion(projectId, {
-        name: 'ルーム',
+        name,
         versionNumber: (prototypeInfo?.versions?.length || 0) + 1,
       });
       // 今はバージョンのプレイ画面に遷移 → プロジェクトID・プロトタイプIDで遷移
@@ -184,25 +186,25 @@ export default function LeftSidebar({
         {activeTab === GameBoardMode.PLAY && (
           <div>
             <div className="flex flex-col gap-2 py-0.5 px-0">
+              {/* 新しいルーム作成ボタン */}
               <button
                 onClick={handleCreateRoom}
                 disabled={isRoomCreating}
-                className="flex items-center justify-center border-2 border-dashed border-kibako-tertiary hover:border-kibako-secondary rounded-xl px-2 py-2 min-w-[70px] text-center shadow-none transition-all hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex-shrink-0 bg-kibako-tertiary gap-2 mb-2"
-                style={{ height: '56px' }}
+                className="relative flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 border-2 border-dashed border-kibako-secondary hover:border-kibako-accent hover:border-solid mb-2 disabled:opacity-60 disabled:cursor-not-allowed"
                 title="新しいルームを作る"
               >
-                <MdMeetingRoom className="h-6 w-6 text-kibako-secondary transition-colors" />
-                <div className="flex flex-col items-start text-left">
-                  <span className="text-xs font-semibold text-kibako-secondary block">
-                    新規ルーム
+                <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[180px]">
+                    新しいルームを作る
                   </span>
-                  <span className="text-[10px] text-kibako-secondary/70 mt-0.5 leading-tight">
+                  <span className="text-xs text-kibako-secondary mt-0.5 flex items-center gap-1">
                     今のボードの状態を保存して
                     <br />
                     ルームを作成します
                   </span>
                 </div>
-                <IoAdd className="h-4 w-4 text-kibako-secondary ml-1 transition-colors" />
+                <IoAdd className="h-5 w-5 text-kibako-secondary ml-1 transition-colors" />
               </button>
               {prototypeInfo.instances
                 .slice()
@@ -217,23 +219,16 @@ export default function LeftSidebar({
                     <Link
                       href={`/projects/${projectId}/prototypes/${instance.id}`}
                       className="group"
-                      title={`${instance.name} (Room ${instance.versionNumber})`}
+                      title={`${instance.name ?? instance.versionNumber + '版'}のルームを開く`}
                     >
                       <div className="flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 group-hover:bg-kibako-accent/10 group-hover:border-kibako-accent border border-transparent">
                         <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
                         <div className="flex flex-col min-w-0 flex-1">
-                          <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[120px]">
+                          <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[180px]">
                             {instance.name}
                           </span>
-                          <span className="text-xs text-kibako-primary mt-0.5 flex items-center gap-1">
-                            <span className="font-bold">
-                              Ver{instance.versionNumber}
-                            </span>
-                            {instance.createdAt && (
-                              <span className="text-kibako-secondary">
-                                {formatDate(instance.createdAt, true)}
-                              </span>
-                            )}
+                          <span className="text-xs text-kibako-secondary mt-0.5 flex items-center gap-1">
+                            <span className="font-bold">入室する</span>
                           </span>
                         </div>
                       </div>
