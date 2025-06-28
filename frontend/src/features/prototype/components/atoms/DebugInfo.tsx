@@ -8,6 +8,7 @@ import { useMemoryUsage } from '@/features/prototype/hooks/useMemoryUsage';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { useRenderPerformance } from '@/features/prototype/hooks/useRenderPerformance';
 import { CursorInfo } from '@/features/prototype/types/cursor';
+import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
 
 interface DebugInfoProps {
   // Camera info
@@ -19,27 +20,25 @@ interface DebugInfoProps {
   // Prototype info
   prototypeName: string;
   prototypeVersionNumber: number;
-  isVersionPrototype: boolean;
   groupId: string;
-  prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE';
   // Data
   parts: Part[];
   properties: PartProperty[];
   cursors: Record<string, CursorInfo>;
   selectedPartIds: number[];
+  mode: GameBoardMode;
 }
 
 const DebugInfo: React.FC<DebugInfoProps> = ({
   camera,
   prototypeName,
   prototypeVersionNumber,
-  isVersionPrototype,
   groupId,
-  prototypeType,
   parts,
   properties,
   cursors,
   selectedPartIds,
+  mode,
 }) => {
   const { showDebugInfo } = useDebugMode();
 
@@ -68,6 +67,9 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
           <div className="text-sm h-[50vh] overflow-y-auto">
             <div className="border-b border-white border-opacity-20 mb-2 pb-1">
               <strong>Current Status</strong>
+            </div>
+            <div className="mb-1.5">
+              <span className="font-bold">Mode:</span> {mode}
             </div>
             <div
               className={`font-bold mb-1.5 ${selectedPartIds.length ? 'text-yellow-400' : 'text-white'}`}
@@ -110,8 +112,6 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
             <div>Name: {prototypeName}</div>
             <div>Version: {prototypeVersionNumber || 'N/A'}</div>
             <div>Group ID: {groupId}</div>
-            <div>Type: {prototypeType}</div>
-            <div>Is Master Preview: {isVersionPrototype ? 'Yes' : 'No'}</div>
 
             <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
               <strong>Multiplayer</strong>

@@ -26,6 +26,7 @@ import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { AddPartProps, DeleteImageProps } from '@/features/prototype/type';
 import { CursorInfo } from '@/features/prototype/types/cursor';
+import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
 import {
   getImageFromIndexedDb,
   resetImageParamsInIndexedDb,
@@ -46,7 +47,7 @@ interface GameBoardProps {
   parts: PartType[];
   properties: PropertyType[];
   cursors: Record<string, CursorInfo>;
-  prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE';
+  gameBoardMode: GameBoardMode;
 }
 
 export default function GameBoard({
@@ -56,7 +57,7 @@ export default function GameBoard({
   parts,
   properties,
   cursors,
-  prototypeType,
+  gameBoardMode,
 }: GameBoardProps) {
   const stageRef = useRef<Konva.Stage | null>(null);
   const [viewportSize, setViewportSize] = useState({
@@ -73,8 +74,6 @@ export default function GameBoard({
   const [contextMenuPartId, setContextMenuPartId] = useState<number | null>(
     null
   );
-
-  const isVersionPrototype = prototypeType === 'VERSION';
 
   const canvasSize = useMemo(
     () => ({
@@ -319,7 +318,7 @@ export default function GameBoard({
     e: Konva.KonvaEventObject<DragEvent>,
     partId: number
   ) => {
-    if (isVersionPrototype) return;
+    if (gameBoardMode === GameBoardMode.PREVIEW) return;
     e.cancelBubble = true;
     const newSelected = selectedPartIds.includes(partId)
       ? selectedPartIds
@@ -402,7 +401,7 @@ export default function GameBoard({
     e: Konva.KonvaEventObject<DragEvent>,
     partId: number
   ) => {
-    if (isVersionPrototype) return;
+    if (gameBoardMode === GameBoardMode.PREVIEW) return;
 
     measureOperation('Part Drag Update', () => {
       const position = e.target.position();
@@ -587,7 +586,7 @@ export default function GameBoard({
   }, [camera, viewportSize, constrainCamera]);
 
   useEffect(() => {
-    if (prototypeType !== 'MASTER') return;
+    if (gameBoardMode !== GameBoardMode.CREATE) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Delete' || e.key === 'Backspace') {
         const active = document.activeElement;
@@ -606,7 +605,7 @@ export default function GameBoard({
     return () => {
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [handleDeletePart, prototypeType]);
+  }, [handleDeletePart, gameBoardMode]);
 
   useEffect(() => {
     let urlsToRevoke: string[] = [];
@@ -725,17 +724,19 @@ export default function GameBoard({
               y={0}
               width={canvasSize.width}
               height={canvasSize.height}
-              fill="#f5f5f5"
+              fill={gameBoardMode === GameBoardMode.PLAY ? '#fff' : '#f5f5f5'}
               draggable
               onDragMove={handleDragMove}
               onClick={handleBackgroundClick}
             />
             {/* 背景グリッド */}
-            <GridLines
-              camera={camera}
-              viewportSize={viewportSize}
-              gridSize={GRID_SIZE}
-            />
+            {gameBoardMode === GameBoardMode.CREATE && (
+              <GridLines
+                camera={camera}
+                viewportSize={viewportSize}
+                gridSize={GRID_SIZE}
+              />
+            )}
 
             {/* パーツの表示（orderが大きいほど後で描画=前面に表示） */}
             {[...parts]
@@ -752,7 +753,7 @@ export default function GameBoard({
                     part={part}
                     properties={partProperties}
                     images={filteredImages}
-                    prototypeType={prototypeType}
+                    gameBoardMode={gameBoardMode}
                     isActive={isActive}
                     isOtherPlayerCard={false}
                     onClick={(e) => handlePartClick(e, part.id)}
@@ -779,9 +780,7 @@ export default function GameBoard({
 
       <LeftSidebar
         prototypeName={prototypeName}
-        prototypeVersionNumber={prototypeVersionNumber}
-        prototypeType={prototypeType}
-        isVersionPrototype={isVersionPrototype}
+        gameBoardMode={gameBoardMode}
         groupId={groupId}
       />
       {/* ショートカットヘルプパネル */}
@@ -800,7 +799,7 @@ export default function GameBoard({
         ]}
       />
 
-      {prototypeType === 'MASTER' && (
+      {gameBoardMode === GameBoardMode.CREATE && (
         <>
           {/* フローティングパーツ作成メニュー */}
           <PartCreateMenu onAddPart={handleAddPart} />
@@ -830,9 +829,8 @@ export default function GameBoard({
         camera={camera}
         prototypeName={prototypeName}
         prototypeVersionNumber={prototypeVersionNumber ?? 0}
-        isVersionPrototype={isVersionPrototype}
         groupId={groupId}
-        prototypeType={prototypeType}
+        mode={gameBoardMode}
         parts={parts}
         properties={properties}
         cursors={cursors}
