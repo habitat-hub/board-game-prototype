@@ -18,6 +18,13 @@ import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
+import {
+  GRID_SIZE,
+  CANVAS_SIZE,
+  MIN_SCALE,
+  MAX_SCALE,
+  DEFAULT_INITIAL_SCALE,
+} from '@/features/prototype/constants/gameBoard';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
@@ -31,12 +38,6 @@ import {
   saveImageToIndexedDb,
   updateImageParamsInIndexedDb,
 } from '@/utils/db';
-
-const GRID_SIZE = 50;
-const CANVAS_SIZE = 5000;
-const MIN_SCALE = 0.18;
-const MAX_SCALE = 8;
-const DEFAULT_INITIAL_SCALE = 0.5;
 
 interface GameBoardProps {
   prototypeName: string;
@@ -463,41 +464,13 @@ export default function GameBoard({
       measureOperation('Part Addition', () => {
         setSelectedPartIds([]);
 
-        const cameraCenterX =
-          (camera.x + viewportSize.width / 2) / camera.scale;
-        const cameraCenterY =
-          (camera.y + viewportSize.height / 2) / camera.scale;
-
-        const constrainedX = Math.max(
-          0,
-          Math.min(
-            CANVAS_SIZE - part.width,
-            Math.round(cameraCenterX - part.width / 2)
-          )
-        );
-        const constrainedY = Math.max(
-          0,
-          Math.min(
-            CANVAS_SIZE - part.height,
-            Math.round(cameraCenterY - part.height / 2)
-          )
-        );
-
-        const partWithCenteredPosition = {
-          ...part,
-          position: {
-            x: constrainedX,
-            y: constrainedY,
-          },
-        };
-
         dispatch({
           type: 'ADD_PART',
-          payload: { part: partWithCenteredPosition, properties },
+          payload: { part, properties },
         });
       });
     },
-    [dispatch, camera, viewportSize, measureOperation]
+    [dispatch, measureOperation]
   );
 
   const handleDeleteImage = useCallback(
@@ -788,7 +761,11 @@ export default function GameBoard({
       {gameBoardMode === GameBoardMode.CREATE && (
         <>
           {/* フローティングパーツ作成メニュー */}
-          <PartCreateMenu onAddPart={handleAddPart} />
+          <PartCreateMenu
+            onAddPart={handleAddPart}
+            camera={camera}
+            viewportSize={viewportSize}
+          />
 
           {/* プロパティサイドバー */}
           {selectedPartIds.length === 1 && (
