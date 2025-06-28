@@ -227,18 +227,22 @@ export default function LeftSidebar({
               <button
                 onClick={handleCreateRoom}
                 disabled={isRoomCreating}
-                className="flex items-center justify-center border-2 border-dashed border-kibako-accent hover:border-kibako-primary rounded-xl px-2 py-2 min-w-[70px] text-center shadow-none transition-all hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex-shrink-0 bg-kibako-white gap-2"
+                className="flex items-center justify-center border-2 border-dashed border-kibako-tertiary hover:border-kibako-secondary rounded-xl px-2 py-2 min-w-[70px] text-center shadow-none transition-all hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex-shrink-0 bg-kibako-tertiary gap-2"
                 style={{ height: '56px' }}
                 title="新しいルームを作る"
               >
-                <MdMeetingRoom className="h-6 w-6 text-kibako-accent transition-colors" />
-                <div className="flex flex-col items-start">
-                  <span className="text-xs font-semibold text-kibako-primary block">
+                <MdMeetingRoom className="h-6 w-6 text-kibako-secondary transition-colors" />
+                <div className="flex flex-col items-start text-left">
+                  <span className="text-xs font-semibold text-kibako-secondary block">
                     新規ルーム
                   </span>
-                  <span className="text-[10px] text-kibako-accent">作成</span>
+                  <span className="text-[10px] text-kibako-secondary/70 mt-0.5 leading-tight">
+                    今のボードの状態を
+                    <br />
+                    遊ぶためのルームとして保存します
+                  </span>
                 </div>
-                <IoAdd className="h-4 w-4 text-kibako-accent ml-1 transition-colors" />
+                <IoAdd className="h-4 w-4 text-kibako-secondary ml-1 transition-colors" />
               </button>
             </div>
           </div>
