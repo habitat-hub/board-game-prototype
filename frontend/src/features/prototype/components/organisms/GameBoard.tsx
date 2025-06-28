@@ -782,21 +782,7 @@ export default function GameBoard({
         gameBoardMode={gameBoardMode}
         projectId={projectId}
       />
-      {/* ショートカットヘルプパネル */}
-      <ShortcutHelpPanel
-        shortcuts={[
-          {
-            id: 'multi-select',
-            key: 'Shift + クリック',
-            description: '複数のパーツを選択できます',
-          },
-          {
-            id: 'delete',
-            key: 'Delete / Backspace',
-            description: '選択中のパーツを削除します',
-          },
-        ]}
-      />
+      <ShortcutHelpPanel />
 
       {gameBoardMode === GameBoardMode.CREATE && (
         <>
