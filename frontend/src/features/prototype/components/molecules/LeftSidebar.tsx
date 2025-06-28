@@ -184,50 +184,10 @@ export default function LeftSidebar({
         {activeTab === 'play' && (
           <div>
             <div className="flex flex-col gap-2 py-0.5 px-0">
-              {prototypeInfo.instances.map((instance) => (
-                <div key={instance.id} className="relative flex-shrink-0">
-                  <Link
-                    href={`/groups/${groupId}/prototypes/${instance.id}`}
-                    className="group"
-                    title={`${instance.name} (Room ${instance.versionNumber})`}
-                  >
-                    <div className="flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 group-hover:bg-kibako-accent/10 group-hover:border-kibako-accent border border-transparent">
-                      <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
-                      <div className="flex flex-col min-w-0 flex-1">
-                        <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[120px]">
-                          {instance.name}
-                        </span>
-                        <span className="text-xs text-kibako-primary mt-0.5 flex items-center gap-1">
-                          <span className="font-bold">
-                            Ver{instance.versionNumber}
-                          </span>
-                          {instance.createdAt && (
-                            <span className="text-kibako-secondary">
-                              {formatDate(instance.createdAt, true)}
-                            </span>
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                  <button
-                    onClick={() => handleDeleteRoom(instance.id)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full group/delete hover:bg-kibako-accent/20 focus:outline-none flex items-center justify-center"
-                    title="ルームを削除"
-                  >
-                    <MdDelete className="h-5 w-5 text-kibako-secondary transition-colors" />
-                  </button>
-                </div>
-              ))}
-              {prototypeInfo.instances.length === 0 && (
-                <span className="text-xs text-kibako-secondary flex items-center px-1">
-                  まだルームがありません
-                </span>
-              )}
               <button
                 onClick={handleCreateRoom}
                 disabled={isRoomCreating}
-                className="flex items-center justify-center border-2 border-dashed border-kibako-tertiary hover:border-kibako-secondary rounded-xl px-2 py-2 min-w-[70px] text-center shadow-none transition-all hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex-shrink-0 bg-kibako-tertiary gap-2"
+                className="flex items-center justify-center border-2 border-dashed border-kibako-tertiary hover:border-kibako-secondary rounded-xl px-2 py-2 min-w-[70px] text-center shadow-none transition-all hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex-shrink-0 bg-kibako-tertiary gap-2 mb-2"
                 style={{ height: '56px' }}
                 title="新しいルームを作る"
               >
@@ -244,6 +204,54 @@ export default function LeftSidebar({
                 </div>
                 <IoAdd className="h-4 w-4 text-kibako-secondary ml-1 transition-colors" />
               </button>
+              {prototypeInfo.instances.length === 0 && (
+                <span className="text-xs text-kibako-secondary flex items-center px-1">
+                  まだルームがありません
+                </span>
+              )}
+              {prototypeInfo.instances
+                .slice()
+                .sort((a, b) =>
+                  b.createdAt && a.createdAt
+                    ? new Date(b.createdAt).getTime() -
+                      new Date(a.createdAt).getTime()
+                    : 0
+                )
+                .map((instance) => (
+                  <div key={instance.id} className="relative flex-shrink-0">
+                    <Link
+                      href={`/groups/${groupId}/prototypes/${instance.id}`}
+                      className="group"
+                      title={`${instance.name} (Room ${instance.versionNumber})`}
+                    >
+                      <div className="flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 group-hover:bg-kibako-accent/10 group-hover:border-kibako-accent border border-transparent">
+                        <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[120px]">
+                            {instance.name}
+                          </span>
+                          <span className="text-xs text-kibako-primary mt-0.5 flex items-center gap-1">
+                            <span className="font-bold">
+                              Ver{instance.versionNumber}
+                            </span>
+                            {instance.createdAt && (
+                              <span className="text-kibako-secondary">
+                                {formatDate(instance.createdAt, true)}
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                    <button
+                      onClick={() => handleDeleteRoom(instance.id)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full group/delete hover:bg-kibako-accent/20 focus:outline-none flex items-center justify-center"
+                      title="ルームを削除"
+                    >
+                      <MdDelete className="h-5 w-5 text-kibako-secondary transition-colors" />
+                    </button>
+                  </div>
+                ))}
             </div>
           </div>
         )}
@@ -275,7 +283,7 @@ export default function LeftSidebar({
     >
       <div className="flex h-[48px] items-center justify-between p-2">
         <button
-          onClick={() => router.push(`/groups/`)}
+          onClick={() => router.back()}
           className="p-1 hover:bg-wood-lightest/20 rounded-full transition-colors flex-shrink-0"
           title="戻る"
         >
@@ -290,17 +298,23 @@ export default function LeftSidebar({
           </h2>
           {renderTypeBadge()}
         </div>
-        <button
-          onClick={toggleSidebar}
-          aria-label={
-            isLeftSidebarMinimized ? 'サイドバーを展開' : 'サイドバーを最小化'
-          }
-          className="p-1 rounded-full transition-transform hover:scale-110"
-        >
-          <IoMenu className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
-        </button>
+        {/* ルームを開いている時は開閉ボタンを非表示 */}
+        {gameBoardMode !== GameBoardMode.PLAY && (
+          <button
+            onClick={toggleSidebar}
+            aria-label={
+              isLeftSidebarMinimized ? 'サイドバーを展開' : 'サイドバーを最小化'
+            }
+            className="p-1 rounded-full transition-transform hover:scale-110"
+          >
+            <IoMenu className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
+          </button>
+        )}
       </div>
-      {!isLeftSidebarMinimized && renderSidebarContent()}
+      {/* サイドバーの中身はルームを開いている時は非表示 */}
+      {!isLeftSidebarMinimized &&
+        gameBoardMode !== GameBoardMode.PLAY &&
+        renderSidebarContent()}
     </div>
   );
 }
