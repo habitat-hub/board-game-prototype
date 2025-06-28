@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
 import { BsBoxSeam } from 'react-icons/bs';
-import { IoArrowBack, IoMenu, IoAdd } from 'react-icons/io5';
+import { IoArrowBack, IoMenu, IoAdd, IoEye } from 'react-icons/io5';
 import { MdMeetingRoom, MdDelete } from 'react-icons/md';
 
 import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
@@ -39,6 +39,11 @@ export default function LeftSidebar({
     instancesByVersion: Record<string, Prototype[]>;
   } | null>(null);
   const [isRoomCreating, setIsRoomCreating] = useState(false);
+  const [activeTab, setActiveTab] = useState<GameBoardMode>(
+    gameBoardMode === GameBoardMode.PLAY
+      ? GameBoardMode.PLAY
+      : GameBoardMode.CREATE
+  );
 
   /**
    * プロトタイプを取得する
@@ -110,28 +115,24 @@ export default function LeftSidebar({
     setIsLeftSidebarMinimized(!isLeftSidebarMinimized);
   };
 
-  // タイプバッジの表示
   const renderTypeBadge = () => {
     switch (gameBoardMode) {
       case GameBoardMode.CREATE:
         return (
-          <span
-            className="ml-2 px-2 py-0.5 rounded text
-            -xs font-bold bg-amber-100 text-amber-700 border border-amber-200"
-          >
-            作成中
+          <span className="ml-2 flex items-center">
+            <BsBoxSeam className="text-amber-700 h-4 w-4" />
           </span>
         );
       case GameBoardMode.PREVIEW:
         return (
-          <span className="ml-2 px-2 py-0.5 rounded text-xs font-bold bg-gray-100 text-gray-600 border border-gray-200">
-            プレビュー
+          <span className="ml-2 flex items-center">
+            <IoEye className="text-gray-600 h-4 w-4" />
           </span>
         );
       case GameBoardMode.PLAY:
         return (
-          <span className="ml-2 px-2 py-0.5 rounded text-xs font-bold bg-green-100 text-green-700 border border-green-200">
-            プレイ中
+          <span className="ml-2 flex items-center">
+            <MdMeetingRoom className="text-green-700 h-4 w-4" />
           </span>
         );
       default:
@@ -139,115 +140,128 @@ export default function LeftSidebar({
     }
   };
 
-  // 新デザイン: 「作る」「遊ぶ」
+  // 新デザイン: トグルで「作る」「遊ぶ」切り替え
   const renderSidebarContent = () => {
     if (!prototypeInfo) return null;
     return (
       <div className="p-3 overflow-y-auto scrollbar-hide space-y-8">
-        {/* 作る */}
-        <section>
-          <h3 className="text-xs font-bold text-amber-700 mb-2 tracking-widest">
-            作る
-          </h3>
-          <div className="flex flex-col gap-2">
-            {/* 編集ボタンの色をamber系に */}
-            <button
-              onClick={() =>
-                router.push(
-                  `/groups/${groupId}/prototypes/${prototypeInfo.master?.id}`
-                )
-              }
-              className="flex items-center gap-3 bg-gradient-to-r from-amber-50 to-amber-100 hover:from-amber-100 hover:to-amber-200 border-2 border-amber-200 rounded-xl p-3 transition-all shadow-sm"
-            >
-              <BsBoxSeam className="h-6 w-6 text-amber-600" />
-              <span className="font-medium text-amber-800 text-sm">
-                プロトタイプを編集
-              </span>
-            </button>
-          </div>
-        </section>
-
-        {/* 遊ぶ */}
-        {gameBoardMode !== GameBoardMode.PLAY && (
-          <section>
-            <h3 className="text-xs font-bold text-amber-700 mb-2 tracking-widest">
+        {/* アイコンメインのトグルボタン */}
+        <div className="flex gap-2 mb-4">
+          <button
+            className={`flex-1 flex flex-col items-center py-2 rounded-lg font-bold border transition-all ${
+              activeTab === 'create'
+                ? 'bg-amber-100 text-amber-700 border-amber-300'
+                : 'bg-white text-gray-400 border-gray-200 hover:bg-amber-50'
+            }`}
+            onClick={() => setActiveTab(GameBoardMode.CREATE)}
+          >
+            <BsBoxSeam
+              className={`h-7 w-7 mb-1 ${activeTab === GameBoardMode.CREATE ? 'text-amber-700' : 'text-gray-400'}`}
+            />
+            <span className="text-[11px] font-normal tracking-widest">
+              作る
+            </span>
+          </button>
+          <button
+            className={`flex-1 flex flex-col items-center py-2 rounded-lg font-bold border transition-all ${
+              activeTab === 'play'
+                ? 'bg-amber-100 text-amber-700 border-amber-300'
+                : 'bg-white text-gray-400 border-gray-200 hover:bg-amber-50'
+            }`}
+            onClick={() => setActiveTab(GameBoardMode.PLAY)}
+          >
+            <MdMeetingRoom
+              className={`h-7 w-7 mb-1 ${activeTab === 'play' ? 'text-amber-700' : 'text-gray-400'}`}
+            />
+            <span className="text-[11px] font-normal tracking-widest">
               遊ぶ
-            </h3>
-            {/* 既存ルーム一覧 */}
-            <div className="mt-0">
-              <div className="flex flex-col gap-3 py-1 px-0.5">
-                {prototypeInfo.instances.map((instance) => (
-                  <div key={instance.id} className="relative flex-shrink-0">
-                    <Link
-                      href={`/groups/${groupId}/prototypes/${instance.id}`}
-                      className="group"
-                      title={`${instance.name} (Room ${instance.versionNumber})`}
-                    >
-                      {/* ルームカードの色をamber系に */}
-                      <div className="flex items-center bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 hover:border-amber-400 rounded-xl px-6 py-5 shadow-lg min-w-[140px] text-left transition-all gap-4">
-                        {/* ドアアイコンを左寄せ */}
-                        <MdMeetingRoom className="h-9 w-9 text-amber-600 flex-shrink-0 mr-2" />
-                        <div className="flex flex-col min-w-0 flex-1">
-                          {/* ルーム名 */}
-                          <span className="text-base font-semibold text-amber-800 truncate block max-w-[180px]">
-                            {instance.name}
+            </span>
+          </button>
+        </div>
+        {/* 作るタブは空 */}
+        {activeTab === 'create' && <div />}
+        {/* 遊ぶタブ */}
+        {activeTab === 'play' && (
+          <div>
+            <div className="flex flex-col gap-3 py-1 px-0.5">
+              {prototypeInfo.instances.map((instance) => (
+                <div key={instance.id} className="relative flex-shrink-0">
+                  <Link
+                    href={`/groups/${groupId}/prototypes/${instance.id}`}
+                    className="group"
+                    title={`${instance.name} (Room ${instance.versionNumber})`}
+                  >
+                    <div className="flex items-center bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 hover:border-amber-400 rounded-xl px-6 py-5 shadow-lg min-w-[140px] text-left transition-all gap-4">
+                      <MdMeetingRoom className="h-9 w-9 text-amber-600 flex-shrink-0 mr-2" />
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="text-base font-semibold text-amber-800 truncate block max-w-[180px]">
+                          {instance.name}
+                        </span>
+                        <span className="text-sm text-amber-700 mt-1 flex items-center gap-2">
+                          <span className="font-bold">
+                            Ver{instance.versionNumber}
                           </span>
-                          {/* バージョン番号と作成日 */}
-                          <span className="text-sm text-amber-700 mt-1 flex items-center gap-2">
-                            <span className="font-bold">
-                              Ver{instance.versionNumber}
+                          {instance.createdAt && (
+                            <span className="text-gray-400">
+                              {formatDate(instance.createdAt, true)}
                             </span>
-                            {/* 作成日を表示（createdAtがなければ省略） */}
-                            {instance.createdAt && (
-                              <span className="text-gray-400">
-                                {formatDate(instance.createdAt, true)}
-                              </span>
-                            )}
-                          </span>
-                        </div>
+                          )}
+                        </span>
                       </div>
-                    </Link>
-                    {/* 削除ボタン（ゴミ箱アイコン・上下中央揃え） */}
-                    <button
-                      onClick={() => handleDeleteRoom(instance.id)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full group/delete hover:bg-red-100 focus:outline-none flex items-center justify-center"
-                      title="ルームを削除"
-                    >
-                      <MdDelete className="h-6 w-6 text-gray-400 transition-colors" />
-                    </button>
-                  </div>
-                ))}
-                {prototypeInfo.instances.length === 0 && (
-                  <span className="text-xs text-gray-400 flex items-center px-2">
-                    まだルームがありません
+                    </div>
+                  </Link>
+                  <button
+                    onClick={() => handleDeleteRoom(instance.id)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full group/delete hover:bg-red-100 focus:outline-none flex items-center justify-center"
+                    title="ルームを削除"
+                  >
+                    <MdDelete className="h-6 w-6 text-gray-400 transition-colors" />
+                  </button>
+                </div>
+              ))}
+              {prototypeInfo.instances.length === 0 && (
+                <span className="text-xs text-gray-400 flex items-center px-2">
+                  まだルームがありません
+                </span>
+              )}
+              <button
+                onClick={handleCreateRoom}
+                disabled={isRoomCreating}
+                className="flex items-center justify-center border-2 border-dashed border-amber-400 hover:border-amber-600 rounded-xl px-4 py-3 min-w-[90px] text-center shadow-none transition-all hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex-shrink-0 bg-white gap-3"
+                style={{ height: '72px' }}
+                title="新しいルームを作る"
+              >
+                <MdMeetingRoom className="h-7 w-7 text-amber-400 transition-colors" />
+                <div className="flex flex-col items-start">
+                  <span className="text-sm font-semibold text-amber-700 block">
+                    新規ルーム
                   </span>
-                )}
-                {/* 新しいルームを作るボタンをカード型で表示 */}
-                {/* 新規ルーム作成ボタンもamber系に */}
-                <button
-                  onClick={handleCreateRoom}
-                  disabled={isRoomCreating}
-                  className="flex items-center justify-center border-2 border-dashed border-amber-400 hover:border-amber-600 rounded-xl px-4 py-3 min-w-[90px] text-center shadow-none transition-all hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex-shrink-0 bg-white gap-3"
-                  style={{ height: '72px' }}
-                  title="新しいルームを作る"
-                >
-                  {/* ルームアイコンを大きめに */}
-                  <MdMeetingRoom className="h-7 w-7 text-amber-400 transition-colors" />
-                  <div className="flex flex-col items-start">
-                    <span className="text-sm font-semibold text-amber-700 block">
-                      新規ルーム
-                    </span>
-                    <span className="text-xs text-amber-400">作成</span>
-                  </div>
-                  <IoAdd className="h-5 w-5 text-amber-400 ml-2 transition-colors" />
-                </button>
-              </div>
+                  <span className="text-xs text-amber-400">作成</span>
+                </div>
+                <IoAdd className="h-5 w-5 text-amber-400 ml-2 transition-colors" />
+              </button>
             </div>
-          </section>
+          </div>
         )}
       </div>
     );
   };
+
+  // タブ切り替え時の遷移処理
+  useEffect(() => {
+    if (activeTab === 'create' && prototypeInfo?.master?.id) {
+      router.push(`/groups/${groupId}/prototypes/${prototypeInfo.master.id}`);
+    }
+  }, [activeTab, prototypeInfo?.master?.id, groupId, router]);
+
+  // gameBoardModeが変わったときもactiveTabを同期
+  useEffect(() => {
+    setActiveTab(
+      gameBoardMode === GameBoardMode.PLAY
+        ? GameBoardMode.PLAY
+        : GameBoardMode.CREATE
+    );
+  }, [gameBoardMode]);
 
   return (
     <div
