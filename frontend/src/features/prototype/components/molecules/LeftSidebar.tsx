@@ -204,11 +204,6 @@ export default function LeftSidebar({
                 </div>
                 <IoAdd className="h-4 w-4 text-kibako-secondary ml-1 transition-colors" />
               </button>
-              {prototypeInfo.instances.length === 0 && (
-                <span className="text-xs text-kibako-secondary flex items-center px-1">
-                  まだルームがありません
-                </span>
-              )}
               {prototypeInfo.instances
                 .slice()
                 .sort((a, b) =>
