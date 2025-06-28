@@ -1,15 +1,15 @@
 import express, { Request, Response } from 'express';
 import UserModel from '../models/User';
-import PrototypeGroupModel from '../models/PrototypeGroup';
+import ProjectModel from '../models/Project';
 import { ensureAuthenticated } from '../middlewares/auth';
 import {
-  checkPrototypeGroupReadPermission,
-  checkPrototypeGroupManagePermission,
+  checkProjectReadPermission,
+  checkProjectManagePermission,
 } from '../middlewares/authorization';
 import { getAccessiblePrototypes } from '../helpers/prototypeHelper';
 import sequelize from '../models';
 import {
-  createPrototypeGroup,
+  createProject,
   createPrototypeVersion,
 } from '../factories/prototypeFactory';
 import PrototypeModel from '../models/Prototype';
@@ -19,7 +19,7 @@ import { assignRole } from '../helpers/roleHelper';
 import { RESOURCE_TYPES, ROLE_TYPE } from '../const';
 import RoleModel from '../models/Role';
 import UserRoleModel from '../models/UserRole';
-import { getPrototypeGroupMembers } from '../helpers/userRoleHelper';
+import { getProjectMembers } from '../helpers/userRoleHelper';
 
 const router = express.Router();
 
@@ -28,14 +28,14 @@ router.use(ensureAuthenticated);
 
 /**
  * @swagger
- * /api/prototype-groups:
+ * /api/projects:
  *   get:
- *     tags: [PrototypeGroups]
- *     summary: プロトタイプグループ一覧取得
- *     description: ユーザーがアクセス可能なプロトタイプグループの一覧を取得します。
+ *     tags: [Projects]
+ *     summary: プロジェクト一覧取得
+ *     description: ユーザーがアクセス可能なプロジェクトの一覧を取得します。
  *     responses:
  *       '200':
- *         description: アクセス可能なプロトタイプグループの一覧を返します
+ *         description: アクセス可能なプロジェクトの一覧を返します
  *         content:
  *           application/json:
  *             schema:
@@ -43,8 +43,8 @@ router.use(ensureAuthenticated);
  *               items:
  *                 type: object
  *                 properties:
- *                   prototypeGroup:
- *                     $ref: '#/components/schemas/PrototypeGroup'
+ *                   project:
+ *                     $ref: '#/components/schemas/Project'
  *                   prototypes:
  *                     type: array
  *                     items:
@@ -63,11 +63,11 @@ router.get('/', async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /api/prototype-groups:
+ * /api/projects:
  *   post:
- *     tags: [PrototypeGroups]
- *     summary: プロトタイプグループ作成
- *     description: 新しいプロトタイプグループを作成します。
+ *     tags: [Projects]
+ *     summary: プロジェクト作成
+ *     description: 新しいプロジェクトを作成します。
  *     requestBody:
  *       required: true
  *       content:
@@ -79,11 +79,11 @@ router.get('/', async (req: Request, res: Response) => {
  *                 type: string
  *     responses:
  *       '201':
- *         description: 新しいプロトタイプグループを作成しました
+ *         description: 新しいプロジェクトを作成しました
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/PrototypeGroup'
+ *               $ref: '#/components/schemas/Project'
  *       '400':
  *         description: リクエストが不正です
  *         content:
@@ -108,14 +108,14 @@ router.post('/', async (req: Request, res: Response) => {
 
   const transaction = await sequelize.transaction();
   try {
-    const group = await createPrototypeGroup({
+    const project = await createProject({
       userId: user.id,
       name,
       transaction,
     });
 
     await transaction.commit();
-    res.status(201).json(group);
+    res.status(201).json(project);
   } catch (error) {
     await transaction.rollback();
     console.error(error);
@@ -125,16 +125,16 @@ router.post('/', async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /api/prototype-groups/{prototypeGroupId}/version:
+ * /api/projects/{projectId}/version:
  *   post:
- *     tags: [PrototypeGroups]
+ *     tags: [Projects]
  *     summary: プロトタイプバージョン作成
- *     description: 指定されたプロトタイプグループのプロトタイプバージョンを作成します。
+ *     description: 指定されたプロジェクトのプロトタイプバージョンを作成します。
  *     parameters:
- *       - name: prototypeGroupId
+ *       - name: projectId
  *         in: path
  *         required: true
- *         description: プロトタイプグループのID
+ *         description: プロジェクトのID
  *         schema:
  *           type: string
  *     requestBody:
@@ -156,7 +156,7 @@ router.post('/', async (req: Request, res: Response) => {
  *             schema:
  *               $ref: '#/components/schemas/Prototype'
  *       '404':
- *         description: プロトタイプグループが見つかりません
+ *         description: プロジェクトが見つかりません
  *         content:
  *           application/json:
  *             schema:
@@ -169,8 +169,8 @@ router.post('/', async (req: Request, res: Response) => {
  *               $ref: '#/components/schemas/Error500Response'
  */
 router.post(
-  '/:prototypeGroupId/version',
-  checkPrototypeGroupReadPermission,
+  '/:projectId/version',
+  checkProjectReadPermission,
   async (req: Request, res: Response) => {
     const { name, versionNumber } = req.body;
     if (!name || !versionNumber) {
@@ -185,7 +185,7 @@ router.post(
       // VERSION作成（MASTERコピー＋INSTANCEも同時作成）
       const { versionPrototype, instancePrototype } =
         await createPrototypeVersion({
-          prototypeGroupId: req.params.prototypeGroupId,
+          projectId: req.params.projectId,
           name,
           versionNumber,
           transaction,
@@ -204,59 +204,58 @@ router.post(
 
 /**
  * @swagger
- * /api/prototype-groups/{prototypeGroupId}:
+ * /api/projects/{projectId}:
  *   get:
- *     tags: [PrototypeGroups]
- *     summary: 特定のグループに属するプロトタイプ一覧取得
- *     description: 指定されたIDのプロトタイプグループに属するプロトタイプの一覧を取得します。
+ *     tags: [Projects]
+ *     summary: 特定のプロジェクトに属するプロトタイプ一覧取得
+ *     description: 指定されたIDのプロジェクトに属するプロトタイプの一覧を取得します。
  *     parameters:
- *       - name: prototypeGroupId
+ *       - name: projectId
  *         in: path
  *         required: true
- *         description: プロトタイプグループのID
+ *         description: プロジェクトのID
  *         schema:
  *           type: string
  *     responses:
  *       '200':
- *         description: プロトタイプグループに属するプロトタイプの一覧を返します
+ *         description: プロジェクトに属するプロトタイプの一覧を返します
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 prototypeGroup:
- *                   $ref: '#/components/schemas/PrototypeGroup'
+ *                 project:
+ *                   $ref: '#/components/schemas/Project'
  *                 prototypes:
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Prototype'
  *       '404':
- *         description: プロトタイプグループが見つかりません
+ *         description: プロジェクトが見つかりません
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error404Response'
  */
 router.get(
-  '/:prototypeGroupId',
-  checkPrototypeGroupReadPermission,
+  '/:projectId',
+  checkProjectReadPermission,
   async (req: Request, res: Response) => {
-    const prototypeGroupId = req.params.prototypeGroupId;
+    const projectId = req.params.projectId;
 
     try {
-      const prototypeGroup =
-        await PrototypeGroupModel.findByPk(prototypeGroupId);
-      if (!prototypeGroup) {
-        res.status(404).json({ error: 'プロトタイプグループが見つかりません' });
+      const project = await ProjectModel.findByPk(projectId);
+      if (!project) {
+        res.status(404).json({ error: 'プロジェクトが見つかりません' });
         return;
       }
 
       const prototypes = await PrototypeModel.findAll({
-        where: { prototypeGroupId },
+        where: { projectId },
       });
 
       res.json({
-        prototypeGroup,
+        project,
         prototypes,
       });
     } catch (error) {
@@ -268,51 +267,50 @@ router.get(
 
 /**
  * @swagger
- * /api/prototype-groups/{prototypeGroupId}:
+ * /api/projects/{projectId}:
  *   delete:
- *     tags: [PrototypeGroups]
- *     summary: プロトタイプグループ削除
- *     description: 指定されたIDのプロトタイプグループを削除します。
+ *     tags: [Projects]
+ *     summary: プロジェクト削除
+ *     description: 指定されたIDのプロジェクトを削除します。
  *     parameters:
- *       - name: prototypeGroupId
+ *       - name: projectId
  *         in: path
  *         required: true
- *         description: プロトタイプグループのID
+ *         description: プロジェクトのID
  *         schema:
  *           type: string
  *     responses:
  *       '200':
- *         description: プロトタイプグループを削除しました
+ *         description: プロジェクトを削除しました
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/SuccessResponse'
  *       '404':
- *         description: プロトタイプグループが見つかりません
+ *         description: プロジェクトが見つかりません
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error404Response'
  */
 router.delete(
-  '/:prototypeGroupId',
-  checkPrototypeGroupManagePermission,
+  '/:projectId',
+  checkProjectManagePermission,
   async (req: Request, res: Response) => {
-    const prototypeGroupId = req.params.prototypeGroupId;
+    const projectId = req.params.projectId;
 
     try {
-      const prototypeGroup =
-        await PrototypeGroupModel.findByPk(prototypeGroupId);
-      if (!prototypeGroup) {
-        res.status(404).json({ error: 'プロトタイプグループが見つかりません' });
+      const project = await ProjectModel.findByPk(projectId);
+      if (!project) {
+        res.status(404).json({ error: 'プロジェクトが見つかりません' });
         return;
       }
 
-      await PrototypeGroupModel.destroy({
-        where: { id: prototypeGroupId },
+      await ProjectModel.destroy({
+        where: { id: projectId },
       });
 
-      res.json({ message: 'プロトタイプグループを削除しました' });
+      res.json({ message: 'プロジェクトを削除しました' });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: '予期せぬエラーが発生しました' });
@@ -322,16 +320,16 @@ router.delete(
 
 /**
  * @swagger
- * /api/prototype-groups/{prototypeGroupId}/access-users:
+ * /api/projects/{projectId}/access-users:
  *   get:
- *     tags: [PrototypeGroups]
- *     summary: プロトタイプグループへのアクセス権を取得
- *     description: 指定されたプロトタイプグループにアクセス可能なユーザーを取得します。
+ *     tags: [Projects]
+ *     summary: プロジェクトへのアクセス権を取得
+ *     description: 指定されたプロジェクトにアクセス可能なユーザーを取得します。
  *     parameters:
- *       - name: prototypeGroupId
+ *       - name: projectId
  *         in: path
  *         required: true
- *         description: プロトタイプグループのID
+ *         description: プロジェクトのID
  *         schema:
  *           type: string
  *     responses:
@@ -345,13 +343,13 @@ router.delete(
  *                 $ref: '#/components/schemas/User'
  */
 router.get(
-  '/:prototypeGroupId/access-users',
-  checkPrototypeGroupReadPermission,
+  '/:projectId/access-users',
+  checkProjectReadPermission,
   async (req: Request, res: Response) => {
-    const prototypeGroupId = req.params.prototypeGroupId;
+    const projectId = req.params.projectId;
 
     try {
-      res.json(await getAccessibleUsers({ prototypeGroupId }));
+      res.json(await getAccessibleUsers({ projectId }));
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: '予期せぬエラーが発生しました' });
@@ -361,16 +359,16 @@ router.get(
 
 /**
  * @swagger
- * /api/prototype-groups/{prototypeGroupId}/invite:
+ * /api/projects/{projectId}/invite:
  *   post:
- *     tags: [PrototypeGroups]
- *     summary: ユーザーにプロトタイプへのアクセス権を付与
- *     description: 指定されたプロトタイプグループにユーザーを招待します。
+ *     tags: [Projects]
+ *     summary: ユーザーにプロジェクトへのアクセス権を付与
+ *     description: 指定されたプロジェクトにユーザーを招待します。
  *     parameters:
- *       - name: prototypeGroupId
+ *       - name: projectId
  *         in: path
  *         required: true
- *         description: プロトタイプグループのID
+ *         description: プロジェクトのID
  *         schema:
  *           type: string
  *     requestBody:
@@ -404,7 +402,7 @@ router.get(
  *             schema:
  *               $ref: '#/components/schemas/Error400Response'
  *       '404':
- *         description: グループが見つかりません
+ *         description: プロジェクトが見つかりません
  *         content:
  *           application/json:
  *             schema:
@@ -417,10 +415,10 @@ router.get(
  *               $ref: '#/components/schemas/Error500Response'
  */
 router.post(
-  '/:prototypeGroupId/invite',
-  checkPrototypeGroupReadPermission,
+  '/:projectId/invite',
+  checkProjectReadPermission,
   async (req, res) => {
-    const prototypeGroupId = req.params.prototypeGroupId;
+    const projectId = req.params.projectId;
     const guestIds = req.body.guestIds;
     const roleType = req.body.roleType || ROLE_TYPE.EDITOR; // デフォルトはeditor
 
@@ -455,8 +453,8 @@ router.post(
           await assignRole(
             guest.id,
             role.id,
-            RESOURCE_TYPES.PROTOTYPE_GROUP,
-            prototypeGroupId
+            RESOURCE_TYPES.PROJECT,
+            projectId
           );
         })
       );
@@ -474,16 +472,16 @@ router.post(
 
 /**
  * @swagger
- * /api/prototype-groups/{prototypeGroupId}/invite/{guestId}:
+ * /api/projects/{projectId}/invite/{guestId}:
  *   delete:
- *     tags: [PrototypeGroups]
+ *     tags: [Projects]
  *     summary: ユーザーのアクセス権を削除
- *     description: 指定されたプロトタイプグループからユーザーのアクセス権を削除します。
+ *     description: 指定されたプロジェクトからユーザーのアクセス権を削除します。
  *     parameters:
- *       - name: prototypeGroupId
+ *       - name: projectId
  *         in: path
  *         required: true
- *         description: プロトタイプグループのID
+ *         description: プロジェクトのID
  *         schema:
  *           type: string
  *       - name: guestId
@@ -506,7 +504,7 @@ router.post(
  *             schema:
  *               $ref: '#/components/schemas/Error400Response'
  *       '404':
- *         description: グループが見つかりません
+ *         description: プロジェクトが見つかりません
  *         content:
  *           application/json:
  *             schema:
@@ -519,30 +517,29 @@ router.post(
  *               $ref: '#/components/schemas/Error500Response'
  */
 router.delete(
-  '/:prototypeGroupId/invite/:guestId',
-  checkPrototypeGroupReadPermission,
+  '/:projectId/invite/:guestId',
+  checkProjectReadPermission,
   async (req, res) => {
-    const prototypeGroupId = req.params.prototypeGroupId;
+    const projectId = req.params.projectId;
     const guestId = req.params.guestId;
 
     try {
-      const prototypeGroup =
-        await PrototypeGroupModel.findByPk(prototypeGroupId);
-      if (!prototypeGroup) {
-        throw new Error('プロトタイプグループが見つかりません');
+      const project = await ProjectModel.findByPk(projectId);
+      if (!project) {
+        throw new Error('プロジェクトが見つかりません');
       }
 
-      if (prototypeGroup.userId === guestId) {
+      if (project.userId === guestId) {
         res.status(400).json({ message: '作成者は削除できません' });
         return;
       }
 
-      // すべてのロールを削除（このプロトタイプグループに対する）
+      // すべてのロールを削除（このプロジェクトに対する）
       await UserRoleModel.destroy({
         where: {
           userId: guestId,
-          resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
-          resourceId: prototypeGroupId,
+          resourceType: RESOURCE_TYPES.PROJECT,
+          resourceId: projectId,
         },
       });
 
@@ -556,27 +553,27 @@ router.delete(
 
 /**
  * @swagger
- * /api/prototype-groups/{prototypeGroupId}/duplicate:
+ * /api/projects/{projectId}/duplicate:
  *   post:
- *     tags: [PrototypeGroups]
- *     summary: プロトタイプグループの複製
- *     description: 指定されたプロトタイプグループを複製します。
+ *     tags: [Projects]
+ *     summary: プロジェクトの複製
+ *     description: 指定されたプロジェクトを複製します。
  *     parameters:
- *       - name: prototypeGroupId
+ *       - name: projectId
  *         in: path
  *         required: true
- *         description: プロトタイプグループのID
+ *         description: プロジェクトのID
  *         schema:
  *           type: string
  *     responses:
  *       '200':
- *         description: プロトタイプグループを複製しました
+ *         description: プロジェクトを複製しました
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/SuccessResponse'
  *       '404':
- *         description: プロトタイプグループが見つかりません
+ *         description: プロジェクトが見つかりません
  *         content:
  *           application/json:
  *             schema:
@@ -589,13 +586,13 @@ router.delete(
  *               $ref: '#/components/schemas/Error500Response'
  */
 router.post(
-  '/:prototypeGroupId/duplicate',
-  checkPrototypeGroupReadPermission,
+  '/:projectId/duplicate',
+  checkProjectReadPermission,
   async (req, res) => {
-    // const prototypeGroupId = req.params.prototypeGroupId;
+    // const projectId = req.params.projectId;
 
     try {
-      // TODO: グループの複製
+      // TODO: プロジェクトの複製
       res.status(501).json({ message: '未実装' });
     } catch (error) {
       console.error(error);
@@ -606,16 +603,16 @@ router.post(
 
 /**
  * @swagger
- * /api/prototype-groups/{prototypeGroupId}/members:
+ * /api/projects/{projectId}/members:
  *   get:
- *     tags: [PrototypeGroups]
- *     summary: プロトタイプグループのメンバー一覧取得
- *     description: プロトタイプグループのメンバーとそのロールを取得します。
+ *     tags: [Projects]
+ *     summary: プロジェクトのメンバー一覧取得
+ *     description: プロジェクトのメンバーとそのロールを取得します。
  *     parameters:
- *       - name: prototypeGroupId
+ *       - name: projectId
  *         in: path
  *         required: true
- *         description: プロトタイプグループのID
+ *         description: プロジェクトのID
  *         schema:
  *           type: string
  *     responses:
@@ -641,13 +638,13 @@ router.post(
  *                           type: string
  */
 router.get(
-  '/:prototypeGroupId/members',
-  checkPrototypeGroupReadPermission,
+  '/:projectId/members',
+  checkProjectReadPermission,
   async (req, res) => {
-    const prototypeGroupId = req.params.prototypeGroupId;
+    const projectId = req.params.projectId;
 
     try {
-      const members = await getPrototypeGroupMembers(prototypeGroupId);
+      const members = await getProjectMembers(projectId);
       res.json(members);
     } catch (error) {
       console.error(error);
@@ -658,18 +655,18 @@ router.get(
 
 /**
  * @swagger
- * /api/prototype-groups/{prototypeGroupId}/roles:
+ * /api/projects/{projectId}/roles:
  *   get:
- *     tags: [PrototypeGroups]
- *     summary: プロトタイプグループのロール一覧取得
- *     description: プロトタイプグループのユーザーロール一覧を取得します。
+ *     tags: [Projects]
+ *     summary: プロジェクトのロール一覧取得
+ *     description: プロジェクトのユーザーロール一覧を取得します。
  *     parameters:
  *       - in: path
- *         name: prototypeGroupId
+ *         name: projectId
  *         required: true
  *         schema:
  *           type: string
- *         description: プロトタイプグループのID
+ *         description: プロジェクトのID
  *     responses:
  *       '200':
  *         description: ロール一覧
@@ -695,17 +692,17 @@ router.get(
  *                           type: string
  */
 router.get(
-  '/:prototypeGroupId/roles',
-  checkPrototypeGroupReadPermission,
+  '/:projectId/roles',
+  checkProjectReadPermission,
   async (req: Request, res: Response) => {
-    const { prototypeGroupId } = req.params;
+    const { projectId } = req.params;
 
     try {
       // UserRoleを関連データと共に取得（N+1問題を解決）
       const userRoles = await UserRoleModel.findAll({
         where: {
-          resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
-          resourceId: prototypeGroupId,
+          resourceType: RESOURCE_TYPES.PROJECT,
+          resourceId: projectId,
         },
         include: [
           {
@@ -721,7 +718,7 @@ router.get(
         ],
       });
 
-      // ユーザーごとにロールをグループ化
+      // ユーザーごとにロールをまとめる
       const roleMap = new Map();
       userRoles.forEach((userRole) => {
         // 関連データが存在することを確認
@@ -760,18 +757,18 @@ router.get(
 
 /**
  * @swagger
- * /api/prototype-groups/{prototypeGroupId}/roles:
+ * /api/projects/{projectId}/roles:
  *   post:
- *     tags: [PrototypeGroups]
- *     summary: プロトタイプグループにロールを追加
- *     description: ユーザーにプロトタイプグループのロールを割り当てます。
+ *     tags: [Projects]
+ *     summary: プロジェクトにロールを追加
+ *     description: ユーザーにプロジェクトのロールを割り当てます。
  *     parameters:
  *       - in: path
- *         name: prototypeGroupId
+ *         name: projectId
  *         required: true
  *         schema:
  *           type: string
- *         description: プロトタイプグループのID
+ *         description: プロジェクトのID
  *     requestBody:
  *       required: true
  *       content:
@@ -795,10 +792,10 @@ router.get(
  *         description: ユーザーは既にこのロールを持っています
  */
 router.post(
-  '/:prototypeGroupId/roles',
-  checkPrototypeGroupManagePermission,
+  '/:projectId/roles',
+  checkProjectManagePermission,
   async (req: Request, res: Response) => {
-    const { prototypeGroupId } = req.params;
+    const { projectId } = req.params;
     const { userId, roleName } = req.body;
 
     if (!userId || !roleName) {
@@ -828,8 +825,8 @@ router.post(
         where: {
           userId,
           roleId: role.id,
-          resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
-          resourceId: prototypeGroupId,
+          resourceType: RESOURCE_TYPES.PROJECT,
+          resourceId: projectId,
         },
       });
       if (existingRole) {
@@ -840,12 +837,7 @@ router.post(
       }
 
       // ロールを割り当て
-      await assignRole(
-        userId,
-        role.id,
-        RESOURCE_TYPES.PROTOTYPE_GROUP,
-        prototypeGroupId
-      );
+      await assignRole(userId, role.id, RESOURCE_TYPES.PROJECT, projectId);
 
       res.status(201).json({
         message: `ユーザーに${roleName}ロールを割り当てました`,
@@ -861,18 +853,18 @@ router.post(
 
 /**
  * @swagger
- * /api/prototype-groups/{prototypeGroupId}/roles/{userId}:
+ * /api/projects/{projectId}/roles/{userId}:
  *   delete:
- *     tags: [PrototypeGroups]
- *     summary: プロトタイプグループからロールを削除
- *     description: ユーザーからプロトタイプグループのロールを削除します。
+ *     tags: [Projects]
+ *     summary: プロジェクトからロールを削除
+ *     description: ユーザーからプロジェクトのロールを削除します。
  *     parameters:
  *       - in: path
- *         name: prototypeGroupId
+ *         name: projectId
  *         required: true
  *         schema:
  *           type: string
- *         description: プロトタイプグループのID
+ *         description: プロジェクトのID
  *       - in: path
  *         name: userId
  *         required: true
@@ -886,18 +878,17 @@ router.post(
  *         description: ユーザーまたはロールが見つかりません
  */
 router.delete(
-  '/:prototypeGroupId/roles/:userId',
-  checkPrototypeGroupManagePermission,
+  '/:projectId/roles/:userId',
+  checkProjectManagePermission,
   async (req: Request, res: Response) => {
-    const { prototypeGroupId, userId } = req.params;
+    const { projectId, userId } = req.params;
 
     try {
-      // プロトタイプグループの作成者かチェック
-      const prototypeGroup =
-        await PrototypeGroupModel.findByPk(prototypeGroupId);
-      if (prototypeGroup && prototypeGroup.userId === userId) {
+      // プロジェクトの作成者かチェック
+      const project = await ProjectModel.findByPk(projectId);
+      if (project && project.userId === userId) {
         res.status(400).json({
-          error: 'プロトタイプグループの作成者のロールは削除できません',
+          error: 'プロジェクトの作成者のロールは削除できません',
         });
         return;
       }
@@ -908,8 +899,8 @@ router.delete(
         const adminCount = await UserRoleModel.count({
           where: {
             roleId: adminRole.id,
-            resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
-            resourceId: prototypeGroupId,
+            resourceType: RESOURCE_TYPES.PROJECT,
+            resourceId: projectId,
           },
         });
 
@@ -917,8 +908,8 @@ router.delete(
           where: {
             userId,
             roleId: adminRole.id,
-            resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
-            resourceId: prototypeGroupId,
+            resourceType: RESOURCE_TYPES.PROJECT,
+            resourceId: projectId,
           },
         });
 
@@ -934,8 +925,8 @@ router.delete(
       await UserRoleModel.destroy({
         where: {
           userId,
-          resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
-          resourceId: prototypeGroupId,
+          resourceType: RESOURCE_TYPES.PROJECT,
+          resourceId: projectId,
         },
       });
 
@@ -952,18 +943,18 @@ router.delete(
 
 /**
  * @swagger
- * /api/prototype-groups/{prototypeGroupId}/roles/{userId}:
+ * /api/projects/{projectId}/roles/{userId}:
  *   put:
- *     tags: [PrototypeGroups]
- *     summary: プロトタイプグループのロールを更新
- *     description: ユーザーのプロトタイプグループロールを変更します。
+ *     tags: [Projects]
+ *     summary: プロジェクトのロールを更新
+ *     description: ユーザーのプロジェクトロールを変更します。
  *     parameters:
  *       - in: path
- *         name: prototypeGroupId
+ *         name: projectId
  *         required: true
  *         schema:
  *           type: string
- *         description: プロトタイプグループのID
+ *         description: プロジェクトのID
  *       - in: path
  *         name: userId
  *         required: true
@@ -989,10 +980,10 @@ router.delete(
  *         description: ユーザーまたはロールが見つかりません
  */
 router.put(
-  '/:prototypeGroupId/roles/:userId',
-  checkPrototypeGroupManagePermission,
+  '/:projectId/roles/:userId',
+  checkProjectManagePermission,
   async (req: Request, res: Response) => {
-    const { prototypeGroupId, userId } = req.params;
+    const { projectId, userId } = req.params;
     const { roleName } = req.body;
 
     if (!roleName) {
@@ -1017,12 +1008,11 @@ router.put(
         return;
       }
 
-      // プロトタイプグループの作成者の場合、管理者権限は変更不可
-      const prototypeGroup =
-        await PrototypeGroupModel.findByPk(prototypeGroupId);
-      if (prototypeGroup && prototypeGroup.userId === userId) {
+      // プロジェクトの作成者の場合、管理者権限は変更不可
+      const project = await ProjectModel.findByPk(projectId);
+      if (project && project.userId === userId) {
         res.status(400).json({
-          error: 'プロトタイプグループの作成者のロールは変更できません',
+          error: 'プロジェクトの作成者のロールは変更できません',
         });
         return;
       }
@@ -1031,15 +1021,15 @@ router.put(
       const currentUserRoles = await UserRoleModel.findAll({
         where: {
           userId,
-          resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
-          resourceId: prototypeGroupId,
+          resourceType: RESOURCE_TYPES.PROJECT,
+          resourceId: projectId,
         },
         include: [{ model: RoleModel, as: 'Role' }],
       });
 
       if (currentUserRoles.length === 0) {
         res.status(404).json({
-          error: 'ユーザーはこのプロトタイプグループのロールを持っていません',
+          error: 'ユーザーはこのプロジェクトのロールを持っていません',
         });
         return;
       }
@@ -1055,8 +1045,8 @@ router.put(
         const adminCount = await UserRoleModel.count({
           where: {
             roleId: adminRole.id,
-            resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
-            resourceId: prototypeGroupId,
+            resourceType: RESOURCE_TYPES.PROJECT,
+            resourceId: projectId,
           },
         });
 
@@ -1086,8 +1076,8 @@ router.put(
         await UserRoleModel.destroy({
           where: {
             userId,
-            resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
-            resourceId: prototypeGroupId,
+            resourceType: RESOURCE_TYPES.PROJECT,
+            resourceId: projectId,
           },
           transaction,
         });
@@ -1097,8 +1087,8 @@ router.put(
           {
             userId,
             roleId: newRole.id,
-            resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
-            resourceId: prototypeGroupId,
+            resourceType: RESOURCE_TYPES.PROJECT,
+            resourceId: projectId,
           },
           { transaction }
         );

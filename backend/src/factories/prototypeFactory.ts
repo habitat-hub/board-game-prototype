@@ -2,21 +2,21 @@ import { Transaction } from 'sequelize';
 
 import PrototypeModel from '../models/Prototype';
 import { ROLE_TYPE, PROTOTYPE_VERSION, RESOURCE_TYPES } from '../const';
-import PrototypeGroupModel from '../models/PrototypeGroup';
+import ProjectModel from '../models/Project';
 import { assignRole } from '../helpers/roleHelper';
 import RoleModel from '../models/Role';
 import PartModel from '../models/Part';
 import PartPropertyModel from '../models/PartProperty';
 
 /**
- * プロトタイプグループを作成する
+ * プロジェクトを作成する
  *
  * @param userId - ユーザーID
  * @param name - プロトタイプ名
  * @param transaction - トランザクション
- * @returns 作成したプロトタイプグループとそれに含まれるプロトタイプ
+ * @returns 作成したプロジェクトとそれに含まれるプロトタイプ
  */
-export async function createPrototypeGroup({
+export async function createProject({
   userId,
   name,
   transaction,
@@ -25,8 +25,8 @@ export async function createPrototypeGroup({
   name: string;
   transaction: Transaction;
 }) {
-  // プロトタイプグループの作成
-  const prototypeGroup = await PrototypeGroupModel.create(
+  // プロジェクトの作成
+  const project = await ProjectModel.create(
     {
       userId,
     },
@@ -36,7 +36,7 @@ export async function createPrototypeGroup({
   // マスタープロトタイプの作成
   const masterPrototype = await PrototypeModel.create(
     {
-      prototypeGroupId: prototypeGroup.id,
+      projectId: project.id,
       name,
       type: 'MASTER',
       versionNumber: PROTOTYPE_VERSION.INITIAL,
@@ -57,8 +57,8 @@ export async function createPrototypeGroup({
     await assignRole(
       userId,
       adminRole.id,
-      RESOURCE_TYPES.PROTOTYPE_GROUP,
-      prototypeGroup.id,
+      RESOURCE_TYPES.PROJECT,
+      project.id,
       transaction
     );
   } catch (error) {
@@ -67,7 +67,7 @@ export async function createPrototypeGroup({
   }
 
   return {
-    prototypeGroup,
+    project,
     prototypes: [masterPrototype],
   };
 }
@@ -75,19 +75,19 @@ export async function createPrototypeGroup({
 /**
  * プロトタイプバージョンを作成する（MASTERをコピーし、INSTANCEも同時に作成）
  *
- * @param prototypeGroupId - プロトタイプグループID
+ * @param projectId - プロジェクトID
  * @param name - プロトタイプ名
  * @param versionNumber - バージョン番号
  * @param transaction - トランザクション
  * @returns 作成したバージョンプロトタイプとインスタンスプロトタイプ
  */
 export const createPrototypeVersion = async ({
-  prototypeGroupId,
+  projectId,
   name,
   versionNumber = PROTOTYPE_VERSION.INITIAL,
   transaction,
 }: {
-  prototypeGroupId: string;
+  projectId: string;
   name: string;
   versionNumber: number;
   transaction: Transaction;
@@ -95,7 +95,7 @@ export const createPrototypeVersion = async ({
   // マスタープロトタイプの取得
   const masterPrototype = await PrototypeModel.findOne({
     where: {
-      prototypeGroupId,
+      projectId,
       type: 'MASTER',
     },
   });
@@ -106,7 +106,7 @@ export const createPrototypeVersion = async ({
   // バージョンプロトタイプの作成
   const versionPrototype = await PrototypeModel.create(
     {
-      prototypeGroupId,
+      projectId,
       name,
       type: 'VERSION',
       versionNumber,
@@ -173,7 +173,7 @@ export const createPrototypeVersion = async ({
 
   const instancePrototype = await PrototypeModel.create(
     {
-      prototypeGroupId,
+      projectId,
       name: `${name}（ルーム）`,
       type: 'INSTANCE',
       versionNumber,

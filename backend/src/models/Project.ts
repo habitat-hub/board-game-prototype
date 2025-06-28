@@ -2,14 +2,14 @@ import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
 import User from './User';
 
-class PrototypeGroupModel extends Model {
+class ProjectModel extends Model {
   // ID
   public id!: string;
   // ユーザーID
   public userId!: string;
 }
 
-PrototypeGroupModel.init(
+ProjectModel.init(
   {
     id: {
       type: DataTypes.UUID,
@@ -30,7 +30,7 @@ PrototypeGroupModel.init(
   },
   {
     sequelize,
-    modelName: 'PrototypeGroup',
+    modelName: 'Project',
     indexes: [
       {
         unique: true,
@@ -43,13 +43,13 @@ PrototypeGroupModel.init(
   }
 );
 
-PrototypeGroupModel.belongsTo(User, {
+ProjectModel.belongsTo(User, {
   foreignKey: 'userId',
   onDelete: 'CASCADE',
 });
-User.hasMany(PrototypeGroupModel, {
+User.hasMany(ProjectModel, {
   foreignKey: 'userId',
   onDelete: 'CASCADE',
 });
 
-export default PrototypeGroupModel;
+export default ProjectModel;

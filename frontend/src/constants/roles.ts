@@ -29,7 +29,7 @@ export const PERMISSION_ACTIONS = {
  * バックエンドの `backend/src/const.ts` の `RESOURCE_TYPES` と同期
  */
 export const RESOURCE_TYPES = {
-  PROTOTYPE_GROUP: 'prototype_group',
+  PROJECT: 'project',
   PROTOTYPE: 'prototype',
   USER: 'user',
 } as const;

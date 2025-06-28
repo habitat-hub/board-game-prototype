@@ -13,7 +13,7 @@ import UserRolesList from '../molecules/UserRolesList';
 
 const RoleManagement: React.FC = () => {
   const router = useRouter();
-  const { groupId } = useParams<{ groupId: string }>();
+  const { projectId } = useParams<{ projectId: string }>();
 
   // ユーザー検索用の状態
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,7 +58,7 @@ const RoleManagement: React.FC = () => {
     handleCancelRemove,
     updateRoleForm,
     closeToast,
-  } = useRoleManagement(groupId);
+  } = useRoleManagement(projectId);
 
   // 検索結果をフィルタリング
   const filteredUsers = useMemo(() => {

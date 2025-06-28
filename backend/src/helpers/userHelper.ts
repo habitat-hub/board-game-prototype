@@ -6,14 +6,10 @@ import { RESOURCE_TYPES, ROLE_TYPE } from '../const';
  * アクセス可能なユーザーを取得する
  * 暫定的にadminロールを持つユーザーのみを返す
  *
- * @param prototypeGroupId - グループID
+ * @param projectId - プロジェクトID
  * @returns アクセス可能なユーザー
  */
-export async function getAccessibleUsers({
-  prototypeGroupId,
-}: {
-  prototypeGroupId: string;
-}) {
+export async function getAccessibleUsers({ projectId }: { projectId: string }) {
   // adminロールを持つユーザーを取得
   const accessibleUsers = await UserModel.findAll({
     include: [
@@ -22,8 +18,8 @@ export async function getAccessibleUsers({
         as: 'roles',
         through: {
           where: {
-            resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
-            resourceId: prototypeGroupId,
+            resourceType: RESOURCE_TYPES.PROJECT,
+            resourceId: projectId,
           },
         },
         where: {

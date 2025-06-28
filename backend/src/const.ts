@@ -32,7 +32,7 @@ export const PERMISSION_ACTIONS = {
 };
 
 export const RESOURCE_TYPES = {
-  PROTOTYPE_GROUP: 'prototype_group',
+  PROJECT: 'project',
   PROTOTYPE: 'prototype',
   USER: 'user',
 };
