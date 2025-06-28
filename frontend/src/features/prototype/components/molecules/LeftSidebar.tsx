@@ -149,7 +149,7 @@ export default function LeftSidebar({
         <div className="flex gap-1 mb-2">
           <button
             className={`flex-1 flex flex-col items-center py-1.5 rounded-lg font-bold border transition-all ${
-              activeTab === 'create'
+              activeTab === GameBoardMode.CREATE
                 ? 'bg-kibako-tertiary text-kibako-primary border-kibako-secondary'
                 : 'bg-kibako-white text-kibako-secondary border-kibako-tertiary hover:bg-kibako-tertiary'
             }`}
@@ -164,14 +164,14 @@ export default function LeftSidebar({
           </button>
           <button
             className={`flex-1 flex flex-col items-center py-1.5 rounded-lg font-bold border transition-all ${
-              activeTab === 'play'
+              activeTab === GameBoardMode.PLAY
                 ? 'bg-kibako-tertiary text-kibako-primary border-kibako-secondary'
                 : 'bg-kibako-white text-kibako-secondary border-kibako-tertiary hover:bg-kibako-tertiary'
             }`}
             onClick={() => setActiveTab(GameBoardMode.PLAY)}
           >
             <MdMeetingRoom
-              className={`h-6 w-6 mb-0.5 ${activeTab === 'play' ? 'text-kibako-primary' : 'text-kibako-secondary'}`}
+              className={`h-6 w-6 mb-0.5 ${activeTab === GameBoardMode.PLAY ? 'text-kibako-primary' : 'text-kibako-secondary'}`}
             />
             <span className="text-[10px] font-normal tracking-widest">
               遊ぶ
@@ -179,9 +179,9 @@ export default function LeftSidebar({
           </button>
         </div>
         {/* 作るタブは空 */}
-        {activeTab === 'create' && <div />}
+        {activeTab === GameBoardMode.CREATE && <div />}
         {/* 遊ぶタブ */}
-        {activeTab === 'play' && (
+        {activeTab === GameBoardMode.PLAY && (
           <div>
             <div className="flex flex-col gap-2 py-0.5 px-0">
               <button
