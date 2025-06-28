@@ -137,16 +137,11 @@ export const createPrototypeVersion = async ({
       {
         type: masterPart.type,
         prototypeId: versionPrototype.id,
-        parentId: masterPart.parentId,
         position: masterPart.position,
         width: masterPart.width,
         height: masterPart.height,
         order: masterPart.order,
-        configurableTypeAsChild: masterPart.configurableTypeAsChild,
-        originalPartId: masterPart.id,
-        isReversible: masterPart.isReversible,
-        isFlipped: masterPart.isFlipped,
-        canReverseCardOnDeck: masterPart.canReverseCardOnDeck,
+        frontSide: masterPart.frontSide,
       },
       { transaction, returning: true }
     );
@@ -195,16 +190,11 @@ export const createPrototypeVersion = async ({
       {
         type: versionPart.type,
         prototypeId: instancePrototype.id,
-        parentId: versionPart.parentId,
         position: versionPart.position,
         width: versionPart.width,
         height: versionPart.height,
         order: versionPart.order,
-        configurableTypeAsChild: versionPart.configurableTypeAsChild,
-        originalPartId: versionPart.id,
-        isReversible: versionPart.isReversible,
-        isFlipped: versionPart.isFlipped,
-        canReverseCardOnDeck: versionPart.canReverseCardOnDeck,
+        frontSide: versionPart.frontSide,
       },
       { transaction, returning: true }
     );

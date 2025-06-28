@@ -50,20 +50,15 @@ export default function PartCreateMenu({
       'id' | 'prototypeId' | 'order' | 'createdAt' | 'updatedAt'
     > = {
       type: partType,
-      parentId: undefined,
       position: { x: 0, y: 0 }, // 仮の位置（GameBoardのhandleAddPartで上書きされる）
       width: partConfig.width,
       height: partConfig.height,
-      configurableTypeAsChild: partConfig.configurableTypeAsChild,
-      originalPartId: undefined,
     };
 
     // パーツタイプ別の設定を適用
     const typeSpecificConfigs = {
       card: () => {
-        newPart.isReversible =
-          'isReversible' in partConfig && partConfig.isReversible;
-        newPart.isFlipped = false;
+        newPart.frontSide = 'front';
       },
       hand: () => {
         // 手札作成時の処理（現在は何もしない）
