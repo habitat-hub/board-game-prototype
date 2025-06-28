@@ -4,8 +4,8 @@ import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 import { io } from 'socket.io-client';
 
-import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
-import { Part, PartProperty, Prototype, PrototypeGroup } from '@/api/types';
+import { useProject } from '@/api/hooks/useProject';
+import { Part, PartProperty, Prototype, Project } from '@/api/types';
 import GameBoard from '@/features/prototype/components/organisms/GameBoard';
 import { PrototypeIdProvider } from '@/features/prototype/contexts/PrototypeIdContext';
 import { SocketProvider } from '@/features/prototype/contexts/SocketContext';
@@ -17,18 +17,18 @@ const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
 export default function PrototypeTemplate() {
   const router = useRouter();
-  const { getPrototypeGroup } = usePrototypeGroup();
+  const { getProject } = useProject();
   const { user } = useUser();
 
   // プロトタイプID, バージョンID
-  const { groupId, prototypeId } = useParams<{
-    groupId: string;
+  const { projectId, prototypeId } = useParams<{
+    projectId: string;
     prototypeId: string;
   }>();
 
   // プロトタイプ
   const [prototype, setPrototype] = useState<
-    | (PrototypeGroup & {
+    | (Project & {
         prototypes: Prototype[];
       })
     | null
@@ -67,14 +67,14 @@ export default function PrototypeTemplate() {
 
   // プロタイプの取得
   useEffect(() => {
-    getPrototypeGroup(groupId)
+    getProject(projectId)
       .then((response) => {
-        const { prototypeGroup, prototypes } = response;
+        const { project, prototypes } = response;
 
-        setPrototype({ ...prototypeGroup, prototypes });
+        setPrototype({ ...project, prototypes });
       })
       .catch((error) => console.error('Error fetching prototypes:', error));
-  }, [getPrototypeGroup, groupId, router]);
+  }, [getProject, projectId, router]);
 
   // バージョン番号
   const versionNumber = useMemo(() => {
@@ -114,7 +114,7 @@ export default function PrototypeTemplate() {
           properties={properties}
           cursors={cursors}
           prototypeVersionNumber={versionNumber}
-          groupId={groupId}
+          projectId={projectId}
           gameBoardMode={mode}
         />
       </PrototypeIdProvider>

@@ -157,12 +157,12 @@
 <polygon fill="none" stroke="#000000" points="267.5,-410 267.5,-432 371.5,-432 371.5,-410 267.5,-410"/>
 <text text-anchor="start" x="272.5" y="-418" font-family="Times,serif" font-size="10.00" fill="#000000">updatedAt: DATE</text>
 </g>
-<!-- PrototypeGroup -->
+<!-- Project -->
 <g id="node7" class="node">
-<title>PrototypeGroup</title>
+<title>Project</title>
 <polygon fill="#add8e6" stroke="transparent" points="833.5,-165 833.5,-187 916.5,-187 916.5,-165 833.5,-165"/>
 <polygon fill="none" stroke="#000000" points="833.5,-165 833.5,-187 916.5,-187 916.5,-165 833.5,-165"/>
-<text text-anchor="start" x="842.7835" y="-174" font-family="Times,serif" font-weight="bold" font-size="10.00" fill="#000000">PrototypeGroup</text>
+<text text-anchor="start" x="860.838" y="-174" font-family="Times,serif" font-weight="bold" font-size="10.00" fill="#000000">Project</text>
 <polygon fill="none" stroke="#000000" points="833.5,-143 833.5,-165 916.5,-165 916.5,-143 833.5,-143"/>
 <text text-anchor="start" x="838.5" y="-152" font-family="Times,serif" text-decoration="underline" font-size="10.00" fill="#000000">id</text>
 <text text-anchor="start" x="846.279" y="-152" font-family="Times,serif" font-size="10.00" fill="#000000">: UUID</text>
@@ -174,9 +174,9 @@
 <polygon fill="none" stroke="#000000" points="833.5,-77 833.5,-99 916.5,-99 916.5,-77 833.5,-77"/>
 <text text-anchor="start" x="838.205" y="-85" font-family="Times,serif" font-size="10.00" fill="#000000">updatedAt: DATE</text>
 </g>
-<!-- PrototypeGroup&#45;&gt;User -->
+<!-- Project&#45;&gt;User -->
 <g id="edge5" class="edge">
-<title>PrototypeGroup&#45;&gt;User</title>
+<title>Project&#45;&gt;User</title>
 <path fill="none" stroke="#0000ff" d="M928.0264,-144.635C964.7883,-153.3127 1013.5104,-164.8136 1050.9128,-173.6425"/>
 <polygon fill="#0000ff" stroke="#0000ff" points="917.1207,-137.7452 927.8348,-144.5898 915.1908,-145.9206 917.1207,-137.7452"/>
 <polygon fill="#0000ff" stroke="#0000ff" points="1050.9501,-173.6512 1061.3885,-181.6637 1056.7896,-175.0297 1062.6291,-176.4082 1062.6291,-176.4082 1062.6291,-176.4082 1056.7896,-175.0297 1063.8698,-171.1526 1050.9501,-173.6512 1050.9501,-173.6512"/>
@@ -191,8 +191,8 @@
 <text text-anchor="start" x="549.5" y="-174" font-family="Times,serif" text-decoration="underline" font-size="10.00" fill="#000000">id</text>
 <text text-anchor="start" x="557.279" y="-174" font-family="Times,serif" font-size="10.00" fill="#000000">: UUID</text>
 <polygon fill="none" stroke="#000000" points="544.5,-143 544.5,-165 689.5,-165 689.5,-143 544.5,-143"/>
-<text text-anchor="start" x="549.5" y="-152" font-family="Times,serif" font-style="italic" text-decoration="underline" font-size="10.00" fill="#000000">prototypeGroupId</text>
-<text text-anchor="start" x="621.703" y="-152" font-family="Times,serif" font-size="10.00" fill="#000000">: UUID</text>
+<text text-anchor="start" x="549.5" y="-152" font-family="Times,serif" font-style="italic" text-decoration="underline" font-size="10.00" fill="#000000">projectId</text>
+<text text-anchor="start" x="585.594" y="-152" font-family="Times,serif" font-size="10.00" fill="#000000">: UUID</text>
 <polygon fill="none" stroke="#000000" points="544.5,-121 544.5,-143 689.5,-143 689.5,-121 544.5,-121"/>
 <text text-anchor="start" x="549.5" y="-129" font-family="Times,serif" font-size="10.00" fill="#000000">name: STRING</text>
 <polygon fill="none" stroke="#000000" points="544.5,-99 544.5,-121 689.5,-121 689.5,-99 544.5,-99"/>
@@ -207,9 +207,9 @@
 <polygon fill="none" stroke="#000000" points="544.5,-11 544.5,-33 689.5,-33 689.5,-11 544.5,-11"/>
 <text text-anchor="start" x="549.5" y="-19" font-family="Times,serif" font-size="10.00" fill="#000000">updatedAt: DATE</text>
 </g>
-<!-- Prototype&#45;&gt;PrototypeGroup -->
+<!-- Prototype&#45;&gt;Project -->
 <g id="edge6" class="edge">
-<title>Prototype&#45;&gt;PrototypeGroup</title>
+<title>Prototype&#45;&gt;Project</title>
 <path fill="none" stroke="#0000ff" d="M701.2523,-117.2269C740.4906,-120.5728 785.9435,-124.4487 820.4457,-127.3907"/>
 <polygon fill="#0000ff" stroke="#0000ff" points="689.4108,-112.002 701.0106,-117.2064 688.6971,-120.3716 689.4108,-112.002"/>
 <polygon fill="#0000ff" stroke="#0000ff" points="820.6732,-127.41 832.171,-133.8101 826.6515,-127.9199 832.6298,-128.4297 832.6298,-128.4297 832.6298,-128.4297 826.6515,-127.9199 833.0886,-123.0492 820.6732,-127.41 820.6732,-127.41"/>

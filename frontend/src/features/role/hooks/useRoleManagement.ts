@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 
-import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
+import { useProject } from '@/api/hooks/useProject';
 import { useUsers } from '@/api/hooks/useUsers';
-import { User, PrototypeGroupsDetailData } from '@/api/types';
+import { User, ProjectsDetailData } from '@/api/types';
 import { useUser } from '@/hooks/useUser';
 
 interface UserRole {
@@ -30,22 +30,23 @@ interface RoleFormState {
 /**
  * ロール管理関連のロジックを管理するカスタムフック
  */
-export const useRoleManagement = (groupId: string) => {
+export const useRoleManagement = (projectId: string) => {
   const { user: currentUser } = useUser();
   const { searchUsers } = useUsers();
   const {
-    getPrototypeGroupRoles,
-    addRoleToPrototypeGroup,
-    removeRoleFromPrototypeGroup,
-    updateRoleInPrototypeGroup,
-    getPrototypeGroup,
-  } = usePrototypeGroup();
+    getProjectRoles,
+    addRoleToProject,
+    removeRoleFromProject,
+    updateRoleInProject,
+    getProject,
+  } = useProject();
 
   // データ状態
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
-  const [groupDetail, setGroupDetail] =
-    useState<PrototypeGroupsDetailData | null>(null);
+  const [projectDetail, setProjectDetail] = useState<ProjectsDetailData | null>(
+    null
+  );
   const [creator, setCreator] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -87,7 +88,7 @@ export const useRoleManagement = (groupId: string) => {
   const fetchUserRoles = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await getPrototypeGroupRoles(groupId);
+      const response = await getProjectRoles(projectId);
       setUserRoles(response);
     } catch (error) {
       console.error('Error fetching user roles:', error);
@@ -95,20 +96,20 @@ export const useRoleManagement = (groupId: string) => {
     } finally {
       setLoading(false);
     }
-  }, [getPrototypeGroupRoles, groupId, showToast]);
+  }, [getProjectRoles, projectId, showToast]);
 
-  // グループ詳細を取得
-  const fetchGroupDetail = useCallback(async () => {
+  // プロジェクト詳細を取得
+  const fetchProjectDetail = useCallback(async () => {
     try {
-      const response = await getPrototypeGroup(groupId);
-      setGroupDetail(response);
+      const response = await getProject(projectId);
+      setProjectDetail(response);
 
       // 作成者の情報を取得
-      if (response.prototypeGroup?.userId) {
+      if (response.project?.userId) {
         try {
           const usersResponse = await searchUsers({ username: '' });
           const creatorUser = usersResponse.find(
-            (user) => user.id === response.prototypeGroup?.userId
+            (user) => user.id === response.project?.userId
           );
           if (creatorUser) {
             setCreator(creatorUser);
@@ -118,9 +119,9 @@ export const useRoleManagement = (groupId: string) => {
         }
       }
     } catch (error) {
-      console.error('Error fetching group detail:', error);
+      console.error('Error fetching project detail:', error);
     }
-  }, [getPrototypeGroup, groupId, searchUsers]);
+  }, [getProject, projectId, searchUsers]);
 
   // 全ユーザーを取得（検索用）
   const fetchAllUsers = useCallback(async () => {
@@ -137,7 +138,7 @@ export const useRoleManagement = (groupId: string) => {
     async (userId: string, roleName: 'admin' | 'editor' | 'viewer') => {
       try {
         setLoading(true);
-        await addRoleToPrototypeGroup(groupId, { userId, roleName });
+        await addRoleToProject(projectId, { userId, roleName });
         await fetchUserRoles(); // 一覧を再取得
         await fetchAllUsers(); // ユーザー検索用リストを再取得
         showToast(`ユーザーに${roleName}ロールを追加しました。`, 'success');
@@ -148,7 +149,7 @@ export const useRoleManagement = (groupId: string) => {
         setLoading(false);
       }
     },
-    [addRoleToPrototypeGroup, groupId, fetchUserRoles, fetchAllUsers, showToast]
+    [addRoleToProject, projectId, fetchUserRoles, fetchAllUsers, showToast]
   );
 
   // ロール更新
@@ -156,7 +157,7 @@ export const useRoleManagement = (groupId: string) => {
     async (userId: string, roleName: 'admin' | 'editor' | 'viewer') => {
       try {
         setLoading(true);
-        await updateRoleInPrototypeGroup(groupId, userId, { roleName });
+        await updateRoleInProject(projectId, userId, { roleName });
         await fetchUserRoles(); // 一覧を再取得
         showToast(`ユーザーのロールを${roleName}に変更しました。`, 'success');
       } catch (error) {
@@ -166,22 +167,22 @@ export const useRoleManagement = (groupId: string) => {
         setLoading(false);
       }
     },
-    [updateRoleInPrototypeGroup, groupId, fetchUserRoles, showToast]
+    [updateRoleInProject, projectId, fetchUserRoles, showToast]
   );
 
   // ユーザーのロール削除が可能かチェック
   const canRemoveUserRole = useCallback(
     (targetUserId: string, userRoles: UserRole[]) => {
       // 現在のユーザー情報がない場合は削除不可
-      if (!currentUser || !groupDetail || !groupDetail.prototypeGroup) {
+      if (!currentUser || !projectDetail || !projectDetail.project) {
         return { canRemove: false, reason: 'ユーザー情報が取得できません' };
       }
 
-      // プロトタイプグループの作成者の場合は削除不可
-      if (groupDetail.prototypeGroup.userId === targetUserId) {
+      // プロジェクトの作成者の場合は削除不可
+      if (projectDetail.project.userId === targetUserId) {
         return {
           canRemove: false,
-          reason: 'プロトタイプグループの作成者のロールは削除できません',
+          reason: 'プロジェクトの作成者のロールは削除できません',
         };
       }
 
@@ -213,7 +214,7 @@ export const useRoleManagement = (groupId: string) => {
 
       return { canRemove: true, reason: '' };
     },
-    [currentUser, groupDetail]
+    [currentUser, projectDetail]
   );
 
   // ロール削除（エラーハンドリング改善）
@@ -221,7 +222,7 @@ export const useRoleManagement = (groupId: string) => {
     async (userId: string) => {
       try {
         setLoading(true);
-        await removeRoleFromPrototypeGroup(groupId, userId);
+        await removeRoleFromProject(projectId, userId);
         await fetchUserRoles(); // 一覧を再取得
         await fetchAllUsers(); // ユーザー検索用リストを再取得
         showToast('ユーザーのロールを削除しました。', 'success');
@@ -233,13 +234,7 @@ export const useRoleManagement = (groupId: string) => {
         setLoading(false);
       }
     },
-    [
-      removeRoleFromPrototypeGroup,
-      groupId,
-      fetchUserRoles,
-      fetchAllUsers,
-      showToast,
-    ]
+    [removeRoleFromProject, projectId, fetchUserRoles, fetchAllUsers, showToast]
   );
 
   // ハンドラー関数群
@@ -296,12 +291,12 @@ export const useRoleManagement = (groupId: string) => {
     setRoleForm((prev) => ({ ...prev, ...updates }));
   }, []);
 
-  // 初期化時にロール一覧、全ユーザー、グループ詳細を取得
+  // 初期化時にロール一覧、全ユーザー、プロジェクト詳細を取得
   useEffect(() => {
     fetchUserRoles();
     fetchAllUsers();
-    fetchGroupDetail();
-  }, [fetchUserRoles, fetchAllUsers, fetchGroupDetail]);
+    fetchProjectDetail();
+  }, [fetchUserRoles, fetchAllUsers, fetchProjectDetail]);
 
   // ロールが割り当てられていないユーザーを取得
   const availableUsers = allUsers.filter(
@@ -310,7 +305,7 @@ export const useRoleManagement = (groupId: string) => {
 
   // マスタープロトタイプ名を取得
   const masterPrototypeName =
-    groupDetail?.prototypes?.find((prototype) => prototype.type === 'MASTER')
+    projectDetail?.prototypes?.find((prototype) => prototype.type === 'MASTER')
       ?.name || '';
 
   return {

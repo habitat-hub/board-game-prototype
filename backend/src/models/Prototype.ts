@@ -1,12 +1,12 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
-import PrototypeGroupModel from './PrototypeGroup';
+import ProjectModel from './Project';
 
 class PrototypeModel extends Model {
   // ID
   public id!: string;
-  // プロトタイプグループID
-  public prototypeGroupId!: string;
+  // プロジェクトID
+  public projectId!: string;
   // プロトタイプ名
   public name!: string;
   // プロトタイプタイプ
@@ -25,11 +25,11 @@ PrototypeModel.init(
       primaryKey: true,
       allowNull: false,
     },
-    prototypeGroupId: {
+    projectId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: 'PrototypeGroups',
+        model: 'Projects',
         key: 'id',
       },
       onDelete: 'CASCADE',
@@ -68,19 +68,19 @@ PrototypeModel.init(
         fields: ['id'],
       },
       {
-        fields: ['prototypeGroupId'],
+        fields: ['projectId'],
       },
     ],
   }
 );
 
-// PrototypeGroupとの関連付け
-PrototypeModel.belongsTo(PrototypeGroupModel, {
-  foreignKey: 'prototypeGroupId',
+// Projectとの関連付け
+PrototypeModel.belongsTo(ProjectModel, {
+  foreignKey: 'projectId',
   onDelete: 'CASCADE',
 });
-PrototypeGroupModel.hasMany(PrototypeModel, {
-  foreignKey: 'prototypeGroupId',
+ProjectModel.hasMany(PrototypeModel, {
+  foreignKey: 'projectId',
   onDelete: 'CASCADE',
 });
 

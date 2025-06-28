@@ -91,25 +91,25 @@ export interface Permission {
   updatedAt: string;
 }
 
+export interface Project {
+  /** @format uuid */
+  id: string;
+  /** @format uuid */
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Prototype {
   /** @format uuid */
   id: string;
   /** @format uuid */
-  prototypeGroupId: string;
+  projectId: string;
   name: string;
   type: 'MASTER' | 'VERSION' | 'INSTANCE';
   versionNumber: number;
   /** @format uuid */
   sourceVersionPrototypeId?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface PrototypeGroup {
-  /** @format uuid */
-  id: string;
-  /** @format uuid */
-  userId: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -160,81 +160,6 @@ export interface UsersUpdatePayload {
 
 export type UsersUpdateData = User;
 
-export type PrototypeGroupsListData = {
-  prototypeGroup?: PrototypeGroup;
-  prototypes?: Prototype[];
-}[];
-
-export interface PrototypeGroupsCreatePayload {
-  name?: string;
-}
-
-export type PrototypeGroupsCreateData = PrototypeGroup;
-
-export interface PrototypeGroupsVersionCreatePayload {
-  name?: string;
-  versionNumber?: number;
-}
-
-export type PrototypeGroupsVersionCreateData = Prototype;
-
-export interface PrototypeGroupsDetailData {
-  prototypeGroup?: PrototypeGroup;
-  prototypes?: Prototype[];
-}
-
-export type PrototypeGroupsDeleteData = SuccessResponse;
-
-export type PrototypeGroupsAccessUsersListData = User[];
-
-export interface PrototypeGroupsInviteCreatePayload {
-  /** 招待するユーザーのIDリスト */
-  guestIds?: string[];
-  /**
-   * 付与するロールタイプ（admin：管理者、editor：編集者、viewer：閲覧者）
-   * @default "editor"
-   */
-  roleType?: 'admin' | 'editor' | 'viewer';
-}
-
-export type PrototypeGroupsInviteCreateData = SuccessResponse;
-
-export type PrototypeGroupsInviteDeleteData = SuccessResponse;
-
-export type PrototypeGroupsDuplicateCreateData = SuccessResponse;
-
-export type PrototypeGroupsMembersListData = {
-  userId?: string;
-  roles?: {
-    name?: string;
-    description?: string;
-  }[];
-}[];
-
-export type PrototypeGroupsRolesListData = {
-  userId?: string;
-  user?: User;
-  roles?: {
-    name?: string;
-    description?: string;
-  }[];
-}[];
-
-export interface PrototypeGroupsRolesCreatePayload {
-  userId?: string;
-  roleName?: 'admin' | 'editor' | 'viewer';
-}
-
-export type PrototypeGroupsRolesCreateData = any;
-
-export type PrototypeGroupsRolesDeleteData = any;
-
-export interface PrototypeGroupsRolesUpdatePayload {
-  roleName?: 'admin' | 'editor' | 'viewer';
-}
-
-export type PrototypeGroupsRolesUpdateData = any;
-
 export interface PrototypesDetailData {
   prototype?: Prototype;
 }
@@ -248,6 +173,81 @@ export interface PrototypesUpdatePayload {
 export type PrototypesUpdateData = Prototype;
 
 export type PrototypesDeleteData = SuccessResponse;
+
+export type ProjectsListData = {
+  project?: Project;
+  prototypes?: Prototype[];
+}[];
+
+export interface ProjectsCreatePayload {
+  name?: string;
+}
+
+export type ProjectsCreateData = Project;
+
+export interface ProjectsVersionCreatePayload {
+  name?: string;
+  versionNumber?: number;
+}
+
+export type ProjectsVersionCreateData = Prototype;
+
+export interface ProjectsDetailData {
+  project?: Project;
+  prototypes?: Prototype[];
+}
+
+export type ProjectsDeleteData = SuccessResponse;
+
+export type ProjectsAccessUsersListData = User[];
+
+export interface ProjectsInviteCreatePayload {
+  /** 招待するユーザーのIDリスト */
+  guestIds?: string[];
+  /**
+   * 付与するロールタイプ（admin：管理者、editor：編集者、viewer：閲覧者）
+   * @default "editor"
+   */
+  roleType?: 'admin' | 'editor' | 'viewer';
+}
+
+export type ProjectsInviteCreateData = SuccessResponse;
+
+export type ProjectsInviteDeleteData = SuccessResponse;
+
+export type ProjectsDuplicateCreateData = SuccessResponse;
+
+export type ProjectsMembersListData = {
+  userId?: string;
+  roles?: {
+    name?: string;
+    description?: string;
+  }[];
+}[];
+
+export type ProjectsRolesListData = {
+  userId?: string;
+  user?: User;
+  roles?: {
+    name?: string;
+    description?: string;
+  }[];
+}[];
+
+export interface ProjectsRolesCreatePayload {
+  userId?: string;
+  roleName?: 'admin' | 'editor' | 'viewer';
+}
+
+export type ProjectsRolesCreateData = any;
+
+export type ProjectsRolesDeleteData = any;
+
+export interface ProjectsRolesUpdatePayload {
+  roleName?: 'admin' | 'editor' | 'viewer';
+}
+
+export type ProjectsRolesUpdateData = any;
 
 export interface ImagesCreatePayload {
   /**

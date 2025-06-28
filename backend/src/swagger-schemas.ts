@@ -265,6 +265,31 @@ export const swaggerSchemas = {
             "updatedAt"
       ]
 },
+      Project: {
+      "type": "object",
+      "properties": {
+            "id": {
+                  "type": "string",
+                  "format": "uuid"
+            },
+            "userId": {
+                  "type": "string",
+                  "format": "uuid"
+            },
+            "createdAt": {
+                  "type": "string"
+            },
+            "updatedAt": {
+                  "type": "string"
+            }
+      },
+      "required": [
+            "id",
+            "userId",
+            "createdAt",
+            "updatedAt"
+      ]
+},
       Prototype: {
       "type": "object",
       "properties": {
@@ -272,7 +297,7 @@ export const swaggerSchemas = {
                   "type": "string",
                   "format": "uuid"
             },
-            "prototypeGroupId": {
+            "projectId": {
                   "type": "string",
                   "format": "uuid"
             },
@@ -303,35 +328,10 @@ export const swaggerSchemas = {
       },
       "required": [
             "id",
-            "prototypeGroupId",
+            "projectId",
             "name",
             "type",
             "versionNumber",
-            "createdAt",
-            "updatedAt"
-      ]
-},
-      PrototypeGroup: {
-      "type": "object",
-      "properties": {
-            "id": {
-                  "type": "string",
-                  "format": "uuid"
-            },
-            "userId": {
-                  "type": "string",
-                  "format": "uuid"
-            },
-            "createdAt": {
-                  "type": "string"
-            },
-            "updatedAt": {
-                  "type": "string"
-            }
-      },
-      "required": [
-            "id",
-            "userId",
             "createdAt",
             "updatedAt"
       ]

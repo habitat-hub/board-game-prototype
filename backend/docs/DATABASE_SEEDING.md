@@ -58,11 +58,11 @@ npm run seed:verify
 - `viewer` - 閲覧者（読み取り権限のみ）
 
 ### 権限（Permissions）
-- プロトタイプグループ関連
-  - `read_prototype_group` - プロトタイプグループの閲覧
-  - `write_prototype_group` - プロトタイプグループの編集
-  - `delete_prototype_group` - プロトタイプグループの削除
-  - `manage_prototype_group` - プロトタイプグループの管理
+- プロジェクト関連
+  - `read_project` - プロジェクトの閲覧
+  - `write_project` - プロジェクトの編集
+  - `delete_project` - プロジェクトの削除
+  - `manage_project` - プロジェクトの管理
 
 - プロトタイプ関連
   - `read_prototype` - プロトタイプの閲覧

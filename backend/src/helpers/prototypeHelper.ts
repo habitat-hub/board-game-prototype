@@ -1,31 +1,27 @@
 import { Op } from 'sequelize';
 import PartModel from '../models/Part';
-import PrototypeGroupModel from '../models/PrototypeGroup';
+import ProjectModel from '../models/Project';
 import PrototypeModel from '../models/Prototype';
 import { getAccessibleResourceIds } from './roleHelper';
 import { RESOURCE_TYPES, PERMISSION_ACTIONS } from '../const';
 
 /**
- * アクセス可能なプロトタイプグループを取得する
+ * アクセス可能なプロジェクトを取得する
  *
  * @param userId - ユーザーID
- * @returns アクセス可能なプロトタイプグループ
+ * @returns アクセス可能なプロジェクト
  */
-export async function getAccessiblePrototypeGroups({
-  userId,
-}: {
-  userId: string;
-}) {
-  // ユーザーがアクセス可能なプロトタイプグループIDを取得
-  const accessibleGroupIds = await getAccessibleResourceIds(
+export async function getAccessibleProjects({ userId }: { userId: string }) {
+  // ユーザーがアクセス可能なプロジェクトIDを取得
+  const accessibleProjectIds = await getAccessibleResourceIds(
     userId,
-    RESOURCE_TYPES.PROTOTYPE_GROUP,
+    RESOURCE_TYPES.PROJECT,
     PERMISSION_ACTIONS.READ
   );
 
-  // アクセス可能なプロトタイプグループ
-  return await PrototypeGroupModel.findAll({
-    where: { id: { [Op.in]: accessibleGroupIds } },
+  // アクセス可能なプロジェクト
+  return await ProjectModel.findAll({
+    where: { id: { [Op.in]: accessibleProjectIds } },
   });
 }
 
@@ -36,19 +32,19 @@ export async function getAccessiblePrototypeGroups({
  * @returns アクセス可能なプロトタイプ
  */
 export async function getAccessiblePrototypes({ userId }: { userId: string }) {
-  const prototypeGroups = await getAccessiblePrototypeGroups({ userId });
+  const projects = await getAccessibleProjects({ userId });
 
   const prototypes = await PrototypeModel.findAll({
     where: {
-      prototypeGroupId: { [Op.in]: prototypeGroups.map(({ id }) => id) },
+      projectId: { [Op.in]: projects.map(({ id }) => id) },
     },
   });
 
-  return prototypeGroups.map((prototypeGroup) => {
+  return projects.map((project) => {
     return {
-      prototypeGroup,
+      project,
       prototypes: prototypes.filter(
-        ({ prototypeGroupId }) => prototypeGroupId === prototypeGroup.id
+        ({ projectId }) => projectId === project.id
       ),
     };
   });

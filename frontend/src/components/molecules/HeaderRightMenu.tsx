@@ -73,10 +73,10 @@ const HeaderRightMenu: React.FC<HeaderRightMenuProps> = ({ pathname }) => {
       {showLogout && (
         <div className="absolute right-0 top-full w-48 flex flex-col mt-2 shadow-xl rounded-lg overflow-hidden bg-kibako-tertiary border border-kibako-secondary/30">
           <Link
-            href="/groups"
+            href="/projects"
             className="block w-full text-kibako-primary p-2 text-left hover:bg-kibako-secondary/10 transition-colors duration-200"
           >
-            プロトタイプ一覧
+            プロジェクト一覧
           </Link>
           <Link
             href="/profile/edit"

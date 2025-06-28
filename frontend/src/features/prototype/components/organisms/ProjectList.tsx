@@ -15,15 +15,14 @@ import { GiWoodenSign } from 'react-icons/gi';
 import { IoTrash } from 'react-icons/io5';
 import { RiLoaderLine } from 'react-icons/ri';
 
-import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
+import { useProject } from '@/api/hooks/useProject';
 import { usePrototypes } from '@/api/hooks/usePrototypes';
-import { Prototype, PrototypeGroup } from '@/api/types';
+import { Prototype, Project } from '@/api/types';
+import Loading from '@/components/organisms/Loading';
 import { UserContext } from '@/contexts/UserContext';
 import useInlineEdit from '@/hooks/useInlineEdit';
 import formatDate from '@/utils/dateFormat';
 import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
-
-import PrototypeListSkeleton from '../molecules/PrototypeListSkeleton';
 
 type SortKey = 'name' | 'createdAt';
 type SortOrder = 'asc' | 'desc';
@@ -33,15 +32,15 @@ type SortOrder = 'asc' | 'desc';
  *
  * @state isLoading - データ取得中のローディング状態を管理するState。
  * @state isCreating - プロトタイプ作成中のローディング状態を管理するState。
- * @state prototypeList - プロトタイプグループとプロトタイプのリストを保持するState。
+ * @state prototypeList - プロジェクトとプロトタイプのリストを保持するState。
  * @state sort - プロトタイプのソート条件（キーと順序）を管理するState。
  *
  * 編集機能はuseInlineEditカスタムフックで管理されています。
  */
-const PrototypeList: React.FC = () => {
+const ProjectList: React.FC = () => {
   const router = useRouter();
   const { updatePrototype } = usePrototypes();
-  const { getPrototypeGroups, createPrototypeGroup } = usePrototypeGroup();
+  const { getProjects, createProject } = useProject();
   // UserContextからユーザー情報を取得
   const userContext = useContext(UserContext);
   // インライン編集フック
@@ -62,7 +61,7 @@ const PrototypeList: React.FC = () => {
   // 編集用プロトタイプ
   const [prototypeList, setPrototypeList] = useState<
     {
-      prototypeGroup: PrototypeGroup;
+      project: Project;
       masterPrototype: Prototype | undefined;
     }[]
   >([]);
@@ -133,11 +132,13 @@ const PrototypeList: React.FC = () => {
 
       // ランダムな名前でプロトタイプを作成
       const randomName = generateRandomPrototypeName();
-      const group = await createPrototypeGroup({
+      const project = await createProject({
         name: randomName,
       });
 
-      const masterPrototype = group.prototypes.find((p) => p.type === 'MASTER');
+      const masterPrototype = project.prototypes.find(
+        (p) => p.type === 'MASTER'
+      );
 
       if (!masterPrototype) {
         throw new Error('Cannot find a prototype with type "MASTER".');
@@ -145,7 +146,7 @@ const PrototypeList: React.FC = () => {
 
       // 編集ページへ遷移（成功時はページ遷移するのでsetIsCreating(false)は不要）
       router.push(
-        `/groups/${group.prototypeGroup.id}/prototypes/${masterPrototype.id}`
+        `/projects/${project.project.id}/prototypes/${masterPrototype.id}`
       );
     } catch (error) {
       console.error('Error creating prototype:', error);
@@ -202,14 +203,14 @@ const PrototypeList: React.FC = () => {
   /**
    * プロトタイプを取得する
    */
-  const fetchPrototypeGroups = useCallback(async () => {
+  const fetchProjects = useCallback(async () => {
     setIsLoading(true);
 
     try {
-      const response = await getPrototypeGroups();
-      const prototypeInfo = response.map(({ prototypeGroup, prototypes }) => {
+      const response = await getProjects();
+      const prototypeInfo = response.map(({ project, prototypes }) => {
         return {
-          prototypeGroup,
+          project,
           masterPrototype: prototypes.find(({ type }) => type === 'MASTER'),
         };
       });
@@ -219,7 +220,7 @@ const PrototypeList: React.FC = () => {
     } finally {
       setIsLoading(false); // ローディング終了
     }
-  }, [getPrototypeGroups]);
+  }, [getProjects]);
 
   // プロトタイプ名のバリデーション関数
   const validatePrototypeName = (value: string): string | null => {
@@ -231,8 +232,8 @@ const PrototypeList: React.FC = () => {
 
   // プロトタイプの取得
   useEffect(() => {
-    fetchPrototypeGroups();
-  }, [fetchPrototypeGroups]);
+    fetchProjects();
+  }, [fetchProjects]);
 
   /**
    * プロトタイプをソートする
@@ -242,7 +243,7 @@ const PrototypeList: React.FC = () => {
   const sortPrototypes = useCallback(
     (
       prototypeList: {
-        prototypeGroup: PrototypeGroup;
+        project: Project;
         masterPrototype: Prototype | undefined;
       }[]
     ) => {
@@ -277,7 +278,7 @@ const PrototypeList: React.FC = () => {
   }, [prototypeList, sortPrototypes]);
 
   if (isLoading) {
-    return <PrototypeListSkeleton />;
+    return <Loading />;
   }
 
   if (sortedPrototypeList.length === 0) {
@@ -375,7 +376,7 @@ const PrototypeList: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-wood-lightest/20">
-            {sortedPrototypeList.map(({ masterPrototype, prototypeGroup }) => {
+            {sortedPrototypeList.map(({ masterPrototype, project }) => {
               if (!masterPrototype) return null;
               const { id, name, createdAt } = masterPrototype;
               const isNameEditing = isEditing(id);
@@ -436,13 +437,13 @@ const PrototypeList: React.FC = () => {
                     {formatDate(createdAt, true)}
                   </td>
                   <td className="p-4 text-sm text-wood">
-                    {userContext?.user?.id === prototypeGroup.userId
+                    {userContext?.user?.id === project.userId
                       ? '自分'
                       : '他のユーザー'}
                   </td>
                   <td className="p-4 flex justify-center gap-2">
                     <Link
-                      href={`groups/${prototypeGroup.id}/prototypes/${id}`}
+                      href={`projects/${project.id}/prototypes/${id}`}
                       className="flex items-center gap-2 px-3 py-1 text-sm text-wood hover:text-header rounded border border-wood-light/20 hover:bg-wood-lightest/20 whitespace-nowrap"
                       title="プロトタイプを編集する"
                     >
@@ -451,7 +452,7 @@ const PrototypeList: React.FC = () => {
                     </Link>
                     <button
                       onClick={() =>
-                        router.push(`/groups/${prototypeGroup.id}/roles`)
+                        router.push(`/projects/${project.id}/roles`)
                       }
                       className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
                       title="プロトタイプの権限を設定する"
@@ -461,7 +462,7 @@ const PrototypeList: React.FC = () => {
                     </button>
                     <button
                       onClick={() =>
-                        router.push(`/groups/${prototypeGroup.id}/delete`)
+                        router.push(`/projects/${project.id}/delete`)
                       }
                       className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-red-500 rounded-md hover:bg-red-50 transition-colors border border-wood-light/20"
                       title="プロトタイプを削除する"
@@ -501,4 +502,4 @@ const PrototypeList: React.FC = () => {
   );
 };
 
-export default PrototypeList;
+export default ProjectList;

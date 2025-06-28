@@ -44,7 +44,7 @@ const canPlay = await checkPrototypePermission('user-b', 'prototype-123', 'play'
 ### 3. 権限の階層
 
 ```
-プロトタイプグループレベル (現在実装済み)
+プロジェクトレベル (現在実装済み)
 └── プロトタイプレベル (将来拡張)
     └── パーツレベル (さらなる将来拡張)
 ```
@@ -82,9 +82,9 @@ export async function checkPrototypeAccess(req, res, next) {
 ### 5. 複合権限のシナリオ
 
 ```typescript
-// ユーザーがプロトタイプグループの権限を持っていない場合でも、
+// ユーザーがプロジェクトの権限を持っていない場合でも、
 // 特定のプロトタイプには権限を持つ場合
-const hasGroupAccess = await hasPermission(userId, 'prototype_group', 'read', groupId);
+const hasGroupAccess = await hasPermission(userId, 'project', 'read', projectId);
 const hasPrototypeAccess = await hasPermission(userId, 'prototype', 'read', prototypeId);
 
 if (hasGroupAccess || hasPrototypeAccess) {
@@ -96,7 +96,7 @@ if (hasGroupAccess || hasPrototypeAccess) {
 
 現在の実装は既に**完全に柔軟性を持った設計**になっており、追加のテーブル変更なしに：
 
-✅ プロトタイプグループごとの権限（現在実装済み）
+✅ プロジェクトごとの権限（現在実装済み）
 ✅ プロトタイプごとの権限（拡張可能）
 ✅ ユーザーごとの権限（拡張可能）
 ✅ その他任意のリソースごとの権限（拡張可能）

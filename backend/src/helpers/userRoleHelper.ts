@@ -12,7 +12,7 @@ interface RoleInfo {
   description: string;
 }
 
-interface PrototypeGroupMember {
+interface ProjectMember {
   userId: string;
   roles: RoleInfo[];
 }
@@ -44,15 +44,15 @@ export async function getUserRoles(
 }
 
 /**
- * プロトタイプグループのメンバー一覧とロールを取得
+ * プロジェクトのメンバー一覧とロールを取得
  */
-export async function getPrototypeGroupMembers(
-  prototypeGroupId: string
-): Promise<PrototypeGroupMember[]> {
+export async function getProjectMembers(
+  projectId: string
+): Promise<ProjectMember[]> {
   const userRoles = await UserRoleModel.findAll({
     where: {
-      resourceType: RESOURCE_TYPES.PROTOTYPE_GROUP,
-      resourceId: prototypeGroupId,
+      resourceType: RESOURCE_TYPES.PROJECT,
+      resourceId: projectId,
     },
     include: [
       {
@@ -63,8 +63,8 @@ export async function getPrototypeGroupMembers(
     ],
   });
 
-  // ユーザーごとにロールをグループ化
-  const memberMap = new Map<string, PrototypeGroupMember>();
+  // ユーザーごとにロールをまとめる
+  const memberMap = new Map<string, ProjectMember>();
 
   userRoles.forEach((userRole) => {
     const userRoleWithRole = userRole as UserRoleWithRole;
