@@ -1,7 +1,3 @@
-/**
- * @page サイドバーコンポーネント（プレビューモードとパーツ作成モードを兼ねている）
- */
-
 'use client';
 
 import Link from 'next/link';
