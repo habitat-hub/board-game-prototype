@@ -19,7 +19,6 @@ import Part from '@/features/prototype/components/atoms/Part';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
-import ShortcutHelpPanel from '@/features/prototype/components/molecules/ShortcutHelpPanel';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
@@ -782,7 +781,6 @@ export default function GameBoard({
         gameBoardMode={gameBoardMode}
         projectId={projectId}
       />
-      <ShortcutHelpPanel />
 
       {gameBoardMode === GameBoardMode.CREATE && (
         <>
