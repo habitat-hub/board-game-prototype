@@ -216,6 +216,18 @@ export default function GameBoard({
   }, [constrainCamera]);
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
+    // macOSトラックパッドの二本指移動でパン、Ctrlキー押下時はズーム
+    if (!e.evt.ctrlKey && !e.evt.metaKey) {
+      // パン（カメラ移動）
+      const { deltaX, deltaY } = e.evt;
+      setCamera((prev) => {
+        const newX = prev.x + deltaX;
+        const newY = prev.y + deltaY;
+        return constrainCamera(newX, newY, prev.scale);
+      });
+      return;
+    }
+    // ズーム（従来通り）
     const scaleBy = 1.05;
     const oldScale = camera.scale;
     const stage = stageRef.current;
