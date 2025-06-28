@@ -14,18 +14,18 @@ import {
 
 import { Part, PartProperty } from '@/api/types';
 import { PART_DEFAULT_CONFIG } from '@/features/prototype/const';
+import { CANVAS_SIZE } from '@/features/prototype/constants/gameBoard';
 import { AddPartProps } from '@/features/prototype/type';
 
 export default function PartCreateMenu({
   onAddPart,
+  camera,
+  viewportSize,
 }: {
-  // パーツを追加時の処理
   onAddPart: ({ part, properties }: AddPartProps) => void;
+  camera: { x: number; y: number; scale: number };
+  viewportSize: { width: number; height: number };
 }) {
-  /**
-   * パーツを作成する
-   * @param partType - パーツのタイプ
-   */
   const handleCreatePart = (
     partType: 'card' | 'token' | 'hand' | 'deck' | 'area'
   ) => {
@@ -44,13 +44,44 @@ export default function PartCreateMenu({
       return;
     }
 
-    // 新しいパーツ
+    // パーツを中央に配置する座標を計算する関数
+    const getCenteredPosition = (
+      partWidth: number,
+      partHeight: number,
+      camera: { x: number; y: number; scale: number },
+      viewportSize: { width: number; height: number }
+    ) => {
+      const cameraCenterX = (camera.x + viewportSize.width / 2) / camera.scale;
+      const cameraCenterY = (camera.y + viewportSize.height / 2) / camera.scale;
+
+      const constrainedX = Math.max(
+        0,
+        Math.min(
+          CANVAS_SIZE - partWidth,
+          Math.round(cameraCenterX - partWidth / 2)
+        )
+      );
+      const constrainedY = Math.max(
+        0,
+        Math.min(
+          CANVAS_SIZE - partHeight,
+          Math.round(cameraCenterY - partHeight / 2)
+        )
+      );
+      return { x: constrainedX, y: constrainedY };
+    };
+
     const newPart: Omit<
       Part,
       'id' | 'prototypeId' | 'order' | 'createdAt' | 'updatedAt'
     > = {
       type: partType,
-      position: { x: 0, y: 0 }, // 仮の位置（GameBoardのhandleAddPartで上書きされる）
+      position: getCenteredPosition(
+        partConfig.width,
+        partConfig.height,
+        camera,
+        viewportSize
+      ),
       width: partConfig.width,
       height: partConfig.height,
     };

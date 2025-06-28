@@ -114,8 +114,8 @@ export default function PartPropertySidebar({
       type: selectedPart.type,
       // NOTE： 少し複製元からずらす
       position: {
-        x: selectedPart.position.x + 10,
-        y: selectedPart.position.y + 10,
+        x: selectedPart.position.x + 25,
+        y: selectedPart.position.y + 25,
       },
       width: selectedPart.width,
       height: selectedPart.height,

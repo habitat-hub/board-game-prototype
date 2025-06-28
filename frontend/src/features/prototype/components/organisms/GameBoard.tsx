@@ -18,10 +18,18 @@ import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
+import {
+  GRID_SIZE,
+  CANVAS_SIZE,
+  MIN_SCALE,
+  MAX_SCALE,
+  DEFAULT_INITIAL_SCALE,
+} from '@/features/prototype/constants/gameBoard';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
+import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { AddPartProps, DeleteImageProps } from '@/features/prototype/type';
 import { CursorInfo } from '@/features/prototype/types/cursor';
 import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
@@ -31,12 +39,6 @@ import {
   saveImageToIndexedDb,
   updateImageParamsInIndexedDb,
 } from '@/utils/db';
-
-const GRID_SIZE = 50;
-const CANVAS_SIZE = 5000;
-const MIN_SCALE = 0.18;
-const MAX_SCALE = 8;
-const DEFAULT_INITIAL_SCALE = 0.5;
 
 interface GameBoardProps {
   prototypeName: string;
@@ -214,6 +216,18 @@ export default function GameBoard({
   }, [constrainCamera]);
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
+    // macOSトラックパッドの二本指移動でパン、Ctrlキー押下時はズーム
+    if (!e.evt.ctrlKey && !e.evt.metaKey) {
+      // パン（カメラ移動）
+      const { deltaX, deltaY } = e.evt;
+      setCamera((prev) => {
+        const newX = prev.x + deltaX;
+        const newY = prev.y + deltaY;
+        return constrainCamera(newX, newY, prev.scale);
+      });
+      return;
+    }
+    // ズーム（従来通り）
     const scaleBy = 1.05;
     const oldScale = camera.scale;
     const stage = stageRef.current;
@@ -463,41 +477,13 @@ export default function GameBoard({
       measureOperation('Part Addition', () => {
         setSelectedPartIds([]);
 
-        const cameraCenterX =
-          (camera.x + viewportSize.width / 2) / camera.scale;
-        const cameraCenterY =
-          (camera.y + viewportSize.height / 2) / camera.scale;
-
-        const constrainedX = Math.max(
-          0,
-          Math.min(
-            CANVAS_SIZE - part.width,
-            Math.round(cameraCenterX - part.width / 2)
-          )
-        );
-        const constrainedY = Math.max(
-          0,
-          Math.min(
-            CANVAS_SIZE - part.height,
-            Math.round(cameraCenterY - part.height / 2)
-          )
-        );
-
-        const partWithCenteredPosition = {
-          ...part,
-          position: {
-            x: constrainedX,
-            y: constrainedY,
-          },
-        };
-
         dispatch({
           type: 'ADD_PART',
-          payload: { part: partWithCenteredPosition, properties },
+          payload: { part, properties },
         });
       });
     },
-    [dispatch, camera, viewportSize, measureOperation]
+    [dispatch, measureOperation]
   );
 
   const handleDeleteImage = useCallback(
@@ -699,6 +685,19 @@ export default function GameBoard({
     return map;
   }, [parts, properties, images]);
 
+  const { socket } = useSocket();
+
+  useEffect(() => {
+    // パーツ追加時に自分の追加したパーツを選択状態にする
+    const handleAddPartResponse = (data: { partId: number }) => {
+      setSelectedPartIds([data.partId]);
+    };
+    if (!socket) return;
+    socket.on('ADD_PART_RESPONSE', handleAddPartResponse);
+    return () => {
+      socket.off('ADD_PART_RESPONSE', handleAddPartResponse);
+    };
+  }, [socket]);
   return (
     <DebugModeProvider>
       <Stage
@@ -788,7 +787,11 @@ export default function GameBoard({
       {gameBoardMode === GameBoardMode.CREATE && (
         <>
           {/* フローティングパーツ作成メニュー */}
-          <PartCreateMenu onAddPart={handleAddPart} />
+          <PartCreateMenu
+            onAddPart={handleAddPart}
+            camera={camera}
+            viewportSize={viewportSize}
+          />
 
           {/* プロパティサイドバー */}
           {selectedPartIds.length === 1 && (
