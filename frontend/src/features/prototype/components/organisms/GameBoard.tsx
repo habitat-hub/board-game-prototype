@@ -1,5 +1,3 @@
-'use client';
-
 import Konva from 'konva';
 import React, {
   useRef,
@@ -19,9 +17,9 @@ import Part from '@/features/prototype/components/atoms/Part';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
-import ShortcutHelpPanel from '@/features/prototype/components/molecules/ShortcutHelpPanel';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
+import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { AddPartProps, DeleteImageProps } from '@/features/prototype/type';
@@ -658,6 +656,8 @@ export default function GameBoard({
     [showContextMenu, handleCloseContextMenu]
   );
 
+  const { isGrabbing, eventHandlers: grabbingHandlers } = useGrabbingCursor();
+
   // パーツの位置をキャンバス内に制限する関数
   const constrainWithinCanvas = useCallback(
     (
@@ -707,6 +707,8 @@ export default function GameBoard({
         ref={stageRef}
         onWheel={handleWheel}
         onClick={handleStageClick}
+        {...grabbingHandlers}
+        style={{ cursor: isGrabbing ? 'grabbing' : 'grab' }}
       >
         <Layer>
           {/* カメラ - カメラの位置とスケールを適用 */}
@@ -781,21 +783,6 @@ export default function GameBoard({
         prototypeName={prototypeName}
         gameBoardMode={gameBoardMode}
         projectId={projectId}
-      />
-      {/* ショートカットヘルプパネル */}
-      <ShortcutHelpPanel
-        shortcuts={[
-          {
-            id: 'multi-select',
-            key: 'Shift + クリック',
-            description: '複数のパーツを選択できます',
-          },
-          {
-            id: 'delete',
-            key: 'Delete / Backspace',
-            description: '選択中のパーツを削除します',
-          },
-        ]}
       />
 
       {gameBoardMode === GameBoardMode.CREATE && (

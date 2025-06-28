@@ -1,14 +1,9 @@
-/**
- * @page サイドバーコンポーネント（プレビューモードとパーツ作成モードを兼ねている）
- */
-
 'use client';
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
-import { BsBoxSeam } from 'react-icons/bs';
-import { IoArrowBack, IoMenu, IoAdd, IoEye } from 'react-icons/io5';
+import { IoArrowBack, IoMenu, IoAdd } from 'react-icons/io5';
 import { MdMeetingRoom, MdDelete } from 'react-icons/md';
 
 import { useProject } from '@/api/hooks/useProject';
@@ -16,6 +11,8 @@ import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Prototype, Project } from '@/api/types';
 import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
 import formatDate from '@/utils/dateFormat';
+
+import ShortcutHelpPanel from './ShortcutHelpPanel';
 
 export default function LeftSidebar({
   prototypeName,
@@ -39,11 +36,6 @@ export default function LeftSidebar({
     instancesByVersion: Record<string, Prototype[]>;
   } | null>(null);
   const [isRoomCreating, setIsRoomCreating] = useState(false);
-  const [activeTab, setActiveTab] = useState<GameBoardMode>(
-    gameBoardMode === GameBoardMode.PLAY
-      ? GameBoardMode.PLAY
-      : GameBoardMode.CREATE
-  );
 
   /**
    * プロトタイプを取得する
@@ -117,155 +109,72 @@ export default function LeftSidebar({
     setIsLeftSidebarMinimized(!isLeftSidebarMinimized);
   };
 
-  const renderTypeBadge = () => {
-    switch (gameBoardMode) {
-      case GameBoardMode.CREATE:
-        return (
-          <span className="ml-2 flex items-center">
-            <BsBoxSeam className="text-kibako-primary h-4 w-4" />
-          </span>
-        );
-      case GameBoardMode.PREVIEW:
-        return (
-          <span className="ml-2 flex items-center">
-            <IoEye className="text-kibako-primary h-4 w-4" />
-          </span>
-        );
-      case GameBoardMode.PLAY:
-        return (
-          <span className="ml-2 flex items-center">
-            <MdMeetingRoom className="text-kibako-primary h-4 w-4" />
-          </span>
-        );
-      default:
-        return null;
-    }
-  };
-
-  // 新デザイン: トグルで「作る」「遊ぶ」切り替え
+  // サイドバーのルームリスト部分のみを表示する
   const renderSidebarContent = () => {
     if (!prototypeInfo) return null;
     return (
       <div className="p-2 overflow-y-auto scrollbar-hide space-y-4">
-        {/* アイコンメインのトグルボタン */}
-        <div className="flex gap-1 mb-2">
+        <div className="flex flex-col gap-2 py-0.5 px-0">
+          {/* 新しいルーム作成ボタン */}
           <button
-            className={`flex-1 flex flex-col items-center py-1.5 rounded-lg font-bold border transition-all ${
-              activeTab === GameBoardMode.CREATE
-                ? 'bg-kibako-tertiary text-kibako-primary border-kibako-secondary'
-                : 'bg-kibako-white text-kibako-secondary border-kibako-tertiary hover:bg-kibako-tertiary'
-            }`}
-            onClick={() => setActiveTab(GameBoardMode.CREATE)}
+            onClick={handleCreateRoom}
+            disabled={isRoomCreating}
+            className="relative flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 border-2 border-dashed border-kibako-secondary hover:border-kibako-accent hover:border-solid mb-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            title="新しいルームを作る"
           >
-            <BsBoxSeam
-              className={`h-6 w-6 mb-0.5 ${activeTab === GameBoardMode.CREATE ? 'text-kibako-primary' : 'text-kibako-secondary'}`}
-            />
-            <span className="text-[10px] font-normal tracking-widest">
-              作る
-            </span>
-          </button>
-          <button
-            className={`flex-1 flex flex-col items-center py-1.5 rounded-lg font-bold border transition-all ${
-              activeTab === GameBoardMode.PLAY
-                ? 'bg-kibako-tertiary text-kibako-primary border-kibako-secondary'
-                : 'bg-kibako-white text-kibako-secondary border-kibako-tertiary hover:bg-kibako-tertiary'
-            }`}
-            onClick={() => setActiveTab(GameBoardMode.PLAY)}
-          >
-            <MdMeetingRoom
-              className={`h-6 w-6 mb-0.5 ${activeTab === GameBoardMode.PLAY ? 'text-kibako-primary' : 'text-kibako-secondary'}`}
-            />
-            <span className="text-[10px] font-normal tracking-widest">
-              遊ぶ
-            </span>
-          </button>
-        </div>
-        {/* 作るタブは空 */}
-        {activeTab === GameBoardMode.CREATE && <div />}
-        {/* 遊ぶタブ */}
-        {activeTab === GameBoardMode.PLAY && (
-          <div>
-            <div className="flex flex-col gap-2 py-0.5 px-0">
-              {/* 新しいルーム作成ボタン */}
-              <button
-                onClick={handleCreateRoom}
-                disabled={isRoomCreating}
-                className="relative flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 border-2 border-dashed border-kibako-secondary hover:border-kibako-accent hover:border-solid mb-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                title="新しいルームを作る"
-              >
-                <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
-                <div className="flex flex-col min-w-0 flex-1">
-                  <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[180px]">
-                    新しいルームを作る
-                  </span>
-                  <span className="text-xs text-kibako-secondary mt-0.5 flex items-center gap-1">
-                    今のボードの状態を保存して
-                    <br />
-                    ルームを作成します
-                  </span>
-                </div>
-                <IoAdd className="h-5 w-5 text-kibako-secondary ml-1 transition-colors" />
-              </button>
-              {prototypeInfo.instances
-                .slice()
-                .sort((a, b) =>
-                  b.createdAt && a.createdAt
-                    ? new Date(b.createdAt).getTime() -
-                      new Date(a.createdAt).getTime()
-                    : 0
-                )
-                .map((instance) => (
-                  <div key={instance.id} className="relative flex-shrink-0">
-                    <Link
-                      href={`/projects/${projectId}/prototypes/${instance.id}`}
-                      className="group"
-                      title={`${instance.name ?? instance.versionNumber + '版'}のルームを開く`}
-                    >
-                      <div className="flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 group-hover:bg-kibako-accent/10 group-hover:border-kibako-accent border border-transparent">
-                        <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
-                        <div className="flex flex-col min-w-0 flex-1">
-                          <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[180px]">
-                            {instance.name}
-                          </span>
-                          <span className="text-xs text-kibako-secondary mt-0.5 flex items-center gap-1">
-                            <span className="font-bold">入室する</span>
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-                    <button
-                      onClick={() => handleDeleteRoom(instance.id)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full group/delete hover:bg-kibako-accent/20 focus:outline-none flex items-center justify-center"
-                      title="ルームを削除"
-                    >
-                      <MdDelete className="h-5 w-5 text-kibako-secondary transition-colors" />
-                    </button>
-                  </div>
-                ))}
+            <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
+            <div className="flex flex-col min-w-0 flex-1">
+              <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[180px]">
+                新しいルームを作る
+              </span>
+              <span className="text-xs text-kibako-secondary mt-0.5 flex items-center gap-1">
+                今のボードの状態を保存して
+                <br />
+                遊び場を作成します
+              </span>
             </div>
-          </div>
-        )}
+            <IoAdd className="h-5 w-5 text-kibako-secondary ml-1 transition-colors" />
+          </button>
+          {prototypeInfo.instances
+            .slice()
+            .sort((a, b) =>
+              b.createdAt && a.createdAt
+                ? new Date(b.createdAt).getTime() -
+                  new Date(a.createdAt).getTime()
+                : 0
+            )
+            .map((instance) => (
+              <div key={instance.id} className="relative flex-shrink-0">
+                <Link
+                  href={`/projects/${projectId}/prototypes/${instance.id}`}
+                  className="group"
+                  title={`${instance.name ?? instance.versionNumber + '版'}のルームを開く`}
+                >
+                  <div className="flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 group-hover:bg-kibako-accent/10 group-hover:border-kibako-accent border border-transparent">
+                    <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[180px]">
+                        {instance.name}
+                      </span>
+                      <span className="text-xs text-kibako-secondary mt-0.5 flex items-center gap-1">
+                        <span className="font-bold">入室する</span>
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+                <button
+                  onClick={() => handleDeleteRoom(instance.id)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full group/delete hover:bg-kibako-accent/20 focus:outline-none flex items-center justify-center"
+                  title="ルームを削除"
+                >
+                  <MdDelete className="h-5 w-5 text-kibako-secondary transition-colors" />
+                </button>
+              </div>
+            ))}
+        </div>
       </div>
     );
   };
-
-  // タブ切り替え時の遷移処理
-  useEffect(() => {
-    if (activeTab === 'create' && prototypeInfo?.master?.id) {
-      router.push(
-        `/projects/${projectId}/prototypes/${prototypeInfo.master.id}`
-      );
-    }
-  }, [activeTab, prototypeInfo?.master?.id, projectId, router]);
-
-  // gameBoardModeが変わったときもactiveTabを同期
-  useEffect(() => {
-    setActiveTab(
-      gameBoardMode === GameBoardMode.PLAY
-        ? GameBoardMode.PLAY
-        : GameBoardMode.CREATE
-    );
-  }, [gameBoardMode]);
 
   return (
     <div
@@ -288,7 +197,6 @@ export default function LeftSidebar({
           >
             {prototypeName}
           </h2>
-          {renderTypeBadge()}
         </div>
         {/* ルームを開いている時は開閉ボタンを非表示 */}
         {gameBoardMode !== GameBoardMode.PLAY && (
@@ -307,6 +215,7 @@ export default function LeftSidebar({
       {!isLeftSidebarMinimized &&
         gameBoardMode !== GameBoardMode.PLAY &&
         renderSidebarContent()}
+      <ShortcutHelpPanel />
     </div>
   );
 }
