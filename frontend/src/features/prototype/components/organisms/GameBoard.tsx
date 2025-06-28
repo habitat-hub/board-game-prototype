@@ -29,6 +29,7 @@ import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContex
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
+import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { AddPartProps, DeleteImageProps } from '@/features/prototype/type';
 import { CursorInfo } from '@/features/prototype/types/cursor';
 import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
@@ -672,6 +673,19 @@ export default function GameBoard({
     return map;
   }, [parts, properties, images]);
 
+  const { socket } = useSocket();
+
+  useEffect(() => {
+    // パーツ追加時に自分の追加したパーツを選択状態にする
+    const handleAddPartResponse = (data: { partId: number }) => {
+      setSelectedPartIds([data.partId]);
+    };
+    if (!socket) return;
+    socket.on('ADD_PART_RESPONSE', handleAddPartResponse);
+    return () => {
+      socket.off('ADD_PART_RESPONSE', handleAddPartResponse);
+    };
+  }, [socket]);
   return (
     <DebugModeProvider>
       <Stage
