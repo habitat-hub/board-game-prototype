@@ -3,8 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
-import { BsBoxSeam } from 'react-icons/bs';
-import { IoArrowBack, IoMenu, IoAdd, IoEye } from 'react-icons/io5';
+import { IoArrowBack, IoMenu, IoAdd } from 'react-icons/io5';
 import { MdMeetingRoom, MdDelete } from 'react-icons/md';
 
 import { useProject } from '@/api/hooks/useProject';
@@ -110,31 +109,6 @@ export default function LeftSidebar({
     setIsLeftSidebarMinimized(!isLeftSidebarMinimized);
   };
 
-  const renderTypeBadge = () => {
-    switch (gameBoardMode) {
-      case GameBoardMode.CREATE:
-        return (
-          <span className="ml-2 flex items-center">
-            <BsBoxSeam className="text-kibako-primary h-4 w-4" />
-          </span>
-        );
-      case GameBoardMode.PREVIEW:
-        return (
-          <span className="ml-2 flex items-center">
-            <IoEye className="text-kibako-primary h-4 w-4" />
-          </span>
-        );
-      case GameBoardMode.PLAY:
-        return (
-          <span className="ml-2 flex items-center">
-            <MdMeetingRoom className="text-kibako-primary h-4 w-4" />
-          </span>
-        );
-      default:
-        return null;
-    }
-  };
-
   // サイドバーのルームリスト部分のみを表示する
   const renderSidebarContent = () => {
     if (!prototypeInfo) return null;
@@ -223,7 +197,6 @@ export default function LeftSidebar({
           >
             {prototypeName}
           </h2>
-          {renderTypeBadge()}
         </div>
         {/* ルームを開いている時は開閉ボタンを非表示 */}
         {gameBoardMode !== GameBoardMode.PLAY && (
