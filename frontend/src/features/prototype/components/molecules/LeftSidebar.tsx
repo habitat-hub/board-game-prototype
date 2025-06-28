@@ -168,81 +168,83 @@ export default function LeftSidebar({
         </section>
 
         {/* 遊ぶ */}
-        <section>
-          <h3 className="text-xs font-bold text-amber-700 mb-2 tracking-widest">
-            遊ぶ
-          </h3>
-          {/* 既存ルーム一覧 */}
-          <div className="mt-0">
-            <div className="flex flex-col gap-3 py-1 px-0.5">
-              {prototypeInfo.instances.map((instance) => (
-                <div key={instance.id} className="relative flex-shrink-0">
-                  <Link
-                    href={`/groups/${groupId}/prototypes/${instance.id}`}
-                    className="group"
-                    title={`${instance.name} (Room ${instance.versionNumber})`}
-                  >
-                    {/* ルームカードの色をamber系に */}
-                    <div className="flex items-center bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 hover:border-amber-400 rounded-xl px-6 py-5 shadow-lg min-w-[140px] text-left transition-all gap-4">
-                      {/* ドアアイコンを左寄せ */}
-                      <MdMeetingRoom className="h-9 w-9 text-amber-600 flex-shrink-0 mr-2" />
-                      <div className="flex flex-col min-w-0 flex-1">
-                        {/* ルーム名 */}
-                        <span className="text-base font-semibold text-amber-800 truncate block max-w-[180px]">
-                          {instance.name}
-                        </span>
-                        {/* バージョン番号と作成日 */}
-                        <span className="text-sm text-amber-700 mt-1 flex items-center gap-2">
-                          <span className="font-bold">
-                            Ver{instance.versionNumber}
+        {gameBoardMode !== GameBoardMode.PLAY && (
+          <section>
+            <h3 className="text-xs font-bold text-amber-700 mb-2 tracking-widest">
+              遊ぶ
+            </h3>
+            {/* 既存ルーム一覧 */}
+            <div className="mt-0">
+              <div className="flex flex-col gap-3 py-1 px-0.5">
+                {prototypeInfo.instances.map((instance) => (
+                  <div key={instance.id} className="relative flex-shrink-0">
+                    <Link
+                      href={`/groups/${groupId}/prototypes/${instance.id}`}
+                      className="group"
+                      title={`${instance.name} (Room ${instance.versionNumber})`}
+                    >
+                      {/* ルームカードの色をamber系に */}
+                      <div className="flex items-center bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 hover:border-amber-400 rounded-xl px-6 py-5 shadow-lg min-w-[140px] text-left transition-all gap-4">
+                        {/* ドアアイコンを左寄せ */}
+                        <MdMeetingRoom className="h-9 w-9 text-amber-600 flex-shrink-0 mr-2" />
+                        <div className="flex flex-col min-w-0 flex-1">
+                          {/* ルーム名 */}
+                          <span className="text-base font-semibold text-amber-800 truncate block max-w-[180px]">
+                            {instance.name}
                           </span>
-                          {/* 作成日を表示（createdAtがなければ省略） */}
-                          {instance.createdAt && (
-                            <span className="text-gray-400">
-                              {formatDate(instance.createdAt, true)}
+                          {/* バージョン番号と作成日 */}
+                          <span className="text-sm text-amber-700 mt-1 flex items-center gap-2">
+                            <span className="font-bold">
+                              Ver{instance.versionNumber}
                             </span>
-                          )}
-                        </span>
+                            {/* 作成日を表示（createdAtがなければ省略） */}
+                            {instance.createdAt && (
+                              <span className="text-gray-400">
+                                {formatDate(instance.createdAt, true)}
+                              </span>
+                            )}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </Link>
-                  {/* 削除ボタン（ゴミ箱アイコン・上下中央揃え） */}
-                  <button
-                    onClick={() => handleDeleteRoom(instance.id)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full group/delete hover:bg-red-100 focus:outline-none flex items-center justify-center"
-                    title="ルームを削除"
-                  >
-                    <MdDelete className="h-6 w-6 text-gray-400 transition-colors" />
-                  </button>
-                </div>
-              ))}
-              {prototypeInfo.instances.length === 0 && (
-                <span className="text-xs text-gray-400 flex items-center px-2">
-                  まだルームがありません
-                </span>
-              )}
-              {/* 新しいルームを作るボタンをカード型で表示 */}
-              {/* 新規ルーム作成ボタンもamber系に */}
-              <button
-                onClick={handleCreateRoom}
-                disabled={isRoomCreating}
-                className="flex items-center justify-center border-2 border-dashed border-amber-400 hover:border-amber-600 rounded-xl px-4 py-3 min-w-[90px] text-center shadow-none transition-all hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex-shrink-0 bg-white gap-3"
-                style={{ height: '72px' }}
-                title="新しいルームを作る"
-              >
-                {/* ルームアイコンを大きめに */}
-                <MdMeetingRoom className="h-7 w-7 text-amber-400 transition-colors" />
-                <div className="flex flex-col items-start">
-                  <span className="text-sm font-semibold text-amber-700 block">
-                    新規ルーム
+                    </Link>
+                    {/* 削除ボタン（ゴミ箱アイコン・上下中央揃え） */}
+                    <button
+                      onClick={() => handleDeleteRoom(instance.id)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full group/delete hover:bg-red-100 focus:outline-none flex items-center justify-center"
+                      title="ルームを削除"
+                    >
+                      <MdDelete className="h-6 w-6 text-gray-400 transition-colors" />
+                    </button>
+                  </div>
+                ))}
+                {prototypeInfo.instances.length === 0 && (
+                  <span className="text-xs text-gray-400 flex items-center px-2">
+                    まだルームがありません
                   </span>
-                  <span className="text-xs text-amber-400">作成</span>
-                </div>
-                <IoAdd className="h-5 w-5 text-amber-400 ml-2 transition-colors" />
-              </button>
+                )}
+                {/* 新しいルームを作るボタンをカード型で表示 */}
+                {/* 新規ルーム作成ボタンもamber系に */}
+                <button
+                  onClick={handleCreateRoom}
+                  disabled={isRoomCreating}
+                  className="flex items-center justify-center border-2 border-dashed border-amber-400 hover:border-amber-600 rounded-xl px-4 py-3 min-w-[90px] text-center shadow-none transition-all hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex-shrink-0 bg-white gap-3"
+                  style={{ height: '72px' }}
+                  title="新しいルームを作る"
+                >
+                  {/* ルームアイコンを大きめに */}
+                  <MdMeetingRoom className="h-7 w-7 text-amber-400 transition-colors" />
+                  <div className="flex flex-col items-start">
+                    <span className="text-sm font-semibold text-amber-700 block">
+                      新規ルーム
+                    </span>
+                    <span className="text-xs text-amber-400">作成</span>
+                  </div>
+                  <IoAdd className="h-5 w-5 text-amber-400 ml-2 transition-colors" />
+                </button>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
       </div>
     );
   };
