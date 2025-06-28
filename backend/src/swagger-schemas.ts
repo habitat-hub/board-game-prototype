@@ -126,9 +126,6 @@ export const swaggerSchemas = {
                   "type": "string",
                   "format": "uuid"
             },
-            "parentId": {
-                  "type": "integer"
-            },
             "position": {
                   "type": "object",
                   "additionalProperties": true
@@ -142,27 +139,16 @@ export const swaggerSchemas = {
             "order": {
                   "type": "integer"
             },
-            "configurableTypeAsChild": {
-                  "type": "array",
-                  "items": {
-                        "type": "string"
-                  }
-            },
-            "originalPartId": {
-                  "type": "integer"
-            },
-            "isReversible": {
-                  "type": "boolean"
-            },
-            "isFlipped": {
-                  "type": "boolean"
+            "frontSide": {
+                  "type": "string",
+                  "enum": [
+                        "front",
+                        "back"
+                  ]
             },
             "ownerId": {
                   "type": "string",
                   "format": "uuid"
-            },
-            "canReverseCardOnDeck": {
-                  "type": "boolean"
             },
             "createdAt": {
                   "type": "string"
@@ -179,7 +165,6 @@ export const swaggerSchemas = {
             "width",
             "height",
             "order",
-            "configurableTypeAsChild",
             "createdAt",
             "updatedAt"
       ]

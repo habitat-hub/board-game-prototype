@@ -40,7 +40,6 @@ export const RESOURCE_TYPES = {
 export const UPDATABLE_PROTOTYPE_FIELDS = {
   PROTOTYPE: ['name'],
   PART: [
-    'parentId',
     'name',
     'description',
     'color',
@@ -48,10 +47,7 @@ export const UPDATABLE_PROTOTYPE_FIELDS = {
     'position',
     'width',
     'height',
-    'isReversible',
-    'isFlipped',
+    'frontSide',
     'ownerId',
-    'originalPartId',
-    'canReverseCardOnDeck',
   ],
 };
