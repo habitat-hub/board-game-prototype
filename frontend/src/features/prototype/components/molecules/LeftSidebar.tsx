@@ -197,9 +197,9 @@ export default function LeftSidebar({
                     新規ルーム
                   </span>
                   <span className="text-[10px] text-kibako-secondary/70 mt-0.5 leading-tight">
-                    今のボードの状態を
+                    今のボードの状態を保存して
                     <br />
-                    遊ぶためのルームとして保存します
+                    ルームを作成します
                   </span>
                 </div>
                 <IoAdd className="h-4 w-4 text-kibako-secondary ml-1 transition-colors" />
