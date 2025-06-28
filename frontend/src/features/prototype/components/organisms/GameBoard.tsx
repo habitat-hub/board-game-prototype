@@ -1,5 +1,3 @@
-'use client';
-
 import Konva from 'konva';
 import React, {
   useRef,
@@ -21,6 +19,7 @@ import PartCreateMenu from '@/features/prototype/components/molecules/PartCreate
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
+import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { AddPartProps, DeleteImageProps } from '@/features/prototype/type';
@@ -657,6 +656,8 @@ export default function GameBoard({
     [showContextMenu, handleCloseContextMenu]
   );
 
+  const { isGrabbing, eventHandlers: grabbingHandlers } = useGrabbingCursor();
+
   // パーツの位置をキャンバス内に制限する関数
   const constrainWithinCanvas = useCallback(
     (
@@ -706,6 +707,8 @@ export default function GameBoard({
         ref={stageRef}
         onWheel={handleWheel}
         onClick={handleStageClick}
+        {...grabbingHandlers}
+        style={{ cursor: isGrabbing ? 'grabbing' : 'grab' }}
       >
         <Layer>
           {/* カメラ - カメラの位置とスケールを適用 */}
