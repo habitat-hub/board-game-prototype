@@ -86,25 +86,25 @@ export interface Permission {
   updatedAt: string;
 }
 
+export interface Project {
+  /** @format uuid */
+  id: string;
+  /** @format uuid */
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Prototype {
   /** @format uuid */
   id: string;
   /** @format uuid */
-  prototypeGroupId: string;
+  projectId: string;
   name: string;
   type: 'MASTER' | 'VERSION' | 'INSTANCE';
   versionNumber: number;
   /** @format uuid */
   sourceVersionPrototypeId?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface PrototypeGroup {
-  /** @format uuid */
-  id: string;
-  /** @format uuid */
-  userId: string;
   createdAt: string;
   updatedAt: string;
 }

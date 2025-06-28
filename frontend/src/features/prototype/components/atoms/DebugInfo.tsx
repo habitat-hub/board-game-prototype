@@ -20,7 +20,7 @@ interface DebugInfoProps {
   // Prototype info
   prototypeName: string;
   prototypeVersionNumber: number;
-  groupId: string;
+  projectId: string;
   // Data
   parts: Part[];
   properties: PartProperty[];
@@ -33,7 +33,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
   camera,
   prototypeName,
   prototypeVersionNumber,
-  groupId,
+  projectId,
   parts,
   properties,
   cursors,
@@ -111,7 +111,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
             </div>
             <div>Name: {prototypeName}</div>
             <div>Version: {prototypeVersionNumber || 'N/A'}</div>
-            <div>Group ID: {groupId}</div>
+            <div>Project ID: {projectId}</div>
 
             <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
               <strong>Multiplayer</strong>

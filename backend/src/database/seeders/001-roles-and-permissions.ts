@@ -22,30 +22,30 @@ const INITIAL_ROLES = [
 ];
 
 const INITIAL_PERMISSIONS = [
-  // プロトタイプグループ関連
+  // プロジェクト関連
   {
-    name: 'read_prototype_group',
-    resource: RESOURCE_TYPES.PROTOTYPE_GROUP,
+    name: 'read_project',
+    resource: RESOURCE_TYPES.PROJECT,
     action: PERMISSION_ACTIONS.READ,
-    description: 'プロトタイプグループの閲覧',
+    description: 'プロジェクトの閲覧',
   },
   {
-    name: 'write_prototype_group',
-    resource: RESOURCE_TYPES.PROTOTYPE_GROUP,
+    name: 'write_project',
+    resource: RESOURCE_TYPES.PROJECT,
     action: PERMISSION_ACTIONS.WRITE,
-    description: 'プロトタイプグループの編集',
+    description: 'プロジェクトの編集',
   },
   {
-    name: 'delete_prototype_group',
-    resource: RESOURCE_TYPES.PROTOTYPE_GROUP,
+    name: 'delete_project',
+    resource: RESOURCE_TYPES.PROJECT,
     action: PERMISSION_ACTIONS.DELETE,
-    description: 'プロトタイプグループの削除',
+    description: 'プロジェクトの削除',
   },
   {
-    name: 'manage_prototype_group',
-    resource: RESOURCE_TYPES.PROTOTYPE_GROUP,
+    name: 'manage_project',
+    resource: RESOURCE_TYPES.PROJECT,
     action: PERMISSION_ACTIONS.MANAGE,
-    description: 'プロトタイプグループの管理（メンバー招待など）',
+    description: 'プロジェクトの管理（メンバー招待など）',
   },
   // プロトタイプ関連
   {

@@ -252,6 +252,31 @@
           "updatedAt"
         ]
       },
+      "Project": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
       "Prototype": {
         "type": "object",
         "properties": {
@@ -259,7 +284,7 @@
             "type": "string",
             "format": "uuid"
           },
-          "prototypeGroupId": {
+          "projectId": {
             "type": "string",
             "format": "uuid"
           },
@@ -290,35 +315,10 @@
         },
         "required": [
           "id",
-          "prototypeGroupId",
+          "projectId",
           "name",
           "type",
           "versionNumber",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
-      "PrototypeGroup": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "userId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "userId",
           "createdAt",
           "updatedAt"
         ]
@@ -466,7 +466,7 @@
                 "schema": {
                   "type": "string"
                 },
-                "example": "http://localhost:3000/groups"
+                "example": "http://localhost:3000/projects"
               }
             }
           }
@@ -783,6 +783,768 @@
         }
       }
     },
+    "/api/projects": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "プロジェクト一覧取得",
+        "description": "ユーザーがアクセス可能なプロジェクトの一覧を取得します。",
+        "responses": {
+          "200": {
+            "description": "アクセス可能なプロジェクトの一覧を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "project": {
+                        "$ref": "#/components/schemas/Project"
+                      },
+                      "prototypes": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/Prototype"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "プロジェクト作成",
+        "description": "新しいプロジェクトを作成します。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "新しいプロジェクトを作成しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエストが不正です",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "サーバーエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{projectId}/version": {
+      "post": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "プロトタイプバージョン作成",
+        "description": "指定されたプロジェクトのプロトタイプバージョンを作成します。",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "description": "プロジェクトのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "versionNumber": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "プロトタイプバージョンを作成しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Prototype"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "プロジェクトが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "サーバーエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{projectId}": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "特定のプロジェクトに属するプロトタイプ一覧取得",
+        "description": "指定されたIDのプロジェクトに属するプロトタイプの一覧を取得します。",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "description": "プロジェクトのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "プロジェクトに属するプロトタイプの一覧を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "project": {
+                      "$ref": "#/components/schemas/Project"
+                    },
+                    "prototypes": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Prototype"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "プロジェクトが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "プロジェクト削除",
+        "description": "指定されたIDのプロジェクトを削除します。",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "description": "プロジェクトのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "プロジェクトを削除しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "プロジェクトが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{projectId}/access-users": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "プロジェクトへのアクセス権を取得",
+        "description": "指定されたプロジェクトにアクセス可能なユーザーを取得します。",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "description": "プロジェクトのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "アクセス可能なユーザーの一覧を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{projectId}/invite": {
+      "post": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "ユーザーにプロジェクトへのアクセス権を付与",
+        "description": "指定されたプロジェクトにユーザーを招待します。",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "description": "プロジェクトのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "guestIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "招待するユーザーのIDリスト"
+                  },
+                  "roleType": {
+                    "type": "string",
+                    "enum": [
+                      "admin",
+                      "editor",
+                      "viewer"
+                    ],
+                    "default": "editor",
+                    "description": "付与するロールタイプ（admin：管理者、editor：編集者、viewer：閲覧者）"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ユーザーを招待しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエストが不正です（無効なロールタイプまたは無効なロールが指定された場合）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "プロジェクトが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "サーバーエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{projectId}/invite/{guestId}": {
+      "delete": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "ユーザーのアクセス権を削除",
+        "description": "指定されたプロジェクトからユーザーのアクセス権を削除します。",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "description": "プロジェクトのID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "guestId",
+            "in": "path",
+            "required": true,
+            "description": "ゲストユーザーのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ユーザーのアクセス権を削除しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエストが不正です",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "プロジェクトが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "サーバーエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{projectId}/duplicate": {
+      "post": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "プロジェクトの複製",
+        "description": "指定されたプロジェクトを複製します。",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "description": "プロジェクトのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "プロジェクトを複製しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "プロジェクトが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "サーバーエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{projectId}/members": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "プロジェクトのメンバー一覧取得",
+        "description": "プロジェクトのメンバーとそのロールを取得します。",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "description": "プロジェクトのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "メンバー一覧を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "userId": {
+                        "type": "string"
+                      },
+                      "roles": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{projectId}/roles": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "プロジェクトのロール一覧取得",
+        "description": "プロジェクトのユーザーロール一覧を取得します。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "プロジェクトのID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ロール一覧",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "userId": {
+                        "type": "string"
+                      },
+                      "user": {
+                        "$ref": "#/components/schemas/User"
+                      },
+                      "roles": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "プロジェクトにロールを追加",
+        "description": "ユーザーにプロジェクトのロールを割り当てます。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "プロジェクトのID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string"
+                  },
+                  "roleName": {
+                    "type": "string",
+                    "enum": [
+                      "admin",
+                      "editor",
+                      "viewer"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "ロールが追加されました"
+          },
+          "400": {
+            "description": "リクエストが不正です"
+          },
+          "404": {
+            "description": "ユーザーまたはロールが見つかりません"
+          },
+          "409": {
+            "description": "ユーザーは既にこのロールを持っています"
+          }
+        }
+      }
+    },
+    "/api/projects/{projectId}/roles/{userId}": {
+      "delete": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "プロジェクトからロールを削除",
+        "description": "ユーザーからプロジェクトのロールを削除します。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "プロジェクトのID"
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ユーザーのID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ロールが削除されました"
+          },
+          "404": {
+            "description": "ユーザーまたはロールが見つかりません"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "プロジェクトのロールを更新",
+        "description": "ユーザーのプロジェクトロールを変更します。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "プロジェクトのID"
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ユーザーのID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "roleName": {
+                    "type": "string",
+                    "enum": [
+                      "admin",
+                      "editor",
+                      "viewer"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ロールが更新されました"
+          },
+          "400": {
+            "description": "リクエストが不正です"
+          },
+          "404": {
+            "description": "ユーザーまたはロールが見つかりません"
+          }
+        }
+      }
+    },
     "/api/prototypes/{prototypeId}": {
       "get": {
         "tags": [
@@ -927,768 +1689,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/api/prototype-groups": {
-      "get": {
-        "tags": [
-          "PrototypeGroups"
-        ],
-        "summary": "プロトタイプグループ一覧取得",
-        "description": "ユーザーがアクセス可能なプロトタイプグループの一覧を取得します。",
-        "responses": {
-          "200": {
-            "description": "アクセス可能なプロトタイプグループの一覧を返します",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "prototypeGroup": {
-                        "$ref": "#/components/schemas/PrototypeGroup"
-                      },
-                      "prototypes": {
-                        "type": "array",
-                        "items": {
-                          "$ref": "#/components/schemas/Prototype"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "PrototypeGroups"
-        ],
-        "summary": "プロトタイプグループ作成",
-        "description": "新しいプロトタイプグループを作成します。",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "新しいプロトタイプグループを作成しました",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PrototypeGroup"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "リクエストが不正です",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error400Response"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "サーバーエラー",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error500Response"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/prototype-groups/{prototypeGroupId}/version": {
-      "post": {
-        "tags": [
-          "PrototypeGroups"
-        ],
-        "summary": "プロトタイプバージョン作成",
-        "description": "指定されたプロトタイプグループのプロトタイプバージョンを作成します。",
-        "parameters": [
-          {
-            "name": "prototypeGroupId",
-            "in": "path",
-            "required": true,
-            "description": "プロトタイプグループのID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "versionNumber": {
-                    "type": "integer"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "プロトタイプバージョンを作成しました",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Prototype"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "プロトタイプグループが見つかりません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error404Response"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "サーバーエラー",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error500Response"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/prototype-groups/{prototypeGroupId}": {
-      "get": {
-        "tags": [
-          "PrototypeGroups"
-        ],
-        "summary": "特定のグループに属するプロトタイプ一覧取得",
-        "description": "指定されたIDのプロトタイプグループに属するプロトタイプの一覧を取得します。",
-        "parameters": [
-          {
-            "name": "prototypeGroupId",
-            "in": "path",
-            "required": true,
-            "description": "プロトタイプグループのID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "プロトタイプグループに属するプロトタイプの一覧を返します",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "prototypeGroup": {
-                      "$ref": "#/components/schemas/PrototypeGroup"
-                    },
-                    "prototypes": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Prototype"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "プロトタイプグループが見つかりません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error404Response"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "PrototypeGroups"
-        ],
-        "summary": "プロトタイプグループ削除",
-        "description": "指定されたIDのプロトタイプグループを削除します。",
-        "parameters": [
-          {
-            "name": "prototypeGroupId",
-            "in": "path",
-            "required": true,
-            "description": "プロトタイプグループのID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "プロトタイプグループを削除しました",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "プロトタイプグループが見つかりません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error404Response"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/prototype-groups/{prototypeGroupId}/access-users": {
-      "get": {
-        "tags": [
-          "PrototypeGroups"
-        ],
-        "summary": "プロトタイプグループへのアクセス権を取得",
-        "description": "指定されたプロトタイプグループにアクセス可能なユーザーを取得します。",
-        "parameters": [
-          {
-            "name": "prototypeGroupId",
-            "in": "path",
-            "required": true,
-            "description": "プロトタイプグループのID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "アクセス可能なユーザーの一覧を返します",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/User"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/prototype-groups/{prototypeGroupId}/invite": {
-      "post": {
-        "tags": [
-          "PrototypeGroups"
-        ],
-        "summary": "ユーザーにプロトタイプへのアクセス権を付与",
-        "description": "指定されたプロトタイプグループにユーザーを招待します。",
-        "parameters": [
-          {
-            "name": "prototypeGroupId",
-            "in": "path",
-            "required": true,
-            "description": "プロトタイプグループのID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "guestIds": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    },
-                    "description": "招待するユーザーのIDリスト"
-                  },
-                  "roleType": {
-                    "type": "string",
-                    "enum": [
-                      "admin",
-                      "editor",
-                      "viewer"
-                    ],
-                    "default": "editor",
-                    "description": "付与するロールタイプ（admin：管理者、editor：編集者、viewer：閲覧者）"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "ユーザーを招待しました",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "リクエストが不正です（無効なロールタイプまたは無効なロールが指定された場合）",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error400Response"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "グループが見つかりません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error404Response"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "サーバーエラー",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error500Response"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/prototype-groups/{prototypeGroupId}/invite/{guestId}": {
-      "delete": {
-        "tags": [
-          "PrototypeGroups"
-        ],
-        "summary": "ユーザーのアクセス権を削除",
-        "description": "指定されたプロトタイプグループからユーザーのアクセス権を削除します。",
-        "parameters": [
-          {
-            "name": "prototypeGroupId",
-            "in": "path",
-            "required": true,
-            "description": "プロトタイプグループのID",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "guestId",
-            "in": "path",
-            "required": true,
-            "description": "ゲストユーザーのID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "ユーザーのアクセス権を削除しました",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "リクエストが不正です",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error400Response"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "グループが見つかりません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error404Response"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "サーバーエラー",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error500Response"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/prototype-groups/{prototypeGroupId}/duplicate": {
-      "post": {
-        "tags": [
-          "PrototypeGroups"
-        ],
-        "summary": "プロトタイプグループの複製",
-        "description": "指定されたプロトタイプグループを複製します。",
-        "parameters": [
-          {
-            "name": "prototypeGroupId",
-            "in": "path",
-            "required": true,
-            "description": "プロトタイプグループのID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "プロトタイプグループを複製しました",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "プロトタイプグループが見つかりません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error404Response"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "サーバーエラー",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error500Response"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/prototype-groups/{prototypeGroupId}/members": {
-      "get": {
-        "tags": [
-          "PrototypeGroups"
-        ],
-        "summary": "プロトタイプグループのメンバー一覧取得",
-        "description": "プロトタイプグループのメンバーとそのロールを取得します。",
-        "parameters": [
-          {
-            "name": "prototypeGroupId",
-            "in": "path",
-            "required": true,
-            "description": "プロトタイプグループのID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "メンバー一覧を返します",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "userId": {
-                        "type": "string"
-                      },
-                      "roles": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "name": {
-                              "type": "string"
-                            },
-                            "description": {
-                              "type": "string"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/prototype-groups/{prototypeGroupId}/roles": {
-      "get": {
-        "tags": [
-          "PrototypeGroups"
-        ],
-        "summary": "プロトタイプグループのロール一覧取得",
-        "description": "プロトタイプグループのユーザーロール一覧を取得します。",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "prototypeGroupId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "プロトタイプグループのID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "ロール一覧",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "userId": {
-                        "type": "string"
-                      },
-                      "user": {
-                        "$ref": "#/components/schemas/User"
-                      },
-                      "roles": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "name": {
-                              "type": "string"
-                            },
-                            "description": {
-                              "type": "string"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "PrototypeGroups"
-        ],
-        "summary": "プロトタイプグループにロールを追加",
-        "description": "ユーザーにプロトタイプグループのロールを割り当てます。",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "prototypeGroupId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "プロトタイプグループのID"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "userId": {
-                    "type": "string"
-                  },
-                  "roleName": {
-                    "type": "string",
-                    "enum": [
-                      "admin",
-                      "editor",
-                      "viewer"
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "ロールが追加されました"
-          },
-          "400": {
-            "description": "リクエストが不正です"
-          },
-          "404": {
-            "description": "ユーザーまたはロールが見つかりません"
-          },
-          "409": {
-            "description": "ユーザーは既にこのロールを持っています"
-          }
-        }
-      }
-    },
-    "/api/prototype-groups/{prototypeGroupId}/roles/{userId}": {
-      "delete": {
-        "tags": [
-          "PrototypeGroups"
-        ],
-        "summary": "プロトタイプグループからロールを削除",
-        "description": "ユーザーからプロトタイプグループのロールを削除します。",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "prototypeGroupId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "プロトタイプグループのID"
-          },
-          {
-            "in": "path",
-            "name": "userId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "ユーザーのID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "ロールが削除されました"
-          },
-          "404": {
-            "description": "ユーザーまたはロールが見つかりません"
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "PrototypeGroups"
-        ],
-        "summary": "プロトタイプグループのロールを更新",
-        "description": "ユーザーのプロトタイプグループロールを変更します。",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "prototypeGroupId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "プロトタイプグループのID"
-          },
-          {
-            "in": "path",
-            "name": "userId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "ユーザーのID"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "roleName": {
-                    "type": "string",
-                    "enum": [
-                      "admin",
-                      "editor",
-                      "viewer"
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "ロールが更新されました"
-          },
-          "400": {
-            "description": "リクエストが不正です"
-          },
-          "404": {
-            "description": "ユーザーまたはロールが見つかりません"
           }
         }
       }

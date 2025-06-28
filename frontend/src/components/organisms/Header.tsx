@@ -10,14 +10,14 @@ const Header: React.FC = () => {
   const pathname = usePathname();
 
   /**
-   * プロトタイプ一覧画面へ遷移する
-   * 現在すでにプロトタイプ一覧画面またはログイン画面にいる場合は何もしない
+   * プロジェクト一覧画面へ遷移する
+   * 現在すでにプロジェクト一覧画面またはログイン画面にいる場合は何もしない
    */
   const goToPrototypes = () => {
-    // プロトタイプ一覧画面、またはログイン画面の場合
-    if (pathname === '/groups' || pathname === '/') return;
+    // プロジェクト一覧画面、またはログイン画面の場合
+    if (pathname === '/projects' || pathname === '/') return;
 
-    router.push('/groups');
+    router.push('/projects');
   };
 
   return (

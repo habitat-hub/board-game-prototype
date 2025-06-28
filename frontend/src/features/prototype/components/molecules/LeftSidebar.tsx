@@ -11,28 +11,28 @@ import { BsBoxSeam } from 'react-icons/bs';
 import { IoArrowBack, IoMenu, IoAdd, IoEye } from 'react-icons/io5';
 import { MdMeetingRoom, MdDelete } from 'react-icons/md';
 
-import { usePrototypeGroup } from '@/api/hooks/usePrototypeGroup';
+import { useProject } from '@/api/hooks/useProject';
 import { usePrototypes } from '@/api/hooks/usePrototypes';
-import { Prototype, PrototypeGroup } from '@/api/types';
+import { Prototype, Project } from '@/api/types';
 import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
 import formatDate from '@/utils/dateFormat';
 
 export default function LeftSidebar({
   prototypeName,
   gameBoardMode,
-  groupId,
+  projectId,
 }: {
   prototypeName: string;
   gameBoardMode: GameBoardMode;
-  groupId: string;
+  projectId: string;
 }) {
   const router = useRouter();
-  const { getPrototypeGroup, createPrototypeVersion } = usePrototypeGroup();
+  const { getProject, createPrototypeVersion } = useProject();
   const { deletePrototype } = usePrototypes();
 
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
   const [prototypeInfo, setPrototypeInfo] = useState<{
-    group: PrototypeGroup | null;
+    project: Project | null;
     master: Prototype | null;
     versions: Prototype[];
     instances: Prototype[];
@@ -50,7 +50,7 @@ export default function LeftSidebar({
    */
   const getPrototypes = useCallback(async () => {
     try {
-      const { prototypeGroup, prototypes } = await getPrototypeGroup(groupId);
+      const { project, prototypes } = await getProject(projectId);
 
       // マスター版プロトタイプ
       const master = prototypes.find(({ type }) => type === 'MASTER');
@@ -59,7 +59,7 @@ export default function LeftSidebar({
       // インスタンス版プロトタイプ
       const instances = prototypes.filter(({ type }) => type === 'INSTANCE');
 
-      // バージョンごとにインスタンスをグループ化
+      // バージョンごとにインスタンスをまとめる
       const instancesByVersion: Record<string, Prototype[]> = {};
       versions.forEach((version) => {
         instancesByVersion[version.id] = instances.filter((_instance) => {
@@ -69,7 +69,7 @@ export default function LeftSidebar({
       });
 
       setPrototypeInfo({
-        group: prototypeGroup || null,
+        project: project || null,
         master: master || null,
         versions,
         instances,
@@ -78,7 +78,7 @@ export default function LeftSidebar({
     } catch (error) {
       console.error('Error fetching prototypes:', error);
     }
-  }, [getPrototypeGroup, groupId]);
+  }, [getProject, projectId]);
 
   // プロトタイプを取得する
   useEffect(() => {
@@ -91,11 +91,11 @@ export default function LeftSidebar({
     setIsRoomCreating(true);
     try {
       // バージョン作成
-      await createPrototypeVersion(groupId, {
+      await createPrototypeVersion(projectId, {
         name: 'ルーム',
         versionNumber: (prototypeInfo?.versions?.length || 0) + 1,
       });
-      // 今はバージョンのプレイ画面に遷移 → グループID・プロトタイプIDで遷移
+      // 今はバージョンのプレイ画面に遷移 → プロジェクトID・プロトタイプIDで遷移
       await getPrototypes();
     } catch (error) {
       console.error('Error creating room:', error);
@@ -220,7 +220,7 @@ export default function LeftSidebar({
                 .map((instance) => (
                   <div key={instance.id} className="relative flex-shrink-0">
                     <Link
-                      href={`/groups/${groupId}/prototypes/${instance.id}`}
+                      href={`/projects/${projectId}/prototypes/${instance.id}`}
                       className="group"
                       title={`${instance.name} (Room ${instance.versionNumber})`}
                     >
@@ -262,9 +262,11 @@ export default function LeftSidebar({
   // タブ切り替え時の遷移処理
   useEffect(() => {
     if (activeTab === 'create' && prototypeInfo?.master?.id) {
-      router.push(`/groups/${groupId}/prototypes/${prototypeInfo.master.id}`);
+      router.push(
+        `/projects/${projectId}/prototypes/${prototypeInfo.master.id}`
+      );
     }
-  }, [activeTab, prototypeInfo?.master?.id, groupId, router]);
+  }, [activeTab, prototypeInfo?.master?.id, projectId, router]);
 
   // gameBoardModeが変わったときもactiveTabを同期
   useEffect(() => {

@@ -45,15 +45,15 @@ export async function hasPermission(
     return true;
   }
 
-  // プロトタイプの場合、プロトタイプグループの権限を継承
+  // プロトタイプの場合、プロジェクトの権限を継承
   if (resource === RESOURCE_TYPES.PROTOTYPE && resourceId) {
     const prototype = await PrototypeModel.findByPk(resourceId);
     if (prototype) {
-      // プロトタイプグループの権限をチェック
-      const prototypeGroupRoles = await UserRoleModel.findAll({
+      // プロジェクトの権限をチェック
+      const projectRoles = await UserRoleModel.findAll({
         where: {
           userId,
-          resourceId: prototype.prototypeGroupId,
+          resourceId: prototype.projectId,
         },
         include: [
           {
@@ -64,7 +64,7 @@ export async function hasPermission(
                 model: PermissionModel,
                 as: 'permissions',
                 where: {
-                  resource: RESOURCE_TYPES.PROTOTYPE_GROUP,
+                  resource: RESOURCE_TYPES.PROJECT,
                   action,
                 },
                 required: true,
@@ -75,7 +75,7 @@ export async function hasPermission(
         ],
       });
 
-      if (prototypeGroupRoles.length > 0) {
+      if (projectRoles.length > 0) {
         return true;
       }
     }

@@ -50,7 +50,7 @@ router.get(
  *             description: リダイレクト先のURL
  *             schema:
  *               type: string
- *             example: http://localhost:3000/groups
+ *             example: http://localhost:3000/projects
  */
 router.get(
   '/google/callback',
@@ -58,7 +58,7 @@ router.get(
     failureRedirect: process.env.FRONTEND_URL,
   }),
   (req, res) => {
-    res.redirect(`${process.env.FRONTEND_URL}/groups`);
+    res.redirect(`${process.env.FRONTEND_URL}/projects`);
   }
 );
 

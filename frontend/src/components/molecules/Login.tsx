@@ -21,8 +21,8 @@ function Login() {
       .then((user) => {
         // ユーザーデータが存在する場合
         if (user && user.id) {
-          // /groups にリダイレクト
-          router.replace('/groups');
+          // /projects にリダイレクト
+          router.replace('/projects');
         }
 
         setIsLoading(false);

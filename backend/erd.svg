@@ -157,7 +157,7 @@
 <polygon fill="none" stroke="#000000" points="239,-344 239,-366 343,-366 343,-344 239,-344"/>
 <text text-anchor="start" x="244" y="-352" font-family="Times,serif" font-size="10.00" fill="#000000">updatedAt: DATE</text>
 </g>
-<!-- PrototypeGroup -->
+<!-- Project -->
 <g id="node7" class="node">
 <title>PrototypeGroup</title>
 <polygon fill="#add8e6" stroke="transparent" points="776.5,-154 776.5,-176 859.5,-176 859.5,-154 776.5,-154"/>
@@ -174,7 +174,7 @@
 <polygon fill="none" stroke="#000000" points="776.5,-66 776.5,-88 859.5,-88 859.5,-66 776.5,-66"/>
 <text text-anchor="start" x="781.205" y="-74" font-family="Times,serif" font-size="10.00" fill="#000000">updatedAt: DATE</text>
 </g>
-<!-- PrototypeGroup&#45;&gt;User -->
+<!-- Project&#45;&gt;User -->
 <g id="edge5" class="edge">
 <title>PrototypeGroup&#45;&gt;User</title>
 <path fill="none" stroke="#0000ff" d="M871.0264,-133.635C907.7883,-142.3127 956.5104,-153.8136 993.9128,-162.6425"/>
@@ -207,7 +207,7 @@
 <polygon fill="none" stroke="#000000" points="487.5,0 487.5,-22 632.5,-22 632.5,0 487.5,0"/>
 <text text-anchor="start" x="492.5" y="-8" font-family="Times,serif" font-size="10.00" fill="#000000">updatedAt: DATE</text>
 </g>
-<!-- Prototype&#45;&gt;PrototypeGroup -->
+<!-- Prototype&#45;&gt;Project -->
 <g id="edge6" class="edge">
 <title>Prototype&#45;&gt;PrototypeGroup</title>
 <path fill="none" stroke="#0000ff" d="M644.2523,-106.2269C683.4906,-109.5728 728.9435,-113.4487 763.4457,-116.3907"/>

@@ -43,7 +43,7 @@ const DEFAULT_INITIAL_SCALE = 0.5;
 interface GameBoardProps {
   prototypeName: string;
   prototypeVersionNumber?: number;
-  groupId: string;
+  projectId: string;
   parts: PartType[];
   properties: PropertyType[];
   cursors: Record<string, CursorInfo>;
@@ -53,7 +53,7 @@ interface GameBoardProps {
 export default function GameBoard({
   prototypeName,
   prototypeVersionNumber,
-  groupId,
+  projectId,
   parts,
   properties,
   cursors,
@@ -280,7 +280,6 @@ export default function GameBoard({
     if (stage) {
       const pointerPosition = stage.getPointerPosition();
       if (pointerPosition) {
-        // ポインター位置をカメラスケールで調整（カメラグループ内の実際の位置に変換）
         // +5 はメニューがポインターから少し右下にオフセットされるようにするための調整値
         const adjustedX = (pointerPosition.x + camera.x + 5) / camera.scale;
         const adjustedY = (pointerPosition.y + camera.y + 5) / camera.scale;
@@ -710,7 +709,7 @@ export default function GameBoard({
         onClick={handleStageClick}
       >
         <Layer>
-          {/* カメラグループ: パン/ズームを有効化 */}
+          {/* カメラ - カメラの位置とスケールを適用 */}
           <Group
             id="camera"
             x={-camera.x}
@@ -781,7 +780,7 @@ export default function GameBoard({
       <LeftSidebar
         prototypeName={prototypeName}
         gameBoardMode={gameBoardMode}
-        groupId={groupId}
+        projectId={projectId}
       />
       {/* ショートカットヘルプパネル */}
       <ShortcutHelpPanel
@@ -829,7 +828,7 @@ export default function GameBoard({
         camera={camera}
         prototypeName={prototypeName}
         prototypeVersionNumber={prototypeVersionNumber ?? 0}
-        groupId={groupId}
+        projectId={projectId}
         mode={gameBoardMode}
         parts={parts}
         properties={properties}
