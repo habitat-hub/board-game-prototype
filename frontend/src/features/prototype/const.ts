@@ -24,8 +24,6 @@ export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
     description: '',
     color: '#FFFFFF',
     textColor: '#000000',
-    isReversible: true,
-    configurableTypeAsChild: [],
   },
   // トークン
   TOKEN: {
@@ -36,7 +34,6 @@ export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
     description: '',
     color: '#FFFFFF',
     textColor: '#000000',
-    configurableTypeAsChild: [],
   },
   // 手札
   HAND: {
@@ -47,7 +44,6 @@ export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
     description: '',
     color: '#FFFFFF',
     textColor: '#000000',
-    configurableTypeAsChild: ['card'],
   },
   // 山札
   DECK: {
@@ -58,8 +54,6 @@ export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
     description: '',
     color: '#FFFFFF',
     textColor: '#000000',
-    configurableTypeAsChild: ['card'],
-    canReverseCardOnDeck: false,
   },
   // エリア
   AREA: {
@@ -70,7 +64,6 @@ export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
     description: '',
     color: '#FFFFFF',
     textColor: '#000000',
-    configurableTypeAsChild: ['card', 'token', 'hand', 'deck'],
   },
 };
 

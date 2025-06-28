@@ -17,7 +17,6 @@ import {
 
 import { useImages } from '@/api/hooks/useImages';
 import { Part, PartProperty } from '@/api/types';
-import Dropdown from '@/components/atoms/Dropdown';
 import NumberInput from '@/components/atoms/NumberInput';
 import TextIconButton from '@/components/atoms/TextIconButton';
 import TextInput from '@/components/atoms/TextInput';
@@ -82,7 +81,7 @@ export default function PartPropertySidebar({
     if (!selectedPart || !selectedPartProperties) return;
 
     return selectedPartProperties.find(
-      (p) => p.side === (selectedPart.isFlipped ? 'back' : 'front')
+      (p) => p.side === selectedPart.frontSide
     );
   }, [selectedPart, selectedPartProperties]);
 
@@ -113,7 +112,6 @@ export default function PartPropertySidebar({
       'id' | 'prototypeId' | 'order' | 'createdAt' | 'updatedAt'
     > = {
       type: selectedPart.type,
-      parentId: selectedPart.parentId,
       // NOTE： 少し複製元からずらす
       position: {
         x: selectedPart.position.x + 10,
@@ -121,15 +119,11 @@ export default function PartPropertySidebar({
       },
       width: selectedPart.width,
       height: selectedPart.height,
-      configurableTypeAsChild: selectedPart.configurableTypeAsChild,
-      // NOTE: これは複製用の属性ではないので、undefinedにする
-      originalPartId: undefined,
     };
 
     // カードパーツの場合
     if (selectedPart.type === 'card') {
-      newPart.isReversible = selectedPart.isReversible;
-      newPart.isFlipped = selectedPart.isFlipped;
+      newPart.frontSide = selectedPart.frontSide;
     }
 
     // 手札パーツの場合
@@ -301,10 +295,12 @@ export default function PartPropertySidebar({
                 />
               </div>
             </div>
-            {selectedPart.type === 'card' && selectedPart.isReversible && (
+            {selectedPart.type === 'card' && (
               <div className="flex items-center justify-center mb-2">
                 <span className="text-xs font-medium px-3 py-1 rounded-full bg-blue-100 text-blue-800">
-                  {selectedPart.isFlipped ? '裏面の設定' : '表面の設定'}
+                  {selectedPart.frontSide === 'front'
+                    ? '表面の設定'
+                    : '裏面の設定'}
                 </span>
               </div>
             )}
@@ -498,66 +494,6 @@ export default function PartPropertySidebar({
               </div>
             </div>
           </div>
-          {selectedPart.type === 'card' && (
-            <>
-              <div className="border-b border-gray-200"></div>
-              <div className="flex flex-col gap-2 p-4">
-                <span className="mb-2 text-[11px] font-medium">カード</span>
-                <div className="flex flex-col gap-1">
-                  <p className="text-[9px] font-medium text-gray-500">
-                    反転可能か？
-                  </p>
-                  <div className="flex w-full mb-2">
-                    <Dropdown
-                      value={selectedPart.isReversible ? 'はい' : 'いいえ'}
-                      onChange={(value) => {
-                        dispatch({
-                          type: 'UPDATE_PART',
-                          payload: {
-                            partId: selectedPart.id,
-                            updatePart: { isReversible: value === 'はい' },
-                          },
-                        });
-                      }}
-                      options={['はい', 'いいえ']}
-                    />
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-          {selectedPart.type === 'deck' && (
-            <>
-              <div className="border-b border-gray-200"></div>
-              <div className="flex flex-col gap-2 p-4">
-                <span className="mb-2 text-[11px] font-medium">山札</span>
-                <div className="flex flex-col gap-1">
-                  <p className="text-[9px] font-medium text-gray-500">
-                    カードを裏向きにするか？
-                  </p>
-                  <div className="flex w-full mb-2">
-                    <Dropdown
-                      value={
-                        selectedPart.canReverseCardOnDeck ? 'はい' : 'いいえ'
-                      }
-                      onChange={(value) => {
-                        dispatch({
-                          type: 'UPDATE_PART',
-                          payload: {
-                            partId: selectedPart.id,
-                            updatePart: {
-                              canReverseCardOnDeck: value === 'はい',
-                            },
-                          },
-                        });
-                      }}
-                      options={['はい', 'いいえ']}
-                    />
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
         </div>
       )}
     </>

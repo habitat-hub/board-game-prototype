@@ -241,22 +241,22 @@ function handleFlipCard(socket: Socket, io: Server) {
     'FLIP_CARD',
     async ({
       cardId,
-      isNextFlipped,
+      nextFrontSide,
     }: {
       cardId: number;
-      isNextFlipped: boolean;
+      nextFrontSide: 'front' | 'back';
     }) => {
       const { prototypeId } = socket.data as SocketData;
 
       try {
         await PartModel.update(
-          { isFlipped: isNextFlipped },
+          { frontSide: nextFrontSide },
           { where: { id: cardId } }
         );
 
         io.to(prototypeId).emit('FLIP_CARD', {
           cardId,
-          isNextFlipped,
+          nextFrontSide,
         });
 
         await emitUpdatedPartsAndProperties(io, prototypeId);

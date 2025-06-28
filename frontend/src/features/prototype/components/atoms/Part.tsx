@@ -45,7 +45,7 @@ const Part = forwardRef<PartHandle, PartProps>(
     ref
   ) => {
     const groupRef = useRef<Konva.Group>(null);
-    const { isFlipped, isReversing, setIsReversing, reverseCard } = useCard(
+    const { frontSide, isReversing, setIsReversing, reverseCard } = useCard(
       part,
       ref
     );
@@ -115,9 +115,8 @@ const Part = forwardRef<PartHandle, PartProps>(
 
     // 対象面（表or裏）のプロパティを取得 (ローカルの isFlipped 状態を使用)
     const targetProperty = useMemo(() => {
-      const side = isFlipped ? 'back' : 'front';
-      return properties.find((p) => p.side === side);
-    }, [isFlipped, properties]);
+      return properties.find((p) => p.side === frontSide);
+    }, [frontSide, properties]);
 
     // 有効な画像URLの値を取得する関数
     const getValidImageURL = (imageId?: string | null) => {
@@ -145,7 +144,7 @@ const Part = forwardRef<PartHandle, PartProps>(
       }
 
       if (isCard && !isFlippedNeeded) {
-        reverseCard(!isFlipped, true);
+        reverseCard(frontSide === 'front' ? 'back' : 'front', true);
         return;
       }
     };
@@ -237,13 +236,7 @@ const Part = forwardRef<PartHandle, PartProps>(
         {/* タイプを示す小さなアイコン */}
         <Group x={part.width - 30} y={part.height - 25}>
           {isDeck && <Text text="⠿" fontSize={14} fill="#666" />}
-          {isCard && (
-            <Text
-              text={part.isReversible ? '↻' : ''}
-              fontSize={14}
-              fill="#666"
-            />
-          )}
+          {isCard && <Text text="↻" fontSize={14} fill="#666" />}
         </Group>
 
         {/* デバッグ情報: ID と順序（order） - showDebugInfoがtrueの場合のみ表示 */}

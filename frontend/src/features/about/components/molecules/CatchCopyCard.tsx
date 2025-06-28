@@ -19,19 +19,19 @@ const CatchCopyCard: React.FC<CatchCopyCardProps> = ({
   icon,
 }) => {
   // useCardフックの代わりに独自のstate管理
-  const [isFlipped, setIsFlipped] = useState(false);
+  const [frontSide, setFrontSide] = useState('front');
 
   // カードの反転を処理する関数
-  const handleFlip = (flipped: boolean) => {
-    setIsFlipped(flipped);
+  const handleFlip = (frontSide: 'front' | 'back') => {
+    setFrontSide(frontSide);
   };
 
   return (
     <motion.div
       className="inline-block mx-4 w-[200px] h-[200px] md:w-[240px] md:h-[240px] lg:w-[260px] lg:h-[260px] xl:w-[280px] xl:h-[280px]"
       whileHover={{ scale: 1.05 }}
-      onHoverStart={() => handleFlip(true)}
-      onHoverEnd={() => handleFlip(false)}
+      onHoverStart={() => handleFlip('front')}
+      onHoverEnd={() => handleFlip('back')}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: delay, duration: 0.8 }}
@@ -39,7 +39,7 @@ const CatchCopyCard: React.FC<CatchCopyCardProps> = ({
     >
       <motion.div
         className="relative w-full h-full"
-        animate={{ rotateY: isFlipped ? 180 : 0 }}
+        animate={{ rotateY: frontSide === 'front' ? 0 : 180 }}
         transition={{ duration: 0.6 }}
         style={{ transformStyle: 'preserve-3d' }}
       >

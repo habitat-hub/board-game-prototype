@@ -2,7 +2,10 @@ import { Part, PartProperty, Image } from '@/api/types';
 
 // Partコンポーネントの外部から呼び出せる関数のインターフェース
 export interface PartHandle {
-  reverseCard: (isNextFlipped: boolean, needsSocketEmit: boolean) => void;
+  reverseCard: (
+    nextFrontSide: 'front' | 'back',
+    needsSocketEmit?: boolean
+  ) => void;
 }
 
 // パーツのデフォルト設定
@@ -14,9 +17,6 @@ export interface PartDefaultConfig {
   description: string;
   textColor: string;
   color: string;
-  isReversible?: boolean;
-  configurableTypeAsChild: string[];
-  canReverseCardOnDeck?: boolean;
 }
 
 // キャンバスのカメラ

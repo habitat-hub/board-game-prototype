@@ -241,20 +241,11 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
                     Types: {[...new Set(parts.map((p) => p.type))].join(', ')}
                   </div>
                   <div>
-                    With Parent: {parts.filter((p) => p.parentId).length}
-                  </div>
-                  <div>
-                    Reversible Cards:{' '}
+                    Front Side Cards:{' '}
                     {
-                      parts.filter((p) => p.type === 'card' && p.isReversible)
-                        .length
-                    }
-                  </div>
-                  <div>
-                    Flipped Cards:{' '}
-                    {
-                      parts.filter((p) => p.type === 'card' && p.isFlipped)
-                        .length
+                      parts.filter(
+                        (p) => p.type === 'card' && p.frontSide === 'front'
+                      ).length
                     }
                   </div>
                   <div>
@@ -319,29 +310,10 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
                             : 'N/A'}
                         </div>
                         <div>Version ID: {part.prototypeId}</div>
-                        {part.parentId !== undefined &&
-                          part.parentId !== null && (
-                            <div>Parent ID: {part.parentId}</div>
-                          )}
-                        {part.originalPartId !== undefined &&
-                          part.originalPartId !== null && (
-                            <div>Original ID: {part.originalPartId}</div>
-                          )}
-                        <div>
-                          Child Types: [
-                          {part.configurableTypeAsChild.join(', ')}]
-                        </div>
                         {part.type === 'card' && (
                           <>
-                            {part.isReversible !== undefined && (
-                              <div>
-                                Reversible: {part.isReversible ? 'Yes' : 'No'}
-                              </div>
-                            )}
-                            {part.isFlipped !== undefined && (
-                              <div>
-                                Flipped: {part.isFlipped ? 'Yes' : 'No'}
-                              </div>
+                            {part.frontSide !== undefined && (
+                              <div>Front Side: {part.frontSide}</div>
                             )}
                           </>
                         )}
@@ -349,13 +321,6 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
                           part.ownerId !== undefined &&
                           part.ownerId !== null && (
                             <div>Owner ID: {part.ownerId}</div>
-                          )}
-                        {part.type === 'deck' &&
-                          part.canReverseCardOnDeck !== undefined && (
-                            <div>
-                              Can Reverse Cards:{' '}
-                              {part.canReverseCardOnDeck ? 'Yes' : 'No'}
-                            </div>
                           )}
 
                         {/* このパーツのプロパティ */}
