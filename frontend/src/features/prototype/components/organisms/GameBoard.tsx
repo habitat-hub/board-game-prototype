@@ -33,6 +33,8 @@ import {
   updateImageParamsInIndexedDb,
 } from '@/utils/db';
 
+import { GameBoardMode } from '../../types/gameBoardMode';
+
 const GRID_SIZE = 50;
 const CANVAS_SIZE = 5000;
 const MIN_SCALE = 0.18;
@@ -47,6 +49,7 @@ interface GameBoardProps {
   properties: PropertyType[];
   cursors: Record<string, CursorInfo>;
   prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE';
+  mode: GameBoardMode;
 }
 
 export default function GameBoard({
@@ -57,6 +60,7 @@ export default function GameBoard({
   properties,
   cursors,
   prototypeType,
+  mode,
 }: GameBoardProps) {
   const stageRef = useRef<Konva.Stage | null>(null);
   const [viewportSize, setViewportSize] = useState({
@@ -833,6 +837,7 @@ export default function GameBoard({
         isVersionPrototype={isVersionPrototype}
         groupId={groupId}
         prototypeType={prototypeType}
+        mode={mode}
         parts={parts}
         properties={properties}
         cursors={cursors}

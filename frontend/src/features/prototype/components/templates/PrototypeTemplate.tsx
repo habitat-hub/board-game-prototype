@@ -10,6 +10,7 @@ import GameBoard from '@/features/prototype/components/organisms/GameBoard';
 import { PrototypeIdProvider } from '@/features/prototype/contexts/PrototypeIdContext';
 import { SocketProvider } from '@/features/prototype/contexts/SocketContext';
 import { CursorInfo } from '@/features/prototype/types/cursor';
+import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
 import { useUser } from '@/hooks/useUser';
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL);
@@ -82,7 +83,6 @@ export default function PrototypeTemplate() {
     )?.versionNumber;
   }, [prototype, prototypeId]);
 
-  // プロトタイプが存在しない場合
   if (!prototype) return null;
 
   const selectedPrototype = prototype.prototypes.find(
@@ -90,8 +90,23 @@ export default function PrototypeTemplate() {
   );
   const prototypeName = selectedPrototype?.name || '';
   const prototypeType = selectedPrototype?.type;
-
   if (!prototypeType) return null;
+
+  const getGameBoardMode = (
+    prototypeType: 'MASTER' | 'VERSION' | 'INSTANCE'
+  ): GameBoardMode => {
+    switch (prototypeType) {
+      case 'MASTER':
+        return GameBoardMode.CREATE;
+      case 'VERSION':
+        return GameBoardMode.PREVIEW;
+      case 'INSTANCE':
+        return GameBoardMode.PLAY;
+      default:
+        return GameBoardMode.PREVIEW;
+    }
+  };
+  const mode = getGameBoardMode(prototypeType);
 
   return (
     <SocketProvider socket={socket}>
@@ -104,6 +119,7 @@ export default function PrototypeTemplate() {
           prototypeVersionNumber={versionNumber}
           groupId={groupId}
           prototypeType={prototypeType}
+          mode={mode}
         />
       </PrototypeIdProvider>
     </SocketProvider>

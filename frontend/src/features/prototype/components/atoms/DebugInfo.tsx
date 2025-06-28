@@ -8,6 +8,7 @@ import { useMemoryUsage } from '@/features/prototype/hooks/useMemoryUsage';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { useRenderPerformance } from '@/features/prototype/hooks/useRenderPerformance';
 import { CursorInfo } from '@/features/prototype/types/cursor';
+import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
 
 interface DebugInfoProps {
   // Camera info
@@ -27,6 +28,7 @@ interface DebugInfoProps {
   properties: PartProperty[];
   cursors: Record<string, CursorInfo>;
   selectedPartIds: number[];
+  mode: GameBoardMode;
 }
 
 const DebugInfo: React.FC<DebugInfoProps> = ({
@@ -40,6 +42,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
   properties,
   cursors,
   selectedPartIds,
+  mode,
 }) => {
   const { showDebugInfo } = useDebugMode();
 
@@ -68,6 +71,9 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
           <div className="text-sm h-[50vh] overflow-y-auto">
             <div className="border-b border-white border-opacity-20 mb-2 pb-1">
               <strong>Current Status</strong>
+            </div>
+            <div className="mb-1.5">
+              <span className="font-bold">Mode:</span> {mode}
             </div>
             <div
               className={`font-bold mb-1.5 ${selectedPartIds.length ? 'text-yellow-400' : 'text-white'}`}
