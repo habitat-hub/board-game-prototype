@@ -40,34 +40,34 @@ function Login() {
 
   return (
     <>
-      <div className="p-12 rounded-lg border border-kibako-secondary/20 shadow-xl w-1/4 text-center flex flex-col bg-kibako-tertiary">
+      <div className="p-6 sm:p-8 md:p-12 rounded-lg border border-kibako-secondary/20 shadow-xl w-full max-w-md sm:max-w-lg md:w-1/2 text-center flex flex-col bg-kibako-tertiary mx-auto">
         {/* タイトル */}
-        <h1 className="text-4xl font-bold tracking-wider text-kibako-primary">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-wider text-kibako-primary">
           KIBAKO
         </h1>
 
         {/* ロゴ部分 */}
-        <div className="flex items-center justify-center mt-12">
-          <div className="flex items-center gap-5">
+        <div className="flex items-center justify-center mt-8 sm:mt-12">
+          <div className="flex items-center gap-2 sm:gap-4">
             {/* サイコロ */}
-            <FaDice className="text-6xl text-kibako-primary/60 transform rotate-12" />
+            <FaDice className="text-4xl sm:text-6xl text-kibako-primary/60 transform rotate-12" />
 
             {/* トランプ */}
-            <GiCardAceSpades className="text-6xl text-kibako-primary/60 transform -rotate-12" />
+            <GiCardAceSpades className="text-4xl sm:text-6xl text-kibako-primary/60 transform -rotate-12" />
 
             {/* メインの木箱アイコン */}
-            <GiWoodenCrate className="text-7xl drop-shadow-lg text-kibako-accent" />
+            <GiWoodenCrate className="text-5xl sm:text-7xl drop-shadow-lg text-kibako-accent" />
 
             {/* パズル */}
-            <GiPuzzle className="text-6xl text-kibako-primary/60 transform rotate-6" />
+            <GiPuzzle className="text-4xl sm:text-6xl text-kibako-primary/60 transform rotate-6" />
 
             {/* チェスボード */}
-            <FaChessBoard className="text-6xl text-kibako-primary/60 transform -rotate-6" />
+            <FaChessBoard className="text-4xl sm:text-6xl text-kibako-primary/60 transform -rotate-6" />
           </div>
         </div>
 
         {/* ログイン部分 */}
-        <div className="flex justify-center mt-16">
+        <div className="flex justify-center mt-12 sm:mt-16">
           <Button
             onClick={() => {
               window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
@@ -81,8 +81,10 @@ function Login() {
         </div>
 
         {/* サブタイトル */}
-        <p className="text-kibako-primary mt-8 text-base">
-          KIBAKOでボードゲームのアイデアを形にしよう
+        <p className="text-kibako-primary mt-6 sm:mt-8 text-sm sm:text-base">
+          KIBAKOでボードゲームの
+          <br />
+          アイデアを形にしよう
         </p>
       </div>
     </>
