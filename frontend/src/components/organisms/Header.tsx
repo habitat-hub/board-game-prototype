@@ -10,11 +10,11 @@ const Header: React.FC = () => {
   const pathname = usePathname();
 
   /**
-   * プロジェクト一覧画面へ遷移する
-   * 現在すでにプロジェクト一覧画面またはログイン画面にいる場合は何もしない
+   * プロトタイプ一覧画面へ遷移する
+   * 現在すでにプロトタイプ一覧画面またはログイン画面にいる場合は何もしない
    */
   const goToPrototypes = () => {
-    // プロジェクト一覧画面、またはログイン画面の場合
+    // プロトタイプ一覧画面、またはログイン画面の場合
     if (pathname === '/projects' || pathname === '/') return;
 
     router.push('/projects');

@@ -99,7 +99,7 @@ const DeletePrototypeConfirmation = () => {
             onClick={() => router.push('/projects')}
             className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
           >
-            プロジェクト一覧へ戻る
+            プロトタイプ一覧へ戻る
           </button>
         </div>
       </div>
