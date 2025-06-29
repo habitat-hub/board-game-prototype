@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ButtonHTMLAttributes, ReactNode } from 'react';
+import { twMerge } from 'tailwind-merge';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
@@ -34,7 +35,9 @@ export default function Button({
     lg: 'px-10 py-5 text-xl',
   };
 
-  const buttonClasses = `${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`;
+  const buttonClasses = twMerge(
+    [baseStyles, variants[variant], sizes[size], className].join(' ')
+  );
 
   return isLoading ? (
     // ローディング中(3つのドットを点滅表示)

@@ -9,9 +9,15 @@ import React, {
   useMemo,
   useContext,
 } from 'react';
-import { FaSort, FaSortDown, FaSortUp, FaUserShield } from 'react-icons/fa';
-import { FaBoxOpen, FaPlus } from 'react-icons/fa6';
-import { GiWoodenSign } from 'react-icons/gi';
+import {
+  FaPlus,
+  FaSort,
+  FaSortDown,
+  FaSortUp,
+  FaUserShield,
+} from 'react-icons/fa';
+import { FaBoxOpen } from 'react-icons/fa6';
+import { GiWoodenCrate } from 'react-icons/gi';
 import { IoTrash } from 'react-icons/io5';
 import { RiLoaderLine } from 'react-icons/ri';
 
@@ -278,41 +284,38 @@ const ProjectList: React.FC = () => {
   }, [prototypeList, sortPrototypes]);
 
   if (isLoading) {
-    return <Loading />;
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60">
+        <Loading />
+      </div>
+    );
   }
 
   if (sortedPrototypeList.length === 0) {
     return (
-      <div className="flex flex-col h-full justify-center items-center relative">
-        <div className="text-wood-light">
-          <GiWoodenSign className="w-[600px] h-[600px]" aria-hidden="true" />
-        </div>
-        <div className="absolute inset-0 flex items-center justify-center flex-col">
-          <p className="text-4xl text-wood-darkest text-center w-full mb-12">
-            最初のプロトタイプを
-            <br />
-            作成しましょう
-          </p>
-          <button
-            onClick={handleCreatePrototype}
-            disabled={isCreating}
-            className="flex items-center justify-center gap-3 bg-gradient-to-r from-header via-header-light to-header text-content py-4 px-8 rounded-full hover:from-header-light hover:via-header hover:to-header-light transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 group text-xl font-bold animate-pulse disabled:opacity-80 disabled:cursor-not-allowed disabled:hover:transform-none"
-            title="新規プロトタイプを作成"
-          >
-            {isCreating ? (
-              <RiLoaderLine
-                className="w-6 h-6 animate-spin"
-                aria-hidden="true"
-              />
-            ) : (
-              <FaPlus
-                className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300"
-                aria-hidden="true"
-              />
-            )}
-            <span>{isCreating ? '作成中...' : 'KIBAKOの世界へ飛び込む！'}</span>
-          </button>
-        </div>
+      <div className="fixed inset-0 z-10">
+        <button
+          onClick={handleCreatePrototype}
+          disabled={isCreating}
+          className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-row items-center justify-center gap-4 px-14 py-8 rounded-3xl shadow-[0_10px_40px_0_rgba(0,0,0,0.45),0_2px_8px_0_rgba(0,0,0,0.25)] bg-kibako-primary text-kibako-white text-2xl font-bold transition-all duration-200 border-4 border-kibako-accent hover:bg-kibako-accent hover:text-kibako-primary hover:scale-105 hover:shadow-[0_16px_56px_0_rgba(0,0,0,0.55),0_4px_16px_0_rgba(0,0,0,0.30)] active:scale-95 focus:outline-none focus:ring-4 focus:ring-kibako-accent/40 select-none ${isCreating ? 'opacity-80 cursor-not-allowed' : ''}`}
+          style={{ minWidth: 360, minHeight: 100 }}
+          title="新規プロトタイプを作成する"
+        >
+          {isCreating ? (
+            <RiLoaderLine
+              className="w-14 h-14 animate-spin text-kibako-primary bg-kibako-accent rounded-full p-2 shadow-lg"
+              aria-hidden="true"
+            />
+          ) : (
+            <GiWoodenCrate
+              className="w-20 h-20 text-kibako-accent drop-shadow-xl transform -rotate-6 bg-white rounded-2xl p-2 shadow-lg border-2 border-kibako-accent"
+              aria-hidden="true"
+            />
+          )}
+          <span className="text-2xl font-bold tracking-wide drop-shadow-sm">
+            {isCreating ? '作成中...' : 'KIBAKOの世界へ飛び込む！'}
+          </span>
+        </button>
       </div>
     );
   }
