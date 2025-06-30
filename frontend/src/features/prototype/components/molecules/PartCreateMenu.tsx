@@ -70,9 +70,9 @@ export default function PartCreateMenu({
           Math.round(cameraCenterY - partHeight / 2)
         )
       );
-      // 既存パーツと重ならない位置までxのみ+50ずつずらす（whileを使わず安全に）
+      // 既存パーツと重ならない位置までxのみ+25ずつずらす
       const baseX = x;
-      const candidate = Array.from({ length: 100 }, (_, i) => baseX + 50 * i)
+      const candidate = Array.from({ length: 100 }, (_, i) => baseX + 25 * i)
         .map((candidateX) => ({
           x: Math.min(candidateX, CANVAS_SIZE - partWidth),
           y,
