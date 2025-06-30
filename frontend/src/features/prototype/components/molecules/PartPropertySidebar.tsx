@@ -252,7 +252,7 @@ export default function PartPropertySidebar({
   return (
     <>
       {selectedPart && (
-        <div className="fixed top-4 right-4 flex w-[240px] flex-col rounded-lg shadow-lg border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary max-h-[calc(100vh-32px)] overflow-y-auto">
+        <div className="fixed top-20 right-4 flex w-[240px] flex-col rounded-lg shadow-lg border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary max-h-[calc(100vh-32px)] overflow-y-auto">
           <div className="border-b border-wood-lightest/60 rounded-t-lg bg-gradient-to-r from-wood-light/30 to-wood-light/20 py-2 px-4">
             <div className="flex items-center">
               {selectedPart.type === 'card' ? (
