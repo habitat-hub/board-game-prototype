@@ -17,6 +17,7 @@ import Part from '@/features/prototype/components/atoms/Part';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
+import RoleMenu from '@/features/prototype/components/molecules/RoleMenu';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
 import {
   GRID_SIZE,
@@ -786,6 +787,8 @@ export default function GameBoard({
 
       {gameBoardMode === GameBoardMode.CREATE && (
         <>
+          {/* ロールメニュー */}
+          <RoleMenu projectId={projectId} />
           {/* フローティングパーツ作成メニュー */}
           <PartCreateMenu
             onAddPart={handleAddPart}
