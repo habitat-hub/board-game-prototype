@@ -28,16 +28,19 @@ export default function RoleMenu({ projectId }: { projectId: string }) {
           tabIndex={0}
         >
           <div className="flex -space-x-3">
-            {displayNames.map((name, idx) => (
-              <span
-                key={name}
-                className="flex items-center justify-center w-7 h-7 rounded-full bg-wood-light text-wood-dark font-bold text-sm select-none border-2 border-content shadow-sm"
-                style={{ zIndex: 10 - idx }}
-                title={name}
-              >
-                {name.charAt(0).toUpperCase()}
-              </span>
-            ))}
+            {displayNames.map((name, idx) => {
+              const userRole = userRoles[idx];
+              return (
+                <span
+                  key={userRole.user.id || `user-${idx}`}
+                  className="flex items-center justify-center w-7 h-7 rounded-full bg-wood-light text-wood-dark font-bold text-sm select-none border-2 border-content shadow-sm"
+                  style={{ zIndex: 10 - idx }}
+                  title={name}
+                >
+                  {name.charAt(0).toUpperCase()}
+                </span>
+              );
+            })}
           </div>
           {moreCount > 0 && (
             <span className="text-xs text-gray-500 ml-2">+{moreCount}</span>
