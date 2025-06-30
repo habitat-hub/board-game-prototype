@@ -16,15 +16,18 @@ import { Part, PartProperty } from '@/api/types';
 import { PART_DEFAULT_CONFIG } from '@/features/prototype/const';
 import { CANVAS_SIZE } from '@/features/prototype/constants/gameBoard';
 import { AddPartProps } from '@/features/prototype/type';
+import { isRectOverlap } from '@/features/prototype/utils/overlap';
 
 export default function PartCreateMenu({
   onAddPart,
   camera,
   viewportSize,
+  parts,
 }: {
   onAddPart: ({ part, properties }: AddPartProps) => void;
   camera: { x: number; y: number; scale: number };
   viewportSize: { width: number; height: number };
+  parts: Part[];
 }) {
   const handleCreatePart = (
     partType: 'card' | 'token' | 'hand' | 'deck' | 'area'
@@ -53,22 +56,38 @@ export default function PartCreateMenu({
     ) => {
       const cameraCenterX = (camera.x + viewportSize.width / 2) / camera.scale;
       const cameraCenterY = (camera.y + viewportSize.height / 2) / camera.scale;
-
-      const constrainedX = Math.max(
+      const x = Math.max(
         0,
         Math.min(
           CANVAS_SIZE - partWidth,
           Math.round(cameraCenterX - partWidth / 2)
         )
       );
-      const constrainedY = Math.max(
+      const y = Math.max(
         0,
         Math.min(
           CANVAS_SIZE - partHeight,
           Math.round(cameraCenterY - partHeight / 2)
         )
       );
-      return { x: constrainedX, y: constrainedY };
+      // 既存パーツと重ならない位置までxのみ+50ずつずらす（whileを使わず安全に）
+      const baseX = x;
+      const candidate = Array.from({ length: 100 }, (_, i) => baseX + 50 * i)
+        .map((candidateX) => ({ x: Math.min(candidateX, CANVAS_SIZE - partWidth), y }))
+        .find((pos) =>
+          !parts.some((p) =>
+            isRectOverlap(
+              { x: pos.x, y: pos.y, width: partWidth, height: partHeight },
+              {
+                x: p.position.x,
+                y: p.position.y,
+                width: p.width,
+                height: p.height,
+              }
+            )
+          )
+        );
+      return candidate ?? { x, y };
     };
 
     const newPart: Omit<
