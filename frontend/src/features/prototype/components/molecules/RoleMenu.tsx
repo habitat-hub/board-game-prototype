@@ -48,10 +48,12 @@ export default function RoleMenu({ projectId }: { projectId: string }) {
             })}
           </div>
           {moreCount > 0 && (
-            <span className="text-xs text-gray-500 ml-2">+{moreCount}</span>
+            <span className="text-xs text-kibako-secondary ml-2">
+              +{moreCount}
+            </span>
           )}
         </button>
-        <div className="absolute right-0 mt-2 max-w-xs bg-white border border-gray-200 rounded shadow z-20 px-3 py-2 text-xs text-wood-dark opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200">
+        <div className="absolute right-0 mt-2 max-w-xs bg-kibako-white border border-wood-light rounded shadow z-20 px-3 py-2 text-xs text-wood-dark opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200">
           <ul>
             {userNames.map((name) => (
               <li
@@ -68,11 +70,11 @@ export default function RoleMenu({ projectId }: { projectId: string }) {
       {/* 権限管理ページへのリンク（右側） */}
       <Link
         href={`/projects/${projectId}/roles`}
-        className="group flex items-center justify-center w-10 h-10 relative hover:bg-gray-100 rounded transition-colors ml-2"
+        className="group flex items-center justify-center w-10 h-10 relative hover:bg-content-secondary rounded transition-colors ml-2"
         title="権限管理ページへ"
       >
         <FaUsers className="h-5 w-5 text-wood-dark" />
-        <span className="absolute left-1/2 bottom-[-40px] transform -translate-x-1/2 bg-header text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+        <span className="absolute left-1/2 bottom-[-40px] transform -translate-x-1/2 bg-header text-kibako-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
           権限管理
         </span>
       </Link>
