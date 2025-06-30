@@ -73,19 +73,23 @@ export default function PartCreateMenu({
       // 既存パーツと重ならない位置までxのみ+50ずつずらす（whileを使わず安全に）
       const baseX = x;
       const candidate = Array.from({ length: 100 }, (_, i) => baseX + 50 * i)
-        .map((candidateX) => ({ x: Math.min(candidateX, CANVAS_SIZE - partWidth), y }))
-        .find((pos) =>
-          !parts.some((p) =>
-            isRectOverlap(
-              { x: pos.x, y: pos.y, width: partWidth, height: partHeight },
-              {
-                x: p.position.x,
-                y: p.position.y,
-                width: p.width,
-                height: p.height,
-              }
+        .map((candidateX) => ({
+          x: Math.min(candidateX, CANVAS_SIZE - partWidth),
+          y,
+        }))
+        .find(
+          (pos) =>
+            !parts.some((p) =>
+              isRectOverlap(
+                { x: pos.x, y: pos.y, width: partWidth, height: partHeight },
+                {
+                  x: p.position.x,
+                  y: p.position.y,
+                  width: p.width,
+                  height: p.height,
+                }
+              )
             )
-          )
         );
       return candidate ?? { x, y };
     };
@@ -145,17 +149,24 @@ export default function PartCreateMenu({
   };
 
   // パーツタイプとアイコンのマッピング
-  const partTypes = [
+  const group1 = [
+    {
+      type: 'token' as const,
+      name: PART_DEFAULT_CONFIG.TOKEN.name,
+      icon: <Gi3dMeeple className="h-5 w-5 text-white" />,
+    },
     {
       type: 'card' as const,
       name: PART_DEFAULT_CONFIG.CARD.name,
       icon: <GiCard10Clubs className="h-5 w-5 text-white" />,
     },
     {
-      type: 'token' as const,
-      name: PART_DEFAULT_CONFIG.TOKEN.name,
-      icon: <Gi3dMeeple className="h-5 w-5 text-white" />,
+      type: 'area' as const,
+      name: PART_DEFAULT_CONFIG.AREA.name,
+      icon: <BiArea className="h-5 w-5 text-white" />,
     },
+  ];
+  const group2 = [
     {
       type: 'hand' as const,
       name: PART_DEFAULT_CONFIG.HAND.name,
@@ -166,29 +177,51 @@ export default function PartCreateMenu({
       name: PART_DEFAULT_CONFIG.DECK.name,
       icon: <GiStoneBlock className="h-5 w-5 text-white" />,
     },
-    {
-      type: 'area' as const,
-      name: PART_DEFAULT_CONFIG.AREA.name,
-      icon: <BiArea className="h-5 w-5 text-white" />,
-    },
   ];
 
   return (
-    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-[10000] flex items-center justify-center rounded-xl bg-content shadow-lg border border-wood-light/30 p-2">
-      <div className="flex items-center justify-center gap-2">
-        {partTypes.map((partType) => (
-          <button
-            key={partType.type}
-            onClick={() => handleCreatePart(partType.type)}
-            className="group relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-wood to-wood-dark hover:from-wood-dark hover:to-wood-darkest rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-md"
-            title={`${partType.name}を作成`}
-          >
-            {partType.icon}
-            <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-header text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-              {partType.name}
-            </div>
-          </button>
-        ))}
+    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-[10000] flex items-center justify-center gap-8">
+      {/* 左グループ: 部品 */}
+      <div className="rounded-xl bg-content shadow-lg border border-wood-light/30 p-3 flex flex-col items-center min-w-[140px]">
+        <div className="flex items-center gap-1 mb-2">
+          <span className="text-xs text-wood-dark font-bold">部品</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {group1.map((partType) => (
+            <button
+              key={partType.type}
+              onClick={() => handleCreatePart(partType.type)}
+              className="group relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-wood to-wood-dark hover:from-wood-dark hover:to-wood-darkest rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-md"
+              title={`${partType.name}を作成`}
+            >
+              {partType.icon}
+              <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-header text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                {partType.name}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+      {/* 右グループ: 仕組み */}
+      <div className="rounded-xl bg-content shadow-lg border border-wood-light/30 p-3 flex flex-col items-center min-w-[140px]">
+        <div className="flex items-center gap-1 mb-2">
+          <span className="text-xs text-wood-dark font-bold">仕組み</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {group2.map((partType) => (
+            <button
+              key={partType.type}
+              onClick={() => handleCreatePart(partType.type)}
+              className="group relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-wood to-wood-dark hover:from-wood-dark hover:to-wood-darkest rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-md"
+              title={`${partType.name}を作成`}
+            >
+              {partType.icon}
+              <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-header text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                {partType.name}
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
