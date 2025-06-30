@@ -10,7 +10,12 @@ import { FaUsers } from 'react-icons/fa';
 import { useRoleManagement } from '@/features/role/hooks/useRoleManagement';
 
 export default function RoleMenu({ projectId }: { projectId: string }) {
-  const { userRoles } = useRoleManagement(projectId);
+  const { userRoles, loading } = useRoleManagement(projectId);
+
+  // ローディング中や空の場合は何も表示しない
+  if (loading || !userRoles || userRoles.length === 0) {
+    return null;
+  }
 
   // ユーザー名リスト（最大3名まで表示、残りは+Nで省略）
   const maxDisplay = 3;
