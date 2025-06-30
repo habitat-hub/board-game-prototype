@@ -794,6 +794,7 @@ export default function GameBoard({
             onAddPart={handleAddPart}
             camera={camera}
             viewportSize={viewportSize}
+            parts={parts} // 追加
           />
 
           {/* プロパティサイドバー */}
