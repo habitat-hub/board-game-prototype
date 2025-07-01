@@ -14,8 +14,8 @@ import { PartHandle } from '@/features/prototype/type';
 export const useCard = (part: Part, ref: React.ForwardedRef<PartHandle>) => {
   const { dispatch } = usePartReducer();
   const { measureOperation } = usePerformanceTracker();
-  // カードの表面
-  const [frontSide, setFrontSide] = useState(part.frontSide);
+  // カードの表面（カード以外のパーツの場合はデフォルトで'front'）
+  const [frontSide, setFrontSide] = useState(part.frontSide || 'front');
   // カードが反転中かどうか
   const [isReversing, setIsReversing] = useState(false);
 

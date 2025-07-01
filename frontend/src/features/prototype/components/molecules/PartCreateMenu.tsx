@@ -107,6 +107,7 @@ export default function PartCreateMenu({
       ),
       width: partConfig.width,
       height: partConfig.height,
+      frontSide: 'front',
     };
 
     // パーツタイプ別の設定を適用
