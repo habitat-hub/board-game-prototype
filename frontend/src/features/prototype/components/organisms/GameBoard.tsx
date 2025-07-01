@@ -92,32 +92,32 @@ export default function GameBoard({
     [canvasSize]
   );
 
+  const CAMERA_MARGIN = 300;
   const constrainCamera = useCallback(
     (x: number, y: number, scale: number) => {
       let constrainedX = x;
       let constrainedY = y;
 
-      const scaledCanvasWidth = canvasSize.width * scale;
-      const scaledCanvasHeight = canvasSize.height * scale;
+      // -500~+500の範囲でカメラを動かせるように制約を調整
+      const minX = -CAMERA_MARGIN;
+      const maxX =
+        canvasSize.width * scale - viewportSize.width + CAMERA_MARGIN;
+      const minY = -CAMERA_MARGIN;
+      const maxY =
+        canvasSize.height * scale - viewportSize.height + CAMERA_MARGIN;
 
-      if (scaledCanvasWidth > viewportSize.width) {
-        constrainedX = Math.max(0, constrainedX);
-        constrainedX = Math.min(
-          scaledCanvasWidth - viewportSize.width,
-          constrainedX
-        );
+      if (canvasSize.width * scale > viewportSize.width) {
+        constrainedX = Math.max(minX, constrainedX);
+        constrainedX = Math.min(maxX, constrainedX);
       } else {
-        constrainedX = (scaledCanvasWidth - viewportSize.width) / 2;
+        constrainedX = (canvasSize.width * scale - viewportSize.width) / 2;
       }
 
-      if (scaledCanvasHeight > viewportSize.height) {
-        constrainedY = Math.max(0, constrainedY);
-        constrainedY = Math.min(
-          scaledCanvasHeight - viewportSize.height,
-          constrainedY
-        );
+      if (canvasSize.height * scale > viewportSize.height) {
+        constrainedY = Math.max(minY, constrainedY);
+        constrainedY = Math.min(maxY, constrainedY);
       } else {
-        constrainedY = (scaledCanvasHeight - viewportSize.height) / 2;
+        constrainedY = (canvasSize.height * scale - viewportSize.height) / 2;
       }
 
       return {
