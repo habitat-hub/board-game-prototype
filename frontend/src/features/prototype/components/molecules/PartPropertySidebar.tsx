@@ -112,10 +112,10 @@ export default function PartPropertySidebar({
       'id' | 'prototypeId' | 'order' | 'createdAt' | 'updatedAt'
     > = {
       type: selectedPart.type,
-      // NOTE： 少し複製元からずらす
+      // NOTE： すぐ右側に配置（重ならないように）
       position: {
-        x: selectedPart.position.x + 25,
-        y: selectedPart.position.y + 25,
+        x: selectedPart.position.x + selectedPart.width,
+        y: selectedPart.position.y,
       },
       width: selectedPart.width,
       height: selectedPart.height,
