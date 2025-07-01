@@ -17,6 +17,9 @@ export interface PartDefaultConfig {
   description: string;
   textColor: string;
   color: string;
+  // カード専用フィールド（optional）
+  frontDescription?: string;
+  backDescription?: string;
 }
 
 // キャンバスのカメラ

@@ -141,8 +141,17 @@ export default function PartCreateMenu({
     >[] =
       partType === 'card'
         ? [
-            { side: 'front', ...commonProperties },
-            { side: 'back', ...commonProperties },
+            {
+              side: 'front',
+              ...commonProperties,
+              description:
+                partConfig.frontDescription || partConfig.description,
+            },
+            {
+              side: 'back',
+              ...commonProperties,
+              description: partConfig.backDescription || partConfig.description,
+            },
           ]
         : [{ side: 'front', ...commonProperties }];
 
