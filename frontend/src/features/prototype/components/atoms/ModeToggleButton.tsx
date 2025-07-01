@@ -20,7 +20,9 @@ export default function ModeToggleButton({
               : 'bg-gray-300 text-gray-500 hover:bg-gray-400'
           }`}
           onClick={onToggle}
-          aria-label="Toggle Pan Mode"
+          aria-label={
+            isSelectionMode ? 'パンモードに切り替え' : '選択モードに切り替え'
+          }
         >
           <MdPanTool
             className={`w-6 h-6 transition-transform duration-300 ${
