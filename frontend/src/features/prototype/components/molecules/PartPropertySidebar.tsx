@@ -80,9 +80,10 @@ export default function PartPropertySidebar({
     // 選択中のパーツが存在しない、またはプロパティが存在しない場合
     if (!selectedPart || !selectedPartProperties) return;
 
-    return selectedPartProperties.find(
-      (p) => p.side === selectedPart.frontSide
-    );
+    // カードパーツの場合はfrontSideを使用、それ以外は'front'をデフォルトとする
+    const targetSide = selectedPart.frontSide || 'front';
+
+    return selectedPartProperties.find((p) => p.side === targetSide);
   }, [selectedPart, selectedPartProperties]);
 
   useEffect(() => {
@@ -124,6 +125,9 @@ export default function PartPropertySidebar({
     // カードパーツの場合
     if (selectedPart.type === 'card') {
       newPart.frontSide = selectedPart.frontSide;
+    } else {
+      // カード以外のパーツの場合はデフォルトで'front'を設定
+      newPart.frontSide = 'front';
     }
 
     // 手札パーツの場合
@@ -135,8 +139,12 @@ export default function PartPropertySidebar({
     const newPartProperties: Omit<
       PartProperty,
       'id' | 'partId' | 'createdAt' | 'updatedAt'
-    >[] = selectedPartProperties.map(
-      ({ side, name, description, color, imageId, textColor }) => {
+    >[] = selectedPartProperties
+      .filter(({ side }) => {
+        // カードパーツの場合は両面、それ以外は'front'のみ
+        return selectedPart.type === 'card' ? true : side === 'front';
+      })
+      .map(({ side, name, description, color, imageId, textColor }) => {
         return {
           side,
           name,
@@ -145,8 +153,7 @@ export default function PartPropertySidebar({
           textColor,
           imageId,
         };
-      }
-    );
+      });
     onAddPart({ part: newPart, properties: newPartProperties });
   };
 
