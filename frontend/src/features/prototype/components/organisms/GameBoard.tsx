@@ -13,7 +13,9 @@ import { Part as PartType, PartProperty as PropertyType } from '@/api/types';
 import DebugInfo from '@/features/prototype/components/atoms/DebugInfo';
 import GridLines from '@/features/prototype/components/atoms/GridLines';
 import { KonvaPartContextMenu } from '@/features/prototype/components/atoms/KonvaPartContextMenu';
+import ModeToggleButton from '@/features/prototype/components/atoms/ModeToggleButton';
 import Part from '@/features/prototype/components/atoms/Part';
+import SelectionRect from '@/features/prototype/components/atoms/SelectionRect';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
@@ -30,6 +32,7 @@ import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContex
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
+import { useSelection } from '@/features/prototype/hooks/useSelection';
 import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { AddPartProps, DeleteImageProps } from '@/features/prototype/type';
 import { CursorInfo } from '@/features/prototype/types/cursor';
@@ -470,6 +473,15 @@ export default function GameBoard({
   };
 
   const handleBackgroundClick = () => {
+    // 矩形選択中の場合は背景クリックを無効化
+    if (isSelectionInProgress()) {
+      return;
+    }
+    // 矩形選択完了直後の場合は背景クリックを無効化
+    if (isJustFinishedSelection()) {
+      return;
+    }
+    // パーツの選択を解除
     setSelectedPartIds([]);
   };
 
@@ -631,16 +643,34 @@ export default function GameBoard({
     };
   }, [fetchImage, properties]);
 
+  const { socket } = useSocket();
+
+  // 選択機能
+  const {
+    isSelectionMode,
+    selectionRect,
+    handleSelectionStart,
+    handleSelectionMove,
+    handleSelectionEnd,
+    toggleMode,
+    isSelectionInProgress,
+    isJustFinishedSelection,
+  } = useSelection();
+
   // Stage全体のクリックイベントハンドラー
   const handleStageClick = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
+      // 矩形選択中の場合はStageクリックを無効化
+      if (isSelectionInProgress()) {
+        return;
+      }
       if (showContextMenu) {
         if (!e.target.hasName('context-menu-component')) {
           handleCloseContextMenu();
         }
       }
     },
-    [showContextMenu, handleCloseContextMenu]
+    [showContextMenu, handleCloseContextMenu, isSelectionInProgress]
   );
 
   const { isGrabbing, eventHandlers: grabbingHandlers } = useGrabbingCursor();
@@ -686,8 +716,6 @@ export default function GameBoard({
     return map;
   }, [parts, properties, images]);
 
-  const { socket } = useSocket();
-
   useEffect(() => {
     // パーツ追加時に自分の追加したパーツを選択状態にする
     const handleAddPartResponse = (data: { partId: number }) => {
@@ -699,8 +727,13 @@ export default function GameBoard({
       socket.off('ADD_PART_RESPONSE', handleAddPartResponse);
     };
   }, [socket]);
+
   return (
     <DebugModeProvider>
+      <ModeToggleButton
+        isSelectionMode={isSelectionMode}
+        onToggle={toggleMode}
+      />
       <Stage
         width={viewportSize.width}
         height={viewportSize.height}
@@ -708,10 +741,15 @@ export default function GameBoard({
         onWheel={handleWheel}
         onClick={handleStageClick}
         {...grabbingHandlers}
-        style={{ cursor: isGrabbing ? 'grabbing' : 'grab' }}
+        style={{
+          cursor: isSelectionMode
+            ? 'default'
+            : isGrabbing
+              ? 'grabbing'
+              : 'grab',
+        }}
       >
         <Layer>
-          {/* カメラ - カメラの位置とスケールを適用 */}
           <Group
             id="camera"
             x={-camera.x}
@@ -726,9 +764,20 @@ export default function GameBoard({
               width={canvasSize.width}
               height={canvasSize.height}
               fill={gameBoardMode === GameBoardMode.PLAY ? '#fff' : '#f5f5f5'}
-              draggable
+              draggable={!isSelectionMode}
               onDragMove={handleDragMove}
               onClick={handleBackgroundClick}
+              // 矩形選択用イベントを背景Rectに直接バインド
+              {...(isSelectionMode
+                ? {
+                    onMouseDown: (e: Konva.KonvaEventObject<MouseEvent>) =>
+                      handleSelectionStart(e, camera),
+                    onMouseMove: (e: Konva.KonvaEventObject<MouseEvent>) =>
+                      handleSelectionMove(e, camera),
+                    onMouseUp: (e: Konva.KonvaEventObject<MouseEvent>) =>
+                      handleSelectionEnd(e, parts, setSelectedPartIds),
+                  }
+                : {})}
             />
             {/* 背景グリッド */}
             {gameBoardMode === GameBoardMode.CREATE && (
@@ -739,7 +788,7 @@ export default function GameBoard({
               />
             )}
 
-            {/* パーツの表示（orderが大きいほど後で描画=前面に表示） */}
+            {/* パーツの表示 */}
             {[...parts]
               .sort((a, b) => a.order - b.order)
               .map((part) => {
@@ -765,8 +814,7 @@ export default function GameBoard({
                   />
                 );
               })}
-
-            {/* コンテキストメニュー - カメラのスケールと位置を考慮してメニュー位置を設定 */}
+            {/* コンテキストメニュー */}
             {showContextMenu && contextMenuPartId !== null && (
               <KonvaPartContextMenu
                 visible={true}
@@ -775,6 +823,14 @@ export default function GameBoard({
                 onChangeOrder={handleChangePartOrder}
               />
             )}
+            {/* 選択モード時の矩形選択表示 */}
+            <SelectionRect
+              x={selectionRect.x}
+              y={selectionRect.y}
+              width={selectionRect.width}
+              height={selectionRect.height}
+              visible={isSelectionMode && selectionRect.visible}
+            />
           </Group>
         </Layer>
       </Stage>
