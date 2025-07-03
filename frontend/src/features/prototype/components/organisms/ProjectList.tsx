@@ -346,118 +346,142 @@ const ProjectList: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto mt-16 relative">
+    <div className="max-w-6xl mx-auto py-16 relative px-4">
       {/* タイトル */}
       <h1 className="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
         プロトタイプ一覧
       </h1>
-      {/* プロトタイプ一覧 */}
-      <div className="shadow-2xl rounded-2xl overflow-hidden bg-content border border-wood-lightest/20">
-        <table className="w-full border-collapse">
-          <thead className="bg-content-secondary border-b border-wood-lightest/30">
-            <tr className="text-sm font-medium text-wood-dark">
-              <th className="text-left p-4">
-                <button
-                  onClick={() => handleSort('name')}
-                  className="flex items-center gap-1 hover:text-header transition-colors duration-200 w-full"
-                >
-                  プロトタイプ名
-                  {getSortIcon('name')}
-                </button>
-              </th>
-              <th className="text-left p-4">
-                <button
-                  onClick={() => handleSort('createdAt')}
-                  className="flex items-center gap-1 hover:text-header transition-colors duration-200 w-full"
-                >
-                  作成日時
-                  {getSortIcon('createdAt')}
-                </button>
-              </th>
-              <th className="text-left p-4">作成者</th>
-              <th className="text-center p-4">操作</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-wood-lightest/20">
-            {sortedPrototypeList.map(({ masterPrototype, project }) => {
-              if (!masterPrototype) return null;
-              const { id, name, createdAt } = masterPrototype;
-              const isNameEditing = isEditing(id);
-              return (
-                <tr key={id}>
-                  <td className="p-4 min-w-0">
-                    <div className="w-full">
-                      {isNameEditing ? (
-                        <form
-                          className="w-full"
-                          onSubmit={(e) =>
-                            handleSubmit(
-                              e,
-                              handleNameEditComplete,
-                              validatePrototypeName
-                            )
-                          }
-                        >
-                          <input
-                            type="text"
-                            value={editedName}
-                            onChange={(e) => setEditedName(e.target.value)}
-                            onBlur={() =>
-                              handleBlur(
-                                handleNameEditComplete,
-                                validatePrototypeName
-                              ).catch((error) => {
-                                console.error('Error in onBlur:', error);
-                                alert(error.message || 'エラーが発生しました');
-                              })
-                            }
-                            onKeyDown={(e) =>
-                              handleKeyDown(
-                                e,
-                                handleNameEditComplete,
-                                validatePrototypeName
-                              ).catch((error) => {
-                                console.error('Error in onKeyDown:', error);
-                                alert(error.message || 'エラーが発生しました');
-                              })
-                            }
-                            className="w-full text-wood-darkest font-medium bg-transparent border border-transparent rounded-md p-2 -m-2 focus:outline-none focus:bg-white focus:border-header focus:shadow-sm transition-all"
-                            autoFocus
-                          />
-                        </form>
-                      ) : (
-                        <button
-                          onClick={() => handleNameEditToggle(id, name)}
-                          className="w-full text-wood-darkest font-medium hover:text-header transition-colors cursor-pointer p-2 -m-2 rounded-md hover:bg-wood-lightest/20 text-left truncate"
-                          title="クリックして編集"
-                        >
-                          {name}
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                  <td className="p-4 text-sm text-wood">
-                    {formatDate(createdAt, true)}
-                  </td>
-                  <td className="p-4 text-sm text-wood">
-                    {userContext?.user?.id === project.userId
-                      ? '自分'
-                      : '他のユーザー'}
-                  </td>
-                  <td className="p-4 flex justify-center gap-2">
-                    <Link
-                      href={`projects/${project.id}/prototypes/${id}`}
-                      className="flex items-center gap-2 px-3 py-1 text-sm text-wood hover:text-header rounded border border-wood-light/20 hover:bg-wood-lightest/20 whitespace-nowrap"
-                      title="プロトタイプを編集する"
+      
+      {/* ソート機能 */}
+      <div className="flex justify-center mb-6 gap-4">
+        <button
+          onClick={() => handleSort('name')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 ${
+            sort.key === 'name'
+              ? 'bg-header text-white border-header'
+              : 'bg-white text-wood border-wood-light/20 hover:bg-wood-lightest/20'
+          }`}
+        >
+          プロトタイプ名順
+          {getSortIcon('name')}
+        </button>
+        <button
+          onClick={() => handleSort('createdAt')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 ${
+            sort.key === 'createdAt'
+              ? 'bg-header text-white border-header'
+              : 'bg-white text-wood border-wood-light/20 hover:bg-wood-lightest/20'
+          }`}
+        >
+          作成日時順
+          {getSortIcon('createdAt')}
+        </button>
+      </div>
+
+      {/* プロトタイプ一覧（カード形式） */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {sortedPrototypeList.map(({ masterPrototype, project }) => {
+          if (!masterPrototype) return null;
+          const { id, name, createdAt } = masterPrototype;
+          const isNameEditing = isEditing(id);
+          
+          return (
+            <div
+              key={id}
+              className="bg-content border border-wood-lightest/20 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+            >
+              {/* カードヘッダー */}
+              <div className="bg-content-secondary p-4 border-b border-wood-lightest/20">
+                <div className="min-h-[60px] flex items-center">
+                  {isNameEditing ? (
+                    <form
+                      className="w-full"
+                      onSubmit={(e) =>
+                        handleSubmit(
+                          e,
+                          handleNameEditComplete,
+                          validatePrototypeName
+                        )
+                      }
                     >
-                      <FaBoxOpen className="w-4 h-4" />
-                      <span>編集</span>
-                    </Link>
+                      <input
+                        type="text"
+                        value={editedName}
+                        onChange={(e) => setEditedName(e.target.value)}
+                        onBlur={() =>
+                          handleBlur(
+                            handleNameEditComplete,
+                            validatePrototypeName
+                          ).catch((error) => {
+                            console.error('Error in onBlur:', error);
+                            alert(error.message || 'エラーが発生しました');
+                          })
+                        }
+                        onKeyDown={(e) =>
+                          handleKeyDown(
+                            e,
+                            handleNameEditComplete,
+                            validatePrototypeName
+                          ).catch((error) => {
+                            console.error('Error in onKeyDown:', error);
+                            alert(error.message || 'エラーが発生しました');
+                          })
+                        }
+                        className="w-full text-wood-darkest font-semibold bg-transparent border border-transparent rounded-md p-2 -m-2 focus:outline-none focus:bg-white focus:border-header focus:shadow-sm transition-all text-lg"
+                        autoFocus
+                      />
+                    </form>
+                  ) : (
+                    <button
+                      onClick={() => handleNameEditToggle(id, name)}
+                      className="w-full text-wood-darkest font-semibold hover:text-header transition-colors cursor-pointer p-2 -m-2 rounded-md hover:bg-wood-lightest/20 text-left text-lg leading-tight"
+                      title="クリックして編集"
+                    >
+                      {name}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* カード内容 */}
+              <div className="p-4 space-y-3">
+                <div className="text-sm text-wood">
+                  <div className="flex items-center justify-between">
+                    <span className="text-wood-dark font-medium">作成日時</span>
+                    <span>{formatDate(createdAt, true)}</span>
+                  </div>
+                </div>
+                
+                <div className="text-sm text-wood">
+                  <div className="flex items-center justify-between">
+                    <span className="text-wood-dark font-medium">作成者</span>
+                    <span>
+                      {userContext?.user?.id === project.userId
+                        ? '自分'
+                        : '他のユーザー'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* カードフッター（操作ボタン） */}
+              <div className="bg-wood-lightest/10 p-4 border-t border-wood-lightest/20">
+                <div className="flex flex-col gap-2">
+                  <Link
+                    href={`projects/${project.id}/prototypes/${id}`}
+                    className="flex items-center justify-center gap-2 px-4 py-2 text-sm text-white bg-gradient-to-r from-header to-header-light rounded-lg hover:shadow-md transition-all duration-200"
+                    title="プロトタイプを編集する"
+                  >
+                    <FaBoxOpen className="w-4 h-4" />
+                    <span>編集する</span>
+                  </Link>
+                  
+                  <div className="flex gap-2">
                     <button
                       onClick={() =>
                         router.push(`/projects/${project.id}/roles`)
                       }
-                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
                       title="プロトタイプの権限を設定する"
                     >
                       <FaUserShield className="h-4 w-4" />
@@ -467,21 +491,22 @@ const ProjectList: React.FC = () => {
                       onClick={() =>
                         router.push(`/projects/${project.id}/delete`)
                       }
-                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-red-500 rounded-md hover:bg-red-50 transition-colors border border-wood-light/20"
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm text-wood hover:text-red-500 rounded-md hover:bg-red-50 transition-colors border border-wood-light/20"
                       title="プロトタイプを削除する"
                     >
                       <IoTrash className="w-4 h-4" />
                       <span>削除</span>
                     </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
+      
       {/* 新規プロトタイプ作成ボタン */}
-      <div className="mt-8 flex justify-center">
+      <div className="flex justify-center">
         <button
           onClick={handleCreatePrototype}
           disabled={isCreating}
