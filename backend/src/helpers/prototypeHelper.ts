@@ -121,12 +121,14 @@ export async function shuffleDeck(cards: PartModel[]) {
   }
 
   // シャッフル後の順番に更新
-  await Promise.all(
+  const updatedCards = await Promise.all(
     cards.map(async (card, index) => {
-      await PartModel.update(
+      const [, result] = await PartModel.update(
         { order: originalOrders[index] },
-        { where: { id: card.id } }
+        { where: { id: card.id }, returning: true }
       );
+      return result[0].dataValues;
     })
   );
+  return updatedCards;
 }

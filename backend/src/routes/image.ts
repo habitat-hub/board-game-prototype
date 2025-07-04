@@ -12,7 +12,7 @@ import {
   UnauthorizedError,
   NotFoundError,
 } from '../errors/CustomError';
-import { emitUpdatedPartsAndProperties } from '../socket/prototypeHandler';
+import { fetchPartsAndProperties } from '../socket/prototypeHandler';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() }); // バッファとして読み込み
@@ -274,7 +274,14 @@ router.delete(
       const io = req.app.get('io');
       if (io && emitUpdate === 'true') {
         // emitUpdateが"true"の場合はemitする
-        emitUpdatedPartsAndProperties(io, prototypeId as string);
+        const { parts, properties } = await fetchPartsAndProperties(
+          prototypeId as string
+        );
+
+        io.to(prototypeId as string).emit('UPDATE_PARTS', {
+          parts,
+          properties,
+        });
       }
       res.status(200).json(result);
     } catch (error) {
