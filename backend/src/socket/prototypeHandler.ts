@@ -26,7 +26,7 @@ interface SocketData {
  * @param {string} prototypeId - プロトタイプID
  * @returns {Promise<{ parts: PartModel[], properties: PartPropertyModel[] }>} - プロトタイプに関連するパーツとプロパティの配列を含むオブジェクトを返すPromise
  */
-async function fetchPartsAndProperties(prototypeId: string) {
+export async function fetchPartsAndProperties(prototypeId: string) {
   const [parts, properties] = await Promise.all([
     PartModel.findAll({
       where: { prototypeId },
@@ -49,20 +49,6 @@ async function fetchPartsAndProperties(prototypeId: string) {
   ]);
 
   return { parts, properties };
-}
-
-/**
- * 指定されたプロトタイプバージョンIDに関連する全てのパーツとプロパティを取得し、
- * それらをクライアントにemitする。
- * @param io - Server
- * @param {string} prototypeId- プロトタイプバージョンID
- */
-export async function emitUpdatedPartsAndProperties(
-  io: Server,
-  prototypeId: string
-) {
-  const { parts, properties } = await fetchPartsAndProperties(prototypeId);
-  io.to(prototypeId).emit('UPDATE_PARTS', { parts, properties });
 }
 
 /**
@@ -93,7 +79,7 @@ function handleJoinPrototype(socket: Socket) {
         socket.join(prototypeId);
 
         const partsAndProperties = await fetchPartsAndProperties(prototypeId);
-        socket.emit('UPDATE_PARTS', partsAndProperties);
+        socket.emit('INITIAL_PARTS', partsAndProperties);
         socket.emit('UPDATE_CURSORS', {
           cursors: cursorMap[prototypeId] || {},
         });
@@ -143,9 +129,12 @@ function handleAddPart(socket: Socket, io: Server) {
           });
         });
 
-        await Promise.all(propertyCreationPromises);
+        const newProperties = await Promise.all(propertyCreationPromises);
 
-        await emitUpdatedPartsAndProperties(io, prototypeId);
+        io.to(prototypeId).emit('ADD_PART', {
+          part: newPart,
+          properties: newProperties,
+        });
 
         // 新しいパーツのIDをクライアントに送信
         // これによりクライアント側で新パーツをすぐ参照できるようになる
@@ -178,6 +167,9 @@ function handleUpdatePart(socket: Socket, io: Server) {
     }) => {
       const { prototypeId } = socket.data as SocketData;
 
+      let updatedPart: PartModel | null = null;
+      let updatedProperties: PartPropertyModel[] | null = null;
+
       try {
         // Partの更新
         if (updatePart && Object.keys(updatePart).length > 0) {
@@ -193,21 +185,34 @@ function handleUpdatePart(socket: Socket, io: Server) {
             },
             {} as Partial<PartModel>
           );
-          await PartModel.update(updateData, { where: { id: partId } });
+          const [, result] = await PartModel.update(updateData, {
+            where: { id: partId },
+            returning: true,
+          });
+          updatedPart = result[0].dataValues;
         }
 
         // PartPropertiesの更新
         if (updateProperties) {
           const updatePromises = updateProperties.map((property) => {
-            return PartPropertyModel.update(property, {
-              where: { partId, side: property.side },
-            });
+            return PartPropertyModel.update(
+              { ...property, partId },
+              {
+                where: { partId, side: property.side },
+                returning: true,
+              }
+            );
           });
 
           // 更新処理の実行
-          await Promise.all(updatePromises);
+          const result = await Promise.all(updatePromises);
+          updatedProperties = result.map(([, result]) => result[0].dataValues);
         }
-        await emitUpdatedPartsAndProperties(io, prototypeId);
+
+        io.to(prototypeId).emit('UPDATE_PARTS', {
+          parts: updatedPart ? [updatedPart] : [],
+          properties: updatedProperties ? updatedProperties : [],
+        });
       } catch (error) {
         console.error('パーツの更新に失敗しました。', error);
       }
@@ -226,7 +231,7 @@ function handleDeletePart(socket: Socket, io: Server) {
 
     // PartPropertyは CASCADE で自動的に削除される
     await PartModel.destroy({ where: { id: partId } });
-    await emitUpdatedPartsAndProperties(io, prototypeId);
+    io.to(prototypeId).emit('DELETE_PART', { partId });
   });
 }
 
@@ -249,9 +254,9 @@ function handleFlipCard(socket: Socket, io: Server) {
       const { prototypeId } = socket.data as SocketData;
 
       try {
-        await PartModel.update(
+        const [, result] = await PartModel.update(
           { frontSide: nextFrontSide },
-          { where: { id: cardId } }
+          { where: { id: cardId }, returning: true }
         );
 
         io.to(prototypeId).emit('FLIP_CARD', {
@@ -259,7 +264,10 @@ function handleFlipCard(socket: Socket, io: Server) {
           nextFrontSide,
         });
 
-        await emitUpdatedPartsAndProperties(io, prototypeId);
+        io.to(prototypeId).emit('UPDATE_PARTS', {
+          parts: [result[0].dataValues],
+          properties: [],
+        });
       } catch (error) {
         console.error('カードの反転に失敗しました。', error);
       }
@@ -323,11 +331,14 @@ function handleChangeOrder(socket: Socket, io: Server) {
                 (underLappingPart.order +
                   (sortedParts[prevPartIndex - 1]?.order ?? 0)) /
                 2;
-              await PartModel.update(
+              const [, result] = await PartModel.update(
                 { order: newOrder },
-                { where: { id: partId } }
+                { where: { id: partId }, returning: true }
               );
-              await emitUpdatedPartsAndProperties(io, prototypeId);
+              io.to(prototypeId).emit('UPDATE_PARTS', {
+                parts: [result[0].dataValues],
+                properties: [],
+              });
             }
             break;
           }
@@ -345,11 +356,14 @@ function handleChangeOrder(socket: Socket, io: Server) {
                 (overLappingPart.order +
                   (sortedParts[nextPartIndex + 1]?.order ?? 1)) /
                 2;
-              await PartModel.update(
+              const [, result] = await PartModel.update(
                 { order: newOrder },
-                { where: { id: partId } }
+                { where: { id: partId }, returning: true }
               );
-              await emitUpdatedPartsAndProperties(io, prototypeId);
+              io.to(prototypeId).emit('UPDATE_PARTS', {
+                parts: [result[0].dataValues],
+                properties: [],
+              });
             }
             break;
           }
@@ -357,22 +371,28 @@ function handleChangeOrder(socket: Socket, io: Server) {
             // 最背面に移動
             const firstPart = sortedParts[0];
             const newOrder = (firstPart.order + 0) / 2;
-            await PartModel.update(
+            const [, result] = await PartModel.update(
               { order: newOrder },
-              { where: { id: partId } }
+              { where: { id: partId }, returning: true }
             );
-            await emitUpdatedPartsAndProperties(io, prototypeId);
+            io.to(prototypeId).emit('UPDATE_PARTS', {
+              parts: [result[0].dataValues],
+              properties: [],
+            });
             break;
           }
           case 'frontmost': {
             // 最前面に移動
             const lastPart = sortedParts[sortedParts.length - 1];
             const newOrder = (lastPart.order + 1) / 2;
-            await PartModel.update(
+            const [, result] = await PartModel.update(
               { order: newOrder },
-              { where: { id: partId } }
+              { where: { id: partId }, returning: true }
             );
-            await emitUpdatedPartsAndProperties(io, prototypeId);
+            io.to(prototypeId).emit('UPDATE_PARTS', {
+              parts: [result[0].dataValues],
+              properties: [],
+            });
             break;
           }
           default:
@@ -414,8 +434,11 @@ function handleShuffleDeck(socket: Socket, io: Server) {
           cardCenter.y <= deck.position.y + deck.height
         );
       });
-      await shuffleDeck(cardsOnDeck);
-      await emitUpdatedPartsAndProperties(io, prototypeId);
+      const updatedCards = await shuffleDeck(cardsOnDeck);
+      io.to(prototypeId).emit('UPDATE_PARTS', {
+        parts: updatedCards,
+        properties: [],
+      });
     } catch (error) {
       console.error('カードのシャッフルに失敗しました。', error);
     }

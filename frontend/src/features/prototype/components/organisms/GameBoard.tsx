@@ -716,6 +716,23 @@ export default function GameBoard({
     return map;
   }, [parts, properties, images]);
 
+  // パーツの表示用データをメモ化
+  const sortedParts = useMemo(() => {
+    return [...parts].sort((a, b) => a.order - b.order);
+  }, [parts]);
+
+  // パーツのプロパティマップをメモ化
+  const partPropertiesMap = useMemo(() => {
+    const map: Record<number, PropertyType[]> = {};
+    properties.forEach((property) => {
+      if (!map[property.partId]) {
+        map[property.partId] = [];
+      }
+      map[property.partId].push(property);
+    });
+    return map;
+  }, [properties]);
+
   useEffect(() => {
     // パーツ追加時に自分の追加したパーツを選択状態にする
     const handleAddPartResponse = (data: { partId: number }) => {
@@ -789,31 +806,27 @@ export default function GameBoard({
             )}
 
             {/* パーツの表示 */}
-            {[...parts]
-              .sort((a, b) => a.order - b.order)
-              .map((part) => {
-                const partProperties = properties.filter(
-                  (p) => p.partId === part.id
-                );
-                const filteredImages = filteredImagesMap[part.id] || [];
-                const isActive = selectedPartIds.includes(part.id);
-                return (
-                  <Part
-                    key={part.id}
-                    part={part}
-                    properties={partProperties}
-                    images={filteredImages}
-                    gameBoardMode={gameBoardMode}
-                    isActive={isActive}
-                    isOtherPlayerCard={false}
-                    onClick={(e) => handlePartClick(e, part.id)}
-                    onDragStart={(e) => handlePartDragStart(e, part.id)}
-                    onDragMove={(e) => handlePartDragMove(e, part.id)}
-                    onDragEnd={(e, partId) => handlePartDragEnd(e, partId)}
-                    onContextMenu={(e) => handlePartContextMenu(e, part.id)}
-                  />
-                );
-              })}
+            {sortedParts.map((part) => {
+              const partProperties = partPropertiesMap[part.id] || [];
+              const filteredImages = filteredImagesMap[part.id] || [];
+              const isActive = selectedPartIds.includes(part.id);
+              return (
+                <Part
+                  key={part.id}
+                  part={part}
+                  properties={partProperties}
+                  images={filteredImages}
+                  gameBoardMode={gameBoardMode}
+                  isActive={isActive}
+                  isOtherPlayerCard={false}
+                  onClick={(e) => handlePartClick(e, part.id)}
+                  onDragStart={(e) => handlePartDragStart(e, part.id)}
+                  onDragMove={(e) => handlePartDragMove(e, part.id)}
+                  onDragEnd={(e, partId) => handlePartDragEnd(e, partId)}
+                  onContextMenu={(e) => handlePartContextMenu(e, part.id)}
+                />
+              );
+            })}
             {/* コンテキストメニュー */}
             {showContextMenu && contextMenuPartId !== null && (
               <KonvaPartContextMenu
