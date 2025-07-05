@@ -40,7 +40,7 @@ function Login() {
 
   return (
     <>
-      <div className="p-6 sm:p-8 md:p-12 rounded-lg border border-kibako-secondary/20 shadow-xl w-full max-w-md sm:max-w-lg md:w-1/2 text-center flex flex-col bg-kibako-tertiary mx-auto">
+      <div className="p-6 sm:p-8 md:p-12 rounded-lg border border-kibako-secondary/20 shadow-xl w-full max-w-md sm:max-w-lg md:w-1/2 text-center flex flex-col bg-kibako-white mx-auto">
         {/* タイトル */}
         <h1 className="text-3xl sm:text-4xl font-bold tracking-wider text-kibako-primary">
           KIBAKO
@@ -69,6 +69,7 @@ function Login() {
         {/* ログイン部分 */}
         <div className="flex justify-center mt-12 sm:mt-16">
           <Button
+            variant="accent"
             onClick={() => {
               window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
             }}
