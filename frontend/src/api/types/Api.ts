@@ -38,6 +38,8 @@ import {
   ProjectsRolesUpdatePayload,
   ProjectsRoomCreateData,
   ProjectsRoomCreatePayload,
+  ProjectsRoomDeleteData,
+  ProjectsRoomDeleteParams,
   PrototypesDeleteData,
   PrototypesDetailData,
   PrototypesUpdateData,
@@ -193,6 +195,28 @@ export class Api<
       method: 'POST',
       body: data,
       type: ContentType.Json,
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description 指定されたプロジェクトのプロトタイプルーム（VERSIONとINSTANCE）を削除します。
+   *
+   * @tags Projects
+   * @name ProjectsRoomDelete
+   * @summary プロトタイプルーム削除
+   * @request DELETE:/api/projects/{projectId}/room
+   */
+  projectsRoomDelete = (
+    { projectId, ...query }: ProjectsRoomDeleteParams,
+    params: RequestParams = {}
+  ) =>
+    this.request<
+      ProjectsRoomDeleteData,
+      Error400Response | Error404Response | Error500Response
+    >({
+      path: `/api/projects/${projectId}/room`,
+      method: 'DELETE',
+      query: query,
       format: 'json',
       ...params,
     });

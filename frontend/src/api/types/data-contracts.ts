@@ -187,6 +187,15 @@ export interface ProjectsRoomCreatePayload {
 
 export type ProjectsRoomCreateData = Prototype;
 
+export interface ProjectsRoomDeleteParams {
+  /** 削除するバージョン番号 */
+  versionNumber: number;
+  /** プロジェクトのID */
+  projectId: string;
+}
+
+export type ProjectsRoomDeleteData = SuccessResponse;
+
 export type ProjectsDetailData = Project & {
   prototypes?: Prototype[];
 };

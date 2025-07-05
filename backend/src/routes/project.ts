@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import UserModel from '../models/User';
 import ProjectModel from '../models/Project';
+import PrototypeModel from '../models/Prototype';
 import { ensureAuthenticated } from '../middlewares/auth';
 import {
   checkProjectReadPermission,
@@ -193,6 +194,124 @@ router.post(
       res
         .status(201)
         .json({ version: versionPrototype, instance: instancePrototype });
+    } catch (error) {
+      await transaction.rollback();
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/projects/{projectId}/room:
+ *   delete:
+ *     tags: [Projects]
+ *     summary: プロトタイプルーム削除
+ *     description: 指定されたプロジェクトのプロトタイプルーム（VERSIONとINSTANCE）を削除します。
+ *     parameters:
+ *       - name: projectId
+ *         in: path
+ *         required: true
+ *         description: プロジェクトのID
+ *         schema:
+ *           type: string
+ *       - name: versionNumber
+ *         in: query
+ *         required: true
+ *         description: 削除するバージョン番号
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: プロトタイプルームを削除しました
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       '400':
+ *         description: リクエストが不正です
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error400Response'
+ *       '404':
+ *         description: プロトタイプルームが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
+ *       '500':
+ *         description: サーバーエラー
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
+ */
+router.delete(
+  '/:projectId/room',
+  checkProjectManagePermission,
+  async (req: Request, res: Response) => {
+    const { projectId } = req.params;
+    const { versionNumber } = req.query;
+
+    if (!versionNumber) {
+      res.status(400).json({
+        error: 'バージョン番号が必要です',
+      });
+      return;
+    }
+
+    const transaction = await sequelize.transaction();
+    try {
+      // 指定されたバージョン番号のVERSIONプロトタイプを取得
+      const versionPrototype = await PrototypeModel.findOne({
+        where: {
+          projectId,
+          type: 'VERSION',
+          versionNumber: parseInt(versionNumber as string),
+        },
+        transaction,
+      });
+
+      if (!versionPrototype) {
+        await transaction.rollback();
+        res.status(404).json({
+          error: 'プロトタイプルームが見つかりません',
+        });
+        return;
+      }
+
+      // 関連するINSTANCEプロトタイプを取得
+      const instancePrototypes = await PrototypeModel.findAll({
+        where: {
+          projectId,
+          type: 'INSTANCE',
+          sourceVersionPrototypeId: versionPrototype.id,
+        },
+        transaction,
+      });
+
+      // INSTANCEプロトタイプを削除（カスケード削除でパーツとプロパティも削除される）
+      for (const instancePrototype of instancePrototypes) {
+        await PrototypeModel.destroy({
+          where: { id: instancePrototype.id },
+          transaction,
+        });
+      }
+
+      // VERSIONプロトタイプを削除（カスケード削除でパーツとプロパティも削除される）
+      await PrototypeModel.destroy({
+        where: { id: versionPrototype.id },
+        transaction,
+      });
+
+      await transaction.commit();
+      res.json({
+        message: 'プロトタイプルームを削除しました',
+        deletedVersion: versionPrototype.id,
+        deletedInstances: instancePrototypes.map((p: PrototypeModel) => p.id),
+      });
     } catch (error) {
       await transaction.rollback();
       console.error(error);
