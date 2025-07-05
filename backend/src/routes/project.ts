@@ -12,7 +12,6 @@ import {
   createProject,
   createPrototypeVersion,
 } from '../factories/prototypeFactory';
-import PrototypeModel from '../models/Prototype';
 import { Op } from 'sequelize';
 import { getAccessibleUsers } from '../helpers/userHelper';
 import { assignRole } from '../helpers/roleHelper';
@@ -207,8 +206,8 @@ router.post(
  * /api/projects/{projectId}:
  *   get:
  *     tags: [Projects]
- *     summary: 特定のプロジェクトに属するプロトタイプ一覧取得
- *     description: 指定されたIDのプロジェクトに属するプロトタイプの一覧を取得します。
+ *     summary: 特定のプロジェクトの詳細とプロトタイプ一覧取得
+ *     description: 指定されたIDのプロジェクトの詳細情報と、そのプロジェクトに属するプロトタイプの一覧を取得します。
  *     parameters:
  *       - name: projectId
  *         in: path
@@ -218,18 +217,18 @@ router.post(
  *           type: string
  *     responses:
  *       '200':
- *         description: プロジェクトに属するプロトタイプの一覧を返します
+ *         description: プロジェクトと関連するプロトタイプの情報を返します
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 project:
- *                   $ref: '#/components/schemas/Project'
- *                 prototypes:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Prototype'
+ *               allOf:
+ *                 - $ref: '#/components/schemas/Project'
+ *                 - type: object
+ *                   properties:
+ *                     prototypes:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Prototype'
  *       '404':
  *         description: プロジェクトが見つかりません
  *         content:
@@ -244,20 +243,16 @@ router.get(
     const projectId = req.params.projectId;
 
     try {
-      const project = await ProjectModel.findByPk(projectId);
+      // スコープを使用してプロジェクトとプロトタイプを一緒に取得
+      const project =
+        await ProjectModel.scope('withPrototypes').findByPk(projectId);
+
       if (!project) {
         res.status(404).json({ error: 'プロジェクトが見つかりません' });
         return;
       }
 
-      const prototypes = await PrototypeModel.findAll({
-        where: { projectId },
-      });
-
-      res.json({
-        project,
-        prototypes,
-      });
+      res.json(project.toJSON());
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: '予期せぬエラーが発生しました' });

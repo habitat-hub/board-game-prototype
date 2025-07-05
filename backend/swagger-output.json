@@ -837,8 +837,8 @@
         "tags": [
           "Projects"
         ],
-        "summary": "特定のプロジェクトに属するプロトタイプ一覧取得",
-        "description": "指定されたIDのプロジェクトに属するプロトタイプの一覧を取得します。",
+        "summary": "特定のプロジェクトの詳細とプロトタイプ一覧取得",
+        "description": "指定されたIDのプロジェクトの詳細情報と、そのプロジェクトに属するプロトタイプの一覧を取得します。",
         "parameters": [
           {
             "name": "projectId",
@@ -852,22 +852,26 @@
         ],
         "responses": {
           "200": {
-            "description": "プロジェクトに属するプロトタイプの一覧を返します",
+            "description": "プロジェクトと関連するプロトタイプの情報を返します",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "project": {
+                  "allOf": [
+                    {
                       "$ref": "#/components/schemas/Project"
                     },
-                    "prototypes": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Prototype"
+                    {
+                      "type": "object",
+                      "properties": {
+                        "prototypes": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Prototype"
+                          }
+                        }
                       }
                     }
-                  }
+                  ]
                 }
               }
             }

@@ -51,10 +51,7 @@ export const projectService = {
    */
   getProject: async (
     projectId: string
-  ): Promise<{
-    project: Project;
-    prototypes: Array<Prototype>;
-  }> => {
+  ): Promise<Project & { prototypes: Array<Prototype> }> => {
     const response = await axiosInstance.get(`/api/projects/${projectId}`);
     return response.data;
   },

@@ -187,10 +187,9 @@ export interface ProjectsVersionCreatePayload {
 
 export type ProjectsVersionCreateData = Prototype;
 
-export interface ProjectsDetailData {
-  project?: Project;
+export type ProjectsDetailData = Project & {
   prototypes?: Prototype[];
-}
+};
 
 export type ProjectsDeleteData = SuccessResponse;
 

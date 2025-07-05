@@ -77,10 +77,12 @@ PrototypeModel.init(
 // Projectとの関連付け
 PrototypeModel.belongsTo(ProjectModel, {
   foreignKey: 'projectId',
+  as: 'project',
   onDelete: 'CASCADE',
 });
 ProjectModel.hasMany(PrototypeModel, {
   foreignKey: 'projectId',
+  as: 'prototypes',
   onDelete: 'CASCADE',
 });
 

@@ -163,9 +163,8 @@ export default function PrototypeTemplate() {
   // プロタイプの取得
   useEffect(() => {
     getProject(projectId)
-      .then((response) => {
-        const { project, prototypes } = response;
-        setPrototype({ ...project, prototypes });
+      .then((project) => {
+        setPrototype(project);
       })
       .catch((error) => console.error('Error fetching prototypes:', error));
   }, [getProject, projectId, router]);
