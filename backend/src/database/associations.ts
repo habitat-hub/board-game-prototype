@@ -10,6 +10,8 @@ import PermissionModel from '../models/Permission';
 import RolePermissionModel from '../models/RolePermission';
 import UserModel from '../models/User';
 import UserRoleModel from '../models/UserRole';
+import ProjectModel from '../models/Project';
+import PrototypeModel from '../models/Prototype';
 
 /**
  * すべてのモデル関連を設定
@@ -80,5 +82,35 @@ export function setupAssociations() {
     onDelete: 'CASCADE',
   });
 
+  // Project と Prototype のスコープを定義
+  setupProjectScopes();
+
   console.log('✅ Model associations setup completed');
+}
+
+/**
+ * Projectモデルのスコープを設定
+ */
+function setupProjectScopes() {
+  // withPrototypes スコープ: プロジェクトと関連するプロトタイプを一緒に取得
+  ProjectModel.addScope('withPrototypes', {
+    include: [
+      {
+        model: PrototypeModel,
+        as: 'prototypes', // hasMany で定義したエイリアス
+        attributes: [
+          'id',
+          'name',
+          'type',
+          'versionNumber',
+          'sourceVersionPrototypeId',
+          'createdAt',
+          'updatedAt',
+        ],
+        required: false, // LEFT JOIN（プロトタイプがなくてもプロジェクトを取得）
+      },
+    ],
+  });
+
+  console.log('✅ Project scopes setup completed');
 }

@@ -12,7 +12,6 @@ import {
   createProject,
   createPrototypeVersion,
 } from '../factories/prototypeFactory';
-import PrototypeModel from '../models/Prototype';
 import { Op } from 'sequelize';
 import { getAccessibleUsers } from '../helpers/userHelper';
 import { assignRole } from '../helpers/roleHelper';
@@ -244,20 +243,34 @@ router.get(
     const projectId = req.params.projectId;
 
     try {
-      const project = await ProjectModel.findByPk(projectId);
+      // スコープを使用してプロジェクトとプロトタイプを一緒に取得
+      const project =
+        await ProjectModel.scope('withPrototypes').findByPk(projectId);
+
       if (!project) {
         res.status(404).json({ error: 'プロジェクトが見つかりません' });
         return;
       }
 
-      const prototypes = await PrototypeModel.findAll({
-        where: { projectId },
-      });
+      // レスポンス形式を従来と同じにするため、projectとprototypesに分離
+      const projectData = project.toJSON() as {
+        id: string;
+        userId: string;
+        createdAt: string;
+        updatedAt: string;
+        prototypes?: unknown[];
+      };
+      const response = {
+        project: {
+          id: project.id,
+          userId: project.userId,
+          createdAt: projectData.createdAt,
+          updatedAt: projectData.updatedAt,
+        },
+        prototypes: projectData.prototypes || [],
+      };
 
-      res.json({
-        project,
-        prototypes,
-      });
+      res.json(response);
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: '予期せぬエラーが発生しました' });
