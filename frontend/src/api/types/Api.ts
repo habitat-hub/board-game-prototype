@@ -36,8 +36,8 @@ import {
   ProjectsRolesListData,
   ProjectsRolesUpdateData,
   ProjectsRolesUpdatePayload,
-  ProjectsVersionCreateData,
-  ProjectsVersionCreatePayload,
+  ProjectsRoomCreateData,
+  ProjectsRoomCreatePayload,
   PrototypesDeleteData,
   PrototypesDetailData,
   PrototypesUpdateData,
@@ -176,23 +176,20 @@ export class Api<
       ...params,
     });
   /**
-   * @description 指定されたプロジェクトのプロトタイプバージョンを作成します。
+   * @description 指定されたプロジェクトのプロトタイプルーム（VERSIONとINSTANCE）を作成します。
    *
    * @tags Projects
-   * @name ProjectsVersionCreate
-   * @summary プロトタイプバージョン作成
-   * @request POST:/api/projects/{projectId}/version
+   * @name ProjectsRoomCreate
+   * @summary プロトタイプルーム作成
+   * @request POST:/api/projects/{projectId}/room
    */
-  projectsVersionCreate = (
+  projectsRoomCreate = (
     projectId: string,
-    data: ProjectsVersionCreatePayload,
+    data: ProjectsRoomCreatePayload,
     params: RequestParams = {}
   ) =>
-    this.request<
-      ProjectsVersionCreateData,
-      Error404Response | Error500Response
-    >({
-      path: `/api/projects/${projectId}/version`,
+    this.request<ProjectsRoomCreateData, Error404Response | Error500Response>({
+      path: `/api/projects/${projectId}/room`,
       method: 'POST',
       body: data,
       type: ContentType.Json,

@@ -4,7 +4,7 @@ import { projectService } from '@/api/endpoints/project';
 import {
   ProjectsCreatePayload,
   ProjectsInviteCreatePayload,
-  ProjectsVersionCreatePayload,
+  ProjectsRoomCreatePayload,
 } from '@/api/types';
 
 export const useProject = () => {
@@ -23,11 +23,11 @@ export const useProject = () => {
   }, []);
 
   /**
-   * プロトタイプバージョン作成
+   * プロトタイプルーム作成
    */
-  const createPrototypeVersion = useCallback(
-    async (projectId: string, data: ProjectsVersionCreatePayload) => {
-      return await projectService.createPrototypeVersion(projectId, data);
+  const createPrototypeRoom = useCallback(
+    async (projectId: string, data: ProjectsRoomCreatePayload) => {
+      return await projectService.createPrototypeRoom(projectId, data);
     },
     []
   );
@@ -113,7 +113,7 @@ export const useProject = () => {
   return {
     getProjects,
     createProject,
-    createPrototypeVersion,
+    createPrototypeRoom,
     getProject,
     getAccessUsersByProject,
     inviteToProject,

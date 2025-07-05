@@ -24,7 +24,7 @@ export default function LeftSidebar({
   projectId: string;
 }) {
   const router = useRouter();
-  const { getProject, createPrototypeVersion } = useProject();
+  const { getProject, createPrototypeRoom } = useProject();
   const { deletePrototype } = usePrototypes();
 
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
@@ -89,7 +89,7 @@ export default function LeftSidebar({
       // バージョン作成
       const now = new Date();
       const name = `${formatDate(now, true)}版`;
-      await createPrototypeVersion(projectId, {
+      await createPrototypeRoom(projectId, {
         name,
         versionNumber: (prototypeInfo?.versions?.length || 0) + 1,
       });

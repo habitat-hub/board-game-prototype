@@ -4,7 +4,7 @@ import {
   Project,
   ProjectsCreatePayload,
   ProjectsInviteCreatePayload,
-  ProjectsVersionCreatePayload,
+  ProjectsRoomCreatePayload,
   User,
 } from '../types';
 
@@ -34,14 +34,14 @@ export const projectService = {
     return response.data;
   },
   /**
-   * プロトタイプバージョン作成
+   * プロトタイプルーム作成
    */
-  createPrototypeVersion: async (
+  createPrototypeRoom: async (
     projectId: string,
-    data: ProjectsVersionCreatePayload
+    data: ProjectsRoomCreatePayload
   ): Promise<Prototype> => {
     const response = await axiosInstance.post(
-      `/api/projects/${projectId}/version`,
+      `/api/projects/${projectId}/room`,
       data
     );
     return response.data;

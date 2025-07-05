@@ -124,11 +124,11 @@ router.post('/', async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /api/projects/{projectId}/version:
+ * /api/projects/{projectId}/room:
  *   post:
  *     tags: [Projects]
- *     summary: プロトタイプバージョン作成
- *     description: 指定されたプロジェクトのプロトタイプバージョンを作成します。
+ *     summary: プロトタイプルーム作成
+ *     description: 指定されたプロジェクトのプロトタイプルーム（VERSIONとINSTANCE）を作成します。
  *     parameters:
  *       - name: projectId
  *         in: path
@@ -149,7 +149,7 @@ router.post('/', async (req: Request, res: Response) => {
  *                 type: integer
  *     responses:
  *       '200':
- *         description: プロトタイプバージョンを作成しました
+ *         description: プロトタイプルームを作成しました
  *         content:
  *           application/json:
  *             schema:
@@ -168,7 +168,7 @@ router.post('/', async (req: Request, res: Response) => {
  *               $ref: '#/components/schemas/Error500Response'
  */
 router.post(
-  '/:projectId/version',
+  '/:projectId/room',
   checkProjectReadPermission,
   async (req: Request, res: Response) => {
     const { name, versionNumber } = req.body;

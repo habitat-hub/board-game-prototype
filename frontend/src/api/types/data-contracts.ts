@@ -180,12 +180,12 @@ export interface ProjectsCreatePayload {
 
 export type ProjectsCreateData = Project;
 
-export interface ProjectsVersionCreatePayload {
+export interface ProjectsRoomCreatePayload {
   name?: string;
   versionNumber?: number;
 }
 
-export type ProjectsVersionCreateData = Prototype;
+export type ProjectsRoomCreateData = Prototype;
 
 export type ProjectsDetailData = Project & {
   prototypes?: Prototype[];
