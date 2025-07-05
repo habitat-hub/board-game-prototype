@@ -1,9 +1,29 @@
 import { Op } from 'sequelize';
-import AccessModel from '../models/Access';
 import PartModel from '../models/Part';
+import ProjectModel from '../models/Project';
 import PrototypeModel from '../models/Prototype';
-import PrototypeGroupModel from '../models/PrototypeGroup';
-import UserModel from '../models/User';
+import { getAccessibleResourceIds } from './roleHelper';
+import { RESOURCE_TYPES, PERMISSION_ACTIONS } from '../const';
+
+/**
+ * アクセス可能なプロジェクトを取得する
+ *
+ * @param userId - ユーザーID
+ * @returns アクセス可能なプロジェクト
+ */
+export async function getAccessibleProjects({ userId }: { userId: string }) {
+  // ユーザーがアクセス可能なプロジェクトIDを取得
+  const accessibleProjectIds = await getAccessibleResourceIds(
+    userId,
+    RESOURCE_TYPES.PROJECT,
+    PERMISSION_ACTIONS.READ
+  );
+
+  // アクセス可能なプロジェクト
+  return await ProjectModel.findAll({
+    where: { id: { [Op.in]: accessibleProjectIds } },
+  });
+}
 
 /**
  * アクセス可能なプロトタイプを取得する
@@ -12,26 +32,21 @@ import UserModel from '../models/User';
  * @returns アクセス可能なプロトタイプ
  */
 export async function getAccessiblePrototypes({ userId }: { userId: string }) {
-  // アクセス権
-  const accesses = await AccessModel.findAll({
-    include: {
-      model: UserModel,
-      where: { id: userId },
+  const projects = await getAccessibleProjects({ userId });
+
+  const prototypes = await PrototypeModel.findAll({
+    where: {
+      projectId: { [Op.in]: projects.map(({ id }) => id) },
     },
   });
-  // アクセス可能なグループID
-  const accessibleGroupIds = accesses.map((access) => access.prototypeGroupId);
-  // アクセス可能なグループ
-  const accessibleGroups = await PrototypeGroupModel.findAll({
-    where: { id: { [Op.in]: accessibleGroupIds } },
-  });
-  // アクセス可能なプロトタイプID
-  const accessiblePrototypeIds = accessibleGroups.map(
-    (group) => group.prototypeId
-  );
-  // アクセス可能なプロトタイプ
-  return await PrototypeModel.findAll({
-    where: { id: { [Op.in]: accessiblePrototypeIds } },
+
+  return projects.map((project) => {
+    return {
+      project,
+      prototypes: prototypes.filter(
+        ({ projectId }) => projectId === project.id
+      ),
+    };
   });
 }
 
@@ -106,12 +121,14 @@ export async function shuffleDeck(cards: PartModel[]) {
   }
 
   // シャッフル後の順番に更新
-  await Promise.all(
+  const updatedCards = await Promise.all(
     cards.map(async (card, index) => {
-      await PartModel.update(
+      const [, result] = await PartModel.update(
         { order: originalOrders[index] },
-        { where: { id: card.id } }
+        { where: { id: card.id }, returning: true }
       );
+      return result[0].dataValues;
     })
   );
+  return updatedCards;
 }

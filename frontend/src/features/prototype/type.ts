@@ -2,7 +2,10 @@ import { Part, PartProperty, Image } from '@/api/types';
 
 // Partコンポーネントの外部から呼び出せる関数のインターフェース
 export interface PartHandle {
-  reverseCard: (isNextFlipped: boolean, needsSocketEmit: boolean) => void;
+  reverseCard: (
+    nextFrontSide: 'front' | 'back',
+    needsSocketEmit?: boolean
+  ) => void;
 }
 
 // パーツのデフォルト設定
@@ -14,9 +17,9 @@ export interface PartDefaultConfig {
   description: string;
   textColor: string;
   color: string;
-  isReversible?: boolean;
-  configurableTypeAsChild: string[];
-  canReverseCardOnDeck?: boolean;
+  // カード専用フィールド（optional）
+  frontDescription?: string;
+  backDescription?: string;
 }
 
 // キャンバスのカメラ
@@ -97,10 +100,7 @@ export type CanvasState =
 
 // パーツを追加時のprops
 export interface AddPartProps {
-  part: Omit<
-    Part,
-    'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'
-  >;
+  part: Omit<Part, 'id' | 'prototypeId' | 'order' | 'createdAt' | 'updatedAt'>;
   properties: Omit<PartProperty, 'id' | 'createdAt' | 'updatedAt' | 'partId'>[];
 }
 
@@ -113,3 +113,12 @@ export interface PartPropertyWithImage extends PartProperty {
 export type PartPropertyUpdate = Omit<Partial<PartProperty>, 'imageId'> & {
   imageId?: string | null;
 };
+
+// 画像削除時のprops
+export interface DeleteImageProps {
+  imageId: string;
+  partId: number;
+  side: 'front' | 'back';
+  prototypeId: string;
+  emitUpdate: 'true' | 'false';
+}

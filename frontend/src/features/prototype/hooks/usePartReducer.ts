@@ -19,13 +19,16 @@ export type PartAction =
       payload: {
         part: Omit<
           Part,
-          'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'
+          'id' | 'prototypeId' | 'order' | 'createdAt' | 'updatedAt'
         >;
         properties: PartPropertiesWithoutMetadata[];
       };
     }
   // カードの裏返し
-  | { type: 'FLIP_CARD'; payload: { cardId: number; isNextFlipped: boolean } }
+  | {
+      type: 'FLIP_CARD';
+      payload: { cardId: number; nextFrontSide: 'front' | 'back' };
+    }
   // パーツの更新
   | {
       type: 'UPDATE_PART';
@@ -33,7 +36,7 @@ export type PartAction =
         partId: number;
         updatePart?: Partial<Part>;
         updateProperties?: Partial<PartPropertyUpdate>[];
-        isFlipped?: boolean;
+        frontSide?: 'front' | 'back';
       };
     }
   // パーツの削除
@@ -47,12 +50,7 @@ export type PartAction =
       };
     }
   // デッキのシャッフル
-  | { type: 'SHUFFLE_DECK'; payload: { deckId: number } }
-  // プレイヤーのユーザーの更新
-  | {
-      type: 'UPDATE_PLAYER_USER';
-      payload: { playerId: number; userId: string | null };
-    };
+  | { type: 'SHUFFLE_DECK'; payload: { deckId: number } };
 
 export const usePartReducer = () => {
   const { socket } = useSocket();
@@ -73,7 +71,7 @@ export const usePartReducer = () => {
           case 'FLIP_CARD':
             socket.emit('FLIP_CARD', {
               cardId: action.payload.cardId,
-              isNextFlipped: action.payload.isNextFlipped,
+              nextFrontSide: action.payload.nextFrontSide,
             });
 
             break;
@@ -85,14 +83,10 @@ export const usePartReducer = () => {
               updateProperties: action.payload.updateProperties,
             });
 
-            if (
-              action.payload.updatePart &&
-              'isReversible' in action.payload.updatePart &&
-              action.payload.isFlipped
-            ) {
+            if (action.payload.updatePart && action.payload.frontSide) {
               socket.emit('FLIP_CARD', {
                 cardId: action.payload.partId,
-                isNextFlipped: !action.payload.isFlipped,
+                nextFrontSide: action.payload.frontSide,
               });
             }
             break;
@@ -113,13 +107,6 @@ export const usePartReducer = () => {
           case 'SHUFFLE_DECK':
             socket.emit('SHUFFLE_DECK', {
               deckId: action.payload.deckId,
-            });
-            break;
-          // プレイヤーのユーザーの更新
-          case 'UPDATE_PLAYER_USER':
-            socket.emit('UPDATE_PLAYER_USER', {
-              playerId: action.payload.playerId,
-              userId: action.payload.userId,
             });
             break;
         }

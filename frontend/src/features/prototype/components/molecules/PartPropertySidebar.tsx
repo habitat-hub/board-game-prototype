@@ -16,8 +16,7 @@ import {
 } from 'react-icons/gi';
 
 import { useImages } from '@/api/hooks/useImages';
-import { Part, PartProperty, Player } from '@/api/types';
-import Dropdown from '@/components/atoms/Dropdown';
+import { Part, PartProperty } from '@/api/types';
 import NumberInput from '@/components/atoms/NumberInput';
 import TextIconButton from '@/components/atoms/TextIconButton';
 import TextInput from '@/components/atoms/TextInput';
@@ -25,21 +24,20 @@ import { COLORS, TEXT_COLORS } from '@/features/prototype/const';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import {
   AddPartProps,
+  DeleteImageProps,
   PartPropertyUpdate,
   PartPropertyWithImage,
 } from '@/features/prototype/type';
 import { saveImageToIndexedDb } from '@/utils/db';
 
 export default function PartPropertySidebar({
-  players,
   selectedPartId,
   parts,
   properties,
   onAddPart,
   onDeletePart,
+  onDeleteImage,
 }: {
-  // プレイヤー
-  players: Player[];
   // 選択中のパーツID
   selectedPartId: number | null;
   // パーツ
@@ -50,8 +48,17 @@ export default function PartPropertySidebar({
   onAddPart: ({ part, properties }: AddPartProps) => void;
   // パーツを削除時の処理
   onDeletePart: () => void;
+  // 画像をクリア時の処理
+  onDeleteImage: ({
+    imageId,
+    prototypeId,
+    partId,
+    side,
+    emitUpdate,
+  }: DeleteImageProps) => void;
 }) {
   const [uploadedImage, setUploadedImage] = useState<{
+    id: string;
     displayName: string;
   } | null>(null); // アップロードした画像の情報を管理
   const [isUploading, setIsUploading] = useState(false); // ローディング状態を管理
@@ -73,9 +80,10 @@ export default function PartPropertySidebar({
     // 選択中のパーツが存在しない、またはプロパティが存在しない場合
     if (!selectedPart || !selectedPartProperties) return;
 
-    return selectedPartProperties.find(
-      (p) => p.side === (selectedPart.isFlipped ? 'back' : 'front')
-    );
+    // カードパーツの場合はfrontSideを使用、それ以外は'front'をデフォルトとする
+    const targetSide = selectedPart.frontSide || 'front';
+
+    return selectedPartProperties.find((p) => p.side === targetSide);
   }, [selectedPart, selectedPartProperties]);
 
   useEffect(() => {
@@ -84,6 +92,7 @@ export default function PartPropertySidebar({
       setUploadedImage(() => {
         if (!currentProperty.image) return null;
         return {
+          id: currentProperty.image.id,
           displayName: currentProperty.image.displayName,
         };
       });
@@ -101,26 +110,24 @@ export default function PartPropertySidebar({
     // 新しいパーツ
     const newPart: Omit<
       Part,
-      'id' | 'prototypeVersionId' | 'order' | 'createdAt' | 'updatedAt'
+      'id' | 'prototypeId' | 'order' | 'createdAt' | 'updatedAt'
     > = {
       type: selectedPart.type,
-      parentId: selectedPart.parentId,
-      // NOTE： 少し複製元からずらす
+      // NOTE： すぐ右側に配置（重ならないように）
       position: {
-        x: selectedPart.position.x + 10,
-        y: selectedPart.position.y + 10,
+        x: selectedPart.position.x + selectedPart.width,
+        y: selectedPart.position.y,
       },
       width: selectedPart.width,
       height: selectedPart.height,
-      configurableTypeAsChild: selectedPart.configurableTypeAsChild,
-      // NOTE: これは複製用の属性ではないので、undefinedにする
-      originalPartId: undefined,
     };
 
     // カードパーツの場合
     if (selectedPart.type === 'card') {
-      newPart.isReversible = selectedPart.isReversible;
-      newPart.isFlipped = selectedPart.isFlipped;
+      newPart.frontSide = selectedPart.frontSide;
+    } else {
+      // カード以外のパーツの場合はデフォルトで'front'を設定
+      newPart.frontSide = 'front';
     }
 
     // 手札パーツの場合
@@ -132,8 +139,12 @@ export default function PartPropertySidebar({
     const newPartProperties: Omit<
       PartProperty,
       'id' | 'partId' | 'createdAt' | 'updatedAt'
-    >[] = selectedPartProperties.map(
-      ({ side, name, description, color, imageId, textColor }) => {
+    >[] = selectedPartProperties
+      .filter(({ side }) => {
+        // カードパーツの場合は両面、それ以外は'front'のみ
+        return selectedPart.type === 'card' ? true : side === 'front';
+      })
+      .map(({ side, name, description, color, imageId, textColor }) => {
         return {
           side,
           name,
@@ -142,8 +153,7 @@ export default function PartPropertySidebar({
           textColor,
           imageId,
         };
-      }
-    );
+      });
     onAddPart({ part: newPart, properties: newPartProperties });
   };
 
@@ -182,11 +192,22 @@ export default function PartPropertySidebar({
   };
 
   // ファイルクリアボタンがクリックされた時の処理
-  const handleFileClearClick = () => {
-    // 他のパーツで画像を使用している可能性があるのでここで画像の削除はできない
-    // imageIdの紐付けのみクリアする
-    setUploadedImage(null); // アップロードした画像をクリア
-    handleUpdateProperty({ imageId: null }); // プロパティから画像IDを削除
+  const handleFileClearClick = async () => {
+    if (
+      !uploadedImage?.id ||
+      !currentProperty?.side ||
+      !selectedPart?.id ||
+      !currentProperty?.imageId
+    )
+      return;
+
+    onDeleteImage({
+      imageId: uploadedImage.id,
+      prototypeId: selectedPart.prototypeId,
+      partId: selectedPart.id,
+      side: currentProperty.side,
+      emitUpdate: 'true', // 更新をemitする
+    });
   };
 
   /**
@@ -212,6 +233,7 @@ export default function PartPropertySidebar({
         await saveImageToIndexedDb(response.id, image);
         // アップロードした画像の情報を状態に保存(今後の拡張を考慮して、オブジェクトで管理)
         setUploadedImage({
+          id: response.id,
           displayName: response.displayName,
         });
         // プロパティを更新
@@ -237,7 +259,7 @@ export default function PartPropertySidebar({
   return (
     <>
       {selectedPart && (
-        <div className="fixed top-4 right-4 flex w-[240px] flex-col rounded-lg shadow-lg border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary max-h-[calc(100vh-32px)] overflow-y-auto">
+        <div className="fixed top-20 right-4 flex w-[240px] flex-col rounded-lg shadow-lg border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary max-h-[calc(100vh-32px)] overflow-y-auto">
           <div className="border-b border-wood-lightest/60 rounded-t-lg bg-gradient-to-r from-wood-light/30 to-wood-light/20 py-2 px-4">
             <div className="flex items-center">
               {selectedPart.type === 'card' ? (
@@ -280,10 +302,12 @@ export default function PartPropertySidebar({
                 />
               </div>
             </div>
-            {selectedPart.type === 'card' && selectedPart.isReversible && (
+            {selectedPart.type === 'card' && (
               <div className="flex items-center justify-center mb-2">
                 <span className="text-xs font-medium px-3 py-1 rounded-full bg-blue-100 text-blue-800">
-                  {selectedPart.isFlipped ? '裏面の設定' : '表面の設定'}
+                  {selectedPart.frontSide === 'front'
+                    ? '表面の設定'
+                    : '裏面の設定'}
                 </span>
               </div>
             )}
@@ -477,104 +501,6 @@ export default function PartPropertySidebar({
               </div>
             </div>
           </div>
-          {selectedPart.type === 'card' && (
-            <>
-              <div className="border-b border-gray-200"></div>
-              <div className="flex flex-col gap-2 p-4">
-                <span className="mb-2 text-[11px] font-medium">カード</span>
-                <div className="flex flex-col gap-1">
-                  <p className="text-[9px] font-medium text-gray-500">
-                    反転可能か？
-                  </p>
-                  <div className="flex w-full mb-2">
-                    <Dropdown
-                      value={selectedPart.isReversible ? 'はい' : 'いいえ'}
-                      onChange={(value) => {
-                        dispatch({
-                          type: 'UPDATE_PART',
-                          payload: {
-                            partId: selectedPart.id,
-                            updatePart: { isReversible: value === 'はい' },
-                          },
-                        });
-                      }}
-                      options={['はい', 'いいえ']}
-                    />
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-          {selectedPart.type === 'hand' && (
-            <>
-              <div className="border-b border-gray-200"></div>
-              <div className="flex flex-col gap-2 p-4">
-                <span className="mb-2 text-[11px] font-medium">手札</span>
-                <div className="flex flex-col gap-1">
-                  <p className="text-[9px] font-medium text-gray-500">所有者</p>
-                  <div className="flex w-full mb-2">
-                    <Dropdown
-                      value={
-                        players.find(
-                          (player) => player.id === selectedPart.ownerId
-                        )?.playerName ?? '未設定'
-                      }
-                      onChange={(value) => {
-                        const player = players.find(
-                          (player) => player.playerName === value
-                        );
-                        if (player) {
-                          dispatch({
-                            type: 'UPDATE_PART',
-                            payload: {
-                              partId: selectedPart.id,
-                              updatePart: { ownerId: player.id },
-                            },
-                          });
-                        }
-                      }}
-                      options={[
-                        '未設定',
-                        ...players.map((player) => player.playerName),
-                      ]}
-                    />
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-          {selectedPart.type === 'deck' && (
-            <>
-              <div className="border-b border-gray-200"></div>
-              <div className="flex flex-col gap-2 p-4">
-                <span className="mb-2 text-[11px] font-medium">山札</span>
-                <div className="flex flex-col gap-1">
-                  <p className="text-[9px] font-medium text-gray-500">
-                    カードを裏向きにするか？
-                  </p>
-                  <div className="flex w-full mb-2">
-                    <Dropdown
-                      value={
-                        selectedPart.canReverseCardOnDeck ? 'はい' : 'いいえ'
-                      }
-                      onChange={(value) => {
-                        dispatch({
-                          type: 'UPDATE_PART',
-                          payload: {
-                            partId: selectedPart.id,
-                            updatePart: {
-                              canReverseCardOnDeck: value === 'はい',
-                            },
-                          },
-                        });
-                      }}
-                      options={['はい', 'いいえ']}
-                    />
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
         </div>
       )}
     </>

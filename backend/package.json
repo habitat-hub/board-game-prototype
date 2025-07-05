@@ -14,16 +14,22 @@
     "prepare": "cd ../ && husky backend/.husky",
     "generate-swagger": "ts-node src/scripts/generateSwagger.ts",
     "generate-api-types": "npx swagger-typescript-api generate -p ./swagger-output.json -o ../frontend/src/api/types --extract-request-params --extract-request-body --extract-response-body --modular --axios",
-    "clean-up-unused-images": "ts-node src/scripts/cleanUpUnusedImages.ts"
+    "clean-up-unused-images": "ts-node src/scripts/cleanUpUnusedImages.ts",
+    "seed": "ts-node src/database/seed.ts",
+    "seed:force": "ts-node src/database/seed.ts --force",
+    "seed:verify": "ts-node src/database/verify-seed.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "overrides": {
+    "glob": "^11.0.3",
+    "rimraf": "^4.4.1"
+  },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.799.0",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.1",
-    "@types/socket.io": "^3.0.2",
     "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",

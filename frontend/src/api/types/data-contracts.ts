@@ -34,13 +34,6 @@ export interface Error500Response {
   error: string;
 }
 
-export interface Access {
-  id: number;
-  /** @format uuid */
-  prototypeGroupId: string;
-  name: string;
-}
-
 export interface Image {
   /** @format uuid */
   id: string;
@@ -58,18 +51,14 @@ export interface Part {
   id: number;
   type: 'token' | 'card' | 'hand' | 'deck' | 'area';
   /** @format uuid */
-  prototypeVersionId: string;
-  parentId?: number;
+  prototypeId: string;
   position: Record<string, any>;
   width: number;
   height: number;
   order: number;
-  configurableTypeAsChild: string[];
-  originalPartId?: number;
-  isReversible?: boolean;
-  isFlipped?: boolean;
-  ownerId?: number;
-  canReverseCardOnDeck?: boolean;
+  frontSide?: 'front' | 'back';
+  /** @format uuid */
+  ownerId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -87,14 +76,21 @@ export interface PartProperty {
   updatedAt: string;
 }
 
-export interface Player {
+export interface Permission {
   id: number;
+  name: string;
+  resource: string;
+  action: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Project {
   /** @format uuid */
-  prototypeVersionId: string;
+  id: string;
   /** @format uuid */
-  userId?: string;
-  playerName: string;
-  originalPlayerId?: number;
+  userId: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -103,35 +99,27 @@ export interface Prototype {
   /** @format uuid */
   id: string;
   /** @format uuid */
-  userId: string;
+  projectId: string;
   name: string;
-  type: 'EDIT' | 'PREVIEW';
+  type: 'MASTER' | 'VERSION' | 'INSTANCE';
+  versionNumber: number;
   /** @format uuid */
-  masterPrototypeId?: string;
-  /** @format uuid */
-  groupId: string;
-  minPlayers: number;
-  maxPlayers: number;
+  sourceVersionPrototypeId?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface PrototypeGroup {
-  /** @format uuid */
-  id: string;
-  /** @format uuid */
-  prototypeId: string;
-}
-
-export interface PrototypeVersion {
-  /** @format uuid */
-  id: string;
-  /** @format uuid */
-  prototypeId: string;
-  versionNumber: string;
+export interface Role {
+  id: number;
+  name: string;
   description?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface RolePermission {
+  roleId: number;
+  permissionId: number;
 }
 
 export interface User {
@@ -142,87 +130,16 @@ export interface User {
   updatedAt: string;
 }
 
-export interface UserAccess {
+export interface UserRole {
+  id: number;
   /** @format uuid */
   userId: string;
-  accessId: number;
+  roleId: number;
+  resourceType: string;
+  resourceId: string;
+  createdAt: string;
+  updatedAt: string;
 }
-
-export type LogoutCreateData = SuccessResponse;
-
-export interface UserListData {
-  id?: string;
-  username?: string;
-}
-
-export interface ImagesCreatePayload {
-  /**
-   * アップロードする画像ファイル
-   * @format binary
-   */
-  image?: File;
-}
-
-export type ImagesCreateData = Image;
-
-/** @format binary */
-export type ImagesDetailData = File;
-
-export type ImagesDeleteData = any;
-
-export type PrototypesListData = Prototype[];
-
-export interface PrototypesCreatePayload {
-  name?: string;
-  playerCount?: number;
-}
-
-export type PrototypesCreateData = Prototype;
-
-export type PrototypesDetailData = Prototype;
-
-export interface PrototypesUpdatePayload {
-  name?: string;
-  minPlayers?: number;
-  maxPlayers?: number;
-}
-
-export type PrototypesUpdateData = Prototype;
-
-export type PrototypesDeleteData = SuccessResponse;
-
-export interface PrototypesVersionsListData {
-  prototype: Prototype;
-  versions: PrototypeVersion[];
-}
-
-export type PrototypesGroupsDetailData = {
-  prototype: Prototype;
-  versions: PrototypeVersion[];
-}[];
-
-export type PrototypesGroupsAccessUsersListData = User[];
-
-export interface PrototypesGroupsInviteCreatePayload {
-  guestIds?: string[];
-}
-
-export type PrototypesGroupsInviteCreateData = SuccessResponse;
-
-export type PrototypesGroupsInviteDeleteData = SuccessResponse;
-
-export type PrototypesDuplicateCreateData = SuccessResponse;
-
-export type PrototypesPreviewCreateData = Prototype;
-
-export interface PrototypesVersionsCreatePayload {
-  /** 新しいバージョンの説明 */
-  description?: string;
-}
-
-export type PrototypesVersionsCreateData = SuccessResponse;
-
-export type PrototypesVersionsDeleteData = SuccessResponse;
 
 export interface UsersSearchListParams {
   /** 検索するユーザー名 */
@@ -237,3 +154,130 @@ export interface UsersUpdatePayload {
 }
 
 export type UsersUpdateData = User;
+
+export interface PrototypesDetailData {
+  prototype?: Prototype;
+}
+
+export interface PrototypesUpdatePayload {
+  name?: string;
+  minPlayers?: number;
+  maxPlayers?: number;
+}
+
+export type PrototypesUpdateData = Prototype;
+
+export type PrototypesDeleteData = SuccessResponse;
+
+export type ProjectsListData = {
+  project?: Project;
+  prototypes?: Prototype[];
+}[];
+
+export interface ProjectsCreatePayload {
+  name?: string;
+}
+
+export type ProjectsCreateData = Project;
+
+export interface ProjectsVersionCreatePayload {
+  name?: string;
+  versionNumber?: number;
+}
+
+export type ProjectsVersionCreateData = Prototype;
+
+export interface ProjectsDetailData {
+  project?: Project;
+  prototypes?: Prototype[];
+}
+
+export type ProjectsDeleteData = SuccessResponse;
+
+export type ProjectsAccessUsersListData = User[];
+
+export interface ProjectsInviteCreatePayload {
+  /** 招待するユーザーのIDリスト */
+  guestIds?: string[];
+  /**
+   * 付与するロールタイプ（admin：管理者、editor：編集者、viewer：閲覧者）
+   * @default "editor"
+   */
+  roleType?: 'admin' | 'editor' | 'viewer';
+}
+
+export type ProjectsInviteCreateData = SuccessResponse;
+
+export type ProjectsInviteDeleteData = SuccessResponse;
+
+export type ProjectsDuplicateCreateData = SuccessResponse;
+
+export type ProjectsMembersListData = {
+  userId?: string;
+  roles?: {
+    name?: string;
+    description?: string;
+  }[];
+}[];
+
+export type ProjectsRolesListData = {
+  userId?: string;
+  user?: User;
+  roles?: {
+    name?: string;
+    description?: string;
+  }[];
+}[];
+
+export interface ProjectsRolesCreatePayload {
+  userId?: string;
+  roleName?: 'admin' | 'editor' | 'viewer';
+}
+
+export type ProjectsRolesCreateData = any;
+
+export type ProjectsRolesDeleteData = any;
+
+export interface ProjectsRolesUpdatePayload {
+  roleName?: 'admin' | 'editor' | 'viewer';
+}
+
+export type ProjectsRolesUpdateData = any;
+
+export interface ImagesCreatePayload {
+  /**
+   * アップロードする画像ファイル
+   * @format binary
+   */
+  image?: File;
+}
+
+export type ImagesCreateData = Image;
+
+/** @format binary */
+export type ImagesDetailData = File;
+
+export interface ImagesDeleteParams {
+  /** プロトタイプID */
+  prototypeId: string;
+  /** パーツID */
+  partId: number;
+  /** 面（front または back） */
+  side: 'front' | 'back';
+  /**
+   * 更新をemitするかどうか（デフォルトはfalse）
+   * @default false
+   */
+  emitUpdate: 'true' | 'false';
+  /** 削除する画像のID */
+  imageId: string;
+}
+
+export type ImagesDeleteData = any;
+
+export type LogoutCreateData = SuccessResponse;
+
+export interface UserListData {
+  id?: string;
+  username?: string;
+}

@@ -2,12 +2,13 @@
 
 import React, { useState } from 'react';
 
-import { Part, PartProperty, Player } from '@/api/types';
+import { Part, PartProperty } from '@/api/types';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { useMemoryUsage } from '@/features/prototype/hooks/useMemoryUsage';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { useRenderPerformance } from '@/features/prototype/hooks/useRenderPerformance';
 import { CursorInfo } from '@/features/prototype/types/cursor';
+import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
 
 interface DebugInfoProps {
   // Camera info
@@ -18,30 +19,26 @@ interface DebugInfoProps {
   };
   // Prototype info
   prototypeName: string;
-  prototypeVersionNumber: string;
-  isMasterPreview: boolean;
-  groupId: string;
-  prototypeType: 'EDIT' | 'PREVIEW';
+  prototypeVersionNumber: number;
+  projectId: string;
   // Data
   parts: Part[];
   properties: PartProperty[];
-  players: Player[];
   cursors: Record<string, CursorInfo>;
   selectedPartIds: number[];
+  mode: GameBoardMode;
 }
 
 const DebugInfo: React.FC<DebugInfoProps> = ({
   camera,
   prototypeName,
   prototypeVersionNumber,
-  isMasterPreview,
-  groupId,
-  prototypeType,
+  projectId,
   parts,
   properties,
-  players,
   cursors,
   selectedPartIds,
+  mode,
 }) => {
   const { showDebugInfo } = useDebugMode();
 
@@ -70,6 +67,9 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
           <div className="text-sm h-[50vh] overflow-y-auto">
             <div className="border-b border-white border-opacity-20 mb-2 pb-1">
               <strong>Current Status</strong>
+            </div>
+            <div className="mb-1.5">
+              <span className="font-bold">Mode:</span> {mode}
             </div>
             <div
               className={`font-bold mb-1.5 ${selectedPartIds.length ? 'text-yellow-400' : 'text-white'}`}
@@ -111,22 +111,10 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
             </div>
             <div>Name: {prototypeName}</div>
             <div>Version: {prototypeVersionNumber || 'N/A'}</div>
-            <div>Group ID: {groupId}</div>
-            <div>Type: {prototypeType}</div>
-            <div>Is Master Preview: {isMasterPreview ? 'Yes' : 'No'}</div>
+            <div>Project ID: {projectId}</div>
 
             <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
               <strong>Multiplayer</strong>
-            </div>
-            <div className="mb-2">
-              <div className="font-semibold">Players: {players.length}</div>
-              {players.length > 0 && (
-                <div className="ml-2.5 text-xs">
-                  <div>
-                    Names: {players.map((p) => p.playerName).join(', ')}
-                  </div>
-                </div>
-              )}
             </div>
             <div>
               <div className="font-semibold">
@@ -253,20 +241,11 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
                     Types: {[...new Set(parts.map((p) => p.type))].join(', ')}
                   </div>
                   <div>
-                    With Parent: {parts.filter((p) => p.parentId).length}
-                  </div>
-                  <div>
-                    Reversible Cards:{' '}
+                    Front Side Cards:{' '}
                     {
-                      parts.filter((p) => p.type === 'card' && p.isReversible)
-                        .length
-                    }
-                  </div>
-                  <div>
-                    Flipped Cards:{' '}
-                    {
-                      parts.filter((p) => p.type === 'card' && p.isFlipped)
-                        .length
+                      parts.filter(
+                        (p) => p.type === 'card' && p.frontSide === 'front'
+                      ).length
                     }
                   </div>
                   <div>
@@ -330,30 +309,11 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
                             ? part.order.toFixed(3)
                             : 'N/A'}
                         </div>
-                        <div>Version ID: {part.prototypeVersionId}</div>
-                        {part.parentId !== undefined &&
-                          part.parentId !== null && (
-                            <div>Parent ID: {part.parentId}</div>
-                          )}
-                        {part.originalPartId !== undefined &&
-                          part.originalPartId !== null && (
-                            <div>Original ID: {part.originalPartId}</div>
-                          )}
-                        <div>
-                          Child Types: [
-                          {part.configurableTypeAsChild.join(', ')}]
-                        </div>
+                        <div>Version ID: {part.prototypeId}</div>
                         {part.type === 'card' && (
                           <>
-                            {part.isReversible !== undefined && (
-                              <div>
-                                Reversible: {part.isReversible ? 'Yes' : 'No'}
-                              </div>
-                            )}
-                            {part.isFlipped !== undefined && (
-                              <div>
-                                Flipped: {part.isFlipped ? 'Yes' : 'No'}
-                              </div>
+                            {part.frontSide !== undefined && (
+                              <div>Front Side: {part.frontSide}</div>
                             )}
                           </>
                         )}
@@ -361,13 +321,6 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
                           part.ownerId !== undefined &&
                           part.ownerId !== null && (
                             <div>Owner ID: {part.ownerId}</div>
-                          )}
-                        {part.type === 'deck' &&
-                          part.canReverseCardOnDeck !== undefined && (
-                            <div>
-                              Can Reverse Cards:{' '}
-                              {part.canReverseCardOnDeck ? 'Yes' : 'No'}
-                            </div>
                           )}
 
                         {/* このパーツのプロパティ */}

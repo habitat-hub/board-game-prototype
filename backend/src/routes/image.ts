@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import { uploadImageToS3 } from '../services/imageUploadService';
 import { fetchImageFromS3 } from '../services/imageFetchService';
-import { deleteImageFromS3 } from '../services/imageDeleteService';
+import { cleanupImageIfUnused } from '../services/imageCleanupService';
 import { pipeline } from 'stream/promises';
 
 import ImageModel from '../models/Image';
@@ -12,6 +12,7 @@ import {
   UnauthorizedError,
   NotFoundError,
 } from '../errors/CustomError';
+import { fetchPartsAndProperties } from '../socket/prototypeHandler';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() }); // バッファとして読み込み
@@ -187,8 +188,35 @@ router.get(
  *         description: 削除する画像のID
  *         schema:
  *           type: string
+ *       - name: prototypeId
+ *         in: query
+ *         required: true
+ *         description: プロトタイプID
+ *         schema:
+ *           type: string
+ *       - name: partId
+ *         in: query
+ *         required: true
+ *         description: パーツID
+ *         schema:
+ *           type: number
+ *       - name: side
+ *         in: query
+ *         required: true
+ *         description: 面（front または back）
+ *         schema:
+ *           type: string
+ *           enum: [front, back]
+ *       - name: emitUpdate
+ *         in: query
+ *         required: true
+ *         description: 更新をemitするかどうか（デフォルトはfalse）
+ *         schema:
+ *           type: string
+ *           enum: [true, false]
+ *           default: false
  *     responses:
- *       '204':
+ *       '200':
  *         description: 画像が正常に削除されました
  *       '400':
  *         description: Image ID が指定されていない、またはリクエストが不正です
@@ -219,9 +247,14 @@ router.delete(
   '/:imageId',
   async (req: Request, res: Response, next: NextFunction) => {
     const { imageId } = req.params;
+    const { prototypeId, partId, side, emitUpdate } = req.query; // クエリパラメータから取得
     try {
       if (!imageId) {
         throw new ValidationError('Image ID が指定されていません');
+      }
+
+      if (!prototypeId || !partId || !side) {
+        throw new ValidationError('prototypeId、partId、sideの指定が必要です');
       }
       // TODO: 画像のアクセス権を確認するロジックを追加(例: ユーザーがその画像にアクセスできるかどうか)
       // ここでは単純にユーザーが認証されているかどうかを確認
@@ -232,10 +265,25 @@ router.delete(
       if (!image) {
         throw new NotFoundError('指定された画像が存在しません');
       }
-      await deleteImageFromS3(image.storagePath);
-      // 画像のメタデータをDBから削除
-      await image.destroy();
-      res.status(204).send();
+      const result = await cleanupImageIfUnused(
+        imageId,
+        String(partId),
+        side as 'front' | 'back'
+      );
+      // UPDATE_PARTSをemit
+      const io = req.app.get('io');
+      if (io && emitUpdate === 'true') {
+        // emitUpdateが"true"の場合はemitする
+        const { parts, properties } = await fetchPartsAndProperties(
+          prototypeId as string
+        );
+
+        io.to(prototypeId as string).emit('UPDATE_PARTS', {
+          parts,
+          properties,
+        });
+      }
+      res.status(200).json(result);
     } catch (error) {
       next(error);
     }

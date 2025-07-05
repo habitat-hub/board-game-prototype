@@ -28,7 +28,7 @@ export interface KonvaPartContextMenuProps {
 
 /**
  * Konvaパーツで使用するコンテキストメニューコンポーネント
- * Part2.tsxの外部に定義された独立したコンポーネント
+ * Part.tsxの外部に定義された独立したコンポーネント
  */
 export const KonvaPartContextMenu: React.FC<KonvaPartContextMenuProps> = ({
   visible,

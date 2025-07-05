@@ -1,24 +1,20 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
-import User from './User';
+import ProjectModel from './Project';
 
 class PrototypeModel extends Model {
   // ID
   public id!: string;
-  // ユーザーID
-  public userId!: string;
-  // 名前
+  // プロジェクトID
+  public projectId!: string;
+  // プロトタイプ名
   public name!: string;
-  // タイプ
-  public type!: 'EDIT' | 'PREVIEW';
-  // マスタープロトタイプID
-  public masterPrototypeId!: string | null;
-  // グループID
-  public groupId!: string;
-  // 最小プレイヤー数
-  public minPlayers!: number;
-  // 最大プレイヤー数
-  public maxPlayers!: number;
+  // プロトタイプタイプ
+  public type!: 'MASTER' | 'VERSION' | 'INSTANCE';
+  // バージョン番号
+  public versionNumber!: number;
+  // 紐付くバージョンID（INSTANCE用）
+  public sourceVersionPrototypeId?: string;
 }
 
 PrototypeModel.init(
@@ -29,33 +25,38 @@ PrototypeModel.init(
       primaryKey: true,
       allowNull: false,
     },
-    userId: {
+    projectId: {
       type: DataTypes.UUID,
       allowNull: false,
+      references: {
+        model: 'Projects',
+        key: 'id',
+      },
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
     },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
     },
     type: {
-      type: DataTypes.ENUM('EDIT', 'PREVIEW'),
+      type: DataTypes.ENUM('MASTER', 'VERSION', 'INSTANCE'),
       allowNull: false,
     },
-    masterPrototypeId: {
+    versionNumber: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    sourceVersionPrototypeId: {
       type: DataTypes.UUID,
       allowNull: true,
-    },
-    groupId: {
-      type: DataTypes.UUID,
-      allowNull: false,
-    },
-    minPlayers: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    maxPlayers: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
+      references: {
+        model: 'Prototypes',
+        key: 'id',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+      comment: 'このインスタンスがどのバージョンから作られたか',
     },
   },
   {
@@ -67,20 +68,19 @@ PrototypeModel.init(
         fields: ['id'],
       },
       {
-        fields: ['userId'],
-      },
-      {
-        fields: ['masterPrototypeId'],
+        fields: ['projectId'],
       },
     ],
   }
 );
 
-PrototypeModel.belongsTo(User, { foreignKey: 'userId', onDelete: 'CASCADE' });
-User.hasMany(PrototypeModel, { foreignKey: 'userId', onDelete: 'CASCADE' });
-PrototypeModel.belongsTo(PrototypeModel, {
-  as: 'masterPrototype',
-  foreignKey: 'masterPrototypeId',
+// Projectとの関連付け
+PrototypeModel.belongsTo(ProjectModel, {
+  foreignKey: 'projectId',
+  onDelete: 'CASCADE',
+});
+ProjectModel.hasMany(PrototypeModel, {
+  foreignKey: 'projectId',
   onDelete: 'CASCADE',
 });
 

@@ -2,6 +2,8 @@ import { useCallback } from 'react';
 
 import { imagesService } from '@/api/endpoints/images';
 
+import { ImagesDeleteParams } from '../types';
+
 export const useImages = () => {
   /**
    * 画像取得
@@ -20,9 +22,12 @@ export const useImages = () => {
   /**
    * 画像削除
    */
-  const deleteImage = useCallback(async (imageId: string) => {
-    return await imagesService.deleteImage(imageId);
-  }, []);
+  const deleteImage = useCallback(
+    async (imageId: string, params: Omit<ImagesDeleteParams, 'imageId'>) => {
+      return await imagesService.deleteImage(imageId, params);
+    },
+    []
+  );
 
   return {
     fetchImage,

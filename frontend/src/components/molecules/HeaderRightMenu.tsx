@@ -6,6 +6,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/api/hooks/useAuth';
 import { useUser } from '@/hooks/useUser';
 
+import Button from '../atoms/Button';
+
 // フィードバックフォームのURL
 const FEEDBACK_FORM_URL = 'https://forms.gle/XjMV2WgFRCJg7cHj7';
 
@@ -60,24 +62,25 @@ const HeaderRightMenu: React.FC<HeaderRightMenuProps> = ({ pathname }) => {
 
   return (
     <div className="relative z-50" ref={logoutRef}>
-      <button
+      <Button
+        size="sm"
         onClick={() => setShowLogout(!showLogout)}
-        className="hover:text-amber-200 transition-colors duration-200 px-4 py-1.5 border border-amber-400/30 rounded-full flex items-center gap-2 bg-amber-700/40"
+        className="border-kibako-white/30 border"
       >
-        <span className="text-amber-100">{user.username}</span>
-      </button>
+        <span>{user.username}</span>
+      </Button>
 
       {showLogout && (
-        <div className="absolute right-0 top-full w-48 flex flex-col mt-2 shadow-xl rounded-lg overflow-hidden bg-amber-50 border border-amber-200 z-50">
+        <div className="absolute right-0 top-full w-48 flex flex-col mt-2 shadow-xl rounded-lg overflow-hidden bg-kibako-tertiary border border-kibako-secondary/30">
           <Link
-            href="/prototypes"
-            className="block w-full text-amber-900 p-2.5 text-left hover:bg-amber-100 transition-colors duration-200"
+            href="/projects"
+            className="block w-full text-kibako-primary p-2 text-left hover:bg-kibako-secondary/10 transition-colors duration-200"
           >
             プロトタイプ一覧
           </Link>
           <Link
             href="/profile/edit"
-            className="block w-full text-amber-900 p-2.5 text-left hover:bg-amber-100 transition-colors duration-200"
+            className="block w-full text-kibako-primary p-2 text-left hover:bg-kibako-secondary/10 transition-colors duration-200"
           >
             プロフィール編集
           </Link>
@@ -85,13 +88,13 @@ const HeaderRightMenu: React.FC<HeaderRightMenuProps> = ({ pathname }) => {
             href={FEEDBACK_FORM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full text-amber-900 p-2.5 text-left hover:bg-amber-100 transition-colors duration-200"
+            className="block w-full text-kibako-primary p-2 text-left hover:bg-kibako-secondary/10 transition-colors duration-200"
           >
             フィードバック
           </a>
           <button
             onClick={handleLogout}
-            className="block w-full text-amber-900 p-2.5 text-left hover:bg-amber-100 transition-colors duration-200"
+            className="block w-full text-kibako-primary p-2 text-left hover:bg-kibako-secondary/10 transition-colors duration-200"
           >
             ログアウト
           </button>

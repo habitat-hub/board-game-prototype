@@ -17,9 +17,15 @@ import path from 'path';
 dotenv.config();
 
 import sequelize from './models';
+
+// 関連付けを最初に設定（ルートインポート前に実行）
+import { setupAssociations } from './database/associations';
+setupAssociations();
+
 import UserModel from './models/User';
 import authRoutes from './routes/auth';
 import prototypeRoutes from './routes/prototype';
+import projectRoutes from './routes/project';
 import userRoutes from './routes/user';
 import imageRoutes from './routes/image';
 import handlePrototype from './socket/prototypeHandler';
@@ -29,6 +35,9 @@ import { errorHandler } from './middlewares/errorHandler';
 const app = express();
 const server = http.createServer(app);
 const PORT = 8080;
+
+console.log('🚀 Starting Board Game Prototype Server...');
+console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
 
 // 開発環境でのみSwagger UIを有効にする
 if (process.env.NODE_ENV === 'development') {
@@ -84,10 +93,30 @@ const io = new Server(server, {
   },
 });
 
+app.set('io', io);
+
 // データベース接続
-sequelize.sync().then(() => {
-  console.log('Database connected');
-});
+sequelize
+  .sync()
+  .then(async () => {
+    console.log('✅ Database connected successfully');
+
+    // データベースの初期化が必要かチェックして実行
+    try {
+      const { initializeDatabaseIfNeeded } = await import(
+        './database/initializer'
+      );
+      await initializeDatabaseIfNeeded();
+      console.log('🚀 Server is ready to accept connections');
+    } catch (error) {
+      console.error('❌ Failed to initialize database:', error);
+      process.exit(1); // データベース初期化に失敗した場合はアプリケーションを終了
+    }
+  })
+  .catch((error) => {
+    console.error('❌ Failed to connect to database:', error);
+    process.exit(1); // データベース接続に失敗した場合はアプリケーションを終了
+  });
 
 // CORS設定
 app.use(
@@ -153,8 +182,8 @@ passport.use(
   )
 );
 
-passport.serializeUser((user: any, done) => {
-  done(null, user.id);
+passport.serializeUser((user: Express.User, done) => {
+  done(null, (user as UserModel).id);
 });
 passport.deserializeUser((id: number | number, done) => {
   UserModel.findByPk(id).then((user) => {
@@ -165,6 +194,7 @@ passport.deserializeUser((id: number | number, done) => {
 // ルーティング設定
 app.use('/auth', authRoutes);
 app.use('/api/prototypes', prototypeRoutes);
+app.use('/api/projects', projectRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/images', imageRoutes);
 
@@ -181,5 +211,11 @@ io.on('connection', (socket: Socket) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`🌐 Server is running on port ${PORT}`);
+  console.log(`📡 Socket.IO is ready for real-time connections`);
+  if (process.env.NODE_ENV === 'development') {
+    console.log(
+      `📚 API Documentation available at: http://localhost:${PORT}/api-docs`
+    );
+  }
 });

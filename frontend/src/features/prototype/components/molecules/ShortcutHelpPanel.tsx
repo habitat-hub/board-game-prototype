@@ -9,17 +9,25 @@ import { IoClose, IoInformationCircleOutline } from 'react-icons/io5';
 
 type ShortcutInfo = {
   id: string;
-  key: string; // ショートカットキーやアクション
-  description: string; // 説明文
+  key: string;
+  description: string;
 };
 
-interface ShortcutHelpPanelProps {
-  shortcuts: ShortcutInfo[];
-}
+//ショートカット情報の定義
+const SHORTCUTS: ShortcutInfo[] = [
+  {
+    id: 'multi-select',
+    key: 'Shift + クリック',
+    description: '複数のパーツを選択できます',
+  },
+  {
+    id: 'delete',
+    key: 'Delete / Backspace',
+    description: '選択中のパーツを削除します',
+  },
+];
 
-export default function ShortcutHelpPanel({
-  shortcuts,
-}: ShortcutHelpPanelProps) {
+export default function ShortcutHelpPanel() {
   const [isExpanded, setIsExpanded] = useState(false);
 
   // キーボードショートカットのハンドラを追加
@@ -40,7 +48,7 @@ export default function ShortcutHelpPanel({
   }, []);
 
   return (
-    <div className="fixed left-[18rem] top-[1.75rem] z-50">
+    <div className="fixed left-[20rem] top-[1.75rem] z-50">
       <div className="relative">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
@@ -92,7 +100,7 @@ export default function ShortcutHelpPanel({
                       ショートカットヘルプを開閉する
                     </td>
                   </tr>
-                  {shortcuts.map((shortcut) => (
+                  {SHORTCUTS.map((shortcut) => (
                     <tr
                       key={shortcut.id}
                       className="border-b border-wood-light/10 last:border-b-0"

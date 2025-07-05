@@ -1,16 +1,15 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
-import PrototypeVersionModel from './PrototypeVersion';
+import PrototypeModel from './Prototype';
+import UserModel from './User';
 
 class PartModel extends Model {
   // ID
   public id!: number;
   // タイプ
   public type!: 'token' | 'card' | 'hand' | 'deck' | 'area';
-  // プロトタイプバージョンID
-  public prototypeVersionId!: string;
-  // 親パーツID
-  public parentId!: number | null;
+  // プロトタイプID
+  public prototypeId!: string;
   // 位置
   public position!: { x: number; y: number };
   // 幅
@@ -19,27 +18,16 @@ class PartModel extends Model {
   public height!: number;
   // 表示順
   public order!: number;
-  // 子パーツとして設定可能なパーツタイプ
-  public configurableTypeAsChild!: string[];
-  // 元のパーツID
-  public originalPartId: number | undefined;
   /**
    * カード
    */
-  // 裏返し可能か
-  public isReversible: boolean | undefined;
-  // 裏向きか
-  public isFlipped: boolean | undefined;
+  // 表面
+  public frontSide!: 'front' | 'back';
   /**
    * 手札
    */
-  // 所有者ID
-  public ownerId: number | undefined;
-  /**
-   * 山札
-   */
-  // 山札の上でカードを裏返し可能か
-  public canReverseCardOnDeck: boolean | undefined;
+  // 所有者ID (ユーザーID)
+  public ownerId: string | undefined;
 }
 
 PartModel.init(
@@ -53,13 +41,15 @@ PartModel.init(
       type: DataTypes.ENUM('token', 'card', 'hand', 'deck', 'area'),
       allowNull: false,
     },
-    prototypeVersionId: {
+    prototypeId: {
       type: DataTypes.UUID,
       allowNull: false,
-    },
-    parentId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
+      references: {
+        model: 'Prototypes',
+        key: 'id',
+      },
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
     },
     position: {
       type: DataTypes.JSON,
@@ -77,29 +67,19 @@ PartModel.init(
       type: DataTypes.FLOAT,
       allowNull: false,
     },
-    configurableTypeAsChild: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      allowNull: false,
-    },
-    originalPartId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    isReversible: {
-      type: DataTypes.BOOLEAN,
-      allowNull: true,
-    },
-    isFlipped: {
-      type: DataTypes.BOOLEAN,
+    frontSide: {
+      type: DataTypes.ENUM('front', 'back'),
       allowNull: true,
     },
     ownerId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: true,
-    },
-    canReverseCardOnDeck: {
-      type: DataTypes.BOOLEAN,
-      allowNull: true,
+      references: {
+        model: 'Users',
+        key: 'id',
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
     },
   },
   {
@@ -108,12 +88,21 @@ PartModel.init(
   }
 );
 
-PartModel.belongsTo(PrototypeVersionModel, {
-  foreignKey: 'prototypeVersionId',
+PartModel.belongsTo(PrototypeModel, {
+  foreignKey: 'prototypeId',
   onDelete: 'CASCADE',
 });
-PrototypeVersionModel.hasMany(PartModel, {
-  foreignKey: 'prototypeVersionId',
+PrototypeModel.hasMany(PartModel, {
+  foreignKey: 'prototypeId',
+});
+
+PartModel.belongsTo(UserModel, {
+  foreignKey: 'ownerId',
+  onDelete: 'SET NULL',
+});
+UserModel.hasMany(PartModel, {
+  foreignKey: 'ownerId',
+  onDelete: 'SET NULL',
 });
 
 export default PartModel;
