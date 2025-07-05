@@ -200,11 +200,11 @@ export class Api<
       ...params,
     });
   /**
-   * @description 指定されたIDのプロジェクトに属するプロトタイプの一覧を取得します。
+   * @description 指定されたIDのプロジェクトの詳細情報と、そのプロジェクトに属するプロトタイプの一覧を取得します。
    *
    * @tags Projects
    * @name ProjectsDetail
-   * @summary 特定のプロジェクトに属するプロトタイプ一覧取得
+   * @summary 特定のプロジェクトの詳細とプロトタイプ一覧取得
    * @request GET:/api/projects/{projectId}
    */
   projectsDetail = (projectId: string, params: RequestParams = {}) =>

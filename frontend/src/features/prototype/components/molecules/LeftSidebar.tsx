@@ -42,14 +42,18 @@ export default function LeftSidebar({
    */
   const getPrototypes = useCallback(async () => {
     try {
-      const { project, prototypes } = await getProject(projectId);
+      const project = await getProject(projectId);
 
       // マスター版プロトタイプ
-      const master = prototypes.find(({ type }) => type === 'MASTER');
+      const master = project.prototypes.find(({ type }) => type === 'MASTER');
       // バージョン版プロトタイプ
-      const versions = prototypes.filter(({ type }) => type === 'VERSION');
+      const versions = project.prototypes.filter(
+        ({ type }) => type === 'VERSION'
+      );
       // インスタンス版プロトタイプ
-      const instances = prototypes.filter(({ type }) => type === 'INSTANCE');
+      const instances = project.prototypes.filter(
+        ({ type }) => type === 'INSTANCE'
+      );
 
       // バージョンごとにインスタンスをまとめる
       const instancesByVersion: Record<string, Prototype[]> = {};

@@ -206,8 +206,8 @@ router.post(
  * /api/projects/{projectId}:
  *   get:
  *     tags: [Projects]
- *     summary: 特定のプロジェクトに属するプロトタイプ一覧取得
- *     description: 指定されたIDのプロジェクトに属するプロトタイプの一覧を取得します。
+ *     summary: 特定のプロジェクトの詳細とプロトタイプ一覧取得
+ *     description: 指定されたIDのプロジェクトの詳細情報と、そのプロジェクトに属するプロトタイプの一覧を取得します。
  *     parameters:
  *       - name: projectId
  *         in: path
@@ -217,18 +217,18 @@ router.post(
  *           type: string
  *     responses:
  *       '200':
- *         description: プロジェクトに属するプロトタイプの一覧を返します
+ *         description: プロジェクトと関連するプロトタイプの情報を返します
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 project:
- *                   $ref: '#/components/schemas/Project'
- *                 prototypes:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Prototype'
+ *               allOf:
+ *                 - $ref: '#/components/schemas/Project'
+ *                 - type: object
+ *                   properties:
+ *                     prototypes:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Prototype'
  *       '404':
  *         description: プロジェクトが見つかりません
  *         content:
@@ -252,25 +252,7 @@ router.get(
         return;
       }
 
-      // レスポンス形式を従来と同じにするため、projectとprototypesに分離
-      const projectData = project.toJSON() as {
-        id: string;
-        userId: string;
-        createdAt: string;
-        updatedAt: string;
-        prototypes?: unknown[];
-      };
-      const response = {
-        project: {
-          id: project.id,
-          userId: project.userId,
-          createdAt: projectData.createdAt,
-          updatedAt: projectData.updatedAt,
-        },
-        prototypes: projectData.prototypes || [],
-      };
-
-      res.json(response);
+      res.json(project.toJSON());
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: '予期せぬエラーが発生しました' });

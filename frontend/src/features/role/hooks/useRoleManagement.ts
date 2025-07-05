@@ -101,15 +101,15 @@ export const useRoleManagement = (projectId: string) => {
   // プロジェクト詳細を取得
   const fetchProjectDetail = useCallback(async () => {
     try {
-      const response = await getProject(projectId);
-      setProjectDetail(response);
+      const project = await getProject(projectId);
+      setProjectDetail(project);
 
       // 作成者の情報を取得
-      if (response.project?.userId) {
+      if (project.userId) {
         try {
           const usersResponse = await searchUsers({ username: '' });
           const creatorUser = usersResponse.find(
-            (user) => user.id === response.project?.userId
+            (user) => user.id === project.userId
           );
           if (creatorUser) {
             setCreator(creatorUser);
@@ -174,12 +174,12 @@ export const useRoleManagement = (projectId: string) => {
   const canRemoveUserRole = useCallback(
     (targetUserId: string, userRoles: UserRole[]) => {
       // 現在のユーザー情報がない場合は削除不可
-      if (!currentUser || !projectDetail || !projectDetail.project) {
+      if (!currentUser || !projectDetail) {
         return { canRemove: false, reason: 'ユーザー情報が取得できません' };
       }
 
       // プロジェクトの作成者の場合は削除不可
-      if (projectDetail.project.userId === targetUserId) {
+      if (projectDetail.userId === targetUserId) {
         return {
           canRemove: false,
           reason: 'プロジェクトの作成者のロールは削除できません',
