@@ -4,7 +4,7 @@ import { projectService } from '@/api/endpoints/project';
 import {
   ProjectsCreatePayload,
   ProjectsInviteCreatePayload,
-  ProjectsRoomCreatePayload,
+  ProjectsVersionsCreatePayload,
 } from '@/api/types';
 
 export const useProject = () => {
@@ -23,21 +23,24 @@ export const useProject = () => {
   }, []);
 
   /**
-   * プロトタイプルーム作成
+   * プロトタイプバージョン作成
    */
-  const createPrototypeRoom = useCallback(
-    async (projectId: string, data: ProjectsRoomCreatePayload) => {
-      return await projectService.createPrototypeRoom(projectId, data);
+  const createPrototypeVersion = useCallback(
+    async (projectId: string, data: ProjectsVersionsCreatePayload) => {
+      return await projectService.createPrototypeVersion(projectId, data);
     },
     []
   );
 
   /**
-   * プロトタイプルーム削除
+   * プロトタイプバージョン削除
    */
-  const deletePrototypeRoom = useCallback(
-    async (projectId: string, versionNumber: number) => {
-      return await projectService.deletePrototypeRoom(projectId, versionNumber);
+  const deletePrototypeVersion = useCallback(
+    async (projectId: string, prototypeId: string) => {
+      return await projectService.deletePrototypeVersion(
+        projectId,
+        prototypeId
+      );
     },
     []
   );
@@ -123,7 +126,6 @@ export const useProject = () => {
   return {
     getProjects,
     createProject,
-    createPrototypeRoom,
     getProject,
     getAccessUsersByProject,
     inviteToProject,
@@ -133,6 +135,7 @@ export const useProject = () => {
     addRoleToProject,
     removeRoleFromProject,
     updateRoleInProject,
-    deletePrototypeRoom,
+    createPrototypeVersion,
+    deletePrototypeVersion,
   };
 };

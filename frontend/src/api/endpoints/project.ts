@@ -4,8 +4,9 @@ import {
   Project,
   ProjectsCreatePayload,
   ProjectsInviteCreatePayload,
-  ProjectsRoomCreatePayload,
   User,
+  ProjectsVersionsCreatePayload,
+  ProjectsVersionsCreateData,
 } from '../types';
 
 export const projectService = {
@@ -34,27 +35,27 @@ export const projectService = {
     return response.data;
   },
   /**
-   * プロトタイプルーム作成
+   * プロトタイプバージョン作成
    */
-  createPrototypeRoom: async (
+  createPrototypeVersion: async (
     projectId: string,
-    data: ProjectsRoomCreatePayload
-  ): Promise<Prototype> => {
+    data: ProjectsVersionsCreatePayload
+  ): Promise<ProjectsVersionsCreateData> => {
     const response = await axiosInstance.post(
-      `/api/projects/${projectId}/room`,
+      `/api/projects/${projectId}/versions`,
       data
     );
     return response.data;
   },
   /**
-   * プロトタイプルーム削除
+   * プロトタイプバージョン削除
    */
-  deletePrototypeRoom: async (
+  deletePrototypeVersion: async (
     projectId: string,
-    versionNumber: number
+    prototypeId: string
   ): Promise<void> => {
     const response = await axiosInstance.delete(
-      `/api/projects/${projectId}/room?versionNumber=${versionNumber}`
+      `/api/projects/${projectId}/versions/${prototypeId}`
     );
     return response.data;
   },

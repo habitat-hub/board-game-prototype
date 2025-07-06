@@ -125,7 +125,7 @@ router.post('/', async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /api/projects/{projectId}/room:
+ * /api/projects/{projectId}/versions:
  *   post:
  *     tags: [Projects]
  *     summary: プロトタイプルーム作成
@@ -146,15 +146,27 @@ router.post('/', async (req: Request, res: Response) => {
  *             properties:
  *               name:
  *                 type: string
- *               versionNumber:
- *                 type: integer
+ *                 description: プロトタイプ名
+ *             required:
+ *               - name
  *     responses:
- *       '200':
+ *       '201':
  *         description: プロトタイプルームを作成しました
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Prototype'
+ *               type: object
+ *               properties:
+ *                 version:
+ *                   $ref: '#/components/schemas/Prototype'
+ *                 instance:
+ *                   $ref: '#/components/schemas/Prototype'
+ *       '400':
+ *         description: リクエストが不正です
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error400Response'
  *       '404':
  *         description: プロジェクトが見つかりません
  *         content:
@@ -169,13 +181,13 @@ router.post('/', async (req: Request, res: Response) => {
  *               $ref: '#/components/schemas/Error500Response'
  */
 router.post(
-  '/:projectId/room',
+  '/:projectId/versions',
   checkProjectReadPermission,
   async (req: Request, res: Response) => {
-    const { name, versionNumber } = req.body;
-    if (!name || !versionNumber) {
+    const { name } = req.body;
+    if (!name) {
       res.status(400).json({
-        error: 'プロトタイプ名、バージョン番号が必要です',
+        error: 'プロトタイプ名が必要です',
       });
       return;
     }
@@ -187,7 +199,7 @@ router.post(
         await createPrototypeVersion({
           projectId: req.params.projectId,
           name,
-          versionNumber,
+          versionNumber: 0, // NOTE: versionNumberは今後削除予定
           transaction,
         });
       await transaction.commit();
@@ -204,7 +216,7 @@ router.post(
 
 /**
  * @swagger
- * /api/projects/{projectId}/room:
+ * /api/projects/{projectId}/versions/{prototypeId}:
  *   delete:
  *     tags: [Projects]
  *     summary: プロトタイプルーム削除
@@ -216,12 +228,12 @@ router.post(
  *         description: プロジェクトのID
  *         schema:
  *           type: string
- *       - name: versionNumber
- *         in: query
+ *       - name: prototypeId
+ *         in: path
  *         required: true
- *         description: 削除するバージョン番号
+ *         description: 削除するVERSIONプロトタイプのID
  *         schema:
- *           type: integer
+ *           type: string
  *     responses:
  *       '200':
  *         description: プロトタイプルームを削除しました
@@ -229,12 +241,6 @@ router.post(
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/SuccessResponse'
- *       '400':
- *         description: リクエストが不正です
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error400Response'
  *       '404':
  *         description: プロトタイプルームが見つかりません
  *         content:
@@ -249,27 +255,19 @@ router.post(
  *               $ref: '#/components/schemas/Error500Response'
  */
 router.delete(
-  '/:projectId/room',
+  '/:projectId/versions/:prototypeId',
   checkProjectManagePermission,
   async (req: Request, res: Response) => {
-    const { projectId } = req.params;
-    const { versionNumber } = req.query;
-
-    if (!versionNumber) {
-      res.status(400).json({
-        error: 'バージョン番号が必要です',
-      });
-      return;
-    }
+    const { projectId, prototypeId } = req.params;
 
     const transaction = await sequelize.transaction();
     try {
-      // 指定されたバージョン番号のVERSIONプロトタイプを取得
+      // 指定されたIDのVERSIONプロトタイプを取得
       const versionPrototype = await PrototypeModel.findOne({
         where: {
+          id: prototypeId,
           projectId,
           type: 'VERSION',
-          versionNumber: parseInt(versionNumber as string),
         },
         transaction,
       });
@@ -282,25 +280,32 @@ router.delete(
         return;
       }
 
-      // 関連するINSTANCEプロトタイプを取得
+      // 関連するINSTANCEプロトタイプを取得（削除前にIDを記録）
       const instancePrototypes = await PrototypeModel.findAll({
         where: {
           projectId,
           type: 'INSTANCE',
           sourceVersionPrototypeId: versionPrototype.id,
         },
+        attributes: ['id'], // IDのみ取得で軽量化
         transaction,
       });
 
-      // INSTANCEプロトタイプを削除（カスケード削除でパーツとプロパティも削除される）
-      for (const instancePrototype of instancePrototypes) {
+      const deletedInstanceIds = instancePrototypes.map(
+        (p: PrototypeModel) => p.id
+      );
+
+      // INSTANCEプロトタイプを一括削除（CASCADE により Part → PartProperty も自動削除される）
+      if (instancePrototypes.length > 0) {
         await PrototypeModel.destroy({
-          where: { id: instancePrototype.id },
+          where: {
+            id: deletedInstanceIds,
+          },
           transaction,
         });
       }
 
-      // VERSIONプロトタイプを削除（カスケード削除でパーツとプロパティも削除される）
+      // VERSIONプロトタイプを削除（CASCADE により Part → PartProperty も自動削除される）
       await PrototypeModel.destroy({
         where: { id: versionPrototype.id },
         transaction,
@@ -310,7 +315,7 @@ router.delete(
       res.json({
         message: 'プロトタイプルームを削除しました',
         deletedVersion: versionPrototype.id,
-        deletedInstances: instancePrototypes.map((p: PrototypeModel) => p.id),
+        deletedInstances: deletedInstanceIds,
       });
     } catch (error) {
       await transaction.rollback();

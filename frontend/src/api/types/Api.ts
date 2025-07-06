@@ -36,10 +36,9 @@ import {
   ProjectsRolesListData,
   ProjectsRolesUpdateData,
   ProjectsRolesUpdatePayload,
-  ProjectsRoomCreateData,
-  ProjectsRoomCreatePayload,
-  ProjectsRoomDeleteData,
-  ProjectsRoomDeleteParams,
+  ProjectsVersionsCreateData,
+  ProjectsVersionsCreatePayload,
+  ProjectsVersionsDeleteData,
   PrototypesDeleteData,
   PrototypesDetailData,
   PrototypesUpdateData,
@@ -181,17 +180,20 @@ export class Api<
    * @description 指定されたプロジェクトのプロトタイプルーム（VERSIONとINSTANCE）を作成します。
    *
    * @tags Projects
-   * @name ProjectsRoomCreate
+   * @name ProjectsVersionsCreate
    * @summary プロトタイプルーム作成
-   * @request POST:/api/projects/{projectId}/room
+   * @request POST:/api/projects/{projectId}/versions
    */
-  projectsRoomCreate = (
+  projectsVersionsCreate = (
     projectId: string,
-    data: ProjectsRoomCreatePayload,
+    data: ProjectsVersionsCreatePayload,
     params: RequestParams = {}
   ) =>
-    this.request<ProjectsRoomCreateData, Error404Response | Error500Response>({
-      path: `/api/projects/${projectId}/room`,
+    this.request<
+      ProjectsVersionsCreateData,
+      Error400Response | Error404Response | Error500Response
+    >({
+      path: `/api/projects/${projectId}/versions`,
       method: 'POST',
       body: data,
       type: ContentType.Json,
@@ -202,21 +204,21 @@ export class Api<
    * @description 指定されたプロジェクトのプロトタイプルーム（VERSIONとINSTANCE）を削除します。
    *
    * @tags Projects
-   * @name ProjectsRoomDelete
+   * @name ProjectsVersionsDelete
    * @summary プロトタイプルーム削除
-   * @request DELETE:/api/projects/{projectId}/room
+   * @request DELETE:/api/projects/{projectId}/versions/{prototypeId}
    */
-  projectsRoomDelete = (
-    { projectId, ...query }: ProjectsRoomDeleteParams,
+  projectsVersionsDelete = (
+    projectId: string,
+    prototypeId: string,
     params: RequestParams = {}
   ) =>
     this.request<
-      ProjectsRoomDeleteData,
-      Error400Response | Error404Response | Error500Response
+      ProjectsVersionsDeleteData,
+      Error404Response | Error500Response
     >({
-      path: `/api/projects/${projectId}/room`,
+      path: `/api/projects/${projectId}/versions/${prototypeId}`,
       method: 'DELETE',
-      query: query,
       format: 'json',
       ...params,
     });

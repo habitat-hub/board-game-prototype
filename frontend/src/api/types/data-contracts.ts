@@ -180,21 +180,17 @@ export interface ProjectsCreatePayload {
 
 export type ProjectsCreateData = Project;
 
-export interface ProjectsRoomCreatePayload {
-  name?: string;
-  versionNumber?: number;
+export interface ProjectsVersionsCreatePayload {
+  /** プロトタイプ名 */
+  name: string;
 }
 
-export type ProjectsRoomCreateData = Prototype;
-
-export interface ProjectsRoomDeleteParams {
-  /** 削除するバージョン番号 */
-  versionNumber: number;
-  /** プロジェクトのID */
-  projectId: string;
+export interface ProjectsVersionsCreateData {
+  version?: Prototype;
+  instance?: Prototype;
 }
 
-export type ProjectsRoomDeleteData = SuccessResponse;
+export type ProjectsVersionsDeleteData = SuccessResponse;
 
 export type ProjectsDetailData = Project & {
   prototypes?: Prototype[];

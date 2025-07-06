@@ -23,7 +23,8 @@ export default function LeftSidebar({
   projectId: string;
 }) {
   const router = useRouter();
-  const { getProject, createPrototypeRoom, deletePrototypeRoom } = useProject();
+  const { getProject, createPrototypeVersion, deletePrototypeVersion } =
+    useProject();
 
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
   const [prototypeInfo, setPrototypeInfo] = useState<{
@@ -87,11 +88,13 @@ export default function LeftSidebar({
       // バージョン作成
       const now = new Date();
       const name = `${formatDate(now, true)}版`;
-      await createPrototypeRoom(projectId, {
+      const { version, instance } = await createPrototypeVersion(projectId, {
         name,
-        versionNumber: (prototypeInfo?.versions?.length || 0) + 1,
       });
-      // 今はバージョンのプレイ画面に遷移 → プロジェクトID・プロトタイプIDで遷移
+      if (!version || !instance) {
+        console.error('Version or instance creation failed');
+        return;
+      }
       await getPrototypes();
     } catch (error) {
       console.error('Error creating room:', error);
@@ -114,17 +117,15 @@ export default function LeftSidebar({
         return;
       }
 
-      // インスタンスに紐づくバージョンを見つける
-      const version = prototypeInfo?.versions.find(
-        (v) => v.id === instance.sourceVersionPrototypeId
-      );
-      if (!version) {
-        console.error('Version not found for instance');
+      // インスタンスに紐づくバージョンIDを取得
+      const versionId = instance.sourceVersionPrototypeId;
+      if (!versionId) {
+        console.error('Version ID not found for instance');
         return;
       }
 
-      // ルーム削除API（バージョンとインスタンスを一緒に削除）
-      await deletePrototypeRoom(projectId, version.versionNumber);
+      // バージョン削除API（バージョンIDを指定してバージョンとインスタンスを一緒に削除）
+      await deletePrototypeVersion(projectId, versionId);
       await getPrototypes();
     } catch (error) {
       console.error('Error deleting room:', error);

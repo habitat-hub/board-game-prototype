@@ -762,7 +762,7 @@
         }
       }
     },
-    "/api/projects/{projectId}/room": {
+    "/api/projects/{projectId}/versions": {
       "post": {
         "tags": [
           "Projects"
@@ -788,23 +788,42 @@
                 "type": "object",
                 "properties": {
                   "name": {
-                    "type": "string"
-                  },
-                  "versionNumber": {
-                    "type": "integer"
+                    "type": "string",
+                    "description": "プロトタイプ名"
                   }
-                }
+                },
+                "required": [
+                  "name"
+                ]
               }
             }
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "プロトタイプルームを作成しました",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Prototype"
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "$ref": "#/components/schemas/Prototype"
+                    },
+                    "instance": {
+                      "$ref": "#/components/schemas/Prototype"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエストが不正です",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
                 }
               }
             }
@@ -830,7 +849,9 @@
             }
           }
         }
-      },
+      }
+    },
+    "/api/projects/{projectId}/versions/{prototypeId}": {
       "delete": {
         "tags": [
           "Projects"
@@ -848,12 +869,12 @@
             }
           },
           {
-            "name": "versionNumber",
-            "in": "query",
+            "name": "prototypeId",
+            "in": "path",
             "required": true,
-            "description": "削除するバージョン番号",
+            "description": "削除するVERSIONプロトタイプのID",
             "schema": {
-              "type": "integer"
+              "type": "string"
             }
           }
         ],
@@ -864,16 +885,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "リクエストが不正です",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error400Response"
                 }
               }
             }
