@@ -36,8 +36,9 @@ import {
   ProjectsRolesListData,
   ProjectsRolesUpdateData,
   ProjectsRolesUpdatePayload,
-  ProjectsVersionCreateData,
-  ProjectsVersionCreatePayload,
+  ProjectsVersionsCreateData,
+  ProjectsVersionsCreatePayload,
+  ProjectsVersionsDeleteData,
   PrototypesDeleteData,
   PrototypesDetailData,
   PrototypesUpdateData,
@@ -176,26 +177,48 @@ export class Api<
       ...params,
     });
   /**
-   * @description 指定されたプロジェクトのプロトタイプバージョンを作成します。
+   * @description 指定されたプロジェクトのプロトタイプルーム（VERSIONとINSTANCE）を作成します。
    *
    * @tags Projects
-   * @name ProjectsVersionCreate
-   * @summary プロトタイプバージョン作成
-   * @request POST:/api/projects/{projectId}/version
+   * @name ProjectsVersionsCreate
+   * @summary プロトタイプルーム作成
+   * @request POST:/api/projects/{projectId}/versions
    */
-  projectsVersionCreate = (
+  projectsVersionsCreate = (
     projectId: string,
-    data: ProjectsVersionCreatePayload,
+    data: ProjectsVersionsCreatePayload,
     params: RequestParams = {}
   ) =>
     this.request<
-      ProjectsVersionCreateData,
-      Error404Response | Error500Response
+      ProjectsVersionsCreateData,
+      Error400Response | Error404Response | Error500Response
     >({
-      path: `/api/projects/${projectId}/version`,
+      path: `/api/projects/${projectId}/versions`,
       method: 'POST',
       body: data,
       type: ContentType.Json,
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description 指定されたプロジェクトのプロトタイプルーム（VERSIONとINSTANCE）を削除します。
+   *
+   * @tags Projects
+   * @name ProjectsVersionsDelete
+   * @summary プロトタイプルーム削除
+   * @request DELETE:/api/projects/{projectId}/versions/{prototypeId}
+   */
+  projectsVersionsDelete = (
+    projectId: string,
+    prototypeId: string,
+    params: RequestParams = {}
+  ) =>
+    this.request<
+      ProjectsVersionsDeleteData,
+      Error404Response | Error500Response
+    >({
+      path: `/api/projects/${projectId}/versions/${prototypeId}`,
+      method: 'DELETE',
       format: 'json',
       ...params,
     });

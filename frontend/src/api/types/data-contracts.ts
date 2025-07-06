@@ -180,12 +180,17 @@ export interface ProjectsCreatePayload {
 
 export type ProjectsCreateData = Project;
 
-export interface ProjectsVersionCreatePayload {
-  name?: string;
-  versionNumber?: number;
+export interface ProjectsVersionsCreatePayload {
+  /** プロトタイプ名 */
+  name: string;
 }
 
-export type ProjectsVersionCreateData = Prototype;
+export interface ProjectsVersionsCreateData {
+  version?: Prototype;
+  instance?: Prototype;
+}
+
+export type ProjectsVersionsDeleteData = SuccessResponse;
 
 export type ProjectsDetailData = Project & {
   prototypes?: Prototype[];

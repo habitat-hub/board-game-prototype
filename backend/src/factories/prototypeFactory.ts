@@ -77,14 +77,14 @@ export async function createProject({
  *
  * @param projectId - プロジェクトID
  * @param name - プロトタイプ名
- * @param versionNumber - バージョン番号
+ * @param versionNumber - バージョン番号（省略可能）
  * @param transaction - トランザクション
  * @returns 作成したバージョンプロトタイプとインスタンスプロトタイプ
  */
 export const createPrototypeVersion = async ({
   projectId,
   name,
-  versionNumber = PROTOTYPE_VERSION.INITIAL,
+  versionNumber,
   transaction,
 }: {
   projectId: string;

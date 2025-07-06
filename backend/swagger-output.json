@@ -762,13 +762,13 @@
         }
       }
     },
-    "/api/projects/{projectId}/version": {
+    "/api/projects/{projectId}/versions": {
       "post": {
         "tags": [
           "Projects"
         ],
-        "summary": "プロトタイプバージョン作成",
-        "description": "指定されたプロジェクトのプロトタイプバージョンを作成します。",
+        "summary": "プロトタイプルーム作成",
+        "description": "指定されたプロジェクトのプロトタイプルーム（VERSIONとINSTANCE）を作成します。",
         "parameters": [
           {
             "name": "projectId",
@@ -788,29 +788,109 @@
                 "type": "object",
                 "properties": {
                   "name": {
-                    "type": "string"
-                  },
-                  "versionNumber": {
-                    "type": "integer"
+                    "type": "string",
+                    "description": "プロトタイプ名"
                   }
-                }
+                },
+                "required": [
+                  "name"
+                ]
               }
             }
           }
         },
         "responses": {
-          "200": {
-            "description": "プロトタイプバージョンを作成しました",
+          "201": {
+            "description": "プロトタイプルームを作成しました",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Prototype"
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "$ref": "#/components/schemas/Prototype"
+                    },
+                    "instance": {
+                      "$ref": "#/components/schemas/Prototype"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエストが不正です",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
                 }
               }
             }
           },
           "404": {
             "description": "プロジェクトが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "サーバーエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{projectId}/versions/{prototypeId}": {
+      "delete": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "プロトタイプルーム削除",
+        "description": "指定されたプロジェクトのプロトタイプルーム（VERSIONとINSTANCE）を削除します。",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "description": "プロジェクトのID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "削除するVERSIONプロトタイプのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "プロトタイプルームを削除しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "プロトタイプルームが見つかりません",
             "content": {
               "application/json": {
                 "schema": {
