@@ -33,6 +33,16 @@ export const useProject = () => {
   );
 
   /**
+   * プロトタイプルーム削除
+   */
+  const deletePrototypeRoom = useCallback(
+    async (projectId: string, versionNumber: number) => {
+      return await projectService.deletePrototypeRoom(projectId, versionNumber);
+    },
+    []
+  );
+
+  /**
    * プロジェクト詳細取得
    */
   const getProject = useCallback(async (projectId: string) => {
@@ -123,5 +133,6 @@ export const useProject = () => {
     addRoleToProject,
     removeRoleFromProject,
     updateRoleInProject,
+    deletePrototypeRoom,
   };
 };

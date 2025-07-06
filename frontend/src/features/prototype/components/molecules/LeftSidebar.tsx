@@ -7,7 +7,6 @@ import { IoArrowBack, IoMenu, IoAdd } from 'react-icons/io5';
 import { MdMeetingRoom, MdDelete } from 'react-icons/md';
 
 import { useProject } from '@/api/hooks/useProject';
-import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Prototype, Project } from '@/api/types';
 import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
 import formatDate from '@/utils/dateFormat';
@@ -24,8 +23,7 @@ export default function LeftSidebar({
   projectId: string;
 }) {
   const router = useRouter();
-  const { getProject, createPrototypeRoom } = useProject();
-  const { deletePrototype } = usePrototypes();
+  const { getProject, createPrototypeRoom, deletePrototypeRoom } = useProject();
 
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
   const [prototypeInfo, setPrototypeInfo] = useState<{
@@ -105,8 +103,32 @@ export default function LeftSidebar({
   // ルーム削除
   const handleDeleteRoom = async (instanceId: string) => {
     if (!window.confirm('本当にこのルームを削除しますか？')) return;
-    await deletePrototype(instanceId);
-    await getPrototypes();
+
+    try {
+      // インスタンスから対応するバージョンを見つける
+      const instance = prototypeInfo?.instances.find(
+        (i) => i.id === instanceId
+      );
+      if (!instance) {
+        console.error('Instance not found');
+        return;
+      }
+
+      // インスタンスに紐づくバージョンを見つける
+      const version = prototypeInfo?.versions.find(
+        (v) => v.id === instance.sourceVersionPrototypeId
+      );
+      if (!version) {
+        console.error('Version not found for instance');
+        return;
+      }
+
+      // ルーム削除API（バージョンとインスタンスを一緒に削除）
+      await deletePrototypeRoom(projectId, version.versionNumber);
+      await getPrototypes();
+    } catch (error) {
+      console.error('Error deleting room:', error);
+    }
   };
 
   const toggleSidebar = () => {

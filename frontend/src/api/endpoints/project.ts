@@ -47,6 +47,18 @@ export const projectService = {
     return response.data;
   },
   /**
+   * プロトタイプルーム削除
+   */
+  deletePrototypeRoom: async (
+    projectId: string,
+    versionNumber: number
+  ): Promise<void> => {
+    const response = await axiosInstance.delete(
+      `/api/projects/${projectId}/room?versionNumber=${versionNumber}`
+    );
+    return response.data;
+  },
+  /**
    * プロジェクトに属するプロトタイプ一覧取得
    */
   getProject: async (
