@@ -199,7 +199,6 @@ router.post(
         await createPrototypeVersion({
           projectId: req.params.projectId,
           name,
-          versionNumber: 0, // NOTE: versionNumberは今後削除予定
           transaction,
         });
       await transaction.commit();

@@ -297,9 +297,6 @@ export const swaggerSchemas = {
                         "INSTANCE"
                   ]
             },
-            "versionNumber": {
-                  "type": "integer"
-            },
             "sourceVersionPrototypeId": {
                   "type": "string",
                   "format": "uuid"
@@ -316,7 +313,6 @@ export const swaggerSchemas = {
             "projectId",
             "name",
             "type",
-            "versionNumber",
             "createdAt",
             "updatedAt"
       ]

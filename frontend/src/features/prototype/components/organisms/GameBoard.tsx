@@ -46,7 +46,6 @@ import {
 
 interface GameBoardProps {
   prototypeName: string;
-  prototypeVersionNumber?: number;
   projectId: string;
   parts: PartType[];
   properties: PropertyType[];
@@ -56,7 +55,6 @@ interface GameBoardProps {
 
 export default function GameBoard({
   prototypeName,
-  prototypeVersionNumber,
   projectId,
   parts,
   properties,
@@ -890,7 +888,6 @@ export default function GameBoard({
       <DebugInfo
         camera={camera}
         prototypeName={prototypeName}
-        prototypeVersionNumber={prototypeVersionNumber ?? 0}
         projectId={projectId}
         mode={gameBoardMode}
         parts={parts}

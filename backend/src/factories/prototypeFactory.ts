@@ -1,7 +1,7 @@
 import { Transaction } from 'sequelize';
 
 import PrototypeModel from '../models/Prototype';
-import { ROLE_TYPE, PROTOTYPE_VERSION, RESOURCE_TYPES } from '../const';
+import { ROLE_TYPE, RESOURCE_TYPES } from '../const';
 import ProjectModel from '../models/Project';
 import { assignRole } from '../helpers/roleHelper';
 import RoleModel from '../models/Role';
@@ -39,7 +39,6 @@ export async function createProject({
       projectId: project.id,
       name,
       type: 'MASTER',
-      versionNumber: PROTOTYPE_VERSION.INITIAL,
     },
     { transaction }
   );
@@ -77,19 +76,16 @@ export async function createProject({
  *
  * @param projectId - プロジェクトID
  * @param name - プロトタイプ名
- * @param versionNumber - バージョン番号（省略可能）
  * @param transaction - トランザクション
  * @returns 作成したバージョンプロトタイプとインスタンスプロトタイプ
  */
 export const createPrototypeVersion = async ({
   projectId,
   name,
-  versionNumber,
   transaction,
 }: {
   projectId: string;
   name: string;
-  versionNumber: number;
   transaction: Transaction;
 }) => {
   // マスタープロトタイプの取得
@@ -109,7 +105,6 @@ export const createPrototypeVersion = async ({
       projectId,
       name,
       type: 'VERSION',
-      versionNumber,
     },
     { transaction }
   );
@@ -171,7 +166,6 @@ export const createPrototypeVersion = async ({
       projectId,
       name,
       type: 'INSTANCE',
-      versionNumber,
       sourceVersionPrototypeId: versionPrototype.id,
     },
     { transaction }

@@ -102,7 +102,6 @@ export interface Prototype {
   projectId: string;
   name: string;
   type: 'MASTER' | 'VERSION' | 'INSTANCE';
-  versionNumber: number;
   /** @format uuid */
   sourceVersionPrototypeId?: string;
   createdAt: string;

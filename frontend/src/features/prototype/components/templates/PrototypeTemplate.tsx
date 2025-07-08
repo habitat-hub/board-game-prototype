@@ -169,13 +169,6 @@ export default function PrototypeTemplate() {
       .catch((error) => console.error('Error fetching prototypes:', error));
   }, [getProject, projectId, router]);
 
-  // バージョン番号
-  const versionNumber = useMemo(() => {
-    return prototype?.prototypes.find(
-      (prototype) => prototype.id === prototypeId
-    )?.versionNumber;
-  }, [prototype, prototypeId]);
-
   if (!prototype) return null;
 
   const selectedPrototype = prototype.prototypes.find(
@@ -206,7 +199,6 @@ export default function PrototypeTemplate() {
           parts={partsArray}
           properties={propertiesArray}
           cursors={cursors}
-          prototypeVersionNumber={versionNumber}
           projectId={projectId}
           gameBoardMode={mode}
         />

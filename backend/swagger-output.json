@@ -299,9 +299,6 @@
               "INSTANCE"
             ]
           },
-          "versionNumber": {
-            "type": "integer"
-          },
           "sourceVersionPrototypeId": {
             "type": "string",
             "format": "uuid"
@@ -318,7 +315,6 @@
           "projectId",
           "name",
           "type",
-          "versionNumber",
           "createdAt",
           "updatedAt"
         ]
