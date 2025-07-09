@@ -34,6 +34,21 @@ export const swaggerSchemas = {
                   "error": "リクエストが不正です"
             }
       },
+      "Error401Response": {
+            "type": "object",
+            "properties": {
+                  "error": {
+                        "type": "string",
+                        "description": "エラーメッセージ"
+                  }
+            },
+            "required": [
+                  "error"
+            ],
+            "example": {
+                  "error": "認証が必要です"
+            }
+      },
       "Error404Response": {
             "type": "object",
             "properties": {
