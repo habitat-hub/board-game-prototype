@@ -132,7 +132,7 @@ const Part = forwardRef<PartHandle, PartProps>(
 
     // 裏向き表示にする必要があるか
     const isFlippedNeeded =
-      gameBoardMode === GameBoardMode.PREVIEW && isOtherPlayerCard;
+      gameBoardMode === GameBoardMode.PLAY && isOtherPlayerCard;
 
     // 対象面（表or裏）のプロパティを取得 (ローカルの isFlipped 状態を使用)
     const targetProperty = useMemo(() => {

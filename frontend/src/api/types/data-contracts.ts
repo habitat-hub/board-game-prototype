@@ -62,9 +62,8 @@ export interface Part {
   width: number;
   height: number;
   order: number;
-  frontSide?: 'front' | 'back';
-  /** @format uuid */
-  ownerId?: string;
+  frontSide?: 'front' | 'back' | null;
+  ownerId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -76,8 +75,7 @@ export interface PartProperty {
   description: string;
   color: string;
   textColor: string;
-  /** @format uuid */
-  imageId?: string;
+  imageId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -87,7 +85,7 @@ export interface Permission {
   name: string;
   resource: string;
   action: string;
-  description?: string;
+  description?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -108,8 +106,7 @@ export interface Prototype {
   projectId: string;
   name: string;
   type: 'MASTER' | 'VERSION' | 'INSTANCE';
-  /** @format uuid */
-  sourceVersionPrototypeId?: string;
+  sourceVersionPrototypeId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -117,7 +114,7 @@ export interface Prototype {
 export interface Role {
   id: number;
   name: string;
-  description?: string;
+  description?: string | null;
   createdAt: string;
   updatedAt: string;
 }

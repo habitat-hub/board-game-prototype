@@ -155,15 +155,29 @@ export const swaggerSchemas = {
                   "type": "integer"
             },
             "frontSide": {
-                  "type": "string",
-                  "enum": [
-                        "front",
-                        "back"
+                  "oneOf": [
+                        {
+                              "type": "string",
+                              "enum": [
+                                    "front",
+                                    "back"
+                              ]
+                        },
+                        {
+                              "type": "null"
+                        }
                   ]
             },
             "ownerId": {
-                  "type": "string",
-                  "format": "uuid"
+                  "oneOf": [
+                        {
+                              "type": "string",
+                              "format": "uuid"
+                        },
+                        {
+                              "type": "null"
+                        }
+                  ]
             },
             "createdAt": {
                   "type": "string"
@@ -210,8 +224,15 @@ export const swaggerSchemas = {
                   "type": "string"
             },
             "imageId": {
-                  "type": "string",
-                  "format": "uuid"
+                  "oneOf": [
+                        {
+                              "type": "string",
+                              "format": "uuid"
+                        },
+                        {
+                              "type": "null"
+                        }
+                  ]
             },
             "createdAt": {
                   "type": "string"
@@ -247,7 +268,14 @@ export const swaggerSchemas = {
                   "type": "string"
             },
             "description": {
-                  "type": "string"
+                  "oneOf": [
+                        {
+                              "type": "string"
+                        },
+                        {
+                              "type": "null"
+                        }
+                  ]
             },
             "createdAt": {
                   "type": "string"
@@ -313,8 +341,15 @@ export const swaggerSchemas = {
                   ]
             },
             "sourceVersionPrototypeId": {
-                  "type": "string",
-                  "format": "uuid"
+                  "oneOf": [
+                        {
+                              "type": "string",
+                              "format": "uuid"
+                        },
+                        {
+                              "type": "null"
+                        }
+                  ]
             },
             "createdAt": {
                   "type": "string"
@@ -342,7 +377,14 @@ export const swaggerSchemas = {
                   "type": "string"
             },
             "description": {
-                  "type": "string"
+                  "oneOf": [
+                        {
+                              "type": "string"
+                        },
+                        {
+                              "type": "null"
+                        }
+                  ]
             },
             "createdAt": {
                   "type": "string"
