@@ -7,6 +7,7 @@ import { Part as PartType, PartProperty as PropertyType } from '@/api/types';
 import { useCard } from '@/features/prototype/hooks/useCard';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { useDeck } from '@/features/prototype/hooks/useDeck';
+import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { PartHandle } from '@/features/prototype/type';
 import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
 
@@ -45,13 +46,11 @@ const Part = forwardRef<PartHandle, PartProps>(
     ref
   ) => {
     const groupRef = useRef<Konva.Group>(null);
-    const { frontSide, isReversing, setIsReversing, reverseCard } = useCard(
-      part,
-      ref
-    );
+    const { isReversing, setIsReversing, reverseCard } = useCard(part, ref);
     const { shuffleDeck } = useDeck(part);
     const [scaleX, setScaleX] = useState(1);
     const { showDebugInfo } = useDebugMode();
+    const { socket } = useSocket();
 
     // 要素のドラッグ開始時に最前面に移動する処理を追加（PLAYモードのみ）
     useEffect(() => {
@@ -73,6 +72,28 @@ const Part = forwardRef<PartHandle, PartProps>(
 
     const isCard = part.type === 'card';
     const isDeck = part.type === 'deck';
+
+    // カードの反転を受信する
+    useEffect(() => {
+      const handleFlipCard = ({
+        cardId,
+        nextFrontSide,
+      }: {
+        cardId: number;
+        nextFrontSide: 'front' | 'back';
+      }) => {
+        if (cardId === part.id) {
+          reverseCard(nextFrontSide, false);
+        }
+      };
+
+      socket.on('FLIP_CARD', handleFlipCard);
+
+      // クリーンアップ関数を追加
+      return () => {
+        socket.off('FLIP_CARD', handleFlipCard);
+      };
+    }, [part.id, reverseCard, socket]);
 
     // アニメーション用のエフェクト
     useEffect(() => {
@@ -115,8 +136,8 @@ const Part = forwardRef<PartHandle, PartProps>(
 
     // 対象面（表or裏）のプロパティを取得 (ローカルの isFlipped 状態を使用)
     const targetProperty = useMemo(() => {
-      return properties.find((p) => p.side === frontSide);
-    }, [frontSide, properties]);
+      return properties.find((p) => p.side === part.frontSide);
+    }, [part.frontSide, properties]);
 
     // 有効な画像URLの値を取得する関数
     const getValidImageURL = (imageId?: string | null) => {
@@ -144,7 +165,7 @@ const Part = forwardRef<PartHandle, PartProps>(
       }
 
       if (isCard && !isFlippedNeeded) {
-        reverseCard(frontSide === 'front' ? 'back' : 'front', true);
+        reverseCard(part.frontSide === 'front' ? 'back' : 'front', true);
         return;
       }
     };
