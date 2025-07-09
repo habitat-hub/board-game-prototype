@@ -1,7 +1,3 @@
-export const PROTOTYPE_VERSION = {
-  INITIAL: 0,
-};
-
 /**
  * ロールタイプの定義
  *

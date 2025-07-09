@@ -19,7 +19,6 @@ interface DebugInfoProps {
   };
   // Prototype info
   prototypeName: string;
-  prototypeVersionNumber: number;
   projectId: string;
   // Data
   parts: Part[];
@@ -32,7 +31,6 @@ interface DebugInfoProps {
 const DebugInfo: React.FC<DebugInfoProps> = ({
   camera,
   prototypeName,
-  prototypeVersionNumber,
   projectId,
   parts,
   properties,
@@ -110,7 +108,6 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
               <strong>Prototype</strong>
             </div>
             <div>Name: {prototypeName}</div>
-            <div>Version: {prototypeVersionNumber || 'N/A'}</div>
             <div>Project ID: {projectId}</div>
 
             <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">

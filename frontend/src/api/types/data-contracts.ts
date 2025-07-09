@@ -22,6 +22,12 @@ export interface Error400Response {
   error: string;
 }
 
+/** @example {"error":"認証が必要です"} */
+export interface Error401Response {
+  /** エラーメッセージ */
+  error: string;
+}
+
 /** @example {"error":"リソースが見つかりません"} */
 export interface Error404Response {
   /** エラーメッセージ */
@@ -102,7 +108,6 @@ export interface Prototype {
   projectId: string;
   name: string;
   type: 'MASTER' | 'VERSION' | 'INSTANCE';
-  versionNumber: number;
   /** @format uuid */
   sourceVersionPrototypeId?: string;
   createdAt: string;

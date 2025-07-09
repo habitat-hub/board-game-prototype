@@ -1,11 +1,5 @@
 import { PartDefaultConfig } from './type';
 
-// バージョン番号
-export const VERSION_NUMBER = {
-  // マスター
-  MASTER: '0.0.0',
-};
-
 // グリッドサイズ
 export const GRID_SIZE = 1;
 

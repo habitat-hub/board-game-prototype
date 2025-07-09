@@ -12,6 +12,7 @@
 
 import {
   Error400Response,
+  Error401Response,
   Error404Response,
   Error500Response,
   ImagesCreateData,
@@ -429,7 +430,10 @@ export class Api<
    * @request POST:/api/images
    */
   imagesCreate = (data: ImagesCreatePayload, params: RequestParams = {}) =>
-    this.request<ImagesCreateData, Error400Response | Error500Response>({
+    this.request<
+      ImagesCreateData,
+      Error400Response | Error401Response | Error500Response
+    >({
       path: `/api/images`,
       method: 'POST',
       body: data,
@@ -448,7 +452,7 @@ export class Api<
   imagesDetail = (imageId: string, params: RequestParams = {}) =>
     this.request<
       ImagesDetailData,
-      Error400Response | Error404Response | Error500Response
+      Error400Response | Error401Response | Error404Response | Error500Response
     >({
       path: `/api/images/${imageId}`,
       method: 'GET',
@@ -469,7 +473,7 @@ export class Api<
   ) =>
     this.request<
       ImagesDeleteData,
-      Error400Response | Error404Response | Error500Response
+      Error400Response | Error401Response | Error404Response | Error500Response
     >({
       path: `/api/images/${imageId}`,
       method: 'DELETE',

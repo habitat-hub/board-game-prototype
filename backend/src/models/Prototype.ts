@@ -11,8 +11,6 @@ class PrototypeModel extends Model {
   public name!: string;
   // プロトタイプタイプ
   public type!: 'MASTER' | 'VERSION' | 'INSTANCE';
-  // バージョン番号
-  public versionNumber!: number;
   // 紐付くバージョンID（INSTANCE用）
   public sourceVersionPrototypeId?: string;
 }
@@ -41,10 +39,6 @@ PrototypeModel.init(
     },
     type: {
       type: DataTypes.ENUM('MASTER', 'VERSION', 'INSTANCE'),
-      allowNull: false,
-    },
-    versionNumber: {
-      type: DataTypes.INTEGER,
       allowNull: false,
     },
     sourceVersionPrototypeId: {

@@ -102,7 +102,6 @@ function setupProjectScopes() {
           'id',
           'name',
           'type',
-          'versionNumber',
           'sourceVersionPrototypeId',
           'createdAt',
           'updatedAt',
