@@ -7,11 +7,21 @@
 import Link from 'next/link';
 import { FaUsers } from 'react-icons/fa';
 
-import { useRoleManagement } from '@/features/role/hooks/useRoleManagement';
+interface RoleMenuProps {
+  projectId: string;
+  userRoles: Array<{
+    userId: string;
+    user: { id: string; username: string };
+    roles: Array<{ name: string; description: string }>;
+  }>;
+  loading?: boolean;
+}
 
-export default function RoleMenu({ projectId }: { projectId: string }) {
-  const { userRoles, loading } = useRoleManagement(projectId);
-
+export default function RoleMenu({
+  projectId,
+  userRoles,
+  loading = false,
+}: RoleMenuProps) {
   // ローディング中や空の場合は何も表示しない
   if (loading || !userRoles || userRoles.length === 0) {
     return null;

@@ -4,7 +4,7 @@ import { projectService } from '@/api/endpoints/project';
 import {
   ProjectsCreatePayload,
   ProjectsInviteCreatePayload,
-  ProjectsVersionCreatePayload,
+  ProjectsVersionsCreatePayload,
 } from '@/api/types';
 
 export const useProject = () => {
@@ -26,8 +26,21 @@ export const useProject = () => {
    * プロトタイプバージョン作成
    */
   const createPrototypeVersion = useCallback(
-    async (projectId: string, data: ProjectsVersionCreatePayload) => {
+    async (projectId: string, data: ProjectsVersionsCreatePayload) => {
       return await projectService.createPrototypeVersion(projectId, data);
+    },
+    []
+  );
+
+  /**
+   * プロトタイプバージョン削除
+   */
+  const deletePrototypeVersion = useCallback(
+    async (projectId: string, prototypeId: string) => {
+      return await projectService.deletePrototypeVersion(
+        projectId,
+        prototypeId
+      );
     },
     []
   );
@@ -113,7 +126,6 @@ export const useProject = () => {
   return {
     getProjects,
     createProject,
-    createPrototypeVersion,
     getProject,
     getAccessUsersByProject,
     inviteToProject,
@@ -123,5 +135,7 @@ export const useProject = () => {
     addRoleToProject,
     removeRoleFromProject,
     updateRoleInProject,
+    createPrototypeVersion,
+    deletePrototypeVersion,
   };
 };

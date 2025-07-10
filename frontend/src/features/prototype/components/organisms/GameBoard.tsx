@@ -19,6 +19,7 @@ import SelectionRect from '@/features/prototype/components/atoms/SelectionRect';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
+import PlaySidebar from '@/features/prototype/components/molecules/PlaySidebar';
 import RoleMenu from '@/features/prototype/components/molecules/RoleMenu';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
 import {
@@ -30,6 +31,7 @@ import {
 } from '@/features/prototype/constants/gameBoard';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
+import { useHandVisibility } from '@/features/prototype/hooks/useHandVisibility';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { useSelection } from '@/features/prototype/hooks/useSelection';
@@ -37,6 +39,7 @@ import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { AddPartProps, DeleteImageProps } from '@/features/prototype/type';
 import { CursorInfo } from '@/features/prototype/types/cursor';
 import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
+import { useRoleManagement } from '@/features/role/hooks/useRoleManagement';
 import {
   getImageFromIndexedDb,
   resetImageParamsInIndexedDb,
@@ -46,7 +49,6 @@ import {
 
 interface GameBoardProps {
   prototypeName: string;
-  prototypeVersionNumber?: number;
   projectId: string;
   parts: PartType[];
   properties: PropertyType[];
@@ -56,7 +58,6 @@ interface GameBoardProps {
 
 export default function GameBoard({
   prototypeName,
-  prototypeVersionNumber,
   projectId,
   parts,
   properties,
@@ -72,6 +73,12 @@ export default function GameBoard({
   const { dispatch } = usePartReducer();
   const { measureOperation } = usePerformanceTracker();
   const [images, setImages] = useState<Record<string, string>>({});
+
+  // 手札の上のカードの表示制御
+  const { cardVisibilityMap } = useHandVisibility(parts, gameBoardMode);
+
+  // ロール管理情報を取得
+  const { userRoles } = useRoleManagement(projectId);
 
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
@@ -810,6 +817,11 @@ export default function GameBoard({
               const partProperties = partPropertiesMap[part.id] || [];
               const filteredImages = filteredImagesMap[part.id] || [];
               const isActive = selectedPartIds.includes(part.id);
+
+              // カードの表示制御を判定
+              const isOtherPlayerCard =
+                part.type === 'card' && !cardVisibilityMap.get(part.id);
+
               return (
                 <Part
                   key={part.id}
@@ -818,7 +830,7 @@ export default function GameBoard({
                   images={filteredImages}
                   gameBoardMode={gameBoardMode}
                   isActive={isActive}
-                  isOtherPlayerCard={false}
+                  isOtherPlayerCard={isOtherPlayerCard}
                   onClick={(e) => handlePartClick(e, part.id)}
                   onDragStart={(e) => handlePartDragStart(e, part.id)}
                   onDragMove={(e) => handlePartDragMove(e, part.id)}
@@ -857,7 +869,11 @@ export default function GameBoard({
       {gameBoardMode === GameBoardMode.CREATE && (
         <>
           {/* ロールメニュー */}
-          <RoleMenu projectId={projectId} />
+          <RoleMenu
+            projectId={projectId}
+            userRoles={userRoles}
+            loading={false}
+          />
           {/* フローティングパーツ作成メニュー */}
           <PartCreateMenu
             onAddPart={handleAddPart}
@@ -879,6 +895,19 @@ export default function GameBoard({
           )}
         </>
       )}
+
+      {/* プレイモード時のサイドバー */}
+      {gameBoardMode === GameBoardMode.PLAY && (
+        <PlaySidebar
+          parts={parts}
+          onSelectPart={(partId) => setSelectedPartIds([partId])}
+          selectedPartId={
+            selectedPartIds.length === 1 ? selectedPartIds[0] : null
+          }
+          userRoles={userRoles}
+        />
+      )}
+
       <ZoomToolbar
         zoomIn={handleZoomIn}
         zoomOut={handleZoomOut}
@@ -890,7 +919,6 @@ export default function GameBoard({
       <DebugInfo
         camera={camera}
         prototypeName={prototypeName}
-        prototypeVersionNumber={prototypeVersionNumber ?? 0}
         projectId={projectId}
         mode={gameBoardMode}
         parts={parts}

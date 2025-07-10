@@ -34,6 +34,21 @@ export const swaggerSchemas = {
                   "error": "リクエストが不正です"
             }
       },
+      "Error401Response": {
+            "type": "object",
+            "properties": {
+                  "error": {
+                        "type": "string",
+                        "description": "エラーメッセージ"
+                  }
+            },
+            "required": [
+                  "error"
+            ],
+            "example": {
+                  "error": "認証が必要です"
+            }
+      },
       "Error404Response": {
             "type": "object",
             "properties": {
@@ -140,15 +155,29 @@ export const swaggerSchemas = {
                   "type": "integer"
             },
             "frontSide": {
-                  "type": "string",
-                  "enum": [
-                        "front",
-                        "back"
+                  "oneOf": [
+                        {
+                              "type": "string",
+                              "enum": [
+                                    "front",
+                                    "back"
+                              ]
+                        },
+                        {
+                              "type": "null"
+                        }
                   ]
             },
             "ownerId": {
-                  "type": "string",
-                  "format": "uuid"
+                  "oneOf": [
+                        {
+                              "type": "string",
+                              "format": "uuid"
+                        },
+                        {
+                              "type": "null"
+                        }
+                  ]
             },
             "createdAt": {
                   "type": "string"
@@ -195,8 +224,15 @@ export const swaggerSchemas = {
                   "type": "string"
             },
             "imageId": {
-                  "type": "string",
-                  "format": "uuid"
+                  "oneOf": [
+                        {
+                              "type": "string",
+                              "format": "uuid"
+                        },
+                        {
+                              "type": "null"
+                        }
+                  ]
             },
             "createdAt": {
                   "type": "string"
@@ -232,7 +268,14 @@ export const swaggerSchemas = {
                   "type": "string"
             },
             "description": {
-                  "type": "string"
+                  "oneOf": [
+                        {
+                              "type": "string"
+                        },
+                        {
+                              "type": "null"
+                        }
+                  ]
             },
             "createdAt": {
                   "type": "string"
@@ -297,12 +340,16 @@ export const swaggerSchemas = {
                         "INSTANCE"
                   ]
             },
-            "versionNumber": {
-                  "type": "integer"
-            },
             "sourceVersionPrototypeId": {
-                  "type": "string",
-                  "format": "uuid"
+                  "oneOf": [
+                        {
+                              "type": "string",
+                              "format": "uuid"
+                        },
+                        {
+                              "type": "null"
+                        }
+                  ]
             },
             "createdAt": {
                   "type": "string"
@@ -316,7 +363,6 @@ export const swaggerSchemas = {
             "projectId",
             "name",
             "type",
-            "versionNumber",
             "createdAt",
             "updatedAt"
       ]
@@ -331,7 +377,14 @@ export const swaggerSchemas = {
                   "type": "string"
             },
             "description": {
-                  "type": "string"
+                  "oneOf": [
+                        {
+                              "type": "string"
+                        },
+                        {
+                              "type": "null"
+                        }
+                  ]
             },
             "createdAt": {
                   "type": "string"

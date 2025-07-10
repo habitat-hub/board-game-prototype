@@ -37,6 +37,21 @@
           "error": "リクエストが不正です"
         }
       },
+      "Error401Response": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "エラーメッセージ"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "example": {
+          "error": "認証が必要です"
+        }
+      },
       "Error404Response": {
         "type": "object",
         "properties": {
@@ -142,15 +157,29 @@
             "type": "integer"
           },
           "frontSide": {
-            "type": "string",
-            "enum": [
-              "front",
-              "back"
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "front",
+                  "back"
+                ]
+              },
+              {
+                "type": "null"
+              }
             ]
           },
           "ownerId": {
-            "type": "string",
-            "format": "uuid"
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "createdAt": {
             "type": "string"
@@ -197,8 +226,15 @@
             "type": "string"
           },
           "imageId": {
-            "type": "string",
-            "format": "uuid"
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "createdAt": {
             "type": "string"
@@ -234,7 +270,14 @@
             "type": "string"
           },
           "description": {
-            "type": "string"
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "createdAt": {
             "type": "string"
@@ -299,12 +342,16 @@
               "INSTANCE"
             ]
           },
-          "versionNumber": {
-            "type": "integer"
-          },
           "sourceVersionPrototypeId": {
-            "type": "string",
-            "format": "uuid"
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "createdAt": {
             "type": "string"
@@ -318,7 +365,6 @@
           "projectId",
           "name",
           "type",
-          "versionNumber",
           "createdAt",
           "updatedAt"
         ]
@@ -333,7 +379,14 @@
             "type": "string"
           },
           "description": {
-            "type": "string"
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "createdAt": {
             "type": "string"
@@ -762,13 +815,13 @@
         }
       }
     },
-    "/api/projects/{projectId}/version": {
+    "/api/projects/{projectId}/versions": {
       "post": {
         "tags": [
           "Projects"
         ],
-        "summary": "プロトタイプバージョン作成",
-        "description": "指定されたプロジェクトのプロトタイプバージョンを作成します。",
+        "summary": "プロトタイプルーム作成",
+        "description": "指定されたプロジェクトのプロトタイプルーム（VERSIONとINSTANCE）を作成します。",
         "parameters": [
           {
             "name": "projectId",
@@ -788,23 +841,42 @@
                 "type": "object",
                 "properties": {
                   "name": {
-                    "type": "string"
-                  },
-                  "versionNumber": {
-                    "type": "integer"
+                    "type": "string",
+                    "description": "プロトタイプ名"
                   }
-                }
+                },
+                "required": [
+                  "name"
+                ]
               }
             }
           }
         },
         "responses": {
-          "200": {
-            "description": "プロトタイプバージョンを作成しました",
+          "201": {
+            "description": "プロトタイプルームを作成しました",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Prototype"
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "$ref": "#/components/schemas/Prototype"
+                    },
+                    "instance": {
+                      "$ref": "#/components/schemas/Prototype"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエストが不正です",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
                 }
               }
             }
@@ -832,13 +904,74 @@
         }
       }
     },
+    "/api/projects/{projectId}/versions/{prototypeId}": {
+      "delete": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "プロトタイプルーム削除",
+        "description": "指定されたプロジェクトのプロトタイプルーム（VERSIONとINSTANCE）を削除します。",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "description": "プロジェクトのID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "削除するVERSIONプロトタイプのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "プロトタイプルームを削除しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "プロトタイプルームが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "サーバーエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/projects/{projectId}": {
       "get": {
         "tags": [
           "Projects"
         ],
-        "summary": "特定のプロジェクトに属するプロトタイプ一覧取得",
-        "description": "指定されたIDのプロジェクトに属するプロトタイプの一覧を取得します。",
+        "summary": "特定のプロジェクトの詳細とプロトタイプ一覧取得",
+        "description": "指定されたIDのプロジェクトの詳細情報と、そのプロジェクトに属するプロトタイプの一覧を取得します。",
         "parameters": [
           {
             "name": "projectId",
@@ -852,22 +985,26 @@
         ],
         "responses": {
           "200": {
-            "description": "プロジェクトに属するプロトタイプの一覧を返します",
+            "description": "プロジェクトと関連するプロトタイプの情報を返します",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "project": {
+                  "allOf": [
+                    {
                       "$ref": "#/components/schemas/Project"
                     },
-                    "prototypes": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Prototype"
+                    {
+                      "type": "object",
+                      "properties": {
+                        "prototypes": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Prototype"
+                          }
+                        }
                       }
                     }
-                  }
+                  ]
                 }
               }
             }

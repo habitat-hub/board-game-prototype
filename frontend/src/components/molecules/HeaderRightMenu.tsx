@@ -17,32 +17,37 @@ interface HeaderRightMenuProps {
 
 const HeaderRightMenu: React.FC<HeaderRightMenuProps> = ({ pathname }) => {
   const router = useRouter();
-  const { user } = useUser();
+  const { user, setUser } = useUser();
   const { logout } = useAuth();
 
-  // ログアウトメニューの表示状態
-  const [showLogout, setShowLogout] = useState(false);
-  // ログアウトメニューのRef
-  const logoutRef = useRef<HTMLDivElement>(null);
+  // メニューの表示状態
+  const [showMenu, setShowMenu] = useState(false);
+  // メニューのRef
+  const menuRef = useRef<HTMLDivElement>(null);
 
   /**
-   * ログアウトボタンの外側をクリックしたらログアウトボタンを非表示にする
+   * メニューの外側をクリックしたらメニューを非表示にする
    */
-  const handleClickLogoutOutside = (event: MouseEvent): void => {
+  const handleClickMenuOutside = (event: MouseEvent): void => {
     // Refが存在しない、またはRefが存在してもクリックされた要素がRefの要素の場合（この場合ログアウト処理が走る）
-    if (!logoutRef.current || logoutRef.current.contains(event.target as Node))
+    if (!menuRef.current || menuRef.current.contains(event.target as Node))
       return;
 
-    setShowLogout(false);
+    setShowMenu(false);
   };
 
   // ログアウトメニュー表示時のクリックイベントハンドラー登録
   useEffect(() => {
-    document.addEventListener('mousedown', handleClickLogoutOutside);
+    document.addEventListener('mousedown', handleClickMenuOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickLogoutOutside);
+      document.removeEventListener('mousedown', handleClickMenuOutside);
     };
   }, []);
+
+  // パスが変わったらメニューを非表示にする
+  useEffect(() => {
+    setShowMenu(false);
+  }, [pathname]);
 
   /**
    * ログアウトする
@@ -50,27 +55,28 @@ const HeaderRightMenu: React.FC<HeaderRightMenuProps> = ({ pathname }) => {
   const handleLogout = () => {
     logout()
       .then(() => {
+        setUser(null);
         router.replace('/');
       })
       .catch((error) => console.error('Logout error:', error));
   };
 
-  // ユーザーがログインしていない場合または現在のパスがトップページの場合は何も表示しない
-  if (!user?.username || pathname === '/') {
+  // ユーザーがログインしていない場合は何も表示しない
+  if (!user?.username) {
     return null;
   }
 
   return (
-    <div className="relative z-50" ref={logoutRef}>
+    <div className="relative z-50" ref={menuRef}>
       <Button
         size="sm"
-        onClick={() => setShowLogout(!showLogout)}
+        onClick={() => setShowMenu(!showMenu)}
         className="border-kibako-white/30 border"
       >
         <span>{user.username}</span>
       </Button>
 
-      {showLogout && (
+      {showMenu && (
         <div className="absolute right-0 top-full w-48 flex flex-col mt-2 shadow-xl rounded-lg overflow-hidden bg-kibako-tertiary border border-kibako-secondary/30">
           <Link
             href="/projects"

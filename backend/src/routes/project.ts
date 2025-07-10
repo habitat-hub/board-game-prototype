@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import UserModel from '../models/User';
 import ProjectModel from '../models/Project';
+import PrototypeModel from '../models/Prototype';
 import { ensureAuthenticated } from '../middlewares/auth';
 import {
   checkProjectReadPermission,
@@ -12,7 +13,6 @@ import {
   createProject,
   createPrototypeVersion,
 } from '../factories/prototypeFactory';
-import PrototypeModel from '../models/Prototype';
 import { Op } from 'sequelize';
 import { getAccessibleUsers } from '../helpers/userHelper';
 import { assignRole } from '../helpers/roleHelper';
@@ -125,11 +125,11 @@ router.post('/', async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /api/projects/{projectId}/version:
+ * /api/projects/{projectId}/versions:
  *   post:
  *     tags: [Projects]
- *     summary: プロトタイプバージョン作成
- *     description: 指定されたプロジェクトのプロトタイプバージョンを作成します。
+ *     summary: プロトタイプルーム作成
+ *     description: 指定されたプロジェクトのプロトタイプルーム（VERSIONとINSTANCE）を作成します。
  *     parameters:
  *       - name: projectId
  *         in: path
@@ -146,15 +146,27 @@ router.post('/', async (req: Request, res: Response) => {
  *             properties:
  *               name:
  *                 type: string
- *               versionNumber:
- *                 type: integer
+ *                 description: プロトタイプ名
+ *             required:
+ *               - name
  *     responses:
- *       '200':
- *         description: プロトタイプバージョンを作成しました
+ *       '201':
+ *         description: プロトタイプルームを作成しました
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Prototype'
+ *               type: object
+ *               properties:
+ *                 version:
+ *                   $ref: '#/components/schemas/Prototype'
+ *                 instance:
+ *                   $ref: '#/components/schemas/Prototype'
+ *       '400':
+ *         description: リクエストが不正です
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error400Response'
  *       '404':
  *         description: プロジェクトが見つかりません
  *         content:
@@ -169,13 +181,13 @@ router.post('/', async (req: Request, res: Response) => {
  *               $ref: '#/components/schemas/Error500Response'
  */
 router.post(
-  '/:projectId/version',
+  '/:projectId/versions',
   checkProjectReadPermission,
   async (req: Request, res: Response) => {
-    const { name, versionNumber } = req.body;
-    if (!name || !versionNumber) {
+    const { name } = req.body;
+    if (!name) {
       res.status(400).json({
-        error: 'プロトタイプ名、バージョン番号が必要です',
+        error: 'プロトタイプ名が必要です',
       });
       return;
     }
@@ -187,7 +199,6 @@ router.post(
         await createPrototypeVersion({
           projectId: req.params.projectId,
           name,
-          versionNumber,
           transaction,
         });
       await transaction.commit();
@@ -204,11 +215,122 @@ router.post(
 
 /**
  * @swagger
+ * /api/projects/{projectId}/versions/{prototypeId}:
+ *   delete:
+ *     tags: [Projects]
+ *     summary: プロトタイプルーム削除
+ *     description: 指定されたプロジェクトのプロトタイプルーム（VERSIONとINSTANCE）を削除します。
+ *     parameters:
+ *       - name: projectId
+ *         in: path
+ *         required: true
+ *         description: プロジェクトのID
+ *         schema:
+ *           type: string
+ *       - name: prototypeId
+ *         in: path
+ *         required: true
+ *         description: 削除するVERSIONプロトタイプのID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: プロトタイプルームを削除しました
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       '404':
+ *         description: プロトタイプルームが見つかりません
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404Response'
+ *       '500':
+ *         description: サーバーエラー
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
+ */
+router.delete(
+  '/:projectId/versions/:prototypeId',
+  checkProjectManagePermission,
+  async (req: Request, res: Response) => {
+    const { projectId, prototypeId } = req.params;
+
+    const transaction = await sequelize.transaction();
+    try {
+      // 指定されたIDのVERSIONプロトタイプを取得
+      const versionPrototype = await PrototypeModel.findOne({
+        where: {
+          id: prototypeId,
+          projectId,
+          type: 'VERSION',
+        },
+        transaction,
+      });
+
+      if (!versionPrototype) {
+        await transaction.rollback();
+        res.status(404).json({
+          error: 'プロトタイプルームが見つかりません',
+        });
+        return;
+      }
+
+      // 関連するINSTANCEプロトタイプを取得（削除前にIDを記録）
+      const instancePrototypes = await PrototypeModel.findAll({
+        where: {
+          projectId,
+          type: 'INSTANCE',
+          sourceVersionPrototypeId: versionPrototype.id,
+        },
+        attributes: ['id'], // IDのみ取得で軽量化
+        transaction,
+      });
+
+      const deletedInstanceIds = instancePrototypes.map(
+        (p: PrototypeModel) => p.id
+      );
+
+      // INSTANCEプロトタイプを一括削除（CASCADE により Part → PartProperty も自動削除される）
+      if (instancePrototypes.length > 0) {
+        await PrototypeModel.destroy({
+          where: {
+            id: deletedInstanceIds,
+          },
+          transaction,
+        });
+      }
+
+      // VERSIONプロトタイプを削除（CASCADE により Part → PartProperty も自動削除される）
+      await PrototypeModel.destroy({
+        where: { id: versionPrototype.id },
+        transaction,
+      });
+
+      await transaction.commit();
+      res.json({
+        message: 'プロトタイプルームを削除しました',
+        deletedVersion: versionPrototype.id,
+        deletedInstances: deletedInstanceIds,
+      });
+    } catch (error) {
+      await transaction.rollback();
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+    }
+  }
+);
+
+/**
+ * @swagger
  * /api/projects/{projectId}:
  *   get:
  *     tags: [Projects]
- *     summary: 特定のプロジェクトに属するプロトタイプ一覧取得
- *     description: 指定されたIDのプロジェクトに属するプロトタイプの一覧を取得します。
+ *     summary: 特定のプロジェクトの詳細とプロトタイプ一覧取得
+ *     description: 指定されたIDのプロジェクトの詳細情報と、そのプロジェクトに属するプロトタイプの一覧を取得します。
  *     parameters:
  *       - name: projectId
  *         in: path
@@ -218,18 +340,18 @@ router.post(
  *           type: string
  *     responses:
  *       '200':
- *         description: プロジェクトに属するプロトタイプの一覧を返します
+ *         description: プロジェクトと関連するプロトタイプの情報を返します
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 project:
- *                   $ref: '#/components/schemas/Project'
- *                 prototypes:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Prototype'
+ *               allOf:
+ *                 - $ref: '#/components/schemas/Project'
+ *                 - type: object
+ *                   properties:
+ *                     prototypes:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Prototype'
  *       '404':
  *         description: プロジェクトが見つかりません
  *         content:
@@ -244,20 +366,16 @@ router.get(
     const projectId = req.params.projectId;
 
     try {
-      const project = await ProjectModel.findByPk(projectId);
+      // スコープを使用してプロジェクトとプロトタイプを一緒に取得
+      const project =
+        await ProjectModel.scope('withPrototypes').findByPk(projectId);
+
       if (!project) {
         res.status(404).json({ error: 'プロジェクトが見つかりません' });
         return;
       }
 
-      const prototypes = await PrototypeModel.findAll({
-        where: { projectId },
-      });
-
-      res.json({
-        project,
-        prototypes,
-      });
+      res.json(project.toJSON());
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: '予期せぬエラーが発生しました' });

@@ -22,6 +22,12 @@ export interface Error400Response {
   error: string;
 }
 
+/** @example {"error":"認証が必要です"} */
+export interface Error401Response {
+  /** エラーメッセージ */
+  error: string;
+}
+
 /** @example {"error":"リソースが見つかりません"} */
 export interface Error404Response {
   /** エラーメッセージ */
@@ -56,9 +62,8 @@ export interface Part {
   width: number;
   height: number;
   order: number;
-  frontSide?: 'front' | 'back';
-  /** @format uuid */
-  ownerId?: string;
+  frontSide?: 'front' | 'back' | null;
+  ownerId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -70,8 +75,7 @@ export interface PartProperty {
   description: string;
   color: string;
   textColor: string;
-  /** @format uuid */
-  imageId?: string;
+  imageId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -81,7 +85,7 @@ export interface Permission {
   name: string;
   resource: string;
   action: string;
-  description?: string;
+  description?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -102,9 +106,7 @@ export interface Prototype {
   projectId: string;
   name: string;
   type: 'MASTER' | 'VERSION' | 'INSTANCE';
-  versionNumber: number;
-  /** @format uuid */
-  sourceVersionPrototypeId?: string;
+  sourceVersionPrototypeId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -112,7 +114,7 @@ export interface Prototype {
 export interface Role {
   id: number;
   name: string;
-  description?: string;
+  description?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -180,17 +182,21 @@ export interface ProjectsCreatePayload {
 
 export type ProjectsCreateData = Project;
 
-export interface ProjectsVersionCreatePayload {
-  name?: string;
-  versionNumber?: number;
+export interface ProjectsVersionsCreatePayload {
+  /** プロトタイプ名 */
+  name: string;
 }
 
-export type ProjectsVersionCreateData = Prototype;
+export interface ProjectsVersionsCreateData {
+  version?: Prototype;
+  instance?: Prototype;
+}
 
-export interface ProjectsDetailData {
-  project?: Project;
+export type ProjectsVersionsDeleteData = SuccessResponse;
+
+export type ProjectsDetailData = Project & {
   prototypes?: Prototype[];
-}
+};
 
 export type ProjectsDeleteData = SuccessResponse;
 

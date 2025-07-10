@@ -259,14 +259,14 @@ function handleFlipCard(socket: Socket, io: Server) {
           { where: { id: cardId }, returning: true }
         );
 
-        io.to(prototypeId).emit('FLIP_CARD', {
-          cardId,
-          nextFrontSide,
-        });
-
         io.to(prototypeId).emit('UPDATE_PARTS', {
           parts: [result[0].dataValues],
           properties: [],
+        });
+
+        io.to(prototypeId).emit('FLIP_CARD', {
+          cardId,
+          nextFrontSide,
         });
       } catch (error) {
         console.error('カードの反転に失敗しました。', error);

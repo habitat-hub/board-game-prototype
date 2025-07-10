@@ -12,6 +12,7 @@
 
 import {
   Error400Response,
+  Error401Response,
   Error404Response,
   Error500Response,
   ImagesCreateData,
@@ -36,8 +37,9 @@ import {
   ProjectsRolesListData,
   ProjectsRolesUpdateData,
   ProjectsRolesUpdatePayload,
-  ProjectsVersionCreateData,
-  ProjectsVersionCreatePayload,
+  ProjectsVersionsCreateData,
+  ProjectsVersionsCreatePayload,
+  ProjectsVersionsDeleteData,
   PrototypesDeleteData,
   PrototypesDetailData,
   PrototypesUpdateData,
@@ -176,23 +178,23 @@ export class Api<
       ...params,
     });
   /**
-   * @description 指定されたプロジェクトのプロトタイプバージョンを作成します。
+   * @description 指定されたプロジェクトのプロトタイプルーム（VERSIONとINSTANCE）を作成します。
    *
    * @tags Projects
-   * @name ProjectsVersionCreate
-   * @summary プロトタイプバージョン作成
-   * @request POST:/api/projects/{projectId}/version
+   * @name ProjectsVersionsCreate
+   * @summary プロトタイプルーム作成
+   * @request POST:/api/projects/{projectId}/versions
    */
-  projectsVersionCreate = (
+  projectsVersionsCreate = (
     projectId: string,
-    data: ProjectsVersionCreatePayload,
+    data: ProjectsVersionsCreatePayload,
     params: RequestParams = {}
   ) =>
     this.request<
-      ProjectsVersionCreateData,
-      Error404Response | Error500Response
+      ProjectsVersionsCreateData,
+      Error400Response | Error404Response | Error500Response
     >({
-      path: `/api/projects/${projectId}/version`,
+      path: `/api/projects/${projectId}/versions`,
       method: 'POST',
       body: data,
       type: ContentType.Json,
@@ -200,11 +202,33 @@ export class Api<
       ...params,
     });
   /**
-   * @description 指定されたIDのプロジェクトに属するプロトタイプの一覧を取得します。
+   * @description 指定されたプロジェクトのプロトタイプルーム（VERSIONとINSTANCE）を削除します。
+   *
+   * @tags Projects
+   * @name ProjectsVersionsDelete
+   * @summary プロトタイプルーム削除
+   * @request DELETE:/api/projects/{projectId}/versions/{prototypeId}
+   */
+  projectsVersionsDelete = (
+    projectId: string,
+    prototypeId: string,
+    params: RequestParams = {}
+  ) =>
+    this.request<
+      ProjectsVersionsDeleteData,
+      Error404Response | Error500Response
+    >({
+      path: `/api/projects/${projectId}/versions/${prototypeId}`,
+      method: 'DELETE',
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description 指定されたIDのプロジェクトの詳細情報と、そのプロジェクトに属するプロトタイプの一覧を取得します。
    *
    * @tags Projects
    * @name ProjectsDetail
-   * @summary 特定のプロジェクトに属するプロトタイプ一覧取得
+   * @summary 特定のプロジェクトの詳細とプロトタイプ一覧取得
    * @request GET:/api/projects/{projectId}
    */
   projectsDetail = (projectId: string, params: RequestParams = {}) =>
@@ -406,7 +430,10 @@ export class Api<
    * @request POST:/api/images
    */
   imagesCreate = (data: ImagesCreatePayload, params: RequestParams = {}) =>
-    this.request<ImagesCreateData, Error400Response | Error500Response>({
+    this.request<
+      ImagesCreateData,
+      Error400Response | Error401Response | Error500Response
+    >({
       path: `/api/images`,
       method: 'POST',
       body: data,
@@ -425,7 +452,7 @@ export class Api<
   imagesDetail = (imageId: string, params: RequestParams = {}) =>
     this.request<
       ImagesDetailData,
-      Error400Response | Error404Response | Error500Response
+      Error400Response | Error401Response | Error404Response | Error500Response
     >({
       path: `/api/images/${imageId}`,
       method: 'GET',
@@ -446,7 +473,7 @@ export class Api<
   ) =>
     this.request<
       ImagesDeleteData,
-      Error400Response | Error404Response | Error500Response
+      Error400Response | Error401Response | Error404Response | Error500Response
     >({
       path: `/api/images/${imageId}`,
       method: 'DELETE',

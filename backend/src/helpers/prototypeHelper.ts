@@ -1,15 +1,14 @@
 import { Op } from 'sequelize';
 import PartModel from '../models/Part';
 import ProjectModel from '../models/Project';
-import PrototypeModel from '../models/Prototype';
 import { getAccessibleResourceIds } from './roleHelper';
 import { RESOURCE_TYPES, PERMISSION_ACTIONS } from '../const';
 
 /**
- * アクセス可能なプロジェクトを取得する
+ * アクセス可能なプロジェクトを取得する（プロトタイプ付き）
  *
  * @param userId - ユーザーID
- * @returns アクセス可能なプロジェクト
+ * @returns アクセス可能なプロジェクト（プロトタイプ付き）
  */
 export async function getAccessibleProjects({ userId }: { userId: string }) {
   // ユーザーがアクセス可能なプロジェクトIDを取得
@@ -19,14 +18,14 @@ export async function getAccessibleProjects({ userId }: { userId: string }) {
     PERMISSION_ACTIONS.READ
   );
 
-  // アクセス可能なプロジェクト
-  return await ProjectModel.findAll({
+  // アクセス可能なプロジェクトをスコープ付きで取得
+  return await ProjectModel.scope('withPrototypes').findAll({
     where: { id: { [Op.in]: accessibleProjectIds } },
   });
 }
 
 /**
- * アクセス可能なプロトタイプを取得する
+ * アクセス可能なプロトタイプを取得する（効率化版）
  *
  * @param userId - ユーザーID
  * @returns アクセス可能なプロトタイプ
@@ -34,18 +33,24 @@ export async function getAccessibleProjects({ userId }: { userId: string }) {
 export async function getAccessiblePrototypes({ userId }: { userId: string }) {
   const projects = await getAccessibleProjects({ userId });
 
-  const prototypes = await PrototypeModel.findAll({
-    where: {
-      projectId: { [Op.in]: projects.map(({ id }) => id) },
-    },
-  });
-
+  // スコープを使って取得したデータを整形
   return projects.map((project) => {
+    const projectData = project.toJSON() as {
+      id: string;
+      userId: string;
+      createdAt: string;
+      updatedAt: string;
+      prototypes?: unknown[];
+    };
+
     return {
-      project,
-      prototypes: prototypes.filter(
-        ({ projectId }) => projectId === project.id
-      ),
+      project: {
+        id: project.id,
+        userId: project.userId,
+        createdAt: projectData.createdAt,
+        updatedAt: projectData.updatedAt,
+      },
+      prototypes: projectData.prototypes || [],
     };
   });
 }
