@@ -111,7 +111,7 @@ const RoleManagement: React.FC = () => {
     });
     setSelectedUser(null);
     setSearchTerm('');
-    updateRoleForm({ selectedUserId: '', selectedRole: 'viewer' });
+    updateRoleForm({ selectedUserId: '', selectedRole: 'admin' });
   };
 
   // 権限更新実行
@@ -169,7 +169,7 @@ const RoleManagement: React.FC = () => {
 
       <div className="mb-6">
         <p className="text-center text-wood-dark">
-          プロトタイプ
+          プロジェクト
           {masterPrototypeName && `「${masterPrototypeName}」の`}
           ユーザー権限を管理します。
         </p>
