@@ -1,6 +1,6 @@
 import React from 'react';
 import { AiOutlineUserSwitch } from 'react-icons/ai';
-import { FaUserShield, FaInfoCircle, FaTrash } from 'react-icons/fa';
+import { FaInfoCircle, FaTrash } from 'react-icons/fa';
 
 import RoleBadge from '../atoms/RoleBadge';
 import UserAvatar from '../atoms/UserAvatar';
@@ -31,7 +31,7 @@ interface UserRoleCardProps {
 const UserRoleCard: React.FC<UserRoleCardProps> = ({
   userRole,
   isCreator,
-  isLastAdmin,
+  isLastAdmin: _isLastAdmin, // 現在未使用のため_プレフィックスを追加
   canRemove,
   removeReason,
   onEdit: _onEdit, // 現在未使用のため_プレフィックスを追加
@@ -56,11 +56,6 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
             <div className="font-medium text-wood-dark">
               {userRole.user.username}
             </div>
-            {isCreator && (
-              <div className="flex-shrink-0" title="作成者">
-                <FaUserShield className="h-4 w-4 text-yellow-600" />
-              </div>
-            )}
           </div>
 
           {/* 現在の権限表示 */}
@@ -79,7 +74,7 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
             className="p-2 rounded transition-colors text-gray-300 cursor-not-allowed"
             title={
               isCreator
-                ? '作成者の権限は変更できません'
+                ? 'プロジェクト作成者の権限は変更できません'
                 : '権限を変更する - Coming Soon 開発中です'
             }
             disabled={true}
@@ -129,12 +124,18 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
       )}
 
       {/* 制限の説明 */}
-      {(isCreator || isLastAdmin) && (
+      {isCreator && (
         <div className="mt-3 pt-3 border-t border-gray-100">
           <div className="text-xs text-gray-500 flex items-center gap-1">
-            <FaInfoCircle className="h-3 w-3" />
-            {isCreator && '作成者の権限は変更できません'}
-            {isLastAdmin && !isCreator && '最後の管理者の権限は変更できません'}
+            <div>
+              <div className="text-yellow-600 font-medium">
+                プロジェクト作成者
+              </div>
+              <div className="flex items-center gap-1">
+                <FaInfoCircle className="h-3 w-3" />
+                <span>権限は変更できません</span>
+              </div>
+            </div>
           </div>
         </div>
       )}
