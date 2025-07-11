@@ -169,7 +169,7 @@ const RoleManagement: React.FC = () => {
 
       <div className="mb-6">
         <p className="text-center text-wood-dark">
-          プロトタイプ
+          プロジェクト
           {masterPrototypeName && `「${masterPrototypeName}」の`}
           ユーザー権限を管理します。
         </p>
