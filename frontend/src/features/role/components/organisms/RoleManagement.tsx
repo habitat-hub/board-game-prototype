@@ -111,7 +111,7 @@ const RoleManagement: React.FC = () => {
     });
     setSelectedUser(null);
     setSearchTerm('');
-    updateRoleForm({ selectedUserId: '', selectedRole: 'viewer' });
+    updateRoleForm({ selectedUserId: '', selectedRole: 'admin' });
   };
 
   // 権限更新実行
