@@ -33,6 +33,16 @@ export default function GameBoardInstructionPanel() {
   // キーボードショートカットのハンドラを追加
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // ユーザーが入力中の場合は何もしない
+      const target = event.target as HTMLElement;
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.contentEditable === 'true'
+      ) {
+        return;
+      }
+
       // Shift + ? (Shift + / キー)でショートカットメニューを開閉
       if (event.shiftKey && event.key === '?') {
         setIsExpanded((prev) => !prev);
