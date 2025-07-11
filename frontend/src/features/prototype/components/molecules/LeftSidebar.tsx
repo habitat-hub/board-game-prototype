@@ -11,7 +11,7 @@ import { Prototype } from '@/api/types';
 import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
 import formatDate from '@/utils/dateFormat';
 
-import ShortcutHelpPanel from './ShortcutHelpPanel';
+import GameBoardInstructionPanel from './GameBoardInstructionPanel';
 
 export default function LeftSidebar({
   prototypeName,
@@ -212,7 +212,7 @@ export default function LeftSidebar({
       {!isLeftSidebarMinimized &&
         gameBoardMode !== GameBoardMode.PLAY &&
         renderSidebarContent()}
-      <ShortcutHelpPanel />
+      <GameBoardInstructionPanel />
     </div>
   );
 }

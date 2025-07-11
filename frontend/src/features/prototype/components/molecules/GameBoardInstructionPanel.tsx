@@ -27,7 +27,7 @@ const SHORTCUTS: ShortcutInfo[] = [
   },
 ];
 
-export default function ShortcutHelpPanel() {
+export default function GameBoardInstructionPanel() {
   const [isExpanded, setIsExpanded] = useState(false);
 
   // キーボードショートカットのハンドラを追加
