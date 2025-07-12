@@ -14,7 +14,7 @@ import DebugInfo from '@/features/prototype/components/atoms/DebugInfo';
 import GridLines from '@/features/prototype/components/atoms/GridLines';
 import { KonvaPartContextMenu } from '@/features/prototype/components/atoms/KonvaPartContextMenu';
 import ModeToggleButton from '@/features/prototype/components/atoms/ModeToggleButton';
-import Part from '@/features/prototype/components/atoms/Part';
+import Part from '@/features/prototype/components/molecules/Part';
 import SelectionRect from '@/features/prototype/components/atoms/SelectionRect';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';

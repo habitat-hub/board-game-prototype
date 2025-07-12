@@ -11,6 +11,9 @@ import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { PartHandle } from '@/features/prototype/type';
 import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
 
+import FlipIcon from '../atoms/FlipIcon';
+import ShuffleIcon from '../atoms/ShuffleIcon';
+
 interface PartProps {
   part: PartType;
   properties: PropertyType[];
@@ -256,8 +259,8 @@ const Part = forwardRef<PartHandle, PartProps>(
 
         {/* タイプを示す小さなアイコン */}
         <Group x={part.width - 30} y={part.height - 25}>
-          {isDeck && <Text text="⠿" fontSize={14} fill="#666" />}
-          {isCard && <Text text="↻" fontSize={14} fill="#666" />}
+          {isDeck && <ShuffleIcon size={20} color="#666" />}
+          {isCard && <FlipIcon size={20} color="#666" />}
         </Group>
 
         {/* デバッグ情報: ID と順序（order） - showDebugInfoがtrueの場合のみ表示 */}
