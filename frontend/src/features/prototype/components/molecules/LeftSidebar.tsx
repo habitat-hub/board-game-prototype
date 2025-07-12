@@ -7,11 +7,11 @@ import { IoArrowBack, IoMenu, IoAdd } from 'react-icons/io5';
 import { MdMeetingRoom, MdDelete } from 'react-icons/md';
 
 import { useProject } from '@/api/hooks/useProject';
-import { Prototype, Project } from '@/api/types';
+import { Prototype } from '@/api/types';
 import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
 import formatDate from '@/utils/dateFormat';
 
-import ShortcutHelpPanel from './ShortcutHelpPanel';
+import GameBoardInstructionPanel from './GameBoardInstructionPanel';
 
 export default function LeftSidebar({
   prototypeName,
@@ -27,13 +27,7 @@ export default function LeftSidebar({
     useProject();
 
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
-  const [prototypeInfo, setPrototypeInfo] = useState<{
-    project: Project | null;
-    master: Prototype | null;
-    versions: Prototype[];
-    instances: Prototype[];
-    instancesByVersion: Record<string, Prototype[]>;
-  } | null>(null);
+  const [instances, setInstances] = useState<Prototype[]>([]);
   const [isRoomCreating, setIsRoomCreating] = useState(false);
 
   /**
@@ -43,33 +37,12 @@ export default function LeftSidebar({
     try {
       const project = await getProject(projectId);
 
-      // マスター版プロトタイプ
-      const master = project.prototypes.find(({ type }) => type === 'MASTER');
-      // バージョン版プロトタイプ
-      const versions = project.prototypes.filter(
-        ({ type }) => type === 'VERSION'
-      );
-      // インスタンス版プロトタイプ
-      const instances = project.prototypes.filter(
+      // インスタンス版プロトタイプのみを取得
+      const instancePrototypes = project.prototypes.filter(
         ({ type }) => type === 'INSTANCE'
       );
 
-      // バージョンごとにインスタンスをまとめる
-      const instancesByVersion: Record<string, Prototype[]> = {};
-      versions.forEach((version) => {
-        instancesByVersion[version.id] = instances.filter((_instance) => {
-          // インスタンスがどのバージョンから作られたかを判定
-          return _instance.sourceVersionPrototypeId === version.id;
-        });
-      });
-
-      setPrototypeInfo({
-        project: project || null,
-        master: master || null,
-        versions,
-        instances,
-        instancesByVersion,
-      });
+      setInstances(instancePrototypes);
     } catch (error) {
       console.error('Error fetching prototypes:', error);
     }
@@ -109,9 +82,7 @@ export default function LeftSidebar({
 
     try {
       // インスタンスから対応するバージョンを見つける
-      const instance = prototypeInfo?.instances.find(
-        (i) => i.id === instanceId
-      );
+      const instance = instances.find((i) => i.id === instanceId);
       if (!instance) {
         console.error('Instance not found');
         return;
@@ -138,7 +109,6 @@ export default function LeftSidebar({
 
   // サイドバーのルームリスト部分のみを表示する
   const renderSidebarContent = () => {
-    if (!prototypeInfo) return null;
     return (
       <div className="p-2 overflow-y-auto scrollbar-hide space-y-4">
         <div className="flex flex-col gap-2 py-0.5 px-0">
@@ -162,7 +132,7 @@ export default function LeftSidebar({
             </div>
             <IoAdd className="h-5 w-5 text-kibako-secondary ml-1 transition-colors" />
           </button>
-          {prototypeInfo.instances
+          {instances
             .slice()
             .sort((a, b) =>
               b.createdAt && a.createdAt
@@ -242,7 +212,7 @@ export default function LeftSidebar({
       {!isLeftSidebarMinimized &&
         gameBoardMode !== GameBoardMode.PLAY &&
         renderSidebarContent()}
-      <ShortcutHelpPanel />
+      <GameBoardInstructionPanel />
     </div>
   );
 }
