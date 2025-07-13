@@ -65,8 +65,14 @@ const HeaderRightMenu: React.FC<HeaderRightMenuProps> = ({ pathname }) => {
     return null;
   }
 
-  // ユーザーがログインしていない場合はログイン・サインアップボタンを表示
+  // ユーザーがログインしていない場合
   if (!user?.username) {
+    // /loginページの場合は何も表示しない
+    if (pathname === '/login') {
+      return null;
+    }
+
+    // /login以外のページではログイン・サインアップボタンを表示
     return (
       <div className="relative z-50 flex gap-2">
         <Link
