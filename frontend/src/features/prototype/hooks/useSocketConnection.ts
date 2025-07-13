@@ -61,6 +61,8 @@ export const useSocketConnection = ({
 
   // socket通信の設定
   useEffect(() => {
+    if (!socket) return;
+
     // サーバーに接続した後、特定のプロトタイプに参加
     socket.emit('JOIN_PROTOTYPE', {
       prototypeId,
