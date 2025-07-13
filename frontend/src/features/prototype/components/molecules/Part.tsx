@@ -4,6 +4,8 @@ import { Group, Rect, Text, Image } from 'react-konva';
 import useImage from 'use-image';
 
 import { Part as PartType, PartProperty as PropertyType } from '@/api/types';
+import FlipIcon from '@/features/prototype/components/atoms/FlipIcon';
+import ShuffleIcon from '@/features/prototype/components/atoms/ShuffleIcon';
 import { useCard } from '@/features/prototype/hooks/useCard';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { useDeck } from '@/features/prototype/hooks/useDeck';
@@ -256,8 +258,8 @@ const Part = forwardRef<PartHandle, PartProps>(
 
         {/* タイプを示す小さなアイコン */}
         <Group x={part.width - 30} y={part.height - 25}>
-          {isDeck && <Text text="⠿" fontSize={14} fill="#666" />}
-          {isCard && <Text text="↻" fontSize={14} fill="#666" />}
+          {isDeck && <ShuffleIcon size={20} color="#666" />}
+          {isCard && <FlipIcon size={20} color="#666" />}
         </Group>
 
         {/* デバッグ情報: ID と順序（order） - showDebugInfoがtrueの場合のみ表示 */}
