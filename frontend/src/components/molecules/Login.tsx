@@ -82,8 +82,9 @@ function Login() {
           </Button>
 
           {/* ログインボタン */}
-          <button
-            className="rounded-full font-semibold transition-colors bg-transparent text-kibako-primary/70 hover:text-kibako-primary border border-kibako-primary/30 hover:border-kibako-primary/50 px-4 py-2 text-sm"
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => {
               window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
             }}
@@ -92,7 +93,7 @@ function Login() {
               <FaGoogle className="text-lg" />
               <span>既にアカウントをお持ちの方はログイン</span>
             </div>
-          </button>
+          </Button>
         </div>
 
         {/* サブタイトル */}
