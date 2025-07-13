@@ -16,7 +16,7 @@ interface HeaderRightMenuProps {
 
 const HeaderRightMenu: React.FC<HeaderRightMenuProps> = ({ pathname }) => {
   const router = useRouter();
-  const { user, setUser } = useUser();
+  const { user, setUser, isLoading } = useUser();
   const { logout } = useAuth();
 
   // メニューの表示状態
@@ -59,6 +59,11 @@ const HeaderRightMenu: React.FC<HeaderRightMenuProps> = ({ pathname }) => {
       })
       .catch((error) => console.error('Logout error:', error));
   };
+
+  // ローディング時はnullを返す
+  if (isLoading) {
+    return null;
+  }
 
   // ユーザーがログインしていない場合はログイン・サインアップボタンを表示
   if (!user?.username) {
