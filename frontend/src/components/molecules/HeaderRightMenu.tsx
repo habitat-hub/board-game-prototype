@@ -66,13 +66,13 @@ const HeaderRightMenu: React.FC<HeaderRightMenuProps> = ({ pathname }) => {
       <div className="relative z-50 flex gap-2">
         <Link
           href="/login"
-          className="px-4 py-2 bg-kibako-secondary text-kibako-primary border border-kibako-secondary rounded-lg hover:bg-kibako-secondary/80 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
+          className="px-4 py-2 bg-kibako-primary text-white rounded-lg hover:bg-kibako-primary/90 hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
         >
           ログイン
         </Link>
         <Link
           href="/login"
-          className="px-4 py-2 bg-kibako-primary text-white rounded-lg hover:bg-kibako-primary/90 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
+          className="px-4 py-2 bg-kibako-secondary text-kibako-primary border border-kibako-secondary rounded-lg hover:bg-kibako-secondary/80 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
         >
           サインアップ
         </Link>
