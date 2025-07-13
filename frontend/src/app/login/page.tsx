@@ -9,11 +9,7 @@ export const metadata: Metadata = {
 };
 
 const LoginPage: React.FC = () => {
-  return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
-      <Login />
-    </div>
-  );
+  return <Login />;
 };
 
 export default LoginPage;

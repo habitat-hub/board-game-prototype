@@ -38,7 +38,7 @@ function Login() {
   }
 
   return (
-    <>
+    <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
       <div className="p-6 sm:p-8 md:p-12 rounded-lg border border-kibako-secondary/20 shadow-xl w-full max-w-md sm:max-w-lg md:w-1/2 text-center flex flex-col bg-kibako-white mx-auto">
         {/* タイトル */}
         <h1 className="text-3xl sm:text-4xl font-bold tracking-wider text-kibako-primary">
@@ -46,23 +46,21 @@ function Login() {
         </h1>
 
         {/* ロゴ部分 */}
-        <div className="flex items-center justify-center mt-8 sm:mt-12">
-          <div className="flex items-center gap-2 sm:gap-4">
-            {/* サイコロ */}
-            <FaDice className="text-4xl sm:text-6xl text-kibako-primary/60 transform rotate-12" />
+        <div className="flex items-center justify-center gap-2 sm:gap-4 mt-8 sm:mt-12">
+          {/* サイコロ */}
+          <FaDice className="text-4xl sm:text-6xl text-kibako-primary/60 transform rotate-12" />
 
-            {/* トランプ */}
-            <GiCardAceSpades className="text-4xl sm:text-6xl text-kibako-primary/60 transform -rotate-12" />
+          {/* トランプ */}
+          <GiCardAceSpades className="text-4xl sm:text-6xl text-kibako-primary/60 transform -rotate-12" />
 
-            {/* メインの木箱アイコン */}
-            <GiWoodenCrate className="text-5xl sm:text-7xl drop-shadow-lg text-kibako-accent" />
+          {/* メインの木箱アイコン */}
+          <GiWoodenCrate className="text-5xl sm:text-7xl drop-shadow-lg text-kibako-accent" />
 
-            {/* パズル */}
-            <GiPuzzle className="text-4xl sm:text-6xl text-kibako-primary/60 transform rotate-6" />
+          {/* パズル */}
+          <GiPuzzle className="text-4xl sm:text-6xl text-kibako-primary/60 transform rotate-6" />
 
-            {/* チェスボード */}
-            <FaChessBoard className="text-4xl sm:text-6xl text-kibako-primary/60 transform -rotate-6" />
-          </div>
+          {/* チェスボード */}
+          <FaChessBoard className="text-4xl sm:text-6xl text-kibako-primary/60 transform -rotate-6" />
         </div>
 
         {/* サインアップ・ログイン部分 */}
@@ -103,7 +101,7 @@ function Login() {
           アイデアを形にしよう
         </p>
       </div>
-    </>
+    </div>
   );
 }
 
