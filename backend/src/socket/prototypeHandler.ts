@@ -112,9 +112,9 @@ function handleAddPart(socket: Socket, io: Server) {
           where: { prototypeId },
         });
 
-        // maxOrderがnullの場合（まだパーツが存在しない場合）は1、
-        // そうでなければmaxOrder + 1を使用
-        const newOrder = maxOrder === null ? 1 : maxOrder + 1;
+        // maxOrderがnullの場合（まだパーツが存在しない場合）は0、
+        // そうでなければ(1+maxOrder)/2を使用
+        const newOrder = maxOrder === null ? 0 : (1 + maxOrder) / 2;
 
         const newPart = await PartModel.create({
           ...part,
