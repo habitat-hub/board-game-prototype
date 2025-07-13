@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
 
 import { Part, PartProperty } from '@/api/types';
+import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
-import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { PartPropertyUpdate } from '@/features/prototype/type';
 
 // パーツのプロパティの型定義(metadataを除いた型)

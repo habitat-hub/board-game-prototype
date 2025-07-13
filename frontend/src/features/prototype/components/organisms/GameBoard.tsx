@@ -30,12 +30,12 @@ import {
   DEFAULT_INITIAL_SCALE,
 } from '@/features/prototype/constants/gameBoard';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
+import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
 import { useHandVisibility } from '@/features/prototype/hooks/useHandVisibility';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { useSelection } from '@/features/prototype/hooks/useSelection';
-import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { AddPartProps, DeleteImageProps } from '@/features/prototype/type';
 import { CursorInfo } from '@/features/prototype/types/cursor';
 import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
@@ -50,8 +50,8 @@ import {
 interface GameBoardProps {
   prototypeName: string;
   projectId: string;
-  parts: Part[];
-  properties: PartProperty[];
+  partsMap: Map<number, Part>;
+  propertiesMap: Map<number, PartProperty[]>;
   cursors: Record<string, CursorInfo>;
   gameBoardMode: GameBoardMode;
 }
@@ -59,8 +59,8 @@ interface GameBoardProps {
 export default function GameBoard({
   prototypeName,
   projectId,
-  parts,
-  properties,
+  partsMap,
+  propertiesMap,
   cursors,
   gameBoardMode,
 }: GameBoardProps) {
@@ -73,6 +73,12 @@ export default function GameBoard({
   const { dispatch } = usePartReducer();
   const { measureOperation } = usePerformanceTracker();
   const [images, setImages] = useState<Record<string, string>>({});
+
+  const parts = useMemo(() => Array.from(partsMap.values()), [partsMap]);
+  const properties = useMemo(
+    () => Array.from(propertiesMap.values()).flat(),
+    [propertiesMap]
+  );
 
   // 手札の上のカードの表示制御
   const { cardVisibilityMap } = useHandVisibility(parts, gameBoardMode);
@@ -928,7 +934,6 @@ export default function GameBoard({
         parts={parts}
         properties={properties}
         cursors={cursors}
-        selectedPartIds={selectedPartIds}
       />
     </DebugModeProvider>
   );

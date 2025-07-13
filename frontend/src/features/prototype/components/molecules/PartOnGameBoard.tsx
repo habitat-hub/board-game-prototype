@@ -6,10 +6,10 @@ import useImage from 'use-image';
 import { Part, PartProperty } from '@/api/types';
 import FlipIcon from '@/features/prototype/components/atoms/FlipIcon';
 import ShuffleIcon from '@/features/prototype/components/atoms/ShuffleIcon';
+import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { useCard } from '@/features/prototype/hooks/useCard';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { useDeck } from '@/features/prototype/hooks/useDeck';
-import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { PartHandle } from '@/features/prototype/type';
 import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
 
