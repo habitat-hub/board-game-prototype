@@ -284,11 +284,7 @@ const ProjectList: React.FC = () => {
   }, [prototypeList, sortPrototypes]);
 
   if (isLoading) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60">
-        <Loading />
-      </div>
-    );
+    return <Loading />;
   }
 
   if (sortedPrototypeList.length === 0) {
