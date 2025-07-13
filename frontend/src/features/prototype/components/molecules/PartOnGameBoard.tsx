@@ -118,14 +118,19 @@ const PartOnGameBoard = forwardRef<PartHandle, PartOnGameBoardProps>(
       };
     }, [isReversing, isCard, setIsReversing]);
 
-    // 裏向き表示にする必要があるか
-    const isFlippedNeeded =
-      gameBoardMode === GameBoardMode.PLAY && isOtherPlayerCard;
+    // 常に裏面を表示すべきカードか
+    const shouldAlwaysDisplayBackSide =
+      gameBoardMode === GameBoardMode.PLAY &&
+      part.type === 'card' &&
+      isOtherPlayerCard;
+
+    // 表示する面を決定
+    const frontSide = shouldAlwaysDisplayBackSide ? 'back' : part.frontSide;
 
     // 対象面（表or裏）のプロパティを取得 (ローカルの isFlipped 状態を使用)
     const targetProperty = useMemo(() => {
-      return properties.find((p) => p.side === part.frontSide);
-    }, [part.frontSide, properties]);
+      return properties.find((p) => p.side === frontSide);
+    }, [frontSide, properties]);
 
     // 有効な画像URLの値を取得する関数
     const getValidImageURL = (imageId?: string | null) => {
@@ -152,7 +157,7 @@ const PartOnGameBoard = forwardRef<PartHandle, PartOnGameBoardProps>(
         return;
       }
 
-      if (isCard && !isFlippedNeeded) {
+      if (isCard && !shouldAlwaysDisplayBackSide) {
         reverseCard(part.frontSide === 'front' ? 'back' : 'front', true);
         return;
       }
@@ -224,22 +229,20 @@ const PartOnGameBoard = forwardRef<PartHandle, PartOnGameBoardProps>(
           />
         )}
 
-        {/* パーツの名前 - フリップされていなければ表示 */}
-        {!isFlippedNeeded && (
-          <Text
-            text={targetProperty?.name || ''}
-            fontSize={part.type === 'token' ? 12 : 14}
-            fontStyle="bold"
-            fill={targetProperty?.textColor || 'black'}
-            width={part.width}
-            align="center"
-            padding={10}
-            y={5}
-          />
-        )}
+        {/* パーツの名前 */}
+        <Text
+          text={targetProperty?.name || ''}
+          fontSize={part.type === 'token' ? 12 : 14}
+          fontStyle="bold"
+          fill={targetProperty?.textColor || 'black'}
+          width={part.width}
+          align="center"
+          padding={10}
+          y={5}
+        />
 
-        {/* 説明文 - フリップされていなければ表示 */}
-        {!isFlippedNeeded && targetProperty?.description && (
+        {/* 説明文 */}
+        {targetProperty?.description && (
           <Text
             text={targetProperty.description}
             fontSize={10}
