@@ -71,48 +71,6 @@ export function isOverlapping(selfPart: PartModel, part: PartModel) {
 }
 
 /**
- * 自分の上にあるパーツを取得する
- * @param partId - パーツID
- * @param sortedParts - ソート済みのパーツ(order: 昇順)
- * @returns 自分の上にあるパーツ
- */
-export async function getOverLappingPart(
-  partId: number,
-  sortedParts: PartModel[]
-) {
-  // 対象パーツ
-  const selfPart = sortedParts.find((part) => part.id === partId);
-  // 対象パーツが存在しない場合
-  if (!selfPart) return;
-
-  // 自分の上にあるパーツ
-  return sortedParts.find(
-    (part) => part.order > selfPart.order && isOverlapping(selfPart, part)
-  );
-}
-
-/**
- * 自分の下にあるパーツを取得する
- * @param partId - パーツID
- * @param sortedParts - ソート済みのパーツ(order: 昇順)
- * @returns 自分の下にあるパーツ
- */
-export async function getUnderLappingPart(
-  partId: number,
-  sortedParts: PartModel[]
-) {
-  // 対象パーツ
-  const selfPart = sortedParts.find((part) => part.id === partId);
-  // 対象パーツが存在しない場合
-  if (!selfPart) return;
-
-  // 自分の下にあるパーツ
-  return sortedParts.find(
-    (part) => part.order < selfPart.order && isOverlapping(selfPart, part)
-  );
-}
-
-/**
  * デッキをシャッフルする
  * @param cards - シャッフルするパーツ
  */

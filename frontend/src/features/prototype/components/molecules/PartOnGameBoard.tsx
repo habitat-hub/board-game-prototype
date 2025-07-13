@@ -3,7 +3,7 @@ import React, { forwardRef, useMemo, useRef, useEffect, useState } from 'react';
 import { Group, Rect, Text, Image } from 'react-konva';
 import useImage from 'use-image';
 
-import { Part as PartType, PartProperty as PropertyType } from '@/api/types';
+import { Part, PartProperty } from '@/api/types';
 import FlipIcon from '@/features/prototype/components/atoms/FlipIcon';
 import ShuffleIcon from '@/features/prototype/components/atoms/ShuffleIcon';
 import { useCard } from '@/features/prototype/hooks/useCard';
@@ -13,9 +13,9 @@ import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { PartHandle } from '@/features/prototype/type';
 import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
 
-interface PartProps {
-  part: PartType;
-  properties: PropertyType[];
+interface PartOnGameBoardProps {
+  part: Part;
+  properties: PartProperty[];
   images: Record<string, string>[];
   isOtherPlayerCard: boolean;
   gameBoardMode: GameBoardMode;
@@ -27,10 +27,13 @@ interface PartProps {
     e: Konva.KonvaEventObject<PointerEvent>,
     partId: number
   ) => void;
+  onChangePartOrder: (
+    type: 'front' | 'back' | 'frontmost' | 'backmost'
+  ) => void;
   isActive: boolean;
 }
 
-const Part = forwardRef<PartHandle, PartProps>(
+const PartOnGameBoard = forwardRef<PartHandle, PartOnGameBoardProps>(
   (
     {
       part,
@@ -43,6 +46,7 @@ const Part = forwardRef<PartHandle, PartProps>(
       onDragEnd,
       onClick,
       onContextMenu,
+      onChangePartOrder,
       isActive = false,
     },
     ref
@@ -53,24 +57,6 @@ const Part = forwardRef<PartHandle, PartProps>(
     const [scaleX, setScaleX] = useState(1);
     const { showDebugInfo } = useDebugMode();
     const { socket } = useSocket();
-
-    // 要素のドラッグ開始時に最前面に移動する処理を追加（PLAYモードのみ）
-    useEffect(() => {
-      if (!groupRef.current || gameBoardMode !== GameBoardMode.PLAY) return;
-
-      const currentGroup = groupRef.current;
-
-      // ドラッグ開始時のハンドラーを追加（PLAYモードのみ）
-      currentGroup.on('dragstart', () => {
-        // ドラッグ中のノードを最前面に移動
-        currentGroup.moveToTop();
-      });
-
-      return () => {
-        // クリーンアップ
-        currentGroup.off('dragstart');
-      };
-    }, [gameBoardMode, groupRef]);
 
     const isCard = part.type === 'card';
     const isDeck = part.type === 'deck';
@@ -175,6 +161,17 @@ const Part = forwardRef<PartHandle, PartProps>(
     // 中央を軸にして反転させるための設定
     const offsetX = part.width / 2;
 
+    const handleDragStart = (e: Konva.KonvaEventObject<DragEvent>) => {
+      // プレイモード時にカードまたはトークンがドラッグされたら最前面に移動
+      if (
+        gameBoardMode === GameBoardMode.PLAY &&
+        (part.type === 'card' || part.type === 'token')
+      ) {
+        onChangePartOrder('frontmost');
+      }
+      onDragStart(e);
+    };
+
     // コンテキストメニュー用ハンドラー
     const handleContextMenu = (e: Konva.KonvaEventObject<PointerEvent>) => {
       e.evt.preventDefault();
@@ -192,7 +189,7 @@ const Part = forwardRef<PartHandle, PartProps>(
         offsetX={offsetX}
         draggable
         scaleX={scaleX}
-        onDragStart={onDragStart}
+        onDragStart={handleDragStart}
         onDragMove={(e) => onDragMove(e, part.id)}
         onDragEnd={(e) => onDragEnd(e, part.id)}
         onClick={onClick}
@@ -267,17 +264,18 @@ const Part = forwardRef<PartHandle, PartProps>(
           <Group x={5} y={5}>
             <Rect
               width={85}
-              height={20}
+              height={25}
               fill="rgba(0, 0, 0, 0.7)"
               cornerRadius={4}
             />
             <Text
-              text={`ID:${part.id} / O:${typeof part.order === 'number' ? part.order.toFixed(2) : 'N/A'}`}
+              text={`ID:${part.id}\nO:${typeof part.order === 'number' ? part.order : 'N/A'}`}
               fontSize={10}
               fill="white"
               width={85}
-              align="center"
-              y={5}
+              align="left"
+              x={5}
+              y={3}
             />
           </Group>
         )}
@@ -285,6 +283,6 @@ const Part = forwardRef<PartHandle, PartProps>(
     );
   }
 );
-Part.displayName = 'Part';
+PartOnGameBoard.displayName = 'Part';
 
-export default Part;
+export default PartOnGameBoard;
