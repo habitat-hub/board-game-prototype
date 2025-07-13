@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Socket } from 'socket.io-client';
 
 import { Part, PartProperty } from '@/api/types';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
@@ -16,8 +15,6 @@ interface UseSocketConnectionProps {
 }
 
 interface UseSocketConnectionReturn {
-  /** Socket接続インスタンス */
-  socket: Socket | null;
   /** パーツのMap */
   partsMap: PartsMap;
   /** パーツプロパティのMap */
@@ -155,7 +152,6 @@ export const useSocketConnection = ({
   }, [prototypeId, userId, convertToMaps, selectMultipleParts, socket]);
 
   return {
-    socket,
     partsMap,
     propertiesMap,
     cursors,
