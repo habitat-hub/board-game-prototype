@@ -4,9 +4,8 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/api/hooks/useAuth';
+import UserAvatar from '@/features/role/components/atoms/UserAvatar';
 import { useUser } from '@/hooks/useUser';
-
-import Button from '../atoms/Button';
 
 // フィードバックフォームのURL
 const FEEDBACK_FORM_URL = 'https://forms.gle/XjMV2WgFRCJg7cHj7';
@@ -68,21 +67,28 @@ const HeaderRightMenu: React.FC<HeaderRightMenuProps> = ({ pathname }) => {
 
   return (
     <div className="relative z-50" ref={menuRef}>
-      <Button
-        size="sm"
+      <button
         onClick={() => setShowMenu(!showMenu)}
-        className="border-kibako-white/30 border"
+        className="rounded-full p-2 hover:bg-kibako-secondary/10 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
       >
-        <span>{user.username}</span>
-      </Button>
+        <UserAvatar username={user.username} size="md" />
+      </button>
 
       {showMenu && (
         <div className="absolute right-0 top-full w-48 flex flex-col mt-2 shadow-xl rounded-lg overflow-hidden bg-kibako-tertiary border border-kibako-secondary/30">
+          {/* ユーザー名表示行 */}
+          <div className="flex items-center gap-3 p-3 bg-kibako-secondary/5 border-b border-kibako-secondary/20">
+            <UserAvatar username={user.username} size="sm" />
+            <span className="font-medium text-kibako-primary">
+              {user.username}
+            </span>
+          </div>
+
           <Link
             href="/projects"
             className="block w-full text-kibako-primary p-2 text-left hover:bg-kibako-secondary/10 transition-colors duration-200"
           >
-            プロトタイプ一覧
+            プロジェクト一覧
           </Link>
           <Link
             href="/profile/edit"
