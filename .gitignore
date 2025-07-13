@@ -1,1 +1,50 @@
 .vscode
+
+# Cursor設定ファイル（管理対象）
+!.cursorrules
+
+# 環境変数
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 依存関係
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ビルド出力
+.next/
+out/
+build/
+dist/
+
+# ログファイル
+*.log
+
+# ランタイムデータ
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# カバレッジディレクトリ
+coverage/
+.nyc_output
+
+# 依存関係ロックファイル（管理対象）
+!package-lock.json
+!yarn.lock
+
+# IDE設定
+.idea/
+*.swp
+*.swo
+*~
+
+# OS生成ファイル
+.DS_Store
+Thumbs.db
