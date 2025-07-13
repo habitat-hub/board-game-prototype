@@ -4,15 +4,14 @@ import { Group, Rect, Text, Image } from 'react-konva';
 import useImage from 'use-image';
 
 import { Part as PartType, PartProperty as PropertyType } from '@/api/types';
+import FlipIcon from '@/features/prototype/components/atoms/FlipIcon';
+import ShuffleIcon from '@/features/prototype/components/atoms/ShuffleIcon';
 import { useCard } from '@/features/prototype/hooks/useCard';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { useDeck } from '@/features/prototype/hooks/useDeck';
 import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { PartHandle } from '@/features/prototype/type';
 import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
-
-import FlipIcon from '../atoms/FlipIcon';
-import ShuffleIcon from '../atoms/ShuffleIcon';
 
 interface PartProps {
   part: PartType;
