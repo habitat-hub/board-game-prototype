@@ -304,7 +304,13 @@ export default function PartPropertySidebar({
             </div>
             {selectedPart.type === 'card' && (
               <div className="flex items-center justify-center mb-2">
-                <span className="text-xs font-medium px-3 py-1 rounded-full bg-blue-100 text-blue-800">
+                <span
+                  className={`text-xs font-medium px-3 py-1 rounded-full text-blue-800 ${
+                    selectedPart.frontSide === 'front'
+                      ? 'bg-green-100'
+                      : 'bg-red-100'
+                  }`}
+                >
                   {selectedPart.frontSide === 'front'
                     ? '表面の設定'
                     : '裏面の設定'}
