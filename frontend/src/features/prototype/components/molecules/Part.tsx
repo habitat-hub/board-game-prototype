@@ -54,24 +54,6 @@ const Part = forwardRef<PartHandle, PartProps>(
     const { showDebugInfo } = useDebugMode();
     const { socket } = useSocket();
 
-    // 要素のドラッグ開始時に最前面に移動する処理を追加（PLAYモードのみ）
-    useEffect(() => {
-      if (!groupRef.current || gameBoardMode !== GameBoardMode.PLAY) return;
-
-      const currentGroup = groupRef.current;
-
-      // ドラッグ開始時のハンドラーを追加（PLAYモードのみ）
-      currentGroup.on('dragstart', () => {
-        // ドラッグ中のノードを最前面に移動
-        currentGroup.moveToTop();
-      });
-
-      return () => {
-        // クリーンアップ
-        currentGroup.off('dragstart');
-      };
-    }, [gameBoardMode, groupRef]);
-
     const isCard = part.type === 'card';
     const isDeck = part.type === 'deck';
 
