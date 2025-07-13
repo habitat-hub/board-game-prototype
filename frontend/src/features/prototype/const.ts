@@ -18,8 +18,8 @@ export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
     description: '',
     color: '#FFFFFF',
     textColor: '#000000',
-    frontDescription: '表',
-    backDescription: '裏',
+    frontDescription: '',
+    backDescription: '',
   },
   // トークン
   TOKEN: {
