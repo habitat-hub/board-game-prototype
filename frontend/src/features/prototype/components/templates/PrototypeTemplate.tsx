@@ -1,8 +1,14 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import { io } from 'socket.io-client';
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+} from 'react';
+import { io, Socket } from 'socket.io-client';
 
 import { useProject } from '@/api/hooks/useProject';
 import { Part, PartProperty, Prototype, Project } from '@/api/types';
@@ -13,8 +19,6 @@ import { CursorInfo } from '@/features/prototype/types/cursor';
 import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
 import { useUser } from '@/hooks/useUser';
 
-const socket = io(process.env.NEXT_PUBLIC_API_URL);
-
 // パーツとプロパティのMap型定義
 type PartsMap = Map<number, Part>;
 type PropertiesMap = Map<number, PartProperty[]>;
@@ -23,6 +27,7 @@ export default function PrototypeTemplate() {
   const router = useRouter();
   const { getProject } = useProject();
   const { user } = useUser();
+  const socketRef = useRef<Socket | null>(null);
 
   // プロトタイプID, バージョンID
   const { projectId, prototypeId } = useParams<{
@@ -79,6 +84,10 @@ export default function PrototypeTemplate() {
 
   // socket通信の設定
   useEffect(() => {
+    // Socket接続を作成
+    socketRef.current = io(process.env.NEXT_PUBLIC_API_URL);
+    const socket = socketRef.current;
+
     // サーバーに接続した後、特定のプロトタイプに参加
     socket.emit('JOIN_PROTOTYPE', {
       prototypeId,
@@ -152,11 +161,16 @@ export default function PrototypeTemplate() {
     });
 
     return () => {
+      // イベントリスナーを削除
       socket.off('INITIAL_PARTS');
       socket.off('ADD_PART');
       socket.off('UPDATE_PARTS');
       socket.off('DELETE_PART');
       socket.off('UPDATE_CURSORS');
+
+      // Socket接続を切断
+      socket.disconnect();
+      socketRef.current = null;
     };
   }, [prototypeId, user?.id, convertToMaps]);
 
@@ -169,7 +183,7 @@ export default function PrototypeTemplate() {
       .catch((error) => console.error('Error fetching prototypes:', error));
   }, [getProject, projectId, router]);
 
-  if (!prototype) return null;
+  if (!prototype || !socketRef.current) return null;
 
   const selectedPrototype = prototype.prototypes.find(
     (p) => p.id === prototypeId
@@ -192,7 +206,7 @@ export default function PrototypeTemplate() {
   const mode = getGameBoardMode(selectedPrototype?.type);
 
   return (
-    <SocketProvider socket={socket}>
+    <SocketProvider socket={socketRef.current}>
       <PrototypeIdProvider prototypeId={prototypeId}>
         <GameBoard
           prototypeName={prototypeName}
