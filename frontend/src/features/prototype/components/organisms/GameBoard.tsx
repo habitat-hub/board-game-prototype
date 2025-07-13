@@ -623,21 +623,25 @@ export default function GameBoard({
         new Set(properties.map((property) => property.imageId).filter(Boolean))
       ) as string[];
 
-      const imageResults = await Promise.all(
+      const imageResultsRaw = await Promise.all(
         uniqueImageIds.map(async (imageId) => {
           await resetImageParamsInIndexedDb(imageId);
-          const cachedImage = await getImageFromIndexedDb(imageId);
-          if (cachedImage) {
-            const url = URL.createObjectURL(cachedImage);
-            return { imageId, url };
-          } else {
-            const s3ImageBlob = await fetchImage(imageId);
-            await saveImageToIndexedDb(imageId, s3ImageBlob);
-            const url = URL.createObjectURL(s3ImageBlob);
-            return { imageId, url };
+          const cachedImageResult = await getImageFromIndexedDb(imageId);
+          if (cachedImageResult) {
+            return { imageId, url: cachedImageResult.objectURL };
           }
+          const s3ImageBlob = await fetchImage(imageId);
+          const imageResult = await saveImageToIndexedDb(imageId, s3ImageBlob);
+          if (imageResult) {
+            return { imageId, url: imageResult.objectURL };
+          }
+          return null;
         })
       );
+      const imageResults = imageResultsRaw.filter(Boolean) as {
+        imageId: string;
+        url: string;
+      }[];
 
       const newImages: Record<string, string> = {};
       imageResults.forEach(({ imageId, url }) => {
@@ -645,7 +649,7 @@ export default function GameBoard({
       });
       setImages(newImages);
 
-      urlsToRevoke = imageResults.map(({ url }) => url);
+      urlsToRevoke = imageResults ? imageResults.map(({ url }) => url) : [];
     };
 
     loadImages();
