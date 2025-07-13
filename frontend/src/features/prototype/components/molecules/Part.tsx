@@ -249,17 +249,18 @@ const Part = forwardRef<PartHandle, PartProps>(
           <Group x={5} y={5}>
             <Rect
               width={85}
-              height={20}
+              height={25}
               fill="rgba(0, 0, 0, 0.7)"
               cornerRadius={4}
             />
             <Text
-              text={`ID:${part.id} / O:${typeof part.order === 'number' ? part.order.toFixed(2) : 'N/A'}`}
+              text={`ID:${part.id}\nO:${typeof part.order === 'number' ? part.order : 'N/A'}`}
               fontSize={10}
               fill="white"
               width={85}
-              align="center"
-              y={5}
+              align="left"
+              x={5}
+              y={3}
             />
           </Group>
         )}
