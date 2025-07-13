@@ -3,11 +3,7 @@ import PartModel from '../models/Part';
 import PartPropertyModel from '../models/PartProperty';
 import { UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import PrototypeModel from '../models/Prototype';
-import {
-  getOverLappingPart,
-  getUnderLappingPart,
-  shuffleDeck,
-} from '../helpers/prototypeHelper';
+import { shuffleDeck, isOverlapping } from '../helpers/prototypeHelper';
 import type { CursorInfo } from '../types/cursor';
 import ImageModel from '../models/Image';
 
@@ -293,12 +289,12 @@ function handleChangeOrder(socket: Socket, io: Server) {
       const { prototypeId } = socket.data as SocketData;
 
       try {
-        const sortedParts = await PartModel.findAll({
+        const partsBackToFront = await PartModel.findAll({
           where: { prototypeId },
           order: [['order', 'ASC']],
         });
 
-        const selfPartIndex = sortedParts.findIndex(
+        const selfPartIndex = partsBackToFront.findIndex(
           (part) => part.id === partId
         );
         if (selfPartIndex === -1) return;
@@ -310,7 +306,7 @@ function handleChangeOrder(socket: Socket, io: Server) {
 
         // 最前面、かつ前面に移動しようとした場合は何もしない
         if (
-          selfPartIndex === sortedParts.length - 1 &&
+          selfPartIndex === partsBackToFront.length - 1 &&
           (type === 'front' || type === 'frontmost')
         ) {
           return;
@@ -319,17 +315,21 @@ function handleChangeOrder(socket: Socket, io: Server) {
         switch (type) {
           case 'back': {
             // 一つ後ろに移動
-            const underLappingPart = await getUnderLappingPart(
-              partId,
-              sortedParts
-            );
+            const selfPart = partsBackToFront[selfPartIndex];
+            const underLappingPart = partsBackToFront
+              .filter(
+                (part) =>
+                  part.order < selfPart.order && isOverlapping(selfPart, part)
+              )
+              .sort((a, b) => b.order - a.order)[0]; // orderの降順でソートして最初を取得
+
             if (underLappingPart) {
-              const prevPartIndex = sortedParts.findIndex(
+              const prevPartIndex = partsBackToFront.findIndex(
                 (part) => part.id === underLappingPart.id
               );
               const newOrder =
                 (underLappingPart.order +
-                  (sortedParts[prevPartIndex - 1]?.order ?? 0)) /
+                  (partsBackToFront[prevPartIndex - 1]?.order ?? 0)) /
                 2;
               const [, result] = await PartModel.update(
                 { order: newOrder },
@@ -344,17 +344,19 @@ function handleChangeOrder(socket: Socket, io: Server) {
           }
           case 'front': {
             // 一つ前に移動
-            const overLappingPart = await getOverLappingPart(
-              partId,
-              sortedParts
+            const selfPart = partsBackToFront[selfPartIndex];
+            const overLappingPart = partsBackToFront.find(
+              (part) =>
+                part.order > selfPart.order && isOverlapping(selfPart, part)
             );
+
             if (overLappingPart) {
-              const nextPartIndex = sortedParts.findIndex(
+              const nextPartIndex = partsBackToFront.findIndex(
                 (part) => part.id === overLappingPart.id
               );
               const newOrder =
                 (overLappingPart.order +
-                  (sortedParts[nextPartIndex + 1]?.order ?? 1)) /
+                  (partsBackToFront[nextPartIndex + 1]?.order ?? 1)) /
                 2;
               const [, result] = await PartModel.update(
                 { order: newOrder },
@@ -369,8 +371,8 @@ function handleChangeOrder(socket: Socket, io: Server) {
           }
           case 'backmost': {
             // 最背面に移動
-            const firstPart = sortedParts[0];
-            const newOrder = (firstPart.order + 0) / 2;
+            const partBackMost = partsBackToFront[0];
+            const newOrder = (partBackMost.order + 0) / 2;
             const [, result] = await PartModel.update(
               { order: newOrder },
               { where: { id: partId }, returning: true }
@@ -383,8 +385,8 @@ function handleChangeOrder(socket: Socket, io: Server) {
           }
           case 'frontmost': {
             // 最前面に移動
-            const lastPart = sortedParts[sortedParts.length - 1];
-            const newOrder = (lastPart.order + 1) / 2;
+            const partFrontMost = partsBackToFront[partsBackToFront.length - 1];
+            const newOrder = (partFrontMost.order + 1) / 2;
             const [, result] = await PartModel.update(
               { order: newOrder },
               { where: { id: partId }, returning: true }
