@@ -9,15 +9,15 @@ import React, {
 import { Stage, Layer, Group, Rect } from 'react-konva';
 
 import { useImages } from '@/api/hooks/useImages';
-import { Part as PartType, PartProperty as PropertyType } from '@/api/types';
+import { Part, PartProperty } from '@/api/types';
 import DebugInfo from '@/features/prototype/components/atoms/DebugInfo';
 import GridLines from '@/features/prototype/components/atoms/GridLines';
 import { KonvaPartContextMenu } from '@/features/prototype/components/atoms/KonvaPartContextMenu';
 import ModeToggleButton from '@/features/prototype/components/atoms/ModeToggleButton';
 import SelectionRect from '@/features/prototype/components/atoms/SelectionRect';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
-import Part from '@/features/prototype/components/molecules/Part';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
+import PartOnGameBoard from '@/features/prototype/components/molecules/PartOnGameBoard';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
 import PlaySidebar from '@/features/prototype/components/molecules/PlaySidebar';
 import RoleMenu from '@/features/prototype/components/molecules/RoleMenu';
@@ -50,8 +50,8 @@ import {
 interface GameBoardProps {
   prototypeName: string;
   projectId: string;
-  parts: PartType[];
-  properties: PropertyType[];
+  parts: Part[];
+  properties: PartProperty[];
   cursors: Record<string, CursorInfo>;
   gameBoardMode: GameBoardMode;
 }
@@ -140,7 +140,7 @@ export default function GameBoard({
   );
 
   // 全パーツの平均センター位置を計算する関数
-  const calculateAveragePartsCenter = useCallback((parts: PartType[]) => {
+  const calculateAveragePartsCenter = useCallback((parts: Part[]) => {
     if (parts.length === 0) return null;
 
     const totalCenterX = parts.reduce((sum, part) => {
@@ -319,16 +319,15 @@ export default function GameBoard({
   };
 
   const handleChangePartOrder = useCallback(
-    (type: 'front' | 'back' | 'frontmost' | 'backmost') => {
-      if (contextMenuPartId === null) return;
+    (type: 'front' | 'back' | 'frontmost' | 'backmost', partId: number) => {
       dispatch({
         type: 'CHANGE_ORDER',
-        payload: { partId: contextMenuPartId, type },
+        payload: { partId, type },
       });
 
       setShowContextMenu(false);
     },
-    [contextMenuPartId, dispatch]
+    [dispatch]
   );
 
   const handleCloseContextMenu = useCallback(() => {
@@ -685,7 +684,7 @@ export default function GameBoard({
   // パーツの位置をキャンバス内に制限する関数
   const constrainWithinCanvas = useCallback(
     (
-      partObject: PartType,
+      partObject: Part,
       baseX: number,
       baseY: number,
       deltaX: number,
@@ -730,7 +729,7 @@ export default function GameBoard({
 
   // パーツのプロパティマップをメモ化
   const partPropertiesMap = useMemo(() => {
-    const map: Record<number, PropertyType[]> = {};
+    const map: Record<number, PartProperty[]> = {};
     properties.forEach((property) => {
       if (!map[property.partId]) {
         map[property.partId] = [];
@@ -823,7 +822,7 @@ export default function GameBoard({
                 part.type === 'card' && !cardVisibilityMap.get(part.id);
 
               return (
-                <Part
+                <PartOnGameBoard
                   key={part.id}
                   part={part}
                   properties={partProperties}
@@ -836,6 +835,9 @@ export default function GameBoard({
                   onDragMove={(e) => handlePartDragMove(e, part.id)}
                   onDragEnd={(e, partId) => handlePartDragEnd(e, partId)}
                   onContextMenu={(e) => handlePartContextMenu(e, part.id)}
+                  onChangePartOrder={(type) =>
+                    handleChangePartOrder(type, part.id)
+                  }
                 />
               );
             })}
@@ -845,7 +847,9 @@ export default function GameBoard({
                 visible={true}
                 position={menuPosition}
                 onClose={handleCloseContextMenu}
-                onChangeOrder={handleChangePartOrder}
+                onChangeOrder={(type) =>
+                  handleChangePartOrder(type, contextMenuPartId!)
+                }
               />
             )}
             {/* 選択モード時の矩形選択表示 */}
