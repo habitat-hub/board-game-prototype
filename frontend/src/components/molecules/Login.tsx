@@ -6,9 +6,8 @@ import { FaGoogle, FaDice, FaChessBoard } from 'react-icons/fa';
 import { GiWoodenCrate, GiCardAceSpades, GiPuzzle } from 'react-icons/gi';
 
 import { useAuth } from '@/api/hooks/useAuth';
-
-import Button from '../atoms/Button';
-import Loading from '../organisms/Loading';
+import Button from '@/components/atoms/Button';
+import Loading from '@/components/organisms/Loading';
 
 function Login() {
   const router = useRouter();
@@ -66,19 +65,34 @@ function Login() {
           </div>
         </div>
 
-        {/* ログイン部分 */}
-        <div className="flex justify-center mt-12 sm:mt-16">
+        {/* サインアップ・ログイン部分 */}
+        <div className="flex flex-col gap-4 items-center mt-12 sm:mt-16">
+          {/* サインアップボタン */}
           <Button
             variant="accent"
+            className="!px-6 !py-4 !text-lg"
+            onClick={() => {
+              window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <FaGoogle className="text-2xl" />
+              <span>Googleでサインアップ</span>
+            </div>
+          </Button>
+
+          {/* ログインボタン */}
+          <button
+            className="rounded-full font-semibold transition-colors bg-transparent text-kibako-primary/70 hover:text-kibako-primary border border-kibako-primary/30 hover:border-kibako-primary/50 px-4 py-2 text-sm"
             onClick={() => {
               window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
             }}
           >
             <div className="flex items-center gap-2">
-              <FaGoogle className="text-xl" />
-              <span>Googleでログイン</span>
+              <FaGoogle className="text-lg" />
+              <span>既にアカウントをお持ちの方はログイン</span>
             </div>
-          </Button>
+          </button>
         </div>
 
         {/* サブタイトル */}
