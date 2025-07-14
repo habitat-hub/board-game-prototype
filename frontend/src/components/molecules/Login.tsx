@@ -71,10 +71,8 @@ function Login() {
         </div>
 
         {/* サブタイトル */}
-        <p className="text-kibako-primary mt-6 sm:mt-8 text-sm sm:text-base">
-          KIBAKOでボードゲームの
-          <br />
-          アイデアを形にしよう
+        <p className="text-kibako-primary mt-6 sm:mt-8 text-sm lg:text-base">
+          KIBAKOでボードゲームのアイデアを形にしよう
         </p>
       </div>
     </div>
