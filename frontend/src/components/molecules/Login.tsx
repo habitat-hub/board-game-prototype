@@ -47,25 +47,15 @@ function Login() {
 
         {/* ロゴ部分 */}
         <div className="flex items-center justify-center gap-2 sm:gap-4 mt-8 sm:mt-12">
-          {/* サイコロ */}
           <FaDice className="text-4xl sm:text-6xl text-kibako-primary/60 transform rotate-12" />
-
-          {/* トランプ */}
           <GiCardAceSpades className="text-4xl sm:text-6xl text-kibako-primary/60 transform -rotate-12" />
-
-          {/* メインの木箱アイコン */}
           <GiWoodenCrate className="text-5xl sm:text-7xl drop-shadow-lg text-kibako-accent" />
-
-          {/* パズル */}
           <GiPuzzle className="text-4xl sm:text-6xl text-kibako-primary/60 transform rotate-6" />
-
-          {/* チェスボード */}
           <FaChessBoard className="text-4xl sm:text-6xl text-kibako-primary/60 transform -rotate-6" />
         </div>
 
         {/* サインアップ・ログイン部分 */}
         <div className="flex flex-col gap-4 items-center mt-12 sm:mt-16">
-          {/* サインアップボタン */}
           <Button
             variant="accent"
             className="!px-6 !py-4 !text-lg"
@@ -75,30 +65,14 @@ function Login() {
           >
             <div className="flex items-center gap-3">
               <FaGoogle className="text-2xl" />
-              <span>Googleでサインアップ</span>
-            </div>
-          </Button>
-
-          {/* ログインボタン */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
-            }}
-          >
-            <div className="flex items-center gap-2">
-              <FaGoogle className="text-lg" />
-              <span>既にアカウントをお持ちの方はログイン</span>
+              <span>Googleで続ける</span>
             </div>
           </Button>
         </div>
 
         {/* サブタイトル */}
-        <p className="text-kibako-primary mt-6 sm:mt-8 text-sm sm:text-base">
-          KIBAKOでボードゲームの
-          <br />
-          アイデアを形にしよう
+        <p className="text-kibako-primary mt-6 sm:mt-8 text-sm lg:text-base">
+          KIBAKOでボードゲームのアイデアを形にしよう
         </p>
       </div>
     </div>
