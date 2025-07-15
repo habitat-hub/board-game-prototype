@@ -33,7 +33,7 @@ type UserCardProps = {
   user: User;
 };
 
-export const UserCard: React.FC<UserCardProps> = ({ user }) => (
+export const UserCard = ({ user }: UserCardProps): JSX.Element => (
   <div>
     <div>{user.name}</div>
     <div>{user.age}歳</div>
@@ -55,7 +55,7 @@ type UserCardProps = {
   user: User;
 };
 
-export const UserCard: React.FC<UserCardProps> = ({ user }) => (
+export const UserCard = ({ user }: UserCardProps): JSX.Element => (
   <div>
     <div>{user.name}</div>
     <div>{user.age}歳</div>
@@ -65,7 +65,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => (
 
 ## 2. 記述順序と空行
 
-- カスタムフック→ステート→変数（useMemo等含む）→useEffect→JSXの順で記載する。
+- カスタムフック→ステート(useState)→参照(useRef)→変数（useMemo等含む）→コールバック(useCallback)→useEffect→JSXの順で記載する。
 - それぞれのまとまりの間には空行を設ける。
 
 **good例:**
@@ -76,7 +76,13 @@ const MyComponent = () => {
 
   const [count, setCount] = useState(0);
 
+  const partRef = useRef(null);
+
   const doubled = useMemo(() => count * 2, [count]);
+
+  const getFirstPart = useCallback(() => {
+    return parts[0]
+  }, [parts])
 
   useEffect(() => {
     // ...
@@ -102,7 +108,7 @@ const MyComponent = () => {
 
 ## 3. メモ化
 
-- パフォーマンスや再レンダリング最適化のため、メモ化した方が良い値や関数はuseMemo/useCallbackでメモ化する。
+- パフォーマンス最適化が必要な場合のみ、useMemo/useCallback で値や関数をメモ化する（軽量計算や依存が頻繁に変わる場合は不要）。
 
 **good例:**
 
