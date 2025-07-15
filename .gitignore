@@ -1,8 +1,5 @@
 .vscode
 
-# Cursor設定ファイル（管理対象）
-!.cursorrules
-
 # 環境変数
 .env
 .env.local
