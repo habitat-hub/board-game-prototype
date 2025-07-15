@@ -1,9 +1,8 @@
-import { useImperativeHandle, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 import { Part } from '@/api/types';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
-import { PartHandle } from '@/features/prototype/type';
 
 /**
  * カードの状態を管理するフック
@@ -11,7 +10,7 @@ import { PartHandle } from '@/features/prototype/type';
  * @param ref - Partコンポーネントのref
  * @returns カードの状態
  */
-export const useCard = (part: Part, ref: React.ForwardedRef<PartHandle>) => {
+export const useCard = (part: Part) => {
   const { dispatch } = usePartReducer();
   const { measureOperation } = usePerformanceTracker();
   // カードが反転中かどうか
@@ -44,16 +43,16 @@ export const useCard = (part: Part, ref: React.ForwardedRef<PartHandle>) => {
     [part.type, part.frontSide, part.id, measureOperation, dispatch]
   );
 
-  // 外部から呼び出せる関数を定義    // 外部から呼び出せる関数を定義
-  useImperativeHandle(ref, () => ({
-    reverseCard: (nextFrontSide: 'front' | 'back', needsSocketEmit = false) => {
-      handleReverseCard(nextFrontSide, needsSocketEmit);
-    },
-  }));
+  const reverseCard = (
+    nextFrontSide: 'front' | 'back',
+    needsSocketEmit = false
+  ) => {
+    handleReverseCard(nextFrontSide, needsSocketEmit);
+  };
 
   return {
     isReversing,
     setIsReversing,
-    reverseCard: handleReverseCard,
+    reverseCard,
   };
 };
