@@ -8,12 +8,7 @@ import React, {
   useMemo,
   useContext,
 } from 'react';
-import {
-  FaPlus,
-  FaSort,
-  FaSortDown,
-  FaSortUp,
-} from 'react-icons/fa';
+import { FaPlus } from 'react-icons/fa';
 import { GiWoodenCrate, GiCardAceSpades, GiPuzzle } from 'react-icons/gi';
 import { RiLoaderLine } from 'react-icons/ri';
 
