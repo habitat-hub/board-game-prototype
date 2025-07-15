@@ -1,0 +1,154 @@
+---
+description: フロントエンドのコーディング規約を記載する
+globs: '**/*.{js,ts,jsx,tsx}'
+alwaysApply: true
+---
+
+# フロントエンド コーディングスタイル（追加ルール）
+
+## 1. Propsと型定義
+
+- Props型は各コンポーネントファイル内に記載し、それ以外の型（ドメイン型・API型など）はtypesディレクトリや型定義ファイルにまとめる。
+
+**good例:**
+
+```ts
+// types/user.ts
+/**
+ * ユーザー情報型（Props以外の型定義例）
+ */
+export type User = {
+  id: string;
+  name: string;
+  age: number;
+};
+
+// UserCard.tsx
+import { User } from '../types/user';
+
+/**
+ * ユーザーカードのProps
+ */
+type UserCardProps = {
+  user: User;
+};
+
+export const UserCard = ({ user }: UserCardProps): JSX.Element => (
+  <div>
+    <div>{user.name}</div>
+    <div>{user.age}歳</div>
+  </div>
+);
+```
+
+**bad例:**
+
+```ts
+// UserCard.tsx
+export type User = {
+  id: string;
+  name: string;
+  age: number;
+};
+
+type UserCardProps = {
+  user: User;
+};
+
+export const UserCard = ({ user }: UserCardProps): JSX.Element => (
+  <div>
+    <div>{user.name}</div>
+    <div>{user.age}歳</div>
+  </div>
+);
+```
+
+## 2. 記述順序と空行
+
+- カスタムフック→ステート(useState)→参照(useRef)→変数（useMemo等含む）→コールバック(useCallback)→useEffect→JSXの順で記載する。
+- それぞれのまとまりの間には空行を設ける。
+
+**good例:**
+
+```ts
+const MyComponent = () => {
+  const user = useUser();
+
+  const [count, setCount] = useState(0);
+
+  const partRef = useRef(null);
+
+  const doubled = useMemo(() => count * 2, [count]);
+
+  const getFirstPart = useCallback(() => {
+    return parts[0]
+  }, [parts])
+
+  useEffect(() => {
+    // ...
+  }, [count]);
+
+  return (
+    <div>{doubled}</div>
+  );
+};
+```
+
+**bad例:**
+
+```ts
+const MyComponent = () => {
+  const [count, setCount] = useState(0);
+  useEffect(() => { /* ... */ }, [count]);
+  const user = useUser();
+  const doubled = useMemo(() => count * 2, [count]);
+  return <div>{doubled}</div>;
+};
+```
+
+## 3. メモ化
+
+- パフォーマンス最適化が必要な場合のみ、useMemo/useCallback で値や関数をメモ化する（軽量計算や依存が頻繁に変わる場合は不要）。
+
+**good例:**
+
+```ts
+const memoizedValue = useMemo(() => heavyCalc(data), [data]);
+const handleClick = useCallback(() => doSomething(), []);
+```
+
+**bad例:**
+
+```ts
+const memoizedValue = heavyCalc(data);
+const handleClick = () => doSomething();
+```
+
+## 4. JSX内コメント
+
+- JSX内はまとまりごとにコメントを記載し、構造や意図が分かるようにする。
+
+**good例:**
+
+```tsx
+return (
+  <div>
+    {/* ユーザー情報表示エリア */}
+    <UserInfo user={user} />
+
+    {/* 操作ボタン */}
+    <Button onClick={handleClick} />
+  </div>
+);
+```
+
+**bad例:**
+
+```tsx
+return (
+  <div>
+    <UserInfo user={user} />
+    <Button onClick={handleClick} />
+  </div>
+);
+```
