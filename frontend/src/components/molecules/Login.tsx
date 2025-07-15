@@ -45,7 +45,7 @@ function Login() {
           KIBAKO
         </h1>
 
-        {/* ロゴ */}
+        {/* アイコン */}
         <div className="flex items-center justify-center gap-2 sm:gap-4 mt-8 sm:mt-12">
           <FaDice className="text-4xl sm:text-6xl text-kibako-primary/60 transform rotate-12" />
           <GiCardAceSpades className="text-4xl sm:text-6xl text-kibako-primary/60 transform -rotate-12" />
