@@ -20,8 +20,8 @@ import { UserContext } from '@/contexts/UserContext';
 import useInlineEdit from '@/hooks/useInlineEdit';
 import formatDate from '@/utils/dateFormat';
 import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
-import { ProjectContextMenu } from '../atoms/ProjectContextMenu';
 import { createPortal } from 'react-dom';
+import { ProjectContextMenu } from '../atoms/ProjectContextMenu';
 
 type SortKey = 'name' | 'createdAt';
 type SortOrder = 'asc' | 'desc';
