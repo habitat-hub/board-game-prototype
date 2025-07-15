@@ -54,7 +54,7 @@ function Login() {
           <FaChessBoard className="text-4xl sm:text-6xl text-kibako-primary/60 transform -rotate-6" />
         </div>
 
-        {/* サインアップ・ログイン部分 */}
+        {/* 認証ボタン */}
         <div className="flex flex-col gap-4 items-center mt-12 sm:mt-16">
           <Button
             variant="accent"
