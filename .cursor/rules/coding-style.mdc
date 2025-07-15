@@ -1,0 +1,159 @@
+---
+description: フロントエンド・バックエンド共通のコーディング規約を記載する
+globs: "**/*.{js,ts,jsx,tsx}"
+alwaysApply: true
+---
+
+# コーディングスタイル（フロントエンド・バックエンド共通）
+
+## 1. コメント・ドキュメント
+
+- 型定義や定数定義の各要素には、用途や意味が分かるようにコメントを上に記載する。
+- if 文の条件の直前には「〇〇の場合」など、分岐の意図が分かるコメントを記載する。
+- 関数には必ず JSDoc 形式で説明コメントを記載する。
+- コメントは日本語で簡潔に記載する。
+
+**good 例:**
+
+```ts
+export const USER_ROLE = {
+  // 管理者
+  ADMIN: 1,
+  // 一般ユーザー
+  USER: 2,
+};
+
+/**
+ * ユーザーが管理者かどうか判定する
+ */
+function isAdmin(user: User): boolean {
+  // 管理者の場合
+  if (user.role === USER_ROLE.ADMIN) {
+    return true;
+  }
+  return false;
+}
+```
+
+**bad 例:**
+
+```ts
+export const USER_ROLE = { ADMIN: 1, USER: 2 };
+
+function isAdmin(user) {
+  if (user.role === 1) {
+    return true;
+  }
+  return false;
+}
+```
+
+## 2. ファイル構成・分割
+
+- 1 ファイル 1 責任を意識し、機能ごとにファイルを分割する。
+- ファイルは長くなりすぎないようにする（目安：200 行以内）。
+- ファイルの分割基準は、可読性・保守性を優先する。
+
+**good 例:**
+
+- userService.ts … ユーザー関連のロジックのみ
+- authService.ts … 認証関連のロジックのみ
+
+**bad 例:**
+
+- main.ts に全ての処理を記載
+
+## 3. 型注釈・型安全
+
+- すべての変数・関数・戻り値に型を明示する。
+- any 型の使用は禁止する。
+- 型定義は types ディレクトリや型定義ファイル（.d.ts）にまとめる。
+
+**good 例:**
+
+```ts
+type User = { id: string; name: string };
+function getUserName(user: User): string {
+  return user.name;
+}
+```
+
+**bad 例:**
+
+```ts
+function getUserName(user) {
+  return user.name;
+}
+```
+
+## 4. エラーハンドリング
+
+- 例外処理は try-catch で行い、ユーザーに不必要な情報を漏らさない。
+- エラーメッセージは日本語で記載する。
+- 予期しないエラーは必ずログに記録する。
+
+**good 例:**
+
+```ts
+try {
+  // ...処理
+} catch (error) {
+  logger.error(error);
+  throw new CustomError("予期せぬエラーが発生しました");
+}
+```
+
+**bad 例:**
+
+```ts
+throw error;
+```
+
+## 5. 可読性・保守性
+
+- 関数はできるだけ短く、1 つの責務に絞る。
+- ネストは浅く保つ（2 段階以内を推奨）。
+- マジックナンバーの使用は禁止し、定数として定義する。
+- 早期リターンを意識し、ネストを深くしない。
+- 手続き的な書き方（let の再代入、array.push など後で値を変更する）は避け、できるだけイミュータブルな記述を心がける。
+
+**good 例:**
+
+```ts
+function getAdultUsers(users: User[]): User[] {
+  // 18歳以上のみ抽出
+  return users.filter((user) => user.age >= ADULT_AGE);
+}
+
+function isActive(user: User): boolean {
+  // 無効ユーザーは即falseを返す（早期リターン）
+  if (!user.isActive) {
+    return false;
+  }
+
+  return true;
+}
+```
+
+**bad 例:**
+
+```ts
+function getAdultUsers(users) {
+  let result = [];
+  for (let i = 0; i < users.length; i++) {
+    if (users[i].age >= 18) {
+      result.push(users[i]);
+    }
+  }
+  return result;
+}
+
+function isActive(user) {
+  let result = true;
+  if (!user.isActive) {
+    result = false;
+  }
+
+  return result;
+}
+```

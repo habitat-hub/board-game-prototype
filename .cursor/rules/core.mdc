@@ -1,0 +1,76 @@
+---
+description: このファイルは、ボードゲーム作成支援アプリケーション全体に適用されるコーディング規約です。チーム全員が一貫した品質・可読性・保守性を保つための基本ルールを定めます。
+globs: "**/*.{js,ts,jsx,tsx}"
+alwaysApply: true
+---
+
+# コーディング規約
+
+## 1. 目的
+- 本ファイルの目的は、チーム全体で一貫性・可読性・保守性の高いコードを維持するための共通ルールを明確に定めることです。
+- 特に命名規則については、プロジェクト全体で統一された命名を徹底し、誰が見ても理解しやすく、保守しやすいコードベースを実現することを目的とします。
+
+## 2. ディレクトリ構成・運用
+- モノレポ構造
+- ディレクトリは関心ごと・レイヤーごとに分割し、役割が明確になるよう命名する。
+  - 例: components, hooks, services, utils, models など
+- 1ディレクトリ内のファイル数が多くなりすぎる場合は、さらにサブディレクトリで整理する。
+- indexファイルを活用し、ディレクトリ単位でのimportを簡潔にする。
+- 本プロジェクトの主なディレクトリ構成例：
+  backend/
+    src/
+      config/       # 設定ファイル
+      constants/    # 定数
+      database/     # DB関連
+      errors/       # エラー定義
+      factories/    # ファクトリ関数
+      helpers/      # ヘルパー関数
+      middlewares/  # ミドルウェア
+      models/       # DBモデル
+      routes/       # ルーティング
+      scripts/      # スクリプト
+      services/     # サービス層
+      socket/       # ソケット通信
+      types/        # 型定義
+      utils/        # 汎用ユーティリティ
+  frontend/
+    src/
+      api/            # API関連
+        client        # APIクライアント
+        endpoints     # APIコール関数の定義
+        hooks/        # APIコールのためのカスタムフック（endpointsの関数をラップ）
+        types/        # APIに関する型定義
+      app/            # Next.jsアプリケーションルート
+      components/     # 共通コンポーネント（atomic design）
+        atoms/
+        molecules/
+        organisms/
+        layouts/
+      constants/      # 定数
+      contexts/       # React Context
+      features/       # ドメインごとの機能
+        [feature]/
+          components/ # ドメイン固有のコンポーネント（atomic design）
+          constants/  # ドメイン固有定数
+          contexts/   # ドメイン固有React Context
+          hooks/      # ドメイン固有カスタムフック          
+          types/      # ドメイン型定義          
+          utils/      # ドメイン固有ユーティリティ        
+      hooks/          # 汎用カスタムフック
+      types/          # 汎用型定義          
+      utils/          # 汎用ユーティリティ
+
+## 3. 命名規則
+- ディレクトリ名・ファイル名は英小文字の複数形（例: components, utils, models）を原則とする。
+- 変数・関数名はキャメルケース（例: userName, fetchData）
+- クラス・型名はパスカルケース（例: UserProfile, GameBoard）
+- 定数は全て大文字＋アンダースコア区切り（例: MAX_COUNT, DEFAULT_TIMEOUT）
+- Reactコンポーネントのファイル名はパスカルケース（例: UserCard.tsx, GameBoard.tsx）
+- テストファイルは対象ファイル名＋.test（例: userHelper.test.ts）
+- 型定義ファイルは .d.ts または types ディレクトリ内に配置し、型名はパスカルケースとする。
+- API通信やサービス層の関数は「動詞＋目的語」（例: fetchUser, updateProject）で命名する。
+- フック（React Hooks）は use で始める（例: useUser, useProjectList）
+- 一時変数やループ用変数には意味のある短い名前を付ける（例: i, j, temp などは最小限に）
+- 略語は一般的なもの以外は避け、可読性を優先する。
+- ファイル名・ディレクトリ名・型名などは英語で統一する。
+

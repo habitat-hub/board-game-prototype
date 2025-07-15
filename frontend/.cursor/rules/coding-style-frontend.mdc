@@ -1,0 +1,148 @@
+---
+description: フロントエンドのコーディング規約を記載する
+globs: '**/*.{js,ts,jsx,tsx}'
+alwaysApply: true
+---
+
+# フロントエンド コーディングスタイル（追加ルール）
+
+## 1. Propsと型定義
+
+- Props型は各コンポーネントファイル内に記載し、それ以外の型（ドメイン型・API型など）はtypesディレクトリや型定義ファイルにまとめる。
+
+**good例:**
+
+```ts
+// types/user.ts
+/**
+ * ユーザー情報型（Props以外の型定義例）
+ */
+export type User = {
+  id: string;
+  name: string;
+  age: number;
+};
+
+// UserCard.tsx
+import { User } from '../types/user';
+
+/**
+ * ユーザーカードのProps
+ */
+type UserCardProps = {
+  user: User;
+};
+
+export const UserCard: React.FC<UserCardProps> = ({ user }) => (
+  <div>
+    <div>{user.name}</div>
+    <div>{user.age}歳</div>
+  </div>
+);
+```
+
+**bad例:**
+
+```ts
+// UserCard.tsx
+export type User = {
+  id: string;
+  name: string;
+  age: number;
+};
+
+type UserCardProps = {
+  user: User;
+};
+
+export const UserCard: React.FC<UserCardProps> = ({ user }) => (
+  <div>
+    <div>{user.name}</div>
+    <div>{user.age}歳</div>
+  </div>
+);
+```
+
+## 2. 記述順序と空行
+
+- カスタムフック→ステート→変数（useMemo等含む）→useEffect→JSXの順で記載する。
+- それぞれのまとまりの間には空行を設ける。
+
+**good例:**
+
+```ts
+const MyComponent = () => {
+  const user = useUser();
+
+  const [count, setCount] = useState(0);
+
+  const doubled = useMemo(() => count * 2, [count]);
+
+  useEffect(() => {
+    // ...
+  }, [count]);
+
+  return (
+    <div>{doubled}</div>
+  );
+};
+```
+
+**bad例:**
+
+```ts
+const MyComponent = () => {
+  const [count, setCount] = useState(0);
+  useEffect(() => { /* ... */ }, [count]);
+  const user = useUser();
+  const doubled = useMemo(() => count * 2, [count]);
+  return <div>{doubled}</div>;
+};
+```
+
+## 3. メモ化
+
+- パフォーマンスや再レンダリング最適化のため、メモ化した方が良い値や関数はuseMemo/useCallbackでメモ化する。
+
+**good例:**
+
+```ts
+const memoizedValue = useMemo(() => heavyCalc(data), [data]);
+const handleClick = useCallback(() => doSomething(), []);
+```
+
+**bad例:**
+
+```ts
+const memoizedValue = heavyCalc(data);
+const handleClick = () => doSomething();
+```
+
+## 4. JSX内コメント
+
+- JSX内はまとまりごとにコメントを記載し、構造や意図が分かるようにする。
+
+**good例:**
+
+```tsx
+return (
+  <div>
+    {/* ユーザー情報表示エリア */}
+    <UserInfo user={user} />
+
+    {/* 操作ボタン */}
+    <Button onClick={handleClick} />
+  </div>
+);
+```
+
+**bad例:**
+
+```tsx
+return (
+  <div>
+    <UserInfo user={user} />
+    <Button onClick={handleClick} />
+  </div>
+);
+```
