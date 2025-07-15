@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, {
   useState,
@@ -14,11 +13,8 @@ import {
   FaSort,
   FaSortDown,
   FaSortUp,
-  FaUserShield,
 } from 'react-icons/fa';
-import { FaBoxOpen } from 'react-icons/fa6';
-import { GiWoodenCrate } from 'react-icons/gi';
-import { IoTrash } from 'react-icons/io5';
+import { GiWoodenCrate, GiCardAceSpades, GiPuzzle } from 'react-icons/gi';
 import { RiLoaderLine } from 'react-icons/ri';
 
 import { useProject } from '@/api/hooks/useProject';
@@ -29,6 +25,8 @@ import { UserContext } from '@/contexts/UserContext';
 import useInlineEdit from '@/hooks/useInlineEdit';
 import formatDate from '@/utils/dateFormat';
 import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
+import { ProjectContextMenu } from '../atoms/ProjectContextMenu';
+import { createPortal } from 'react-dom';
 
 type SortKey = 'name' | 'createdAt';
 type SortOrder = 'asc' | 'desc';
@@ -80,6 +78,17 @@ const ProjectList: React.FC = () => {
     order: 'desc',
   });
 
+  // コンテキストメニューの状態
+  const [contextMenu, setContextMenu] = useState<{
+    visible: boolean;
+    position: { x: number; y: number };
+    targetProject: { project: Project; masterPrototype: Prototype } | null;
+  }>({
+    visible: false,
+    position: { x: 0, y: 0 },
+    targetProject: null,
+  });
+
   // 1日に1回、IndexedDBから期限切れの画像を削除する
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
@@ -127,6 +136,21 @@ const ProjectList: React.FC = () => {
     const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
 
     return `${randomAdjective}な${randomNoun}`;
+  };
+
+  /**
+   * ランダムなアイコンを取得する
+   * @param id プロトタイプID（一意性を保つため）
+   * @returns アイコンコンポーネント
+   */
+  const getRandomIcon = (id: string) => {
+    const icons = [GiWoodenCrate, GiCardAceSpades, GiPuzzle];
+    // IDをもとにハッシュ値を生成して一意性を保つ
+    const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const iconIndex = hash % icons.length;
+    const IconComponent = icons[iconIndex];
+    
+    return <IconComponent className="w-20 h-20 text-white/80" />;
   };
 
   /**
@@ -283,6 +307,61 @@ const ProjectList: React.FC = () => {
     return sortPrototypes(prototypeList);
   }, [prototypeList, sortPrototypes]);
 
+  /**
+   * 右クリック時の処理
+   */
+  const handleContextMenu = (
+    e: React.MouseEvent,
+    project: Project,
+    masterPrototype: Prototype
+  ) => {
+    e.preventDefault();
+    console.info('handleContextMenu');
+    setContextMenu({
+      visible: true,
+      position: { x: e.clientX, y: e.clientY },
+      targetProject: { project, masterPrototype },
+    });
+  };
+
+  /**
+   * コンテキストメニューを閉じる
+   */
+  const closeContextMenu = () => {
+    setContextMenu({
+      visible: false,
+      position: { x: 0, y: 0 },
+      targetProject: null,
+    });
+  };
+
+  /**
+   * コンテキストメニューのアイテム定義
+   */
+  const getContextMenuItems = (project: Project, masterPrototype: Prototype) => [
+    {
+      id: 'rename',
+      text: '名前の変更',
+      action: () => {
+        handleNameEditToggle(masterPrototype.id, masterPrototype.name);
+      },
+    },
+    {
+      id: 'permissions',
+      text: '権限',
+      action: () => {
+        router.push(`/projects/${project.id}/roles`);
+      },
+    },
+    {
+      id: 'delete',
+      text: '削除',
+      action: () => {
+        router.push(`/projects/${project.id}/delete`);
+      },
+    },
+  ];
+
   if (isLoading) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60">
@@ -320,63 +399,12 @@ const ProjectList: React.FC = () => {
     );
   }
 
-  /**
-   * ソートを変更する
-   * @param key ソートキー
-   */
-  const handleSort = (key: SortKey) => {
-    setSort((currentSort) =>
-      currentSort.key === key
-        ? {
-            ...currentSort,
-            order: currentSort.order === 'asc' ? 'desc' : 'asc',
-          }
-        : { key, order: 'desc' }
-    );
-  };
-
-  // ソートアイコン
-  const getSortIcon = (key: SortKey) => {
-    if (sort.key !== key) return <FaSort className="w-4 h-4" />;
-    return sort.order === 'asc' ? (
-      <FaSortUp className="w-4 h-4" />
-    ) : (
-      <FaSortDown className="w-4 h-4" />
-    );
-  };
-
   return (
     <div className="max-w-6xl mx-auto py-16 relative px-4">
       {/* タイトル */}
       <h1 className="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
         プロトタイプ一覧
       </h1>
-      
-      {/* ソート機能 */}
-      <div className="flex justify-center mb-6 gap-4">
-        <button
-          onClick={() => handleSort('name')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 ${
-            sort.key === 'name'
-              ? 'bg-header text-white border-header'
-              : 'bg-white text-wood border-wood-light/20 hover:bg-wood-lightest/20'
-          }`}
-        >
-          プロトタイプ名順
-          {getSortIcon('name')}
-        </button>
-        <button
-          onClick={() => handleSort('createdAt')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 ${
-            sort.key === 'createdAt'
-              ? 'bg-header text-white border-header'
-              : 'bg-white text-wood border-wood-light/20 hover:bg-wood-lightest/20'
-          }`}
-        >
-          作成日時順
-          {getSortIcon('createdAt')}
-        </button>
-      </div>
 
       {/* プロトタイプ一覧（カード形式） */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
@@ -385,14 +413,34 @@ const ProjectList: React.FC = () => {
           const { id, name, createdAt } = masterPrototype;
           const isNameEditing = isEditing(id);
           
+          /**
+           * カードダブルクリック時の処理
+           */
+          const handleCardDoubleClick = () => {
+            router.push(`/projects/${project.id}/prototypes/${id}`);
+          };
+          
           return (
             <div
               key={id}
-              className="bg-content border border-wood-lightest/20 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+              className="bg-content border border-wood-lightest/20 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer"
+              onDoubleClick={handleCardDoubleClick}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                handleContextMenu(e, project, masterPrototype);
+              }}
+              title="ダブルクリックで編集 / 右クリックでメニュー表示"
             >
-              {/* カードヘッダー */}
-              <div className="bg-content-secondary p-4 border-b border-wood-lightest/20">
-                <div className="min-h-[60px] flex items-center">
+              {/* カード画像エリア */}
+              <div className="relative h-48 bg-gradient-to-br from-header via-header-light to-header-light/80 flex items-center justify-center">
+                {getRandomIcon(id)}
+                <div className="absolute inset-0 bg-black/10 rounded-t-xl"></div>
+              </div>
+
+              {/* カード内容 */}
+              <div className="p-4 space-y-4">
+                {/* プロトタイプ名 */}
+                <div className="min-h-[25px] flex items-center">
                   {isNameEditing ? (
                     <form
                       className="w-full"
@@ -432,71 +480,24 @@ const ProjectList: React.FC = () => {
                       />
                     </form>
                   ) : (
-                    <button
-                      onClick={() => handleNameEditToggle(id, name)}
-                      className="w-full text-wood-darkest font-semibold hover:text-header transition-colors cursor-pointer p-2 -m-2 rounded-md hover:bg-wood-lightest/20 text-left text-lg leading-tight"
+                    <span className="text-wood-darkest font-semibold hover:text-header transition-colors cursor-pointer p-2 -m-2 rounded-md hover:bg-wood-lightest/20 text-left text-lg leading-tight"
                       title="クリックして編集"
                     >
                       {name}
-                    </button>
+                    </span>
                   )}
                 </div>
-              </div>
-
-              {/* カード内容 */}
-              <div className="p-4 space-y-3">
-                <div className="text-sm text-wood">
-                  <div className="flex items-center justify-between">
-                    <span className="text-wood-dark font-medium">作成日時</span>
-                    <span>{formatDate(createdAt, true)}</span>
-                  </div>
-                </div>
-                
-                <div className="text-sm text-wood">
-                  <div className="flex items-center justify-between">
-                    <span className="text-wood-dark font-medium">作成者</span>
-                    <span>
-                      {userContext?.user?.id === project.userId
-                        ? '自分'
-                        : '他のユーザー'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* カードフッター（操作ボタン） */}
-              <div className="bg-wood-lightest/10 p-4 border-t border-wood-lightest/20">
-                <div className="flex flex-col gap-2">
-                  <Link
-                    href={`projects/${project.id}/prototypes/${id}`}
-                    className="flex items-center justify-center gap-2 px-4 py-2 text-sm text-white bg-gradient-to-r from-header to-header-light rounded-lg hover:shadow-md transition-all duration-200"
-                    title="プロトタイプを編集する"
-                  >
-                    <FaBoxOpen className="w-4 h-4" />
-                    <span>編集する</span>
-                  </Link>
-                  
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() =>
-                        router.push(`/projects/${project.id}/roles`)
-                      }
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
-                      title="プロトタイプの権限を設定する"
-                    >
-                      <FaUserShield className="h-4 w-4" />
-                      <span>権限</span>
-                    </button>
-                    <button
-                      onClick={() =>
-                        router.push(`/projects/${project.id}/delete`)
-                      }
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm text-wood hover:text-red-500 rounded-md hover:bg-red-50 transition-colors border border-wood-light/20"
-                      title="プロトタイプを削除する"
-                    >
-                      <IoTrash className="w-4 h-4" />
-                      <span>削除</span>
-                    </button>
+                {/* 詳細情報 */}
+                <div className="space-y-2">
+                  <div className="flex justify-end">
+                    <div className="text-right text-xs text-wood/60 space-y-1">
+                      <div>
+                        作成者: {userContext?.user?.id === project.userId
+                          ? '自分'
+                          : '他のユーザー'}
+                      </div>
+                      <div>作成日時: {formatDate(createdAt, true)}</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -526,6 +527,20 @@ const ProjectList: React.FC = () => {
           </div>
         </button>
       </div>
+      {/* コンテキストメニュー */}
+      {contextMenu.targetProject && createPortal(
+        <ProjectContextMenu
+          visible={contextMenu.visible}
+          position={contextMenu.position}
+          width={140}
+          itemHeight={32}
+          items={getContextMenuItems(
+            contextMenu.targetProject.project,
+            contextMenu.targetProject.masterPrototype
+          )}
+          onClose={closeContextMenu}
+        />
+      , document.body)}
     </div>
   );
 };
