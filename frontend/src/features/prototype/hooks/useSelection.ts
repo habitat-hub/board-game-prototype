@@ -1,7 +1,7 @@
 import type { KonvaEventObject } from 'konva/lib/Node';
 import { useCallback, useRef, useState } from 'react';
 
-import { Part as PartType } from '@/api/types';
+import { Part } from '@/api/types';
 import { isRectOverlap } from '@/features/prototype/utils/overlap';
 
 interface SelectionRect {
@@ -83,7 +83,7 @@ export function useSelection() {
   const handleSelectionEnd = useCallback(
     (
       e: KonvaEventObject<MouseEvent>,
-      parts: PartType[],
+      parts: Part[],
       onPartsSelected: (partIds: number[]) => void
     ) => {
       if (!isSelectionMode || !selectionStartRef.current) return;

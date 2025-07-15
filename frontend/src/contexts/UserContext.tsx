@@ -12,6 +12,8 @@ interface UserContextType {
   user: UserListData | null;
   // ユーザー情報を設定
   setUser: (user: UserListData | null) => void;
+  // ローディング状態
+  isLoading: boolean;
 }
 
 // ユーザー情報コンテキスト
@@ -26,6 +28,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   // ユーザー情報
   const [user, setUser] = useState<UserListData | null>(null);
+  // ローディング状態
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // ユーザー情報チェック、存在しない場合はユーザー情報取得
   useEffect(() => {
@@ -41,11 +45,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       })
       .catch(() => {
         router.replace('/');
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }, [getUser, router]);
 
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, setUser, isLoading }}>
       {children}
     </UserContext.Provider>
   );

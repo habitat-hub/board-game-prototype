@@ -28,7 +28,7 @@ interface RoleFormState {
 }
 
 /**
- * ロール管理関連のロジックを管理するカスタムフック
+ * 権限管理関連のロジックを管理するカスタムフック
  */
 export const useRoleManagement = (projectId: string) => {
   const { user: currentUser } = useUser();
@@ -53,7 +53,7 @@ export const useRoleManagement = (projectId: string) => {
   // UI状態
   const [roleForm, setRoleForm] = useState<RoleFormState>({
     selectedUserId: null,
-    selectedRole: 'viewer',
+    selectedRole: 'admin',
   });
   const [toast, setToast] = useState<ToastState>({
     message: '',
@@ -92,7 +92,7 @@ export const useRoleManagement = (projectId: string) => {
       setUserRoles(response);
     } catch (error) {
       console.error('Error fetching user roles:', error);
-      showToast('ロール一覧の取得に失敗しました。', 'error');
+      showToast('権限一覧の取得に失敗しました。', 'error');
     } finally {
       setLoading(false);
     }
@@ -101,15 +101,15 @@ export const useRoleManagement = (projectId: string) => {
   // プロジェクト詳細を取得
   const fetchProjectDetail = useCallback(async () => {
     try {
-      const response = await getProject(projectId);
-      setProjectDetail(response);
+      const project = await getProject(projectId);
+      setProjectDetail(project);
 
       // 作成者の情報を取得
-      if (response.project?.userId) {
+      if (project.userId) {
         try {
           const usersResponse = await searchUsers({ username: '' });
           const creatorUser = usersResponse.find(
-            (user) => user.id === response.project?.userId
+            (user) => user.id === project.userId
           );
           if (creatorUser) {
             setCreator(creatorUser);
@@ -141,10 +141,10 @@ export const useRoleManagement = (projectId: string) => {
         await addRoleToProject(projectId, { userId, roleName });
         await fetchUserRoles(); // 一覧を再取得
         await fetchAllUsers(); // ユーザー検索用リストを再取得
-        showToast(`ユーザーに${roleName}ロールを追加しました。`, 'success');
+        showToast(`ユーザーに${roleName}権限を追加しました。`, 'success');
       } catch (error) {
         console.error('Error adding role:', error);
-        showToast('ロールの追加に失敗しました。', 'error');
+        showToast('権限の追加に失敗しました。', 'error');
       } finally {
         setLoading(false);
       }
@@ -159,10 +159,10 @@ export const useRoleManagement = (projectId: string) => {
         setLoading(true);
         await updateRoleInProject(projectId, userId, { roleName });
         await fetchUserRoles(); // 一覧を再取得
-        showToast(`ユーザーのロールを${roleName}に変更しました。`, 'success');
+        showToast(`ユーザーの権限を${roleName}に変更しました。`, 'success');
       } catch (error) {
         console.error('Error updating role:', error);
-        showToast('ロールの変更に失敗しました。', 'error');
+        showToast('権限の変更に失敗しました。', 'error');
       } finally {
         setLoading(false);
       }
@@ -174,15 +174,15 @@ export const useRoleManagement = (projectId: string) => {
   const canRemoveUserRole = useCallback(
     (targetUserId: string, userRoles: UserRole[]) => {
       // 現在のユーザー情報がない場合は削除不可
-      if (!currentUser || !projectDetail || !projectDetail.project) {
+      if (!currentUser || !projectDetail) {
         return { canRemove: false, reason: 'ユーザー情報が取得できません' };
       }
 
       // プロジェクトの作成者の場合は削除不可
-      if (projectDetail.project.userId === targetUserId) {
+      if (projectDetail.userId === targetUserId) {
         return {
           canRemove: false,
-          reason: 'プロジェクトの作成者のロールは削除できません',
+          reason: 'プロジェクトの作成者の権限は削除できません',
         };
       }
 
@@ -207,7 +207,7 @@ export const useRoleManagement = (projectId: string) => {
         if (adminCount <= 1) {
           return {
             canRemove: false,
-            reason: '最後の管理者のロールは削除できません',
+            reason: '最後の管理者の権限は削除できません',
           };
         }
       }
@@ -225,10 +225,10 @@ export const useRoleManagement = (projectId: string) => {
         await removeRoleFromProject(projectId, userId);
         await fetchUserRoles(); // 一覧を再取得
         await fetchAllUsers(); // ユーザー検索用リストを再取得
-        showToast('ユーザーのロールを削除しました。', 'success');
+        showToast('ユーザーの権限を削除しました。', 'success');
       } catch (error: unknown) {
         console.error('Error removing role:', error);
-        const errorMessage = 'ロールの削除に失敗しました。';
+        const errorMessage = '権限の削除に失敗しました。';
         showToast(errorMessage, 'error');
       } finally {
         setLoading(false);
@@ -243,7 +243,7 @@ export const useRoleManagement = (projectId: string) => {
       await addRole(roleForm.selectedUserId, roleForm.selectedRole);
       setRoleForm({
         selectedUserId: null,
-        selectedRole: 'viewer',
+        selectedRole: 'admin',
       });
     }
   }, [roleForm.selectedUserId, roleForm.selectedRole, addRole]);
@@ -291,14 +291,14 @@ export const useRoleManagement = (projectId: string) => {
     setRoleForm((prev) => ({ ...prev, ...updates }));
   }, []);
 
-  // 初期化時にロール一覧、全ユーザー、プロジェクト詳細を取得
+  // 初期化時に権限一覧、全ユーザー、プロジェクト詳細を取得
   useEffect(() => {
     fetchUserRoles();
     fetchAllUsers();
     fetchProjectDetail();
   }, [fetchUserRoles, fetchAllUsers, fetchProjectDetail]);
 
-  // ロールが割り当てられていないユーザーを取得
+  // 権限が割り当てられていないユーザーを取得
   const availableUsers = allUsers.filter(
     (user) => !userRoles.find((ur) => ur.userId === user.id)
   );

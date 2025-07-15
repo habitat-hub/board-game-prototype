@@ -6,19 +6,13 @@ export function WoodenCrateBackground() {
       {/* 背景の木箱アイコン群 */}
       <div className="fixed top-[-50px] right-[-50px] pointer-events-none">
         <GiWoodenCrate
-          className="text-[600px] transform -rotate-12"
+          className="text-[420px] transform -rotate-12"
           style={{ color: '#A98363', opacity: 0.1 }}
         />
       </div>
       <div className="fixed bottom-[-100px] left-[-50px] pointer-events-none">
         <GiWoodenCrate
-          className="text-[500px] transform rotate-12"
-          style={{ color: '#A98363', opacity: 0.1 }}
-        />
-      </div>
-      <div className="fixed top-[5%] left-[-100px] pointer-events-none">
-        <GiWoodenCrate
-          className="text-[400px] transform -rotate-6"
+          className="text-[420px] transform rotate-12"
           style={{ color: '#A98363', opacity: 0.1 }}
         />
       </div>

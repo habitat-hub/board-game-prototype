@@ -25,10 +25,10 @@ const DeletePrototypeConfirmation = () => {
     const fetchProject = async () => {
       try {
         setIsLoading(true);
-        const { project, prototypes } = await getProject(projectId);
+        const project = await getProject(projectId);
         setProject(project);
         setMasterPrototype(
-          prototypes.find(({ type }) => type === 'MASTER') || null
+          project.prototypes.find(({ type }) => type === 'MASTER') || null
         );
         // ユーザーがプロトタイプのオーナーでない場合はリダイレクト
         if (user && project.userId !== user.id) {

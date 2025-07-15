@@ -27,7 +27,7 @@ class PartModel extends Model {
    * 手札
    */
   // 所有者ID (ユーザーID)
-  public ownerId: string | undefined;
+  public ownerId: string | null | undefined;
 }
 
 PartModel.init(

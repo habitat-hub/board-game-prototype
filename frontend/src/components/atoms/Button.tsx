@@ -4,8 +4,9 @@ import { twMerge } from 'tailwind-merge';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'accent' | 'outline';
   size?: 'sm' | 'md' | 'lg';
+  type?: 'button' | 'submit' | 'reset';
   href?: string;
   className?: string;
   isLoading?: boolean;
@@ -15,6 +16,7 @@ export default function Button({
   children,
   variant = 'primary',
   size = 'md',
+  type = 'button',
   href,
   className = '',
   isLoading = false,
@@ -25,8 +27,9 @@ export default function Button({
 
   const variants = {
     primary: 'bg-kibako-primary text-kibako-white hover:bg-kibako-primary/80',
-    secondary:
-      'bg-kibako-secondary/90 text-kibako-white hover:bg-kibako-secondary/80',
+    accent: 'bg-kibako-accent text-kibako-white hover:bg-kibako-accent/80',
+    outline:
+      'bg-transparent text-kibako-primary/70 hover:text-kibako-primary border border-kibako-primary/30 hover:border-kibako-primary/50',
   };
 
   const sizes = {
@@ -41,7 +44,7 @@ export default function Button({
 
   return isLoading ? (
     // ローディング中(3つのドットを点滅表示)
-    <button className={buttonClasses} {...props}>
+    <button type={type} className={buttonClasses} {...props}>
       {/* NOTE: ローディング中は子要素を非表示にする(ボタンの横幅を維持するためinvisibleを使用) */}
       <div className="invisible h-0">{children}</div>
       <div className="flex items-center justify-center gap-2">
@@ -57,7 +60,7 @@ export default function Button({
     </Link>
   ) : (
     // ボタン
-    <button className={buttonClasses} {...props}>
+    <button type={type} className={buttonClasses} {...props}>
       {children}
     </button>
   );

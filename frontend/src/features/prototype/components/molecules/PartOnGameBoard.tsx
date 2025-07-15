@@ -3,16 +3,19 @@ import React, { forwardRef, useMemo, useRef, useEffect, useState } from 'react';
 import { Group, Rect, Text, Image } from 'react-konva';
 import useImage from 'use-image';
 
-import { Part as PartType, PartProperty as PropertyType } from '@/api/types';
+import { Part, PartProperty } from '@/api/types';
+import FlipIcon from '@/features/prototype/components/atoms/FlipIcon';
+import ShuffleIcon from '@/features/prototype/components/atoms/ShuffleIcon';
+import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { useCard } from '@/features/prototype/hooks/useCard';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { useDeck } from '@/features/prototype/hooks/useDeck';
 import { PartHandle } from '@/features/prototype/type';
 import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
 
-interface PartProps {
-  part: PartType;
-  properties: PropertyType[];
+interface PartOnGameBoardProps {
+  part: Part;
+  properties: PartProperty[];
   images: Record<string, string>[];
   isOtherPlayerCard: boolean;
   gameBoardMode: GameBoardMode;
@@ -24,10 +27,13 @@ interface PartProps {
     e: Konva.KonvaEventObject<PointerEvent>,
     partId: number
   ) => void;
+  onChangePartOrder: (
+    type: 'front' | 'back' | 'frontmost' | 'backmost'
+  ) => void;
   isActive: boolean;
 }
 
-const Part = forwardRef<PartHandle, PartProps>(
+const PartOnGameBoard = forwardRef<PartHandle, PartOnGameBoardProps>(
   (
     {
       part,
@@ -40,39 +46,42 @@ const Part = forwardRef<PartHandle, PartProps>(
       onDragEnd,
       onClick,
       onContextMenu,
+      onChangePartOrder,
       isActive = false,
     },
     ref
   ) => {
     const groupRef = useRef<Konva.Group>(null);
-    const { frontSide, isReversing, setIsReversing, reverseCard } = useCard(
-      part,
-      ref
-    );
+    const { isReversing, setIsReversing, reverseCard } = useCard(part, ref);
     const { shuffleDeck } = useDeck(part);
     const [scaleX, setScaleX] = useState(1);
     const { showDebugInfo } = useDebugMode();
-
-    // 要素のドラッグ開始時に最前面に移動する処理を追加（PLAYモードのみ）
-    useEffect(() => {
-      if (!groupRef.current || gameBoardMode !== GameBoardMode.PLAY) return;
-
-      const currentGroup = groupRef.current;
-
-      // ドラッグ開始時のハンドラーを追加（PLAYモードのみ）
-      currentGroup.on('dragstart', () => {
-        // ドラッグ中のノードを最前面に移動
-        currentGroup.moveToTop();
-      });
-
-      return () => {
-        // クリーンアップ
-        currentGroup.off('dragstart');
-      };
-    }, [gameBoardMode, groupRef]);
+    const { socket } = useSocket();
 
     const isCard = part.type === 'card';
     const isDeck = part.type === 'deck';
+
+    // カードの反転を受信する
+    useEffect(() => {
+      const handleFlipCard = ({
+        cardId,
+        nextFrontSide,
+      }: {
+        cardId: number;
+        nextFrontSide: 'front' | 'back';
+      }) => {
+        if (cardId === part.id) {
+          reverseCard(nextFrontSide, false);
+        }
+      };
+
+      socket.on('FLIP_CARD', handleFlipCard);
+
+      // クリーンアップ関数を追加
+      return () => {
+        socket.off('FLIP_CARD', handleFlipCard);
+      };
+    }, [part.id, reverseCard, socket]);
 
     // アニメーション用のエフェクト
     useEffect(() => {
@@ -109,9 +118,14 @@ const Part = forwardRef<PartHandle, PartProps>(
       };
     }, [isReversing, isCard, setIsReversing]);
 
-    // 裏向き表示にする必要があるか
-    const isFlippedNeeded =
-      gameBoardMode === GameBoardMode.PREVIEW && isOtherPlayerCard;
+    // 常に裏面を表示すべきカードか
+    const shouldAlwaysDisplayBackSide =
+      gameBoardMode === GameBoardMode.PLAY &&
+      part.type === 'card' &&
+      isOtherPlayerCard;
+
+    // 表示する面を決定
+    const frontSide = shouldAlwaysDisplayBackSide ? 'back' : part.frontSide;
 
     // 対象面（表or裏）のプロパティを取得 (ローカルの isFlipped 状態を使用)
     const targetProperty = useMemo(() => {
@@ -143,14 +157,25 @@ const Part = forwardRef<PartHandle, PartProps>(
         return;
       }
 
-      if (isCard && !isFlippedNeeded) {
-        reverseCard(frontSide === 'front' ? 'back' : 'front', true);
+      if (isCard && !shouldAlwaysDisplayBackSide) {
+        reverseCard(part.frontSide === 'front' ? 'back' : 'front', true);
         return;
       }
     };
 
     // 中央を軸にして反転させるための設定
     const offsetX = part.width / 2;
+
+    const handleDragStart = (e: Konva.KonvaEventObject<DragEvent>) => {
+      // プレイモード時にカードまたはトークンがドラッグされたら最前面に移動
+      if (
+        gameBoardMode === GameBoardMode.PLAY &&
+        (part.type === 'card' || part.type === 'token')
+      ) {
+        onChangePartOrder('frontmost');
+      }
+      onDragStart(e);
+    };
 
     // コンテキストメニュー用ハンドラー
     const handleContextMenu = (e: Konva.KonvaEventObject<PointerEvent>) => {
@@ -169,7 +194,7 @@ const Part = forwardRef<PartHandle, PartProps>(
         offsetX={offsetX}
         draggable
         scaleX={scaleX}
-        onDragStart={onDragStart}
+        onDragStart={handleDragStart}
         onDragMove={(e) => onDragMove(e, part.id)}
         onDragEnd={(e) => onDragEnd(e, part.id)}
         onClick={onClick}
@@ -204,22 +229,20 @@ const Part = forwardRef<PartHandle, PartProps>(
           />
         )}
 
-        {/* パーツの名前 - フリップされていなければ表示 */}
-        {!isFlippedNeeded && (
-          <Text
-            text={targetProperty?.name || ''}
-            fontSize={part.type === 'token' ? 12 : 14}
-            fontStyle="bold"
-            fill={targetProperty?.textColor || 'black'}
-            width={part.width}
-            align="center"
-            padding={10}
-            y={5}
-          />
-        )}
+        {/* パーツの名前 */}
+        <Text
+          text={targetProperty?.name || ''}
+          fontSize={part.type === 'token' ? 12 : 14}
+          fontStyle="bold"
+          fill={targetProperty?.textColor || 'black'}
+          width={part.width}
+          align="center"
+          padding={10}
+          y={5}
+        />
 
-        {/* 説明文 - フリップされていなければ表示 */}
-        {!isFlippedNeeded && targetProperty?.description && (
+        {/* 説明文 */}
+        {targetProperty?.description && (
           <Text
             text={targetProperty.description}
             fontSize={10}
@@ -235,8 +258,8 @@ const Part = forwardRef<PartHandle, PartProps>(
 
         {/* タイプを示す小さなアイコン */}
         <Group x={part.width - 30} y={part.height - 25}>
-          {isDeck && <Text text="⠿" fontSize={14} fill="#666" />}
-          {isCard && <Text text="↻" fontSize={14} fill="#666" />}
+          {isDeck && <ShuffleIcon size={20} color="#666" />}
+          {isCard && <FlipIcon size={20} color="#666" />}
         </Group>
 
         {/* デバッグ情報: ID と順序（order） - showDebugInfoがtrueの場合のみ表示 */}
@@ -244,17 +267,18 @@ const Part = forwardRef<PartHandle, PartProps>(
           <Group x={5} y={5}>
             <Rect
               width={85}
-              height={20}
+              height={25}
               fill="rgba(0, 0, 0, 0.7)"
               cornerRadius={4}
             />
             <Text
-              text={`ID:${part.id} / O:${typeof part.order === 'number' ? part.order.toFixed(2) : 'N/A'}`}
+              text={`ID:${part.id}\nO:${typeof part.order === 'number' ? part.order : 'N/A'}`}
               fontSize={10}
               fill="white"
               width={85}
-              align="center"
-              y={5}
+              align="left"
+              x={5}
+              y={3}
             />
           </Group>
         )}
@@ -262,6 +286,6 @@ const Part = forwardRef<PartHandle, PartProps>(
     );
   }
 );
-Part.displayName = 'Part';
+PartOnGameBoard.displayName = 'Part';
 
-export default Part;
+export default PartOnGameBoard;

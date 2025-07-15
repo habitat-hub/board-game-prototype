@@ -3,11 +3,7 @@ import PartModel from '../models/Part';
 import PartPropertyModel from '../models/PartProperty';
 import { UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import PrototypeModel from '../models/Prototype';
-import {
-  getOverLappingPart,
-  getUnderLappingPart,
-  shuffleDeck,
-} from '../helpers/prototypeHelper';
+import { shuffleDeck, isOverlapping } from '../helpers/prototypeHelper';
 import type { CursorInfo } from '../types/cursor';
 import ImageModel from '../models/Image';
 
@@ -26,7 +22,7 @@ interface SocketData {
  * @param {string} prototypeId - プロトタイプID
  * @returns {Promise<{ parts: PartModel[], properties: PartPropertyModel[] }>} - プロトタイプに関連するパーツとプロパティの配列を含むオブジェクトを返すPromise
  */
-async function fetchPartsAndProperties(prototypeId: string) {
+export async function fetchPartsAndProperties(prototypeId: string) {
   const [parts, properties] = await Promise.all([
     PartModel.findAll({
       where: { prototypeId },
@@ -49,20 +45,6 @@ async function fetchPartsAndProperties(prototypeId: string) {
   ]);
 
   return { parts, properties };
-}
-
-/**
- * 指定されたプロトタイプバージョンIDに関連する全てのパーツとプロパティを取得し、
- * それらをクライアントにemitする。
- * @param io - Server
- * @param {string} prototypeId- プロトタイプバージョンID
- */
-export async function emitUpdatedPartsAndProperties(
-  io: Server,
-  prototypeId: string
-) {
-  const { parts, properties } = await fetchPartsAndProperties(prototypeId);
-  io.to(prototypeId).emit('UPDATE_PARTS', { parts, properties });
 }
 
 /**
@@ -93,7 +75,7 @@ function handleJoinPrototype(socket: Socket) {
         socket.join(prototypeId);
 
         const partsAndProperties = await fetchPartsAndProperties(prototypeId);
-        socket.emit('UPDATE_PARTS', partsAndProperties);
+        socket.emit('INITIAL_PARTS', partsAndProperties);
         socket.emit('UPDATE_CURSORS', {
           cursors: cursorMap[prototypeId] || {},
         });
@@ -126,9 +108,9 @@ function handleAddPart(socket: Socket, io: Server) {
           where: { prototypeId },
         });
 
-        // maxOrderがnullの場合（まだパーツが存在しない場合）は1、
-        // そうでなければmaxOrder + 1を使用
-        const newOrder = maxOrder === null ? 1 : maxOrder + 1;
+        // maxOrderがnullの場合（まだパーツが存在しない場合）は0、
+        // そうでなければ(1+maxOrder)/2を使用
+        const newOrder = maxOrder === null ? 0.5 : (1 + maxOrder) / 2;
 
         const newPart = await PartModel.create({
           ...part,
@@ -143,9 +125,12 @@ function handleAddPart(socket: Socket, io: Server) {
           });
         });
 
-        await Promise.all(propertyCreationPromises);
+        const newProperties = await Promise.all(propertyCreationPromises);
 
-        await emitUpdatedPartsAndProperties(io, prototypeId);
+        io.to(prototypeId).emit('ADD_PART', {
+          part: newPart,
+          properties: newProperties,
+        });
 
         // 新しいパーツのIDをクライアントに送信
         // これによりクライアント側で新パーツをすぐ参照できるようになる
@@ -178,6 +163,9 @@ function handleUpdatePart(socket: Socket, io: Server) {
     }) => {
       const { prototypeId } = socket.data as SocketData;
 
+      let updatedPart: PartModel | null = null;
+      let updatedProperties: PartPropertyModel[] | null = null;
+
       try {
         // Partの更新
         if (updatePart && Object.keys(updatePart).length > 0) {
@@ -193,21 +181,34 @@ function handleUpdatePart(socket: Socket, io: Server) {
             },
             {} as Partial<PartModel>
           );
-          await PartModel.update(updateData, { where: { id: partId } });
+          const [, result] = await PartModel.update(updateData, {
+            where: { id: partId },
+            returning: true,
+          });
+          updatedPart = result[0].dataValues;
         }
 
         // PartPropertiesの更新
         if (updateProperties) {
           const updatePromises = updateProperties.map((property) => {
-            return PartPropertyModel.update(property, {
-              where: { partId, side: property.side },
-            });
+            return PartPropertyModel.update(
+              { ...property, partId },
+              {
+                where: { partId, side: property.side },
+                returning: true,
+              }
+            );
           });
 
           // 更新処理の実行
-          await Promise.all(updatePromises);
+          const result = await Promise.all(updatePromises);
+          updatedProperties = result.map(([, result]) => result[0].dataValues);
         }
-        await emitUpdatedPartsAndProperties(io, prototypeId);
+
+        io.to(prototypeId).emit('UPDATE_PARTS', {
+          parts: updatedPart ? [updatedPart] : [],
+          properties: updatedProperties ? updatedProperties : [],
+        });
       } catch (error) {
         console.error('パーツの更新に失敗しました。', error);
       }
@@ -226,7 +227,7 @@ function handleDeletePart(socket: Socket, io: Server) {
 
     // PartPropertyは CASCADE で自動的に削除される
     await PartModel.destroy({ where: { id: partId } });
-    await emitUpdatedPartsAndProperties(io, prototypeId);
+    io.to(prototypeId).emit('DELETE_PART', { partId });
   });
 }
 
@@ -249,17 +250,20 @@ function handleFlipCard(socket: Socket, io: Server) {
       const { prototypeId } = socket.data as SocketData;
 
       try {
-        await PartModel.update(
+        const [, result] = await PartModel.update(
           { frontSide: nextFrontSide },
-          { where: { id: cardId } }
+          { where: { id: cardId }, returning: true }
         );
+
+        io.to(prototypeId).emit('UPDATE_PARTS', {
+          parts: [result[0].dataValues],
+          properties: [],
+        });
 
         io.to(prototypeId).emit('FLIP_CARD', {
           cardId,
           nextFrontSide,
         });
-
-        await emitUpdatedPartsAndProperties(io, prototypeId);
       } catch (error) {
         console.error('カードの反転に失敗しました。', error);
       }
@@ -285,12 +289,12 @@ function handleChangeOrder(socket: Socket, io: Server) {
       const { prototypeId } = socket.data as SocketData;
 
       try {
-        const sortedParts = await PartModel.findAll({
+        const partsBackToFront = await PartModel.findAll({
           where: { prototypeId },
           order: [['order', 'ASC']],
         });
 
-        const selfPartIndex = sortedParts.findIndex(
+        const selfPartIndex = partsBackToFront.findIndex(
           (part) => part.id === partId
         );
         if (selfPartIndex === -1) return;
@@ -302,7 +306,7 @@ function handleChangeOrder(socket: Socket, io: Server) {
 
         // 最前面、かつ前面に移動しようとした場合は何もしない
         if (
-          selfPartIndex === sortedParts.length - 1 &&
+          selfPartIndex === partsBackToFront.length - 1 &&
           (type === 'front' || type === 'frontmost')
         ) {
           return;
@@ -311,68 +315,86 @@ function handleChangeOrder(socket: Socket, io: Server) {
         switch (type) {
           case 'back': {
             // 一つ後ろに移動
-            const underLappingPart = await getUnderLappingPart(
-              partId,
-              sortedParts
-            );
+            const selfPart = partsBackToFront[selfPartIndex];
+            const underLappingPart = partsBackToFront
+              .filter(
+                (part) =>
+                  part.order < selfPart.order && isOverlapping(selfPart, part)
+              )
+              .sort((a, b) => b.order - a.order)[0]; // orderの降順でソートして最初を取得
+
             if (underLappingPart) {
-              const prevPartIndex = sortedParts.findIndex(
+              const prevPartIndex = partsBackToFront.findIndex(
                 (part) => part.id === underLappingPart.id
               );
               const newOrder =
                 (underLappingPart.order +
-                  (sortedParts[prevPartIndex - 1]?.order ?? 0)) /
+                  (partsBackToFront[prevPartIndex - 1]?.order ?? 0)) /
                 2;
-              await PartModel.update(
+              const [, result] = await PartModel.update(
                 { order: newOrder },
-                { where: { id: partId } }
+                { where: { id: partId }, returning: true }
               );
-              await emitUpdatedPartsAndProperties(io, prototypeId);
+              io.to(prototypeId).emit('UPDATE_PARTS', {
+                parts: [result[0].dataValues],
+                properties: [],
+              });
             }
             break;
           }
           case 'front': {
             // 一つ前に移動
-            const overLappingPart = await getOverLappingPart(
-              partId,
-              sortedParts
+            const selfPart = partsBackToFront[selfPartIndex];
+            const overLappingPart = partsBackToFront.find(
+              (part) =>
+                part.order > selfPart.order && isOverlapping(selfPart, part)
             );
+
             if (overLappingPart) {
-              const nextPartIndex = sortedParts.findIndex(
+              const nextPartIndex = partsBackToFront.findIndex(
                 (part) => part.id === overLappingPart.id
               );
               const newOrder =
                 (overLappingPart.order +
-                  (sortedParts[nextPartIndex + 1]?.order ?? 1)) /
+                  (partsBackToFront[nextPartIndex + 1]?.order ?? 1)) /
                 2;
-              await PartModel.update(
+              const [, result] = await PartModel.update(
                 { order: newOrder },
-                { where: { id: partId } }
+                { where: { id: partId }, returning: true }
               );
-              await emitUpdatedPartsAndProperties(io, prototypeId);
+              io.to(prototypeId).emit('UPDATE_PARTS', {
+                parts: [result[0].dataValues],
+                properties: [],
+              });
             }
             break;
           }
           case 'backmost': {
             // 最背面に移動
-            const firstPart = sortedParts[0];
-            const newOrder = (firstPart.order + 0) / 2;
-            await PartModel.update(
+            const partBackMost = partsBackToFront[0];
+            const newOrder = (partBackMost.order + 0) / 2;
+            const [, result] = await PartModel.update(
               { order: newOrder },
-              { where: { id: partId } }
+              { where: { id: partId }, returning: true }
             );
-            await emitUpdatedPartsAndProperties(io, prototypeId);
+            io.to(prototypeId).emit('UPDATE_PARTS', {
+              parts: [result[0].dataValues],
+              properties: [],
+            });
             break;
           }
           case 'frontmost': {
             // 最前面に移動
-            const lastPart = sortedParts[sortedParts.length - 1];
-            const newOrder = (lastPart.order + 1) / 2;
-            await PartModel.update(
+            const partFrontMost = partsBackToFront[partsBackToFront.length - 1];
+            const newOrder = (partFrontMost.order + 1) / 2;
+            const [, result] = await PartModel.update(
               { order: newOrder },
-              { where: { id: partId } }
+              { where: { id: partId }, returning: true }
             );
-            await emitUpdatedPartsAndProperties(io, prototypeId);
+            io.to(prototypeId).emit('UPDATE_PARTS', {
+              parts: [result[0].dataValues],
+              properties: [],
+            });
             break;
           }
           default:
@@ -414,8 +436,11 @@ function handleShuffleDeck(socket: Socket, io: Server) {
           cardCenter.y <= deck.position.y + deck.height
         );
       });
-      await shuffleDeck(cardsOnDeck);
-      await emitUpdatedPartsAndProperties(io, prototypeId);
+      const updatedCards = await shuffleDeck(cardsOnDeck);
+      io.to(prototypeId).emit('UPDATE_PARTS', {
+        parts: updatedCards,
+        properties: [],
+      });
     } catch (error) {
       console.error('カードのシャッフルに失敗しました。', error);
     }

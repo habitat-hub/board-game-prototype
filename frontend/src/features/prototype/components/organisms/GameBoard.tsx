@@ -9,16 +9,17 @@ import React, {
 import { Stage, Layer, Group, Rect } from 'react-konva';
 
 import { useImages } from '@/api/hooks/useImages';
-import { Part as PartType, PartProperty as PropertyType } from '@/api/types';
+import { Part, PartProperty } from '@/api/types';
 import DebugInfo from '@/features/prototype/components/atoms/DebugInfo';
 import GridLines from '@/features/prototype/components/atoms/GridLines';
 import ModeToggleButton from '@/features/prototype/components/atoms/ModeToggleButton';
-import Part from '@/features/prototype/components/atoms/Part';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
 import SelectionRect from '@/features/prototype/components/atoms/SelectionRect';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
+import PartOnGameBoard from '@/features/prototype/components/molecules/PartOnGameBoard';
 import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
+import PlaySidebar from '@/features/prototype/components/molecules/PlaySidebar';
 import RoleMenu from '@/features/prototype/components/molecules/RoleMenu';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
 import {
@@ -29,14 +30,16 @@ import {
   DEFAULT_INITIAL_SCALE,
 } from '@/features/prototype/constants/gameBoard';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
+import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
+import { useHandVisibility } from '@/features/prototype/hooks/useHandVisibility';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { useSelection } from '@/features/prototype/hooks/useSelection';
-import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { AddPartProps, DeleteImageProps } from '@/features/prototype/type';
 import { CursorInfo } from '@/features/prototype/types/cursor';
 import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
+import { useRoleManagement } from '@/features/role/hooks/useRoleManagement';
 import {
   getImageFromIndexedDb,
   resetImageParamsInIndexedDb,
@@ -46,20 +49,18 @@ import {
 
 interface GameBoardProps {
   prototypeName: string;
-  prototypeVersionNumber?: number;
   projectId: string;
-  parts: PartType[];
-  properties: PropertyType[];
+  partsMap: Map<number, Part>;
+  propertiesMap: Map<number, PartProperty[]>;
   cursors: Record<string, CursorInfo>;
   gameBoardMode: GameBoardMode;
 }
 
 export default function GameBoard({
   prototypeName,
-  prototypeVersionNumber,
   projectId,
-  parts,
-  properties,
+  partsMap,
+  propertiesMap,
   cursors,
   gameBoardMode,
 }: GameBoardProps) {
@@ -72,6 +73,18 @@ export default function GameBoard({
   const { dispatch } = usePartReducer();
   const { measureOperation } = usePerformanceTracker();
   const [images, setImages] = useState<Record<string, string>>({});
+
+  const parts = useMemo(() => Array.from(partsMap.values()), [partsMap]);
+  const properties = useMemo(
+    () => Array.from(propertiesMap.values()).flat(),
+    [propertiesMap]
+  );
+
+  // 手札の上のカードの表示制御
+  const { cardVisibilityMap } = useHandVisibility(parts, gameBoardMode);
+
+  // ロール管理情報を取得
+  const { userRoles } = useRoleManagement(projectId);
 
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
@@ -133,7 +146,7 @@ export default function GameBoard({
   );
 
   // 全パーツの平均センター位置を計算する関数
-  const calculateAveragePartsCenter = useCallback((parts: PartType[]) => {
+  const calculateAveragePartsCenter = useCallback((parts: Part[]) => {
     if (parts.length === 0) return null;
 
     const totalCenterX = parts.reduce((sum, part) => {
@@ -309,43 +322,45 @@ export default function GameBoard({
   };
 
   const handleChangePartOrder = useCallback(
-    (type: 'front' | 'back' | 'frontmost' | 'backmost') => {
-      if (contextMenuPartId === null) return;
+    (type: 'front' | 'back' | 'frontmost' | 'backmost', partId: number) => {
       dispatch({
         type: 'CHANGE_ORDER',
-        payload: { partId: contextMenuPartId, type },
+        payload: { partId, type },
       });
 
       setShowContextMenu(false);
     },
-    [contextMenuPartId, dispatch]
+    [dispatch]
   );
 
   /**
    * コンテキストメニューのアイテム定義
    */
-  const getContextMenuItems = useCallback(() => [
-    {
-      id: 'frontmost',
-      text: '最前面に移動',
-      action: () => handleChangePartOrder('frontmost'),
-    },
-    {
-      id: 'front',
-      text: '前面に移動',
-      action: () => handleChangePartOrder('front'),
-    },
-    {
-      id: 'back',
-      text: '背面に移動',
-      action: () => handleChangePartOrder('back'),
-    },
-    {
-      id: 'backmost',
-      text: '最背面に移動',
-      action: () => handleChangePartOrder('backmost'),
-    },
-  ], [handleChangePartOrder]);
+  const getContextMenuItems = useCallback(
+    (partId: number) => [
+      {
+        id: 'frontmost',
+        text: '最前面に移動',
+        action: () => handleChangePartOrder('frontmost', partId),
+      },
+      {
+        id: 'front',
+        text: '前面に移動',
+        action: () => handleChangePartOrder('front', partId),
+      },
+      {
+        id: 'back',
+        text: '背面に移動',
+        action: () => handleChangePartOrder('back', partId),
+      },
+      {
+        id: 'backmost',
+        text: '最背面に移動',
+        action: () => handleChangePartOrder('backmost', partId),
+      },
+    ],
+    [handleChangePartOrder]
+  );
 
   const handleCloseContextMenu = useCallback(() => {
     setShowContextMenu(false);
@@ -701,7 +716,7 @@ export default function GameBoard({
   // パーツの位置をキャンバス内に制限する関数
   const constrainWithinCanvas = useCallback(
     (
-      partObject: PartType,
+      partObject: Part,
       baseX: number,
       baseY: number,
       deltaX: number,
@@ -738,6 +753,23 @@ export default function GameBoard({
     });
     return map;
   }, [parts, properties, images]);
+
+  // パーツの表示用データをメモ化
+  const sortedParts = useMemo(() => {
+    return [...parts].sort((a, b) => a.order - b.order);
+  }, [parts]);
+
+  // パーツのプロパティマップをメモ化
+  const partPropertiesMap = useMemo(() => {
+    const map: Record<number, PartProperty[]> = {};
+    properties.forEach((property) => {
+      if (!map[property.partId]) {
+        map[property.partId] = [];
+      }
+      map[property.partId].push(property);
+    });
+    return map;
+  }, [properties]);
 
   useEffect(() => {
     // パーツ追加時に自分の追加したパーツを選択状態にする
@@ -812,32 +844,35 @@ export default function GameBoard({
             )}
 
             {/* パーツの表示 */}
-            {[...parts]
-              .sort((a, b) => a.order - b.order)
-              .map((part) => {
-                const partProperties = properties.filter(
-                  (p) => p.partId === part.id
-                );
-                const filteredImages = filteredImagesMap[part.id] || [];
-                const isActive = selectedPartIds.includes(part.id);
-                return (
-                  <Part
-                    key={part.id}
-                    part={part}
-                    properties={partProperties}
-                    images={filteredImages}
-                    gameBoardMode={gameBoardMode}
-                    isActive={isActive}
-                    isOtherPlayerCard={false}
-                    onClick={(e) => handlePartClick(e, part.id)}
-                    onDragStart={(e) => handlePartDragStart(e, part.id)}
-                    onDragMove={(e) => handlePartDragMove(e, part.id)}
-                    onDragEnd={(e, partId) => handlePartDragEnd(e, partId)}
-                    onContextMenu={(e) => handlePartContextMenu(e, part.id)}
-                  />
-                );
-              })}
+            {sortedParts.map((part) => {
+              const partProperties = partPropertiesMap[part.id] || [];
+              const filteredImages = filteredImagesMap[part.id] || [];
+              const isActive = selectedPartIds.includes(part.id);
 
+              // カードの表示制御を判定
+              const isOtherPlayerCard =
+                part.type === 'card' && !cardVisibilityMap.get(part.id);
+
+              return (
+                <PartOnGameBoard
+                  key={part.id}
+                  part={part}
+                  properties={partProperties}
+                  images={filteredImages}
+                  gameBoardMode={gameBoardMode}
+                  isActive={isActive}
+                  isOtherPlayerCard={isOtherPlayerCard}
+                  onClick={(e) => handlePartClick(e, part.id)}
+                  onDragStart={(e) => handlePartDragStart(e, part.id)}
+                  onDragMove={(e) => handlePartDragMove(e, part.id)}
+                  onDragEnd={(e, partId) => handlePartDragEnd(e, partId)}
+                  onContextMenu={(e) => handlePartContextMenu(e, part.id)}
+                  onChangePartOrder={(type) =>
+                    handleChangePartOrder(type, part.id)
+                  }
+                />
+              );
+            })}
             {/* 選択モード時の矩形選択表示 */}
             <SelectionRect
               x={selectionRect.x}
@@ -859,7 +894,11 @@ export default function GameBoard({
       {gameBoardMode === GameBoardMode.CREATE && (
         <>
           {/* ロールメニュー */}
-          <RoleMenu projectId={projectId} />
+          <RoleMenu
+            projectId={projectId}
+            userRoles={userRoles}
+            loading={false}
+          />
           {/* フローティングパーツ作成メニュー */}
           <PartCreateMenu
             onAddPart={handleAddPart}
@@ -881,6 +920,19 @@ export default function GameBoard({
           )}
         </>
       )}
+
+      {/* プレイモード時のサイドバー */}
+      {gameBoardMode === GameBoardMode.PLAY && (
+        <PlaySidebar
+          parts={parts}
+          onSelectPart={(partId) => setSelectedPartIds([partId])}
+          selectedPartId={
+            selectedPartIds.length === 1 ? selectedPartIds[0] : null
+          }
+          userRoles={userRoles}
+        />
+      )}
+
       <ZoomToolbar
         zoomIn={handleZoomIn}
         zoomOut={handleZoomOut}
@@ -892,13 +944,11 @@ export default function GameBoard({
       <DebugInfo
         camera={camera}
         prototypeName={prototypeName}
-        prototypeVersionNumber={prototypeVersionNumber ?? 0}
         projectId={projectId}
         mode={gameBoardMode}
         parts={parts}
         properties={properties}
         cursors={cursors}
-        selectedPartIds={selectedPartIds}
       />
 
       {/* コンテキストメニュー */}
@@ -906,7 +956,7 @@ export default function GameBoard({
         visible={showContextMenu && contextMenuPartId !== null}
         position={menuPosition}
         onClose={handleCloseContextMenu}
-        items={getContextMenuItems()}
+        items={getContextMenuItems(contextMenuPartId!)}
       />
     </DebugModeProvider>
   );

@@ -1,11 +1,5 @@
 import { PartDefaultConfig } from './type';
 
-// バージョン番号
-export const VERSION_NUMBER = {
-  // マスター
-  MASTER: '0.0.0',
-};
-
 // グリッドサイズ
 export const GRID_SIZE = 1;
 
@@ -24,8 +18,8 @@ export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
     description: '',
     color: '#FFFFFF',
     textColor: '#000000',
-    frontDescription: '表',
-    backDescription: '裏',
+    frontDescription: '',
+    backDescription: '',
   },
   // トークン
   TOKEN: {
@@ -42,7 +36,7 @@ export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
     type: 'hand',
     name: '手札',
     width: 400,
-    height: 150,
+    height: 200,
     description: '',
     color: '#FFFFFF',
     textColor: '#000000',
@@ -51,8 +45,8 @@ export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
   DECK: {
     type: 'deck',
     name: '山札',
-    width: 150,
-    height: 150,
+    width: 250,
+    height: 250,
     description: '',
     color: '#FFFFFF',
     textColor: '#000000',
@@ -62,7 +56,7 @@ export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
     type: 'area',
     name: 'エリア',
     width: 300,
-    height: 200,
+    height: 300,
     description: '',
     color: '#FFFFFF',
     textColor: '#000000',

@@ -33,6 +33,19 @@ const commonSchemas = {
       error: 'リクエストが不正です',
     },
   },
+  Error401Response: {
+    type: 'object',
+    properties: {
+      error: {
+        type: 'string',
+        description: 'エラーメッセージ',
+      },
+    },
+    required: ['error'],
+    example: {
+      error: '認証が必要です',
+    },
+  },
   Error404Response: {
     type: 'object',
     properties: {
@@ -61,54 +74,53 @@ const commonSchemas = {
   },
 };
 
-function getSwaggerType(sequelizeType: any): any {
+function getSwaggerType(sequelizeType: any, allowNull: boolean = false): any {
   const type = sequelizeType.toString().toLowerCase();
 
+  let swaggerType: any;
+
   if (sequelizeType instanceof DataTypes.ENUM) {
-    return {
+    swaggerType = {
       type: 'string',
       enum: (sequelizeType as any).values,
     };
-  }
-
-  if (sequelizeType instanceof DataTypes.ARRAY) {
+  } else if (sequelizeType instanceof DataTypes.ARRAY) {
     const itemType = getSwaggerType((sequelizeType as any).type);
-    return {
+    swaggerType = {
       type: 'array',
       items: itemType,
     };
-  }
-
-  if (type.includes('uuid')) {
-    return {
+  } else if (type.includes('uuid')) {
+    swaggerType = {
       type: 'string',
       format: 'uuid',
     };
-  }
-
-  if (type.includes('int') || type.includes('float')) {
-    return { type: 'integer' };
-  }
-
-  if (type.includes('boolean')) {
-    return { type: 'boolean' };
-  }
-
-  if (type.includes('date')) {
-    return {
+  } else if (type.includes('int') || type.includes('float')) {
+    swaggerType = { type: 'integer' };
+  } else if (type.includes('boolean')) {
+    swaggerType = { type: 'boolean' };
+  } else if (type.includes('date')) {
+    swaggerType = {
       type: 'string',
       format: 'date-time',
     };
-  }
-
-  if (type.includes('json')) {
-    return {
+  } else if (type.includes('json')) {
+    swaggerType = {
       type: 'object',
       additionalProperties: true,
     };
+  } else {
+    swaggerType = { type: 'string' };
   }
 
-  return { type: 'string' };
+  // allowNullがtrueの場合、nullを許容する型を返す
+  if (allowNull) {
+    return {
+      oneOf: [swaggerType, { type: 'null' }],
+    };
+  }
+
+  return swaggerType;
 }
 
 function generateSwaggerSchema(model: ModelStatic<Model>) {
@@ -124,7 +136,7 @@ function generateSwaggerSchema(model: ModelStatic<Model>) {
 
     if (key.startsWith('_')) continue;
 
-    properties[key] = getSwaggerType(attribute.type);
+    properties[key] = getSwaggerType(attribute.type, attribute.allowNull);
 
     if (!attribute.allowNull) {
       required.push(key);
