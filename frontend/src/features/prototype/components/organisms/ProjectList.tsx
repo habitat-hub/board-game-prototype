@@ -8,6 +8,8 @@ import React, {
   useMemo,
   useContext,
 } from 'react';
+import { createPortal } from 'react-dom';
+
 import { FaPlus } from 'react-icons/fa';
 import { GiWoodenCrate, GiCardAceSpades, GiPuzzle } from 'react-icons/gi';
 import { RiLoaderLine } from 'react-icons/ri';
@@ -20,7 +22,7 @@ import { UserContext } from '@/contexts/UserContext';
 import useInlineEdit from '@/hooks/useInlineEdit';
 import formatDate from '@/utils/dateFormat';
 import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
-import { createPortal } from 'react-dom';
+
 import { ProjectContextMenu } from '../atoms/ProjectContextMenu';
 
 type SortKey = 'name' | 'createdAt';
@@ -64,14 +66,6 @@ const ProjectList: React.FC = () => {
       masterPrototype: Prototype | undefined;
     }[]
   >([]);
-  // ソート
-  const [sort, setSort] = useState<{
-    key: SortKey;
-    order: SortOrder;
-  }>({
-    key: 'createdAt',
-    order: 'desc',
-  });
 
   // コンテキストメニューの状態
   const [contextMenu, setContextMenu] = useState<{
@@ -260,47 +254,6 @@ const ProjectList: React.FC = () => {
     fetchProjects();
   }, [fetchProjects]);
 
-  /**
-   * プロトタイプをソートする
-   * @param prototypes プロトタイプ
-   * @returns ソートされたプロトタイプ
-   */
-  const sortPrototypes = useCallback(
-    (
-      prototypeList: {
-        project: Project;
-        masterPrototype: Prototype | undefined;
-      }[]
-    ) => {
-      return [...prototypeList].sort((a, b) => {
-        switch (sort.key) {
-          // 名前順
-          case 'name':
-            if (!a.masterPrototype?.name || !b.masterPrototype?.name) return 0;
-            return sort.order === 'asc'
-              ? a.masterPrototype.name.localeCompare(b.masterPrototype.name)
-              : b.masterPrototype.name.localeCompare(a.masterPrototype.name);
-          // 作成日順
-          case 'createdAt':
-            if (!a.masterPrototype?.createdAt || !b.masterPrototype?.createdAt)
-              return 0;
-            return sort.order === 'asc'
-              ? new Date(b.masterPrototype.createdAt).getTime() -
-                  new Date(a.masterPrototype.createdAt).getTime()
-              : new Date(a.masterPrototype.createdAt).getTime() -
-                  new Date(b.masterPrototype.createdAt).getTime();
-          default:
-            return 0;
-        }
-      });
-    },
-    [sort]
-  );
-
-  // ソートされたプロトタイプ
-  const sortedPrototypeList = useMemo(() => {
-    return sortPrototypes(prototypeList);
-  }, [prototypeList, sortPrototypes]);
 
   /**
    * 右クリック時の処理
@@ -361,7 +314,7 @@ const ProjectList: React.FC = () => {
     return <Loading />;
   }
 
-  if (sortedPrototypeList.length === 0) {
+  if (prototypeList.length === 0) {
     return (
       <div className="fixed inset-0 z-10">
         <button
@@ -399,7 +352,7 @@ const ProjectList: React.FC = () => {
 
       {/* プロトタイプ一覧（カード形式） */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {sortedPrototypeList.map(({ masterPrototype, project }) => {
+        {prototypeList.map(({ masterPrototype, project }) => {
           if (!masterPrototype) return null;
           const { id, name, createdAt } = masterPrototype;
           const isNameEditing = isEditing(id);
@@ -471,9 +424,7 @@ const ProjectList: React.FC = () => {
                       />
                     </form>
                   ) : (
-                    <span className="text-wood-darkest font-semibold hover:text-header transition-colors cursor-pointer p-2 -m-2 rounded-md hover:bg-wood-lightest/20 text-left text-lg leading-tight"
-                      title="クリックして編集"
-                    >
+                    <span className="text-wood-darkest font-semibold p-2 -m-2 rounded-md text-left text-lg leading-tight">
                       {name}
                     </span>
                   )}
