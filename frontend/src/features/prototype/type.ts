@@ -1,13 +1,5 @@
 import { Part, PartProperty, Image } from '@/api/types';
 
-// Partコンポーネントの外部から呼び出せる関数のインターフェース
-export interface PartHandle {
-  reverseCard: (
-    nextFrontSide: 'front' | 'back',
-    needsSocketEmit?: boolean
-  ) => void;
-}
-
 // パーツのデフォルト設定
 export interface PartDefaultConfig {
   type: 'card' | 'token' | 'hand' | 'deck' | 'area';
