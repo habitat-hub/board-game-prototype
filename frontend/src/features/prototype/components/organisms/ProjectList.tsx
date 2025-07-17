@@ -5,11 +5,9 @@ import React, {
   useState,
   useEffect,
   useCallback,
-  useMemo,
   useContext,
 } from 'react';
 import { createPortal } from 'react-dom';
-
 import { FaPlus } from 'react-icons/fa';
 import { GiWoodenCrate, GiCardAceSpades, GiPuzzle } from 'react-icons/gi';
 import { RiLoaderLine } from 'react-icons/ri';
@@ -24,9 +22,6 @@ import formatDate from '@/utils/dateFormat';
 import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
 
 import { ProjectContextMenu } from '../atoms/ProjectContextMenu';
-
-type SortKey = 'name' | 'createdAt';
-type SortOrder = 'asc' | 'desc';
 
 /**
  * PrototypeListコンポーネントで使用される各種Stateの説明:
