@@ -264,7 +264,6 @@ const ProjectList: React.FC = () => {
     masterPrototype: Prototype
   ) => {
     e.preventDefault();
-    console.info('handleContextMenu');
     setContextMenu({
       visible: true,
       position: { x: e.clientX, y: e.clientY },
