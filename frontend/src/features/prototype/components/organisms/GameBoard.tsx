@@ -12,8 +12,8 @@ import { useImages } from '@/api/hooks/useImages';
 import { Part, PartProperty } from '@/api/types';
 import DebugInfo from '@/features/prototype/components/atoms/DebugInfo';
 import GridLines from '@/features/prototype/components/atoms/GridLines';
-import { KonvaPartContextMenu } from '@/features/prototype/components/atoms/KonvaPartContextMenu';
 import ModeToggleButton from '@/features/prototype/components/atoms/ModeToggleButton';
+import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
 import SelectionRect from '@/features/prototype/components/atoms/SelectionRect';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
@@ -30,12 +30,12 @@ import {
   DEFAULT_INITIAL_SCALE,
 } from '@/features/prototype/constants/gameBoard';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
+import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
 import { useHandVisibility } from '@/features/prototype/hooks/useHandVisibility';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { useSelection } from '@/features/prototype/hooks/useSelection';
-import { useSocket } from '@/features/prototype/hooks/useSocket';
 import { AddPartProps, DeleteImageProps } from '@/features/prototype/type';
 import { CursorInfo } from '@/features/prototype/types/cursor';
 import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
@@ -50,8 +50,8 @@ import {
 interface GameBoardProps {
   prototypeName: string;
   projectId: string;
-  parts: Part[];
-  properties: PartProperty[];
+  partsMap: Map<number, Part>;
+  propertiesMap: Map<number, PartProperty[]>;
   cursors: Record<string, CursorInfo>;
   gameBoardMode: GameBoardMode;
 }
@@ -59,8 +59,8 @@ interface GameBoardProps {
 export default function GameBoard({
   prototypeName,
   projectId,
-  parts,
-  properties,
+  partsMap,
+  propertiesMap,
   cursors,
   gameBoardMode,
 }: GameBoardProps) {
@@ -73,6 +73,12 @@ export default function GameBoard({
   const { dispatch } = usePartReducer();
   const { measureOperation } = usePerformanceTracker();
   const [images, setImages] = useState<Record<string, string>>({});
+
+  const parts = useMemo(() => Array.from(partsMap.values()), [partsMap]);
+  const properties = useMemo(
+    () => Array.from(propertiesMap.values()).flat(),
+    [propertiesMap]
+  );
 
   // 手札の上のカードの表示制御
   const { cardVisibilityMap } = useHandVisibility(parts, gameBoardMode);
@@ -102,33 +108,28 @@ export default function GameBoard({
     [canvasSize]
   );
 
-  const CAMERA_MARGIN = 300;
+  const calculateDynamicMargin = useCallback(
+    (scale: number) => {
+      const baseMargin =
+        Math.min(viewportSize.width, viewportSize.height) * 0.3;
+      return baseMargin / Math.max(scale, 0.5);
+    },
+    [viewportSize]
+  );
+
   const constrainCamera = useCallback(
     (x: number, y: number, scale: number) => {
-      let constrainedX = x;
-      let constrainedY = y;
+      const dynamicMargin = calculateDynamicMargin(scale);
 
-      // -500~+500の範囲でカメラを動かせるように制約を調整
-      const minX = -CAMERA_MARGIN;
+      const minX = -dynamicMargin;
       const maxX =
-        canvasSize.width * scale - viewportSize.width + CAMERA_MARGIN;
-      const minY = -CAMERA_MARGIN;
+        canvasSize.width * scale - viewportSize.width + dynamicMargin;
+      const minY = -dynamicMargin;
       const maxY =
-        canvasSize.height * scale - viewportSize.height + CAMERA_MARGIN;
+        canvasSize.height * scale - viewportSize.height + dynamicMargin;
 
-      if (canvasSize.width * scale > viewportSize.width) {
-        constrainedX = Math.max(minX, constrainedX);
-        constrainedX = Math.min(maxX, constrainedX);
-      } else {
-        constrainedX = (canvasSize.width * scale - viewportSize.width) / 2;
-      }
-
-      if (canvasSize.height * scale > viewportSize.height) {
-        constrainedY = Math.max(minY, constrainedY);
-        constrainedY = Math.min(maxY, constrainedY);
-      } else {
-        constrainedY = (canvasSize.height * scale - viewportSize.height) / 2;
-      }
+      const constrainedX = Math.max(minX, Math.min(maxX, x));
+      const constrainedY = Math.max(minY, Math.min(maxY, y));
 
       return {
         x: constrainedX,
@@ -136,7 +137,7 @@ export default function GameBoard({
         scale,
       };
     },
-    [viewportSize, canvasSize]
+    [viewportSize, canvasSize, calculateDynamicMargin]
   );
 
   // 全パーツの平均センター位置を計算する関数
@@ -238,21 +239,24 @@ export default function GameBoard({
       });
       return;
     }
-    // ズーム（従来通り）
-    const scaleBy = 1.05;
+    // ズーム（より滑らかなスケール変更）
+    const scaleBy = 1.02; // より細かいステップでズーム
     const oldScale = camera.scale;
     const stage = stageRef.current;
     const pointer = stage?.getPointerPosition();
     if (!pointer) return;
+
     const mousePointTo = {
       x: (pointer.x + camera.x) / oldScale,
       y: (pointer.y + camera.y) / oldScale,
     };
+
     const direction = e.evt.deltaY > 0 ? -1 : 1;
     const newScale =
       direction > 0
         ? Math.min(oldScale * scaleBy, MAX_SCALE)
         : Math.max(oldScale / scaleBy, MIN_SCALE);
+
     const newX = mousePointTo.x * newScale - pointer.x;
     const newY = mousePointTo.y * newScale - pointer.y;
 
@@ -303,13 +307,10 @@ export default function GameBoard({
     if (stage) {
       const pointerPosition = stage.getPointerPosition();
       if (pointerPosition) {
-        // +5 はメニューがポインターから少し右下にオフセットされるようにするための調整値
-        const adjustedX = (pointerPosition.x + camera.x + 5) / camera.scale;
-        const adjustedY = (pointerPosition.y + camera.y + 5) / camera.scale;
-
+        // HTML/CSSベースのメニューなので画面座標を使用
         setMenuPosition({
-          x: adjustedX,
-          y: adjustedY,
+          x: pointerPosition.x + 5,
+          y: pointerPosition.y + 5,
         });
       }
     }
@@ -328,6 +329,35 @@ export default function GameBoard({
       setShowContextMenu(false);
     },
     [dispatch]
+  );
+
+  /**
+   * コンテキストメニューのアイテム定義
+   */
+  const getContextMenuItems = useCallback(
+    (partId: number) => [
+      {
+        id: 'frontmost',
+        text: '最前面に移動',
+        action: () => handleChangePartOrder('frontmost', partId),
+      },
+      {
+        id: 'front',
+        text: '前面に移動',
+        action: () => handleChangePartOrder('front', partId),
+      },
+      {
+        id: 'back',
+        text: '背面に移動',
+        action: () => handleChangePartOrder('back', partId),
+      },
+      {
+        id: 'backmost',
+        text: '最背面に移動',
+        action: () => handleChangePartOrder('backmost', partId),
+      },
+    ],
+    [handleChangePartOrder]
   );
 
   const handleCloseContextMenu = useCallback(() => {
@@ -617,21 +647,25 @@ export default function GameBoard({
         new Set(properties.map((property) => property.imageId).filter(Boolean))
       ) as string[];
 
-      const imageResults = await Promise.all(
+      const imageResultsRaw = await Promise.all(
         uniqueImageIds.map(async (imageId) => {
           await resetImageParamsInIndexedDb(imageId);
-          const cachedImage = await getImageFromIndexedDb(imageId);
-          if (cachedImage) {
-            const url = URL.createObjectURL(cachedImage);
-            return { imageId, url };
-          } else {
-            const s3ImageBlob = await fetchImage(imageId);
-            await saveImageToIndexedDb(imageId, s3ImageBlob);
-            const url = URL.createObjectURL(s3ImageBlob);
-            return { imageId, url };
+          const cachedImageResult = await getImageFromIndexedDb(imageId);
+          if (cachedImageResult) {
+            return { imageId, url: cachedImageResult.objectURL };
           }
+          const s3ImageBlob = await fetchImage(imageId);
+          const imageResult = await saveImageToIndexedDb(imageId, s3ImageBlob);
+          if (imageResult) {
+            return { imageId, url: imageResult.objectURL };
+          }
+          return null;
         })
       );
+      const imageResults = imageResultsRaw.filter(Boolean) as {
+        imageId: string;
+        url: string;
+      }[];
 
       const newImages: Record<string, string> = {};
       imageResults.forEach(({ imageId, url }) => {
@@ -639,7 +673,7 @@ export default function GameBoard({
       });
       setImages(newImages);
 
-      urlsToRevoke = imageResults.map(({ url }) => url);
+      urlsToRevoke = imageResults ? imageResults.map(({ url }) => url) : [];
     };
 
     loadImages();
@@ -841,17 +875,6 @@ export default function GameBoard({
                 />
               );
             })}
-            {/* コンテキストメニュー */}
-            {showContextMenu && contextMenuPartId !== null && (
-              <KonvaPartContextMenu
-                visible={true}
-                position={menuPosition}
-                onClose={handleCloseContextMenu}
-                onChangeOrder={(type) =>
-                  handleChangePartOrder(type, contextMenuPartId!)
-                }
-              />
-            )}
             {/* 選択モード時の矩形選択表示 */}
             <SelectionRect
               x={selectionRect.x}
@@ -928,7 +951,14 @@ export default function GameBoard({
         parts={parts}
         properties={properties}
         cursors={cursors}
-        selectedPartIds={selectedPartIds}
+      />
+
+      {/* コンテキストメニュー */}
+      <ProjectContextMenu
+        visible={showContextMenu && contextMenuPartId !== null}
+        position={menuPosition}
+        onClose={handleCloseContextMenu}
+        items={getContextMenuItems(contextMenuPartId!)}
       />
     </DebugModeProvider>
   );

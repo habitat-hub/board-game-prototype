@@ -1,24 +1,15 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, {
   useState,
   useEffect,
   useCallback,
-  useMemo,
   useContext,
 } from 'react';
-import {
-  FaPlus,
-  FaSort,
-  FaSortDown,
-  FaSortUp,
-  FaUserShield,
-} from 'react-icons/fa';
-import { FaBoxOpen } from 'react-icons/fa6';
-import { GiWoodenCrate } from 'react-icons/gi';
-import { IoTrash } from 'react-icons/io5';
+import { createPortal } from 'react-dom';
+import { FaPlus } from 'react-icons/fa';
+import { GiWoodenCrate, GiCardAceSpades, GiPuzzle } from 'react-icons/gi';
 import { RiLoaderLine } from 'react-icons/ri';
 
 import { useProject } from '@/api/hooks/useProject';
@@ -30,8 +21,7 @@ import useInlineEdit from '@/hooks/useInlineEdit';
 import formatDate from '@/utils/dateFormat';
 import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
 
-type SortKey = 'name' | 'createdAt';
-type SortOrder = 'asc' | 'desc';
+import { ProjectContextMenu } from '../atoms/ProjectContextMenu';
 
 /**
  * PrototypeListコンポーネントで使用される各種Stateの説明:
@@ -71,13 +61,16 @@ const ProjectList: React.FC = () => {
       masterPrototype: Prototype | undefined;
     }[]
   >([]);
-  // ソート
-  const [sort, setSort] = useState<{
-    key: SortKey;
-    order: SortOrder;
+
+  // コンテキストメニューの状態
+  const [contextMenu, setContextMenu] = useState<{
+    visible: boolean;
+    position: { x: number; y: number };
+    targetProject: { project: Project; masterPrototype: Prototype } | null;
   }>({
-    key: 'createdAt',
-    order: 'desc',
+    visible: false,
+    position: { x: 0, y: 0 },
+    targetProject: null,
   });
 
   // 1日に1回、IndexedDBから期限切れの画像を削除する
@@ -127,6 +120,21 @@ const ProjectList: React.FC = () => {
     const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
 
     return `${randomAdjective}な${randomNoun}`;
+  };
+
+  /**
+   * ランダムなアイコンを取得する
+   * @param id プロトタイプID（一意性を保つため）
+   * @returns アイコンコンポーネント
+   */
+  const getRandomIcon = (id: string) => {
+    const icons = [GiWoodenCrate, GiCardAceSpades, GiPuzzle];
+    // IDをもとにハッシュ値を生成して一意性を保つ
+    const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const iconIndex = hash % icons.length;
+    const IconComponent = icons[iconIndex];
+    
+    return <IconComponent className="w-20 h-20 text-white/80" />;
   };
 
   /**
@@ -241,53 +249,66 @@ const ProjectList: React.FC = () => {
     fetchProjects();
   }, [fetchProjects]);
 
-  /**
-   * プロトタイプをソートする
-   * @param prototypes プロトタイプ
-   * @returns ソートされたプロトタイプ
-   */
-  const sortPrototypes = useCallback(
-    (
-      prototypeList: {
-        project: Project;
-        masterPrototype: Prototype | undefined;
-      }[]
-    ) => {
-      return [...prototypeList].sort((a, b) => {
-        switch (sort.key) {
-          // 名前順
-          case 'name':
-            if (!a.masterPrototype?.name || !b.masterPrototype?.name) return 0;
-            return sort.order === 'asc'
-              ? a.masterPrototype.name.localeCompare(b.masterPrototype.name)
-              : b.masterPrototype.name.localeCompare(a.masterPrototype.name);
-          // 作成日順
-          case 'createdAt':
-            if (!a.masterPrototype?.createdAt || !b.masterPrototype?.createdAt)
-              return 0;
-            return sort.order === 'asc'
-              ? new Date(b.masterPrototype.createdAt).getTime() -
-                  new Date(a.masterPrototype.createdAt).getTime()
-              : new Date(a.masterPrototype.createdAt).getTime() -
-                  new Date(b.masterPrototype.createdAt).getTime();
-          default:
-            return 0;
-        }
-      });
-    },
-    [sort]
-  );
 
-  // ソートされたプロトタイプ
-  const sortedPrototypeList = useMemo(() => {
-    return sortPrototypes(prototypeList);
-  }, [prototypeList, sortPrototypes]);
+  /**
+   * 右クリック時の処理
+   */
+  const handleContextMenu = (
+    e: React.MouseEvent,
+    project: Project,
+    masterPrototype: Prototype
+  ) => {
+    e.preventDefault();
+    setContextMenu({
+      visible: true,
+      position: { x: e.clientX, y: e.clientY },
+      targetProject: { project, masterPrototype },
+    });
+  };
+
+  /**
+   * コンテキストメニューを閉じる
+   */
+  const closeContextMenu = () => {
+    setContextMenu({
+      visible: false,
+      position: { x: 0, y: 0 },
+      targetProject: null,
+    });
+  };
+
+  /**
+   * コンテキストメニューのアイテム定義
+   */
+  const getContextMenuItems = (project: Project, masterPrototype: Prototype) => [
+    {
+      id: 'rename',
+      text: '名前の変更',
+      action: () => {
+        handleNameEditToggle(masterPrototype.id, masterPrototype.name);
+      },
+    },
+    {
+      id: 'permissions',
+      text: '権限',
+      action: () => {
+        router.push(`/projects/${project.id}/roles`);
+      },
+    },
+    {
+      id: 'delete',
+      text: '削除',
+      action: () => {
+        router.push(`/projects/${project.id}/delete`);
+      },
+    },
+  ];
 
   if (isLoading) {
     return <Loading />;
   }
 
-  if (sortedPrototypeList.length === 0) {
+  if (prototypeList.length === 0) {
     return (
       <div className="fixed inset-0 z-10">
         <button
@@ -316,168 +337,113 @@ const ProjectList: React.FC = () => {
     );
   }
 
-  /**
-   * ソートを変更する
-   * @param key ソートキー
-   */
-  const handleSort = (key: SortKey) => {
-    setSort((currentSort) =>
-      currentSort.key === key
-        ? {
-            ...currentSort,
-            order: currentSort.order === 'asc' ? 'desc' : 'asc',
-          }
-        : { key, order: 'desc' }
-    );
-  };
-
-  // ソートアイコン
-  const getSortIcon = (key: SortKey) => {
-    if (sort.key !== key) return <FaSort className="w-4 h-4" />;
-    return sort.order === 'asc' ? (
-      <FaSortUp className="w-4 h-4" />
-    ) : (
-      <FaSortDown className="w-4 h-4" />
-    );
-  };
-
   return (
-    <div className="max-w-4xl mx-auto mt-16 relative">
+    <div className="max-w-6xl mx-auto py-16 relative px-4">
       {/* タイトル */}
       <h1 className="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
         プロトタイプ一覧
       </h1>
-      {/* プロトタイプ一覧 */}
-      <div className="shadow-2xl rounded-2xl overflow-hidden bg-content border border-wood-lightest/20">
-        <table className="w-full border-collapse">
-          <thead className="bg-content-secondary border-b border-wood-lightest/30">
-            <tr className="text-sm font-medium text-wood-dark">
-              <th className="text-left p-4">
-                <button
-                  onClick={() => handleSort('name')}
-                  className="flex items-center gap-1 hover:text-header transition-colors duration-200 w-full"
-                >
-                  プロトタイプ名
-                  {getSortIcon('name')}
-                </button>
-              </th>
-              <th className="text-left p-4">
-                <button
-                  onClick={() => handleSort('createdAt')}
-                  className="flex items-center gap-1 hover:text-header transition-colors duration-200 w-full"
-                >
-                  作成日時
-                  {getSortIcon('createdAt')}
-                </button>
-              </th>
-              <th className="text-left p-4">作成者</th>
-              <th className="text-center p-4">操作</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-wood-lightest/20">
-            {sortedPrototypeList.map(({ masterPrototype, project }) => {
-              if (!masterPrototype) return null;
-              const { id, name, createdAt } = masterPrototype;
-              const isNameEditing = isEditing(id);
-              return (
-                <tr key={id}>
-                  <td className="p-4 min-w-0">
-                    <div className="w-full">
-                      {isNameEditing ? (
-                        <form
-                          className="w-full"
-                          onSubmit={(e) =>
-                            handleSubmit(
-                              e,
-                              handleNameEditComplete,
-                              validatePrototypeName
-                            )
-                          }
-                        >
-                          <input
-                            type="text"
-                            value={editedName}
-                            onChange={(e) => setEditedName(e.target.value)}
-                            onBlur={() =>
-                              handleBlur(
-                                handleNameEditComplete,
-                                validatePrototypeName
-                              ).catch((error) => {
-                                console.error('Error in onBlur:', error);
-                                alert(error.message || 'エラーが発生しました');
-                              })
-                            }
-                            onKeyDown={(e) =>
-                              handleKeyDown(
-                                e,
-                                handleNameEditComplete,
-                                validatePrototypeName
-                              ).catch((error) => {
-                                console.error('Error in onKeyDown:', error);
-                                alert(error.message || 'エラーが発生しました');
-                              })
-                            }
-                            className="w-full text-wood-darkest font-medium bg-transparent border border-transparent rounded-md p-2 -m-2 focus:outline-none focus:bg-white focus:border-header focus:shadow-sm transition-all"
-                            autoFocus
-                          />
-                        </form>
-                      ) : (
-                        <button
-                          onClick={() => handleNameEditToggle(id, name)}
-                          className="w-full text-wood-darkest font-medium hover:text-header transition-colors cursor-pointer p-2 -m-2 rounded-md hover:bg-wood-lightest/20 text-left truncate"
-                          title="クリックして編集"
-                        >
-                          {name}
-                        </button>
-                      )}
+
+      {/* プロトタイプ一覧（カード形式） */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {prototypeList.map(({ masterPrototype, project }) => {
+          if (!masterPrototype) return null;
+          const { id, name, createdAt } = masterPrototype;
+          const isNameEditing = isEditing(id);
+          
+          /**
+           * カードダブルクリック時の処理
+           */
+          const handleCardDoubleClick = () => {
+            router.push(`/projects/${project.id}/prototypes/${id}`);
+          };
+          
+          return (
+            <div
+              key={id}
+              className="bg-content border border-wood-lightest/20 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer"
+              onDoubleClick={handleCardDoubleClick}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                handleContextMenu(e, project, masterPrototype);
+              }}
+              title="ダブルクリックで編集 / 右クリックでメニュー表示"
+            >
+              {/* カード画像エリア */}
+              <div className="relative h-48 bg-gradient-to-br from-header via-header-light to-header-light/80 flex items-center justify-center">
+                {getRandomIcon(id)}
+                <div className="absolute inset-0 bg-black/10 rounded-t-xl"></div>
+              </div>
+
+              {/* カード内容 */}
+              <div className="p-4 space-y-4">
+                {/* プロトタイプ名 */}
+                <div className="min-h-[25px] flex items-center">
+                  {isNameEditing ? (
+                    <form
+                      className="w-full"
+                      onSubmit={(e) =>
+                        handleSubmit(
+                          e,
+                          handleNameEditComplete,
+                          validatePrototypeName
+                        )
+                      }
+                    >
+                      <input
+                        type="text"
+                        value={editedName}
+                        onChange={(e) => setEditedName(e.target.value)}
+                        onBlur={() =>
+                          handleBlur(
+                            handleNameEditComplete,
+                            validatePrototypeName
+                          ).catch((error) => {
+                            console.error('Error in onBlur:', error);
+                            alert(error.message || 'エラーが発生しました');
+                          })
+                        }
+                        onKeyDown={(e) =>
+                          handleKeyDown(
+                            e,
+                            handleNameEditComplete,
+                            validatePrototypeName
+                          ).catch((error) => {
+                            console.error('Error in onKeyDown:', error);
+                            alert(error.message || 'エラーが発生しました');
+                          })
+                        }
+                        className="w-full text-wood-darkest font-semibold bg-transparent border border-transparent rounded-md p-2 -m-2 focus:outline-none focus:bg-white focus:border-header focus:shadow-sm transition-all text-lg"
+                        autoFocus
+                      />
+                    </form>
+                  ) : (
+                    <span className="text-wood-darkest font-semibold p-2 -m-2 rounded-md text-left text-lg leading-tight">
+                      {name}
+                    </span>
+                  )}
+                </div>
+                {/* 詳細情報 */}
+                <div className="space-y-2">
+                  <div className="flex justify-end">
+                    <div className="text-right text-xs text-wood/60 space-y-1">
+                      <div>
+                        作成者: {userContext?.user?.id === project.userId
+                          ? '自分'
+                          : '他のユーザー'}
+                      </div>
+                      <div>作成日時: {formatDate(createdAt, true)}</div>
                     </div>
-                  </td>
-                  <td className="p-4 text-sm text-wood">
-                    {formatDate(createdAt, true)}
-                  </td>
-                  <td className="p-4 text-sm text-wood">
-                    {userContext?.user?.id === project.userId
-                      ? '自分'
-                      : '他のユーザー'}
-                  </td>
-                  <td className="p-4 flex justify-center gap-2">
-                    <Link
-                      href={`projects/${project.id}/prototypes/${id}`}
-                      className="flex items-center gap-2 px-3 py-1 text-sm text-wood hover:text-header rounded border border-wood-light/20 hover:bg-wood-lightest/20 whitespace-nowrap"
-                      title="プロトタイプを編集する"
-                    >
-                      <FaBoxOpen className="w-4 h-4" />
-                      <span>編集</span>
-                    </Link>
-                    <button
-                      onClick={() =>
-                        router.push(`/projects/${project.id}/roles`)
-                      }
-                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-header rounded-md hover:bg-wood-lightest/20 transition-colors border border-wood-light/20"
-                      title="プロトタイプの権限を設定する"
-                    >
-                      <FaUserShield className="h-4 w-4" />
-                      <span>権限</span>
-                    </button>
-                    <button
-                      onClick={() =>
-                        router.push(`/projects/${project.id}/delete`)
-                      }
-                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-wood hover:text-red-500 rounded-md hover:bg-red-50 transition-colors border border-wood-light/20"
-                      title="プロトタイプを削除する"
-                    >
-                      <IoTrash className="w-4 h-4" />
-                      <span>削除</span>
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
+      
       {/* 新規プロトタイプ作成ボタン */}
-      <div className="mt-8 flex justify-center">
+      <div className="flex justify-center">
         <button
           onClick={handleCreatePrototype}
           disabled={isCreating}
@@ -497,6 +463,20 @@ const ProjectList: React.FC = () => {
           </div>
         </button>
       </div>
+      {/* コンテキストメニュー */}
+      {contextMenu.targetProject && createPortal(
+        <ProjectContextMenu
+          visible={contextMenu.visible}
+          position={contextMenu.position}
+          width={140}
+          itemHeight={32}
+          items={getContextMenuItems(
+            contextMenu.targetProject.project,
+            contextMenu.targetProject.masterPrototype
+          )}
+          onClose={closeContextMenu}
+        />
+      , document.body)}
     </div>
   );
 };

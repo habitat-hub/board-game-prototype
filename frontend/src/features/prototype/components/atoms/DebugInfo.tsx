@@ -3,12 +3,21 @@
 import React, { useState } from 'react';
 
 import { Part, PartProperty } from '@/api/types';
+import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { useMemoryUsage } from '@/features/prototype/hooks/useMemoryUsage';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { useRenderPerformance } from '@/features/prototype/hooks/useRenderPerformance';
 import { CursorInfo } from '@/features/prototype/types/cursor';
 import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
+
+// タブのラベルとID
+const TABS = [
+  { id: 'info' as const, label: 'Info' },
+  { id: 'perf' as const, label: 'Perf' },
+  { id: 'data' as const, label: 'Data' },
+  { id: 'parts' as const, label: 'Parts' },
+];
 
 interface DebugInfoProps {
   // Camera info
@@ -17,14 +26,16 @@ interface DebugInfoProps {
     y: number;
     scale: number;
   };
-  // Prototype info
+  // プロトタイプ名
   prototypeName: string;
+  // プロジェクトID
   projectId: string;
-  // Data
+  // パーツ
   parts: Part[];
   properties: PartProperty[];
+  // カーソル
   cursors: Record<string, CursorInfo>;
-  selectedPartIds: number[];
+  // モード
   mode: GameBoardMode;
 }
 
@@ -35,10 +46,10 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
   parts,
   properties,
   cursors,
-  selectedPartIds,
   mode,
 }) => {
   const { showDebugInfo } = useDebugMode();
+  const { selectedPartIds } = useSelectedParts();
 
   // パフォーマンス計測（レンダリングは常時、メモリはデバッグ表示時のみ）
   const renderPerformance = useRenderPerformance();
@@ -50,13 +61,6 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
   >('info');
 
   if (!showDebugInfo) return null;
-
-  const tabs = [
-    { id: 'info' as const, label: 'Info' },
-    { id: 'perf' as const, label: 'Perf' },
-    { id: 'data' as const, label: 'Data' },
-    { id: 'parts' as const, label: 'Parts' },
-  ];
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -369,7 +373,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
     <div className="fixed bottom-4 left-4 bg-black bg-opacity-80 text-white p-2.5 rounded-md font-mono text-sm z-[1000] w-96 max-h-[80vh] flex flex-col">
       {/* タブヘッダー */}
       <div className="flex border-b border-white border-opacity-20 mb-2">
-        {tabs.map((tab) => (
+        {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}

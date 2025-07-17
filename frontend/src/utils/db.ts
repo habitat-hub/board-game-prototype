@@ -4,6 +4,14 @@ const DB_NAME = 'BoardGamePrototype';
 const STORE_NAME = 'images';
 const IMAGE_DELETE_GRACE_DAYS = 3;
 
+type IndexedDbImageResult = {
+  imageBlob: Blob;
+  objectURL: string;
+};
+
+// メモリ上でobjectURLを管理するためのキャッシュを定義
+const objectUrlCache = new Map<string, string>();
+
 // IndexedDBの初期化関数
 export const getIndexedDb = async () => {
   try {
@@ -24,8 +32,12 @@ export const getIndexedDb = async () => {
 };
 
 // IndexedDBに画像を保存する関数
-export const saveImageToIndexedDb = async (id: string, imageBlob: Blob) => {
+export const saveImageToIndexedDb = async (
+  id: string,
+  imageBlob: Blob
+): Promise<IndexedDbImageResult | null> => {
   try {
+    // IndexedDBに保存
     const db = await getIndexedDb();
     await db.put(STORE_NAME, {
       id,
@@ -33,12 +45,25 @@ export const saveImageToIndexedDb = async (id: string, imageBlob: Blob) => {
       deletedAt: null,
       isDeleted: false,
     });
+    // オブジェクトURLをキャッシュに保存
+    const objectURL = URL.createObjectURL(imageBlob);
+    if (objectUrlCache.has(id)) {
+      URL.revokeObjectURL(objectUrlCache.get(id)!); // 古いオブジェクトURLを解放
+      objectUrlCache.delete(id); // 古いキャッシュを削除
+    }
+    // 新しいオブジェクトURLをキャッシュに保存
+    objectUrlCache.set(id, objectURL);
+    return {
+      imageBlob,
+      objectURL: objectURL,
+    };
   } catch (error) {
     // TODO: エラーハンドリングを追加
     // 例えば、IndexedDBのストレージが逼迫している場合など
     // その場合は、ローカルストレージやセッションストレージに保存するなどの処理を検討する
     // ここでは、エラーをコンソールに出力するだけにしています
     console.error(`ID: ${id}の画像をIndexedDBに保存できませんでした:`, error);
+    return null;
   }
 };
 
@@ -46,11 +71,21 @@ export const saveImageToIndexedDb = async (id: string, imageBlob: Blob) => {
 // 画像が存在しない場合はnullを返す
 export const getImageFromIndexedDb = async (
   id: string
-): Promise<Blob | null> => {
+): Promise<IndexedDbImageResult | null> => {
   try {
     const db = await getIndexedDb();
     const record = await db.get(STORE_NAME, id);
-    return record ? record.imageBlob : null;
+    if (record && record.imageBlob) {
+      const objectURL = objectUrlCache.get(id);
+      if (objectURL) {
+        return { imageBlob: record.imageBlob, objectURL };
+      }
+      const newObjectURL = URL.createObjectURL(record.imageBlob);
+      objectUrlCache.set(id, newObjectURL);
+      return { imageBlob: record.imageBlob, objectURL: newObjectURL };
+    }
+
+    return null; // 画像が存在しない場合はnullを返す
   } catch (error) {
     console.error(`ID: ${id}の画像をIndexedDBから取得できませんでした:`, error);
     return null; // エラー時はnullを返す
@@ -99,6 +134,10 @@ export const deleteExpiredImagesFromIndexedDb = async (): Promise<void> => {
     );
 
     for (const record of expiredRecords) {
+      if (objectUrlCache.has(record.id)) {
+        URL.revokeObjectURL(objectUrlCache.get(record.id)!); // オブジェクトURLを解放
+        objectUrlCache.delete(record.id); // キャッシュを削除
+      }
       await db.delete(STORE_NAME, record.id);
     }
   } catch (error) {

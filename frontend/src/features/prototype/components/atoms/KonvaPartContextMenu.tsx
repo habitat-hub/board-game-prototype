@@ -2,7 +2,25 @@ import React, { useState } from 'react';
 import { Group, Rect, Text } from 'react-konva';
 
 /**
- * Konvaパーツ用コンテキストメニューのProps
+ * Konvaコンテキストメニューのメニューアイテム
+ */
+export interface KonvaContextMenuItemType {
+  /**
+   * アイテムのID
+   */
+  id: string | number;
+  /**
+   * 表示テキスト
+   */
+  text: string;
+  /**
+   * クリック時のアクション
+   */
+  action: () => void;
+}
+
+/**
+ * Konva用汎用コンテキストメニューのProps
  */
 export interface KonvaPartContextMenuProps {
   /**
@@ -17,56 +35,42 @@ export interface KonvaPartContextMenuProps {
     y: number;
   };
   /**
-   * 順序変更のコールバック
+   * メニュー項目の配列
    */
-  onChangeOrder: (type: 'front' | 'back' | 'frontmost' | 'backmost') => void;
+  menuItems: KonvaContextMenuItemType[];
   /**
    * メニューを閉じるコールバック
    */
   onClose: () => void;
+  /**
+   * メニューの幅（オプション、デフォルト: 120）
+   */
+  width?: number;
+  /**
+   * メニュー項目の高さ（オプション、デフォルト: 25）
+   */
+  itemHeight?: number;
 }
 
 /**
- * Konvaパーツで使用するコンテキストメニューコンポーネント
- * Part.tsxの外部に定義された独立したコンポーネント
+ * Konva用汎用コンテキストメニューコンポーネント
+ * 任意のメニュー項目を表示できる汎用的なコンポーネント
  */
 export const KonvaPartContextMenu: React.FC<KonvaPartContextMenuProps> = ({
   visible,
   position,
-  onChangeOrder,
+  menuItems,
   onClose,
+  width = 120,
+  itemHeight = 25,
 }) => {
-  const [hoveredMenuItem, setHoveredMenuItem] = useState<number | null>(null);
+  const [hoveredMenuItem, setHoveredMenuItem] = useState<string | number | null>(null);
 
   if (!visible) {
     return null;
   }
 
-  // メニュー項目の定義
-  const menuItems = [
-    {
-      id: 0,
-      text: '最前面に移動',
-      action: () => onChangeOrder('frontmost'),
-    },
-    {
-      id: 1,
-      text: '前面に移動',
-      action: () => onChangeOrder('front'),
-    },
-    {
-      id: 2,
-      text: '背面に移動',
-      action: () => onChangeOrder('back'),
-    },
-    {
-      id: 3,
-      text: '最背面に移動',
-      action: () => onChangeOrder('backmost'),
-    },
-  ];
-
-  const menuHeight = menuItems.length * 25;
+  const menuHeight = menuItems.length * itemHeight;
 
   return (
     <Group
@@ -80,7 +84,7 @@ export const KonvaPartContextMenu: React.FC<KonvaPartContextMenuProps> = ({
     >
       {/* メニュー背景 */}
       <Rect
-        width={120}
+        width={width}
         height={menuHeight}
         fill="rgba(255, 255, 255, 0.9)"
         stroke="grey"
@@ -95,17 +99,17 @@ export const KonvaPartContextMenu: React.FC<KonvaPartContextMenuProps> = ({
 
       {/* メニュー項目 */}
       <Group name="context-menu-component">
-        {menuItems.map((item) => (
+        {menuItems.map((item, index) => (
           <React.Fragment key={item.id}>
             <Rect
-              width={120}
-              height={25}
+              width={width}
+              height={itemHeight}
               fill={
                 hoveredMenuItem === item.id
                   ? 'rgba(200, 200, 255, 0.5)'
                   : 'transparent'
               }
-              y={item.id * 25}
+              y={index * itemHeight}
               name="context-menu-component"
             />
             <Text
@@ -113,8 +117,8 @@ export const KonvaPartContextMenu: React.FC<KonvaPartContextMenuProps> = ({
               fontSize={12}
               fill="black"
               padding={8}
-              y={item.id * 25}
-              width={120}
+              y={index * itemHeight}
+              width={width}
               name="context-menu-component"
               onMouseEnter={() => setHoveredMenuItem(item.id)}
               onMouseLeave={() => setHoveredMenuItem(null)}

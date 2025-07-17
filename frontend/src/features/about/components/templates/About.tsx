@@ -36,7 +36,7 @@ const About: React.FC = () => {
       transition: {
         delay: i * 0.2,
         duration: 0.8,
-        ease: 'easeOut',
+        ease: 'easeOut' as const,
       },
     }),
   };
