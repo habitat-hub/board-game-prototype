@@ -108,33 +108,28 @@ export default function GameBoard({
     [canvasSize]
   );
 
-  const CAMERA_MARGIN = 300;
+  const calculateDynamicMargin = useCallback(
+    (scale: number) => {
+      const baseMargin =
+        Math.min(viewportSize.width, viewportSize.height) * 0.3;
+      return baseMargin / Math.max(scale, 0.5);
+    },
+    [viewportSize]
+  );
+
   const constrainCamera = useCallback(
     (x: number, y: number, scale: number) => {
-      let constrainedX = x;
-      let constrainedY = y;
+      const dynamicMargin = calculateDynamicMargin(scale);
 
-      // -500~+500の範囲でカメラを動かせるように制約を調整
-      const minX = -CAMERA_MARGIN;
+      const minX = -dynamicMargin;
       const maxX =
-        canvasSize.width * scale - viewportSize.width + CAMERA_MARGIN;
-      const minY = -CAMERA_MARGIN;
+        canvasSize.width * scale - viewportSize.width + dynamicMargin;
+      const minY = -dynamicMargin;
       const maxY =
-        canvasSize.height * scale - viewportSize.height + CAMERA_MARGIN;
+        canvasSize.height * scale - viewportSize.height + dynamicMargin;
 
-      if (canvasSize.width * scale > viewportSize.width) {
-        constrainedX = Math.max(minX, constrainedX);
-        constrainedX = Math.min(maxX, constrainedX);
-      } else {
-        constrainedX = (canvasSize.width * scale - viewportSize.width) / 2;
-      }
-
-      if (canvasSize.height * scale > viewportSize.height) {
-        constrainedY = Math.max(minY, constrainedY);
-        constrainedY = Math.min(maxY, constrainedY);
-      } else {
-        constrainedY = (canvasSize.height * scale - viewportSize.height) / 2;
-      }
+      const constrainedX = Math.max(minX, Math.min(maxX, x));
+      const constrainedY = Math.max(minY, Math.min(maxY, y));
 
       return {
         x: constrainedX,
@@ -142,7 +137,7 @@ export default function GameBoard({
         scale,
       };
     },
-    [viewportSize, canvasSize]
+    [viewportSize, canvasSize, calculateDynamicMargin]
   );
 
   // 全パーツの平均センター位置を計算する関数
@@ -244,21 +239,24 @@ export default function GameBoard({
       });
       return;
     }
-    // ズーム（従来通り）
-    const scaleBy = 1.05;
+    // ズーム（より滑らかなスケール変更）
+    const scaleBy = 1.02; // より細かいステップでズーム
     const oldScale = camera.scale;
     const stage = stageRef.current;
     const pointer = stage?.getPointerPosition();
     if (!pointer) return;
+
     const mousePointTo = {
       x: (pointer.x + camera.x) / oldScale,
       y: (pointer.y + camera.y) / oldScale,
     };
+
     const direction = e.evt.deltaY > 0 ? -1 : 1;
     const newScale =
       direction > 0
         ? Math.min(oldScale * scaleBy, MAX_SCALE)
         : Math.max(oldScale / scaleBy, MIN_SCALE);
+
     const newX = mousePointTo.x * newScale - pointer.x;
     const newY = mousePointTo.y * newScale - pointer.y;
 
