@@ -12,8 +12,8 @@ import { useImages } from '@/api/hooks/useImages';
 import { Part, PartProperty } from '@/api/types';
 import DebugInfo from '@/features/prototype/components/atoms/DebugInfo';
 import GridLines from '@/features/prototype/components/atoms/GridLines';
-import { KonvaPartContextMenu } from '@/features/prototype/components/atoms/KonvaPartContextMenu';
 import ModeToggleButton from '@/features/prototype/components/atoms/ModeToggleButton';
+import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
 import SelectionRect from '@/features/prototype/components/atoms/SelectionRect';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
@@ -307,13 +307,10 @@ export default function GameBoard({
     if (stage) {
       const pointerPosition = stage.getPointerPosition();
       if (pointerPosition) {
-        // +5 はメニューがポインターから少し右下にオフセットされるようにするための調整値
-        const adjustedX = (pointerPosition.x + camera.x + 5) / camera.scale;
-        const adjustedY = (pointerPosition.y + camera.y + 5) / camera.scale;
-
+        // HTML/CSSベースのメニューなので画面座標を使用
         setMenuPosition({
-          x: adjustedX,
-          y: adjustedY,
+          x: pointerPosition.x + 5,
+          y: pointerPosition.y + 5,
         });
       }
     }
@@ -332,6 +329,35 @@ export default function GameBoard({
       setShowContextMenu(false);
     },
     [dispatch]
+  );
+
+  /**
+   * コンテキストメニューのアイテム定義
+   */
+  const getContextMenuItems = useCallback(
+    (partId: number) => [
+      {
+        id: 'frontmost',
+        text: '最前面に移動',
+        action: () => handleChangePartOrder('frontmost', partId),
+      },
+      {
+        id: 'front',
+        text: '前面に移動',
+        action: () => handleChangePartOrder('front', partId),
+      },
+      {
+        id: 'back',
+        text: '背面に移動',
+        action: () => handleChangePartOrder('back', partId),
+      },
+      {
+        id: 'backmost',
+        text: '最背面に移動',
+        action: () => handleChangePartOrder('backmost', partId),
+      },
+    ],
+    [handleChangePartOrder]
   );
 
   const handleCloseContextMenu = useCallback(() => {
@@ -845,17 +871,6 @@ export default function GameBoard({
                 />
               );
             })}
-            {/* コンテキストメニュー */}
-            {showContextMenu && contextMenuPartId !== null && (
-              <KonvaPartContextMenu
-                visible={true}
-                position={menuPosition}
-                onClose={handleCloseContextMenu}
-                onChangeOrder={(type) =>
-                  handleChangePartOrder(type, contextMenuPartId!)
-                }
-              />
-            )}
             {/* 選択モード時の矩形選択表示 */}
             <SelectionRect
               x={selectionRect.x}
@@ -932,6 +947,14 @@ export default function GameBoard({
         parts={parts}
         properties={properties}
         cursors={cursors}
+      />
+
+      {/* コンテキストメニュー */}
+      <ProjectContextMenu
+        visible={showContextMenu && contextMenuPartId !== null}
+        position={menuPosition}
+        onClose={handleCloseContextMenu}
+        items={getContextMenuItems(contextMenuPartId!)}
       />
     </DebugModeProvider>
   );
