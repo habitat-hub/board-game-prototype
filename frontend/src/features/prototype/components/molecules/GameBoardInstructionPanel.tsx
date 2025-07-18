@@ -132,7 +132,7 @@ export default function GameBoardInstructionPanel() {
           onClick={() => setIsExpanded(!isExpanded)}
           className="flex items-center justify-center rounded-full bg-wood-dark p-1.5 shadow-md hover:bg-wood-darkest transition-all"
           aria-label={
-            isExpanded ? 'ヘルプパネルを閉じる' : 'ヘルプパネルを開く'
+            isExpanded ? 'ヘルプを閉じる' : 'ヘルプを開く'
           }
           title="操作ヘルプ (Shift+?)"
         >
@@ -144,7 +144,7 @@ export default function GameBoardInstructionPanel() {
             <div className="relative px-3 py-2">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-xs font-semibold text-wood-darkest">
-                  ショートカット一覧
+                  ヘルプ
                 </h3>
                 <div className="flex items-center gap-1">
                   <button
