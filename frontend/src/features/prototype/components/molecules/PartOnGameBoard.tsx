@@ -36,6 +36,12 @@ interface PartOnGameBoardProps {
     type: 'front' | 'back' | 'frontmost' | 'backmost'
   ) => void;
   isActive: boolean;
+  // ユーザー情報
+  userRoles?: Array<{
+    userId: string;
+    user: { id: string; username: string };
+    roles: Array<{ name: string; description: string }>;
+  }>;
 }
 
 export default function PartOnGameBoard({
@@ -51,6 +57,7 @@ export default function PartOnGameBoard({
   onContextMenu,
   onChangePartOrder,
   isActive = false,
+  userRoles = [],
 }: PartOnGameBoardProps) {
   const groupRef = useRef<Konva.Group>(null);
   const { isReversing, setIsReversing, reverseCard } = useCard(part);
@@ -61,6 +68,20 @@ export default function PartOnGameBoard({
 
   const isCard = part.type === 'card';
   const isDeck = part.type === 'deck';
+
+  // 手札の持ち主
+  const handOwnerName = useMemo(() => {
+    // 手札表示が不要な場合
+    if (
+      gameBoardMode !== GameBoardMode.PLAY ||
+      part.type !== 'hand' ||
+      !part.ownerId
+    ) {
+      return null;
+    }
+    return userRoles.find((userRole) => userRole.user.id === part.ownerId)?.user
+      .username;
+  }, [gameBoardMode, part.type, part.ownerId, userRoles]);
 
   // カードの反転を受信する
   useEffect(() => {
@@ -277,11 +298,23 @@ export default function PartOnGameBoard({
         y={5}
       />
 
+      {/* 手札の持ち主表示（プレイモードのみ） */}
+      {handOwnerName && (
+        <Text
+          text={`持ち主: ${handOwnerName}`}
+          fontSize={12}
+          fill={targetProperty?.textColor || 'black'}
+          width={part.width - 10}
+          align="center"
+          y={35}
+        />
+      )}
+
       {/* 説明文 */}
       {targetProperty?.description && (
         <Text
           text={targetProperty.description}
-          fontSize={10}
+          fontSize={12}
           fill={targetProperty.textColor || '#666'}
           width={part.width - 20}
           align="center"
