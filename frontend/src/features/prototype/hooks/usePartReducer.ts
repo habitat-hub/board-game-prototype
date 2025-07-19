@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { Part, PartProperty } from '@/api/types';
 import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
-import { PartPropertyUpdate } from '@/features/prototype/type';
+import { PartPropertyUpdate } from '@/features/prototype/types';
 
 // パーツのプロパティの型定義(metadataを除いた型)
 type PartPropertiesWithoutMetadata = Omit<
