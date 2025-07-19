@@ -480,231 +480,62 @@
     }
   },
   "paths": {
-    "/api/users/search": {
+    "/auth/google": {
       "get": {
         "tags": [
-          "Users"
+          "Auth"
         ],
-        "summary": "ユーザー検索",
-        "description": "ユーザー名でユーザーを検索します。",
-        "parameters": [
-          {
-            "name": "username",
-            "in": "query",
-            "required": true,
-            "description": "検索するユーザー名",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "summary": "Googleログイン",
+        "description": "Googleアカウントを使用してログインします。",
         "responses": {
-          "200": {
-            "description": "検索結果を返します",
-            "content": {
-              "application/json": {
+          "302": {
+            "description": "リダイレクト",
+            "headers": {
+              "Location": {
+                "description": "リダイレクト先のURL",
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/User"
-                  }
-                }
+                  "type": "string"
+                },
+                "example": "https://accounts.google.com/o/oauth2/auth"
               }
             }
           }
         }
       }
     },
-    "/api/users/{userId}": {
-      "put": {
+    "/auth/google/callback": {
+      "get": {
         "tags": [
-          "Users"
+          "Auth"
         ],
-        "summary": "ユーザー情報更新",
-        "description": "ユーザー名を更新します。",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "description": "更新するユーザーのID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "username"
-                ],
-                "properties": {
-                  "username": {
-                    "type": "string",
-                    "description": "新しいユーザー名"
-                  }
-                }
-              }
-            }
-          }
-        },
+        "summary": "Googleログインコールバック",
+        "description": "GoogleログインのコールバックURL。",
         "responses": {
-          "200": {
-            "description": "ユーザー情報が更新されました",
-            "content": {
-              "application/json": {
+          "302": {
+            "description": "ログイン成功時にリダイレクト",
+            "headers": {
+              "Location": {
+                "description": "リダイレクト先のURL",
                 "schema": {
-                  "$ref": "#/components/schemas/User"
-                }
+                  "type": "string"
+                },
+                "example": "http://localhost:3000/projects"
               }
             }
-          },
-          "400": {
-            "description": "リクエストが不正です"
-          },
-          "401": {
-            "description": "アクセス権がありません"
-          },
-          "404": {
-            "description": "ユーザーが見つかりません"
-          },
-          "500": {
-            "description": "サーバーエラー"
           }
         }
       }
     },
-    "/api/prototypes/{prototypeId}": {
-      "get": {
+    "/auth/logout": {
+      "post": {
         "tags": [
-          "Prototypes"
+          "Auth"
         ],
-        "summary": "特定のプロトタイプ取得",
-        "description": "指定されたIDのプロトタイプを取得します。",
-        "parameters": [
-          {
-            "name": "prototypeId",
-            "in": "path",
-            "required": true,
-            "description": "プロトタイプのID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "summary": "ログアウト",
+        "description": "現在のセッションを終了し、ユーザーをログアウトします。",
         "responses": {
           "200": {
-            "description": "プロトタイプを返します",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "prototype": {
-                      "$ref": "#/components/schemas/Prototype"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "プロトタイプが見つかりません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error404Response"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Prototypes"
-        ],
-        "summary": "プロトタイプ更新",
-        "description": "指定されたIDのプロトタイプを更新します。",
-        "parameters": [
-          {
-            "name": "prototypeId",
-            "in": "path",
-            "required": true,
-            "description": "プロトタイプのID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "minPlayers": {
-                    "type": "integer"
-                  },
-                  "maxPlayers": {
-                    "type": "integer"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "プロトタイプを更新しました",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Prototype"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "プロトタイプが見つかりません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error404Response"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Prototypes"
-        ],
-        "summary": "プロトタイプ削除",
-        "description": "指定されたIDのプロトタイプを削除します。",
-        "parameters": [
-          {
-            "name": "prototypeId",
-            "in": "path",
-            "required": true,
-            "description": "プロトタイプのID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "プロトタイプを削除しました",
+            "description": "ログアウト成功",
             "content": {
               "application/json": {
                 "schema": {
@@ -713,12 +544,291 @@
               }
             }
           },
+          "500": {
+            "description": "ログアウト失敗",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/user": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "ユーザー情報取得",
+        "description": "現在ログインしているユーザーの情報を取得します。",
+        "responses": {
+          "200": {
+            "description": "ユーザー情報を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/images": {
+      "post": {
+        "tags": [
+          "Images"
+        ],
+        "summary": "画像アップロード",
+        "description": "S3に画像をアップロードし、画像のメタデータを保存します。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "アップロードする画像ファイル"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "画像が正常にアップロードされました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Image"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "アップロード対象の画像が存在しない、またはサポートされていない画像形式です",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証されていないユーザーです",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "画像のアップロードに失敗しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/images/{imageId}": {
+      "get": {
+        "tags": [
+          "Images"
+        ],
+        "summary": "画像取得",
+        "description": "S3から指定された画像を取得し、画像データを直接返します。",
+        "parameters": [
+          {
+            "name": "imageId",
+            "in": "path",
+            "required": true,
+            "description": "取得する画像のID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "画像が正常に取得されました",
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Image ID が指定されていない、またはリクエストが不正です",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証されていないユーザーです",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Response"
+                }
+              }
+            }
+          },
           "404": {
-            "description": "プロトタイプが見つかりません",
+            "description": "指定された画像が存在しません",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "画像を取得できませんでした",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Images"
+        ],
+        "summary": "画像削除",
+        "description": "S3から指定された画像を削除します。",
+        "parameters": [
+          {
+            "name": "imageId",
+            "in": "path",
+            "required": true,
+            "description": "削除する画像のID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prototypeId",
+            "in": "query",
+            "required": true,
+            "description": "プロトタイプID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "partId",
+            "in": "query",
+            "required": true,
+            "description": "パーツID",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "side",
+            "in": "query",
+            "required": true,
+            "description": "面（front または back）",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "front",
+                "back"
+              ]
+            }
+          },
+          {
+            "name": "emitUpdate",
+            "in": "query",
+            "required": true,
+            "description": "更新をemitするかどうか（デフォルトはfalse）",
+            "schema": {
+              "type": "string",
+              "enum": [
+                true,
+                false
+              ],
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "画像が正常に削除されました"
+          },
+          "400": {
+            "description": "Image ID が指定されていない、またはリクエストが不正です",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証されていないユーザーです",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "指定された画像が存在しません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "画像を削除できませんでした",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
                 }
               }
             }
@@ -1572,88 +1682,19 @@
         }
       }
     },
-    "/api/images": {
-      "post": {
-        "tags": [
-          "Images"
-        ],
-        "summary": "画像アップロード",
-        "description": "S3に画像をアップロードし、画像のメタデータを保存します。",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "image": {
-                    "type": "string",
-                    "format": "binary",
-                    "description": "アップロードする画像ファイル"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "画像が正常にアップロードされました",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "$ref": "#/components/schemas/Image"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "アップロード対象の画像が存在しない、またはサポートされていない画像形式です",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error400Response"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "認証されていないユーザーです",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error401Response"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "画像のアップロードに失敗しました",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error500Response"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/images/{imageId}": {
+    "/api/prototypes/{prototypeId}": {
       "get": {
         "tags": [
-          "Images"
+          "Prototypes"
         ],
-        "summary": "画像取得",
-        "description": "S3から指定された画像を取得し、画像データを直接返します。",
+        "summary": "特定のプロトタイプ取得",
+        "description": "指定されたIDのプロトタイプを取得します。",
         "parameters": [
           {
-            "name": "imageId",
+            "name": "prototypeId",
             "in": "path",
             "required": true,
-            "description": "取得する画像のID",
+            "description": "プロトタイプのID",
             "schema": {
               "type": "string"
             }
@@ -1661,38 +1702,22 @@
         ],
         "responses": {
           "200": {
-            "description": "画像が正常に取得されました",
-            "content": {
-              "image/jpeg": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Image ID が指定されていない、またはリクエストが不正です",
+            "description": "プロトタイプを返します",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error400Response"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "認証されていないユーザーです",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error401Response"
+                  "type": "object",
+                  "properties": {
+                    "prototype": {
+                      "$ref": "#/components/schemas/Prototype"
+                    }
+                  }
                 }
               }
             }
           },
           "404": {
-            "description": "指定された画像が存在しません",
+            "description": "プロトタイプが見つかりません",
             "content": {
               "application/json": {
                 "schema": {
@@ -1700,13 +1725,64 @@
                 }
               }
             }
-          },
-          "500": {
-            "description": "画像を取得できませんでした",
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Prototypes"
+        ],
+        "summary": "プロトタイプ更新",
+        "description": "指定されたIDのプロトタイプを更新します。",
+        "parameters": [
+          {
+            "name": "prototypeId",
+            "in": "path",
+            "required": true,
+            "description": "プロトタイプのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "minPlayers": {
+                    "type": "integer"
+                  },
+                  "maxPlayers": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "プロトタイプを更新しました",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error500Response"
+                  "$ref": "#/components/schemas/Prototype"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "プロトタイプが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
                 }
               }
             }
@@ -1715,169 +1791,24 @@
       },
       "delete": {
         "tags": [
-          "Images"
+          "Prototypes"
         ],
-        "summary": "画像削除",
-        "description": "S3から指定された画像を削除します。",
+        "summary": "プロトタイプ削除",
+        "description": "指定されたIDのプロトタイプを削除します。",
         "parameters": [
           {
-            "name": "imageId",
+            "name": "prototypeId",
             "in": "path",
             "required": true,
-            "description": "削除する画像のID",
+            "description": "プロトタイプのID",
             "schema": {
               "type": "string"
-            }
-          },
-          {
-            "name": "prototypeId",
-            "in": "query",
-            "required": true,
-            "description": "プロトタイプID",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "partId",
-            "in": "query",
-            "required": true,
-            "description": "パーツID",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "side",
-            "in": "query",
-            "required": true,
-            "description": "面（front または back）",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "front",
-                "back"
-              ]
-            }
-          },
-          {
-            "name": "emitUpdate",
-            "in": "query",
-            "required": true,
-            "description": "更新をemitするかどうか（デフォルトはfalse）",
-            "schema": {
-              "type": "string",
-              "enum": [
-                true,
-                false
-              ],
-              "default": false
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "画像が正常に削除されました"
-          },
-          "400": {
-            "description": "Image ID が指定されていない、またはリクエストが不正です",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error400Response"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "認証されていないユーザーです",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error401Response"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "指定された画像が存在しません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error404Response"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "画像を削除できませんでした",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error500Response"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/auth/google": {
-      "get": {
-        "tags": [
-          "Auth"
-        ],
-        "summary": "Googleログイン",
-        "description": "Googleアカウントを使用してログインします。",
-        "responses": {
-          "302": {
-            "description": "リダイレクト",
-            "headers": {
-              "Location": {
-                "description": "リダイレクト先のURL",
-                "schema": {
-                  "type": "string"
-                },
-                "example": "https://accounts.google.com/o/oauth2/auth"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/auth/google/callback": {
-      "get": {
-        "tags": [
-          "Auth"
-        ],
-        "summary": "Googleログインコールバック",
-        "description": "GoogleログインのコールバックURL。",
-        "responses": {
-          "302": {
-            "description": "ログイン成功時にリダイレクト",
-            "headers": {
-              "Location": {
-                "description": "リダイレクト先のURL",
-                "schema": {
-                  "type": "string"
-                },
-                "example": "http://localhost:3000/projects"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/auth/logout": {
-      "post": {
-        "tags": [
-          "Auth"
-        ],
-        "summary": "ログアウト",
-        "description": "現在のセッションを終了し、ユーザーをログアウトします。",
-        "responses": {
-          "200": {
-            "description": "ログアウト成功",
+            "description": "プロトタイプを削除しました",
             "content": {
               "application/json": {
                 "schema": {
@@ -1886,12 +1817,12 @@
               }
             }
           },
-          "500": {
-            "description": "ログアウト失敗",
+          "404": {
+            "description": "プロトタイプが見つかりません",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error500Response"
+                  "$ref": "#/components/schemas/Error404Response"
                 }
               }
             }
@@ -1899,27 +1830,33 @@
         }
       }
     },
-    "/auth/user": {
+    "/api/users/search": {
       "get": {
         "tags": [
-          "Auth"
+          "Users"
         ],
-        "summary": "ユーザー情報取得",
-        "description": "現在ログインしているユーザーの情報を取得します。",
+        "summary": "ユーザー検索",
+        "description": "ユーザー名でユーザーを検索します。",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "required": true,
+            "description": "検索するユーザー名",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "ユーザー情報を返します",
+            "description": "検索結果を返します",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string"
-                    },
-                    "username": {
-                      "type": "string"
-                    }
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
                   }
                 }
               }
@@ -1927,24 +1864,87 @@
           }
         }
       }
+    },
+    "/api/users/{userId}": {
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "ユーザー情報更新",
+        "description": "ユーザー名を更新します。",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "更新するユーザーのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "username"
+                ],
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "新しいユーザー名"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ユーザー情報が更新されました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエストが不正です"
+          },
+          "401": {
+            "description": "アクセス権がありません"
+          },
+          "404": {
+            "description": "ユーザーが見つかりません"
+          },
+          "500": {
+            "description": "サーバーエラー"
+          }
+        }
+      }
     }
   },
   "tags": [
     {
-      "name": "Users",
-      "description": "ユーザー管理API"
-    },
-    {
-      "name": "Prototypes",
-      "description": "プロトタイプ管理API"
+      "name": "Auth",
+      "description": "認証関連のAPI"
     },
     {
       "name": "Images",
       "description": "画像管理API"
     },
     {
-      "name": "Auth",
-      "description": "認証関連のAPI"
+      "name": "Prototypes",
+      "description": "プロトタイプ管理API"
+    },
+    {
+      "name": "Users",
+      "description": "ユーザー管理API"
     }
   ]
 }

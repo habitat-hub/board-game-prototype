@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import * as UAParser from 'ua-parser-js';
 
+import { WoodenCrateBackground } from '@/components/atoms/WoodenCrateBackground';
 import Header from '@/components/organisms/Header';
-import { WoodenCrateBackground } from '@/features/prototype/components/atoms/WoodenCrateBackground';
 import { useClientPathInfo } from '@/hooks/useClientPathInfo';
 
 export default function ClientLayout({

@@ -8,8 +8,7 @@ import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { useMemoryUsage } from '@/features/prototype/hooks/useMemoryUsage';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { useRenderPerformance } from '@/features/prototype/hooks/useRenderPerformance';
-import { CursorInfo } from '@/features/prototype/types/cursor';
-import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
+import { CursorInfo, GameBoardMode } from '@/features/prototype/types';
 
 // タブのラベルとID
 const TABS = [

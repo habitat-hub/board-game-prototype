@@ -9,7 +9,7 @@ import { Prototype } from '@/api/types';
 import SocketGameBoard from '@/features/prototype/components/organisms/SocketGameBoard';
 import { SelectedPartsProvider } from '@/features/prototype/contexts/SelectedPartsContext';
 import { SocketProvider } from '@/features/prototype/contexts/SocketContext';
-import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
+import { GameBoardMode } from '@/features/prototype/types';
 import { useUser } from '@/hooks/useUser';
 
 export default function PrototypeTemplate() {
@@ -64,16 +64,20 @@ export default function PrototypeTemplate() {
   }, []);
 
   return selectedPrototype && user?.id && socketRef.current ? (
-    <SocketProvider socket={socketRef.current}>
-      <SelectedPartsProvider>
-        <SocketGameBoard
-          prototypeName={selectedPrototype?.name || ''}
-          projectId={projectId}
-          prototypeId={prototypeId}
-          userId={user.id}
-          gameBoardMode={gameBoardMode}
-        />
-      </SelectedPartsProvider>
-    </SocketProvider>
+    <>
+      <SocketProvider socket={socketRef.current}>
+        <SelectedPartsProvider>
+          <SocketGameBoard
+            prototypeName={selectedPrototype?.name || ''}
+            projectId={projectId}
+            prototypeId={prototypeId}
+            userId={user.id}
+            gameBoardMode={gameBoardMode}
+          />
+        </SelectedPartsProvider>
+      </SocketProvider>
+      {/* パーツツールチップ用コンテナ */}
+      <div id="tooltip-container" />
+    </>
   ) : null;
 }

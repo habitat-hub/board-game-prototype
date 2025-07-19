@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useSocketConnection } from '@/features/prototype/hooks/useSocketConnection';
-import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
+import { GameBoardMode } from '@/features/prototype/types';
 
 import GameBoard from './GameBoard';
 

@@ -4,7 +4,7 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { GiPokerHand } from 'react-icons/gi';
 
 import { Part } from '@/api/types';
@@ -30,6 +30,8 @@ export default function PlaySidebar({
 }: PlaySidebarProps) {
   const { dispatch } = usePartReducer();
   const { user } = useUser();
+
+  // 選択中の手札ID
   const [selectedHandId, setSelectedHandId] = useState<number | null>(null);
 
   // userRolesからユーザーマップを作成
@@ -43,24 +45,19 @@ export default function PlaySidebar({
     return map;
   }, [userRoles]);
 
-  // 外部から選択されたパーツが手札の場合、サイドバーの選択状態を更新
-  React.useEffect(() => {
-    if (selectedPartId !== undefined) {
-      const selectedPart = parts.find((part) => part.id === selectedPartId);
-      if (selectedPart && selectedPart.type === 'hand') {
-        setSelectedHandId(selectedPartId);
-      } else {
-        setSelectedHandId(null);
-      }
-    }
-  }, [selectedPartId, parts]);
-
-  // 手札のみをフィルタリング
+  // 手札
   const hands = useMemo(() => {
-    return parts.filter((part) => part.type === 'hand');
-  }, [parts]);
+    return parts
+      .filter((part) => part.type === 'hand')
+      .map((hand) => {
+        return {
+          ...hand,
+          ownerName: hand.ownerId ? userMap.get(hand.ownerId) : null,
+        };
+      });
+  }, [parts, userMap]);
 
-  // カードのみをフィルタリング
+  // カード
   const cards = useMemo(() => {
     return parts.filter((part) => part.type === 'card');
   }, [parts]);
@@ -89,8 +86,17 @@ export default function PlaySidebar({
     return cards.filter((card) => isCardOnHand(card, selectedHand)).length;
   }, [selectedHand, cards]);
 
+  // 外部から選択されたパーツが手札の場合、サイドバーの選択状態を更新
+  useEffect(() => {
+    if (!selectedPartId) return;
+
+    const selectedPart = parts.find((part) => part.id === selectedPartId);
+    setSelectedHandId(selectedPart?.type === 'hand' ? selectedPartId : null);
+  }, [selectedPartId, parts]);
+
   return (
     <div className="fixed top-20 left-4 flex w-[240px] flex-col rounded-lg shadow-lg border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary max-h-[calc(100vh-32px)] overflow-y-auto">
+      {/* ヘッダー */}
       <div className="border-b border-wood-lightest/60 rounded-t-lg bg-gradient-to-r from-wood-light/30 to-wood-light/20 py-2 px-4">
         <div className="flex items-center">
           <GiPokerHand className="h-4 w-4 text-wood-dark mr-2" />
@@ -100,19 +106,20 @@ export default function PlaySidebar({
         </div>
       </div>
 
+      {/* コンテンツ  */}
       <div className="flex flex-col gap-2 p-4">
-        <span className="mb-2 text-[11px] font-medium">手札選択</span>
+        <span className="mb-2 text-xs font-bold">手札選択</span>
 
+        {/* 手札一覧 */}
         <div className="space-y-2">
           {hands.map((hand, index) => {
-            const isSelected = selectedHandId === hand.id;
             const isOwnHand = hand.ownerId === user?.id;
 
             return (
               <div
                 key={hand.id}
                 className={`p-2 rounded border cursor-pointer transition-colors ${
-                  isSelected
+                  selectedHandId === hand.id
                     ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
@@ -123,9 +130,15 @@ export default function PlaySidebar({
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium">手札 #{index + 1}</span>
-                  {isOwnHand && (
-                    <span className="text-xs bg-green-100 text-green-800 px-1 rounded">
-                      自分の手札
+                  {hand.ownerName && (
+                    <span
+                      className={`text-xs ${
+                        isOwnHand
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-blue-100 text-blue-800'
+                      } px-1 rounded`}
+                    >
+                      {hand.ownerName}の手札
                     </span>
                   )}
                 </div>
@@ -134,21 +147,13 @@ export default function PlaySidebar({
           })}
         </div>
 
+        {/* 手札設定情報 */}
         {selectedHand && (
           <div className="border-t border-gray-200 pt-4 mt-4">
-            <span className="mb-2 text-[11px] font-medium">手札設定</span>
+            <span className="mb-2 text-xs font-bold">手札設定</span>
             <div className="space-y-3">
               <div className="text-xs text-gray-600">
-                <div>
-                  手札 #{hands.findIndex((h) => h.id === selectedHand.id) + 1}
-                </div>
-                <div>
-                  所有者:{' '}
-                  {selectedHand.ownerId
-                    ? userMap.get(selectedHand.ownerId) ||
-                      `ID: ${selectedHand.ownerId}`
-                    : '未設定'}
-                </div>
+                <div>所有者: {selectedHand.ownerName || '未設定'}</div>
                 <div>上のカード: {selectedHandCardCount}枚</div>
               </div>
 

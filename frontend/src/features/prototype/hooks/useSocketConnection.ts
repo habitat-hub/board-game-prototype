@@ -2,8 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { Part, PartProperty } from '@/api/types';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
-import { CursorInfo } from '@/features/prototype/types/cursor';
-import { PartsMap, PropertiesMap } from '@/features/prototype/types/socket';
+import {
+  CursorInfo,
+  PartsMap,
+  PropertiesMap,
+} from '@/features/prototype/types';
 
 import { useSocket } from '../contexts/SocketContext';
 

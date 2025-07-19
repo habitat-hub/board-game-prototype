@@ -1,5 +1,13 @@
+/** グリッドサイズ */
 export const GRID_SIZE = 50;
+/** キャンバスサイズ */
 export const CANVAS_SIZE = 5000;
-export const MIN_SCALE = 0.18;
-export const MAX_SCALE = 8;
-export const DEFAULT_INITIAL_SCALE = 0.5;
+/** スケール */
+export const SCALE = {
+  /** 最小スケール */
+  MIN: 0.18,
+  /** 最大スケール */
+  MAX: 8,
+  /** デフォルトの初期スケール */
+  DEFAULT: 0.5,
+};

@@ -22,13 +22,7 @@ import PartPropertySidebar from '@/features/prototype/components/molecules/PartP
 import PlaySidebar from '@/features/prototype/components/molecules/PlaySidebar';
 import RoleMenu from '@/features/prototype/components/molecules/RoleMenu';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
-import {
-  GRID_SIZE,
-  CANVAS_SIZE,
-  MIN_SCALE,
-  MAX_SCALE,
-  DEFAULT_INITIAL_SCALE,
-} from '@/features/prototype/constants/gameBoard';
+import { GRID_SIZE, CANVAS_SIZE, SCALE } from '@/features/prototype/constants';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
@@ -36,9 +30,12 @@ import { useHandVisibility } from '@/features/prototype/hooks/useHandVisibility'
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { useSelection } from '@/features/prototype/hooks/useSelection';
-import { AddPartProps, DeleteImageProps } from '@/features/prototype/type';
-import { CursorInfo } from '@/features/prototype/types/cursor';
-import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
+import {
+  AddPartProps,
+  DeleteImageProps,
+  CursorInfo,
+  GameBoardMode,
+} from '@/features/prototype/types';
 import { useRoleManagement } from '@/features/role/hooks/useRoleManagement';
 import {
   getImageFromIndexedDb,
@@ -91,6 +88,24 @@ export default function GameBoard({
   const [contextMenuPartId, setContextMenuPartId] = useState<number | null>(
     null
   );
+
+  // スペースキー押下しているか
+  const [spacePressing, setSpacePressing] = useState(false);
+  // 選択モードへの復帰が必要か
+  const [needToReturnToSelectionMode, setNeedToReturnToSelectionMode] =
+    useState(false);
+
+  // 選択機能
+  const {
+    isSelectionMode,
+    selectionRect,
+    handleSelectionStart,
+    handleSelectionMove,
+    handleSelectionEnd,
+    toggleMode,
+    isSelectionInProgress,
+    isJustFinishedSelection,
+  } = useSelection();
 
   const canvasSize = useMemo(
     () => ({
@@ -162,12 +177,10 @@ export default function GameBoard({
   const calculateInitialCameraPosition = useCallback(
     (averageCenter: { x: number; y: number }) => {
       // カメラの中央が全パーツの平均センターになるようにカメラの左上位置を計算
-      const targetX =
-        averageCenter.x * DEFAULT_INITIAL_SCALE - viewportSize.width / 2;
-      const targetY =
-        averageCenter.y * DEFAULT_INITIAL_SCALE - viewportSize.height / 2;
+      const targetX = averageCenter.x * SCALE.DEFAULT - viewportSize.width / 2;
+      const targetY = averageCenter.y * SCALE.DEFAULT - viewportSize.height / 2;
 
-      return constrainCamera(targetX, targetY, DEFAULT_INITIAL_SCALE);
+      return constrainCamera(targetX, targetY, SCALE.DEFAULT);
     },
     [viewportSize, constrainCamera]
   );
@@ -181,9 +194,9 @@ export default function GameBoard({
     if (!averagePartsCenter) {
       // パーツがない場合はキャンバス中央を表示
       return {
-        x: centerCoords.x * DEFAULT_INITIAL_SCALE - viewportSize.width / 2,
-        y: centerCoords.y * DEFAULT_INITIAL_SCALE - viewportSize.height / 2,
-        scale: DEFAULT_INITIAL_SCALE,
+        x: centerCoords.x * SCALE.DEFAULT - viewportSize.width / 2,
+        y: centerCoords.y * SCALE.DEFAULT - viewportSize.height / 2,
+        scale: SCALE.DEFAULT,
       };
     }
 
@@ -254,8 +267,8 @@ export default function GameBoard({
     const direction = e.evt.deltaY > 0 ? -1 : 1;
     const newScale =
       direction > 0
-        ? Math.min(oldScale * scaleBy, MAX_SCALE)
-        : Math.max(oldScale / scaleBy, MIN_SCALE);
+        ? Math.min(oldScale * scaleBy, SCALE.MAX)
+        : Math.max(oldScale / scaleBy, SCALE.MIN);
 
     const newX = mousePointTo.x * newScale - pointer.x;
     const newY = mousePointTo.y * newScale - pointer.y;
@@ -582,7 +595,7 @@ export default function GameBoard({
   const handleZoomIn = useCallback(() => {
     const scaleBy = 1.1;
     const oldScale = camera.scale;
-    const newScale = Math.min(oldScale * scaleBy, MAX_SCALE);
+    const newScale = Math.min(oldScale * scaleBy, SCALE.MAX);
 
     const viewportCenterX = viewportSize.width / 2;
     const viewportCenterY = viewportSize.height / 2;
@@ -601,7 +614,7 @@ export default function GameBoard({
   const handleZoomOut = useCallback(() => {
     const scaleBy = 1.1;
     const oldScale = camera.scale;
-    const newScale = Math.max(oldScale / scaleBy, MIN_SCALE);
+    const newScale = Math.max(oldScale / scaleBy, SCALE.MIN);
 
     const viewportCenterX = viewportSize.width / 2;
     const viewportCenterY = viewportSize.height / 2;
@@ -638,6 +651,54 @@ export default function GameBoard({
       window.removeEventListener('keydown', onKeyDown);
     };
   }, [handleDeletePart, gameBoardMode]);
+
+  // スペースキー検出とモード切り替え
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // スペースキー以外のイベント、またはスペースキー押下中の場合は無視
+      if (e.code !== 'Space' || spacePressing) return;
+      e.preventDefault();
+      setSpacePressing(true);
+
+      // 入力フィールドにフォーカスがある場合は無視
+      const active = document.activeElement;
+      const tag = active && (active.tagName || '').toUpperCase();
+      if (
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        active?.hasAttribute('contenteditable')
+      ) {
+        return;
+      }
+
+      // 選択モードの場合のみ、一時的にパンモードに切り替え
+      if (isSelectionMode) {
+        setNeedToReturnToSelectionMode(true);
+        toggleMode();
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      // スペースキー以外のイベント、またはスペースキー押下中でない場合は無視
+      if (e.code !== 'Space' || !spacePressing) return;
+      e.preventDefault();
+      setSpacePressing(false);
+
+      // 元々選択モードだった場合、選択モードに復帰
+      if (needToReturnToSelectionMode && !isSelectionMode) {
+        setNeedToReturnToSelectionMode(false);
+        toggleMode();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [spacePressing, isSelectionMode, needToReturnToSelectionMode, toggleMode]);
 
   useEffect(() => {
     let urlsToRevoke: string[] = [];
@@ -684,18 +745,6 @@ export default function GameBoard({
   }, [fetchImage, properties]);
 
   const { socket } = useSocket();
-
-  // 選択機能
-  const {
-    isSelectionMode,
-    selectionRect,
-    handleSelectionStart,
-    handleSelectionMove,
-    handleSelectionEnd,
-    toggleMode,
-    isSelectionInProgress,
-    isJustFinishedSelection,
-  } = useSelection();
 
   // Stage全体のクリックイベントハンドラー
   const handleStageClick = useCallback(
@@ -785,6 +834,15 @@ export default function GameBoard({
     };
   }, [socket]);
 
+  // カーソルのスタイル
+  const cursorStyle = useMemo(() => {
+    // スペース押下状態、または選択モードでない場合
+    if (spacePressing || !isSelectionMode) {
+      return isGrabbing ? 'grabbing' : 'grab';
+    }
+    return 'default';
+  }, [spacePressing, isGrabbing, isSelectionMode]);
+
   return (
     <DebugModeProvider>
       <ModeToggleButton
@@ -799,11 +857,7 @@ export default function GameBoard({
         onClick={handleStageClick}
         {...grabbingHandlers}
         style={{
-          cursor: isSelectionMode
-            ? 'default'
-            : isGrabbing
-              ? 'grabbing'
-              : 'grab',
+          cursor: cursorStyle,
         }}
       >
         <Layer>
@@ -864,6 +918,7 @@ export default function GameBoard({
                   gameBoardMode={gameBoardMode}
                   isActive={isActive}
                   isOtherPlayerCard={isOtherPlayerCard}
+                  userRoles={userRoles}
                   onClick={(e) => handlePartClick(e, part.id)}
                   onDragStart={(e) => handlePartDragStart(e, part.id)}
                   onDragMove={(e) => handlePartDragMove(e, part.id)}
@@ -938,8 +993,8 @@ export default function GameBoard({
       <ZoomToolbar
         zoomIn={handleZoomIn}
         zoomOut={handleZoomOut}
-        canZoomIn={camera.scale < MAX_SCALE}
-        canZoomOut={camera.scale > MIN_SCALE}
+        canZoomIn={camera.scale < SCALE.MAX}
+        canZoomOut={camera.scale > SCALE.MIN}
         zoomLevel={camera.scale}
       />
 
