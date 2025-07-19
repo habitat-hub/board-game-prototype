@@ -20,14 +20,14 @@ import { Part, PartProperty } from '@/api/types';
 import NumberInput from '@/components/atoms/NumberInput';
 import TextIconButton from '@/components/atoms/TextIconButton';
 import TextInput from '@/components/atoms/TextInput';
-import { COLORS, TEXT_COLORS } from '@/features/prototype/const';
+import { COLORS } from '@/features/prototype/constants';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import {
   AddPartProps,
   DeleteImageProps,
   PartPropertyUpdate,
   PartPropertyWithImage,
-} from '@/features/prototype/type';
+} from '@/features/prototype/types';
 import { saveImageToIndexedDb } from '@/utils/db';
 
 export default function PartPropertySidebar({
@@ -410,7 +410,7 @@ export default function PartPropertySidebar({
               </p>
               <div className="w-full mb-2 px-4">
                 <div className="grid grid-cols-4 gap-2">
-                  {TEXT_COLORS.map((textColor) => (
+                  {COLORS.TEXT.map((textColor) => (
                     <button
                       key={textColor}
                       onClick={() => handleUpdateProperty({ textColor })}
@@ -428,7 +428,7 @@ export default function PartPropertySidebar({
               <p className="text-[9px] font-medium text-wood-dark">背景色</p>
               <div className="w-full mb-2 px-4">
                 <div className="grid grid-cols-4 gap-2">
-                  {COLORS.map((color) => (
+                  {COLORS.BACKGROUNDS.map((color) => (
                     <button
                       key={color}
                       onClick={() => handleUpdateProperty({ color })}
