@@ -9,7 +9,7 @@ import { Prototype } from '@/api/types';
 import SocketGameBoard from '@/features/prototype/components/organisms/SocketGameBoard';
 import { SelectedPartsProvider } from '@/features/prototype/contexts/SelectedPartsContext';
 import { SocketProvider } from '@/features/prototype/contexts/SocketContext';
-import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
+import { GameBoardMode } from '@/features/prototype/types';
 import { useUser } from '@/hooks/useUser';
 
 export default function PrototypeTemplate() {

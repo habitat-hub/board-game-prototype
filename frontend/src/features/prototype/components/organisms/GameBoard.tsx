@@ -28,7 +28,7 @@ import {
   MIN_SCALE,
   MAX_SCALE,
   DEFAULT_INITIAL_SCALE,
-} from '@/features/prototype/constants/gameBoard';
+} from '@/features/prototype/constants';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
@@ -37,8 +37,8 @@ import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { useSelection } from '@/features/prototype/hooks/useSelection';
 import { AddPartProps, DeleteImageProps } from '@/features/prototype/type';
-import { CursorInfo } from '@/features/prototype/types/cursor';
-import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
+import { CursorInfo } from '@/features/prototype/types';
+import { GameBoardMode } from '@/features/prototype/types';
 import { useRoleManagement } from '@/features/role/hooks/useRoleManagement';
 import {
   getImageFromIndexedDb,
