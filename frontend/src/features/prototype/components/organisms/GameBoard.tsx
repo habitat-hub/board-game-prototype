@@ -22,13 +22,7 @@ import PartPropertySidebar from '@/features/prototype/components/molecules/PartP
 import PlaySidebar from '@/features/prototype/components/molecules/PlaySidebar';
 import RoleMenu from '@/features/prototype/components/molecules/RoleMenu';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
-import {
-  GRID_SIZE,
-  CANVAS_SIZE,
-  MIN_SCALE,
-  MAX_SCALE,
-  DEFAULT_INITIAL_SCALE,
-} from '@/features/prototype/constants/gameBoard';
+import { GRID_SIZE, CANVAS_SIZE, SCALE } from '@/features/prototype/constants';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
@@ -37,8 +31,8 @@ import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { useSelection } from '@/features/prototype/hooks/useSelection';
 import { AddPartProps, DeleteImageProps } from '@/features/prototype/type';
-import { CursorInfo } from '@/features/prototype/types/cursor';
-import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
+import { CursorInfo } from '@/features/prototype/types';
+import { GameBoardMode } from '@/features/prototype/types';
 import { useRoleManagement } from '@/features/role/hooks/useRoleManagement';
 import {
   getImageFromIndexedDb,
@@ -162,12 +156,10 @@ export default function GameBoard({
   const calculateInitialCameraPosition = useCallback(
     (averageCenter: { x: number; y: number }) => {
       // カメラの中央が全パーツの平均センターになるようにカメラの左上位置を計算
-      const targetX =
-        averageCenter.x * DEFAULT_INITIAL_SCALE - viewportSize.width / 2;
-      const targetY =
-        averageCenter.y * DEFAULT_INITIAL_SCALE - viewportSize.height / 2;
+      const targetX = averageCenter.x * SCALE.DEFAULT - viewportSize.width / 2;
+      const targetY = averageCenter.y * SCALE.DEFAULT - viewportSize.height / 2;
 
-      return constrainCamera(targetX, targetY, DEFAULT_INITIAL_SCALE);
+      return constrainCamera(targetX, targetY, SCALE.DEFAULT);
     },
     [viewportSize, constrainCamera]
   );
@@ -181,9 +173,9 @@ export default function GameBoard({
     if (!averagePartsCenter) {
       // パーツがない場合はキャンバス中央を表示
       return {
-        x: centerCoords.x * DEFAULT_INITIAL_SCALE - viewportSize.width / 2,
-        y: centerCoords.y * DEFAULT_INITIAL_SCALE - viewportSize.height / 2,
-        scale: DEFAULT_INITIAL_SCALE,
+        x: centerCoords.x * SCALE.DEFAULT - viewportSize.width / 2,
+        y: centerCoords.y * SCALE.DEFAULT - viewportSize.height / 2,
+        scale: SCALE.DEFAULT,
       };
     }
 
@@ -254,8 +246,8 @@ export default function GameBoard({
     const direction = e.evt.deltaY > 0 ? -1 : 1;
     const newScale =
       direction > 0
-        ? Math.min(oldScale * scaleBy, MAX_SCALE)
-        : Math.max(oldScale / scaleBy, MIN_SCALE);
+        ? Math.min(oldScale * scaleBy, SCALE.MAX)
+        : Math.max(oldScale / scaleBy, SCALE.MIN);
 
     const newX = mousePointTo.x * newScale - pointer.x;
     const newY = mousePointTo.y * newScale - pointer.y;
@@ -582,7 +574,7 @@ export default function GameBoard({
   const handleZoomIn = useCallback(() => {
     const scaleBy = 1.1;
     const oldScale = camera.scale;
-    const newScale = Math.min(oldScale * scaleBy, MAX_SCALE);
+    const newScale = Math.min(oldScale * scaleBy, SCALE.MAX);
 
     const viewportCenterX = viewportSize.width / 2;
     const viewportCenterY = viewportSize.height / 2;
@@ -601,7 +593,7 @@ export default function GameBoard({
   const handleZoomOut = useCallback(() => {
     const scaleBy = 1.1;
     const oldScale = camera.scale;
-    const newScale = Math.max(oldScale / scaleBy, MIN_SCALE);
+    const newScale = Math.max(oldScale / scaleBy, SCALE.MIN);
 
     const viewportCenterX = viewportSize.width / 2;
     const viewportCenterY = viewportSize.height / 2;
@@ -939,8 +931,8 @@ export default function GameBoard({
       <ZoomToolbar
         zoomIn={handleZoomIn}
         zoomOut={handleZoomOut}
-        canZoomIn={camera.scale < MAX_SCALE}
-        canZoomOut={camera.scale > MIN_SCALE}
+        canZoomIn={camera.scale < SCALE.MAX}
+        canZoomOut={camera.scale > SCALE.MIN}
         zoomLevel={camera.scale}
       />
 

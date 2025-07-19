@@ -14,7 +14,7 @@ import {
 
 import { Part, PartProperty } from '@/api/types';
 import { PART_DEFAULT_CONFIG } from '@/features/prototype/const';
-import { CANVAS_SIZE } from '@/features/prototype/constants/gameBoard';
+import { CANVAS_SIZE } from '@/features/prototype/constants';
 import { AddPartProps } from '@/features/prototype/type';
 import { isRectOverlap } from '@/features/prototype/utils/overlap';
 

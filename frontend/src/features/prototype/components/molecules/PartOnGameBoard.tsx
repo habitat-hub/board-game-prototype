@@ -16,6 +16,7 @@ import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { useCard } from '@/features/prototype/hooks/useCard';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { useDeck } from '@/features/prototype/hooks/useDeck';
+import { usePartTooltip } from '@/features/prototype/hooks/usePartTooltip';
 import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
 
 interface PartOnGameBoardProps {
@@ -65,6 +66,13 @@ export default function PartOnGameBoard({
   const [scaleX, setScaleX] = useState(1);
   const { showDebugInfo } = useDebugMode();
   const { socket } = useSocket();
+
+  // ツールチップ機能
+  const {
+    handleMouseEnter: tooltipMouseEnter,
+    handleMouseLeave: tooltipMouseLeave,
+    hideTooltip,
+  } = usePartTooltip({ part });
 
   const isCard = part.type === 'card';
   const isDeck = part.type === 'deck';
@@ -189,6 +197,9 @@ export default function PartOnGameBoard({
   const offsetX = part.width / 2;
 
   const handleDragStart = (e: Konva.KonvaEventObject<DragEvent>) => {
+    // ドラッグ開始時にツールチップを非表示
+    hideTooltip();
+
     // プレイモード時にカードまたはトークンがドラッグされたら最前面に移動
     if (
       gameBoardMode === GameBoardMode.PLAY &&
@@ -211,21 +222,28 @@ export default function PartOnGameBoard({
   );
 
   /**
-   * マウスがパーツに乗った時のカーソル変更処理
+   * マウスがパーツに乗った時の処理（カーソル変更・ツールチップ開始）
    */
-  const handleMouseEnter = useCallback(() => {
-    // Groupの参照が取得できない場合は早期リターン
-    if (!groupRef.current) return;
+  const handleMouseEnter = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent>) => {
+      // Groupの参照が取得できない場合は早期リターン
+      if (!groupRef.current) return;
 
-    const stage = groupRef.current.getStage();
-    // Stageが存在しない場合は早期リターン
-    if (!stage) return;
+      const stage = groupRef.current.getStage();
+      // Stageが存在しない場合は早期リターン
+      if (!stage) return;
 
-    stage.container().style.cursor = isDraggable ? 'grab' : 'not-allowed';
-  }, [isDraggable]);
+      // カーソル変更
+      stage.container().style.cursor = isDraggable ? 'grab' : 'not-allowed';
+
+      // ツールチップ表示開始
+      tooltipMouseEnter(e);
+    },
+    [isDraggable, tooltipMouseEnter]
+  );
 
   /**
-   * マウスがパーツから離れた時のカーソル復元処理
+   * マウスがパーツから離れた時の処理（カーソル復元・ツールチップ非表示）
    */
   const handleMouseLeave = useCallback(() => {
     // Groupの参照が取得できない場合は早期リターン
@@ -235,8 +253,12 @@ export default function PartOnGameBoard({
     // Stageが存在しない場合は早期リターン
     if (!stage) return;
 
+    // カーソル復元
     stage.container().style.cursor = 'default';
-  }, []);
+
+    // ツールチップ非表示
+    tooltipMouseLeave();
+  }, [tooltipMouseLeave]);
 
   return (
     <Group

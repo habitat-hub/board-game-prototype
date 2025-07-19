@@ -8,7 +8,7 @@ import { MdMeetingRoom, MdDelete } from 'react-icons/md';
 
 import { useProject } from '@/api/hooks/useProject';
 import { Prototype } from '@/api/types';
-import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
+import { GameBoardMode } from '@/features/prototype/types';
 import formatDate from '@/utils/dateFormat';
 
 import GameBoardInstructionPanel from './GameBoardInstructionPanel';
