@@ -30,9 +30,12 @@ import { useHandVisibility } from '@/features/prototype/hooks/useHandVisibility'
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { useSelection } from '@/features/prototype/hooks/useSelection';
-import { AddPartProps, DeleteImageProps } from '@/features/prototype/types';
-import { CursorInfo } from '@/features/prototype/types';
-import { GameBoardMode } from '@/features/prototype/types';
+import {
+  AddPartProps,
+  DeleteImageProps,
+  CursorInfo,
+  GameBoardMode,
+} from '@/features/prototype/types';
 import { useRoleManagement } from '@/features/role/hooks/useRoleManagement';
 import {
   getImageFromIndexedDb,
