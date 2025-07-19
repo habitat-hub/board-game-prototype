@@ -16,6 +16,11 @@ export const SHORTCUTS: ShortcutInfo[] = [
     description: 'ショートカットヘルプを開閉する。',
   },
   {
+    id: 'space-drag',
+    key: 'Space + ドラッグ',
+    description: '選択モード時に一時的にゲームボードを移動する。',
+  },
+  {
     id: 'multi-select',
     key: 'Shift + クリック',
     description: '複数のパーツを選択する。',
