@@ -64,16 +64,20 @@ export default function PrototypeTemplate() {
   }, []);
 
   return selectedPrototype && user?.id && socketRef.current ? (
-    <SocketProvider socket={socketRef.current}>
-      <SelectedPartsProvider>
-        <SocketGameBoard
-          prototypeName={selectedPrototype?.name || ''}
-          projectId={projectId}
-          prototypeId={prototypeId}
-          userId={user.id}
-          gameBoardMode={gameBoardMode}
-        />
-      </SelectedPartsProvider>
-    </SocketProvider>
+    <>
+      <SocketProvider socket={socketRef.current}>
+        <SelectedPartsProvider>
+          <SocketGameBoard
+            prototypeName={selectedPrototype?.name || ''}
+            projectId={projectId}
+            prototypeId={prototypeId}
+            userId={user.id}
+            gameBoardMode={gameBoardMode}
+          />
+        </SelectedPartsProvider>
+      </SocketProvider>
+      {/* パーツツールチップ用コンテナ */}
+      <div id="tooltip-container" />
+    </>
   ) : null;
 }
