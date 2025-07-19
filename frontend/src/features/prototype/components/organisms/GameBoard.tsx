@@ -86,6 +86,24 @@ export default function GameBoard({
     null
   );
 
+  // スペースキー押下しているか
+  const [spacePressing, setSpacePressing] = useState(false);
+  // 選択モードへの復帰が必要か
+  const [needToReturnToSelectionMode, setNeedToReturnToSelectionMode] =
+    useState(false);
+
+  // 選択機能
+  const {
+    isSelectionMode,
+    selectionRect,
+    handleSelectionStart,
+    handleSelectionMove,
+    handleSelectionEnd,
+    toggleMode,
+    isSelectionInProgress,
+    isJustFinishedSelection,
+  } = useSelection();
+
   const canvasSize = useMemo(
     () => ({
       width: CANVAS_SIZE,
@@ -631,6 +649,54 @@ export default function GameBoard({
     };
   }, [handleDeletePart, gameBoardMode]);
 
+  // スペースキー検出とモード切り替え
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // スペースキー以外のイベント、またはスペースキー押下中の場合は無視
+      if (e.code !== 'Space' || spacePressing) return;
+      e.preventDefault();
+      setSpacePressing(true);
+
+      // 入力フィールドにフォーカスがある場合は無視
+      const active = document.activeElement;
+      const tag = active && (active.tagName || '').toUpperCase();
+      if (
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        active?.hasAttribute('contenteditable')
+      ) {
+        return;
+      }
+
+      // 選択モードの場合のみ、一時的にパンモードに切り替え
+      if (isSelectionMode) {
+        setNeedToReturnToSelectionMode(true);
+        toggleMode();
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      // スペースキー以外のイベント、またはスペースキー押下中でない場合は無視
+      if (e.code !== 'Space' || !spacePressing) return;
+      e.preventDefault();
+      setSpacePressing(false);
+
+      // 元々選択モードだった場合、選択モードに復帰
+      if (needToReturnToSelectionMode && !isSelectionMode) {
+        setNeedToReturnToSelectionMode(false);
+        toggleMode();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [spacePressing, isSelectionMode, needToReturnToSelectionMode, toggleMode]);
+
   useEffect(() => {
     let urlsToRevoke: string[] = [];
 
@@ -676,18 +742,6 @@ export default function GameBoard({
   }, [fetchImage, properties]);
 
   const { socket } = useSocket();
-
-  // 選択機能
-  const {
-    isSelectionMode,
-    selectionRect,
-    handleSelectionStart,
-    handleSelectionMove,
-    handleSelectionEnd,
-    toggleMode,
-    isSelectionInProgress,
-    isJustFinishedSelection,
-  } = useSelection();
 
   // Stage全体のクリックイベントハンドラー
   const handleStageClick = useCallback(
@@ -777,6 +831,15 @@ export default function GameBoard({
     };
   }, [socket]);
 
+  // カーソルのスタイル
+  const cursorStyle = useMemo(() => {
+    // スペース押下状態、または選択モードでない場合
+    if (spacePressing || !isSelectionMode) {
+      return isGrabbing ? 'grabbing' : 'grab';
+    }
+    return 'default';
+  }, [spacePressing, isGrabbing, isSelectionMode]);
+
   return (
     <DebugModeProvider>
       <ModeToggleButton
@@ -791,11 +854,7 @@ export default function GameBoard({
         onClick={handleStageClick}
         {...grabbingHandlers}
         style={{
-          cursor: isSelectionMode
-            ? 'default'
-            : isGrabbing
-              ? 'grabbing'
-              : 'grab',
+          cursor: cursorStyle,
         }}
       >
         <Layer>
