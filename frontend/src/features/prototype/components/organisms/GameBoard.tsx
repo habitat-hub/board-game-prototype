@@ -864,6 +864,7 @@ export default function GameBoard({
                   gameBoardMode={gameBoardMode}
                   isActive={isActive}
                   isOtherPlayerCard={isOtherPlayerCard}
+                  userRoles={userRoles}
                   onClick={(e) => handlePartClick(e, part.id)}
                   onDragStart={(e) => handlePartDragStart(e, part.id)}
                   onDragMove={(e) => handlePartDragMove(e, part.id)}
