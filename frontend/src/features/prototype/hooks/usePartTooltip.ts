@@ -88,8 +88,10 @@ export const usePartTooltip = ({
     if (typeof window === 'undefined') return;
 
     const tooltipContainer = document.getElementById('tooltip-container');
-    if (tooltipContainer && showTooltip && partInfo) {
-      const tooltip = document.createElement('div');
+    const tooltip = document.createElement('div');
+    if (!tooltipContainer || !tooltip || !showTooltip || !partInfo) return;
+
+    try {
       tooltip.id = `tooltip-${part.id}`;
       tooltip.className =
         'fixed z-[9999] pointer-events-none max-w-xs rounded-lg border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary shadow-lg p-3';
@@ -102,14 +104,16 @@ export const usePartTooltip = ({
       `;
 
       tooltipContainer.appendChild(tooltip);
-
-      return () => {
-        const existingTooltip = document.getElementById(`tooltip-${part.id}`);
-        if (existingTooltip) {
-          existingTooltip.remove();
-        }
-      };
+    } catch (error) {
+      console.error('ツールチップのレンダリングに失敗しました', error);
     }
+
+    return () => {
+      const existingTooltip = document.getElementById(`tooltip-${part.id}`);
+      if (!existingTooltip) return;
+
+      existingTooltip.remove();
+    };
   }, [showTooltip, tooltipPosition, partInfo, part.id]);
 
   // コンポーネントアンマウント時のクリーンアップ
