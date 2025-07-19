@@ -1,5 +1,11 @@
 import Konva from 'konva';
-import React, { useMemo, useRef, useEffect, useState } from 'react';
+import React, {
+  useMemo,
+  useRef,
+  useEffect,
+  useState,
+  useCallback,
+} from 'react';
 import { Group, Rect, Text, Image } from 'react-konva';
 import useImage from 'use-image';
 
@@ -178,6 +184,39 @@ export default function PartOnGameBoard({
     onContextMenu(e, part.id);
   };
 
+  // プレイモードでエリアパーツの場合は移動禁止
+  const isDraggable = !(
+    gameBoardMode === GameBoardMode.PLAY && part.type === 'area'
+  );
+
+  /**
+   * マウスがパーツに乗った時のカーソル変更処理
+   */
+  const handleMouseEnter = useCallback(() => {
+    // Groupの参照が取得できない場合は早期リターン
+    if (!groupRef.current) return;
+
+    const stage = groupRef.current.getStage();
+    // Stageが存在しない場合は早期リターン
+    if (!stage) return;
+
+    stage.container().style.cursor = isDraggable ? 'grab' : 'not-allowed';
+  }, [isDraggable]);
+
+  /**
+   * マウスがパーツから離れた時のカーソル復元処理
+   */
+  const handleMouseLeave = useCallback(() => {
+    // Groupの参照が取得できない場合は早期リターン
+    if (!groupRef.current) return;
+
+    const stage = groupRef.current.getStage();
+    // Stageが存在しない場合は早期リターン
+    if (!stage) return;
+
+    stage.container().style.cursor = 'default';
+  }, []);
+
   return (
     <Group
       ref={groupRef}
@@ -187,8 +226,10 @@ export default function PartOnGameBoard({
       width={part.width}
       height={part.height}
       offsetX={offsetX}
-      draggable
+      draggable={isDraggable}
       scaleX={scaleX}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       onDragStart={handleDragStart}
       onDragMove={(e) => onDragMove(e, part.id)}
       onDragEnd={(e) => onDragEnd(e, part.id)}
