@@ -1,4 +1,4 @@
-import { PartDefaultConfig } from '../type';
+import { PartDefaultConfig } from '@/features/prototype/types';
 
 /**
  * パーツのカラー定義
