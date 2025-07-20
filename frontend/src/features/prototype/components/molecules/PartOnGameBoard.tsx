@@ -17,7 +17,7 @@ import { useCard } from '@/features/prototype/hooks/useCard';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { useDeck } from '@/features/prototype/hooks/useDeck';
 import { usePartTooltip } from '@/features/prototype/hooks/usePartTooltip';
-import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
+import { GameBoardMode } from '@/features/prototype/types';
 
 interface PartOnGameBoardProps {
   part: Part;
