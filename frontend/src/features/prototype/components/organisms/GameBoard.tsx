@@ -22,9 +22,10 @@ import PartPropertySidebar from '@/features/prototype/components/molecules/PartP
 import PlaySidebar from '@/features/prototype/components/molecules/PlaySidebar';
 import RoleMenu from '@/features/prototype/components/molecules/RoleMenu';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
-import { GRID_SIZE, CANVAS_SIZE, SCALE } from '@/features/prototype/constants';
+import { GRID_SIZE } from '@/features/prototype/constants';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { useSocket } from '@/features/prototype/contexts/SocketContext';
+import { useGameCamera } from '@/features/prototype/hooks/useGameCamera';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
 import { useHandVisibility } from '@/features/prototype/hooks/useHandVisibility';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
@@ -62,10 +63,6 @@ export default function GameBoard({
   gameBoardMode,
 }: GameBoardProps) {
   const stageRef = useRef<Konva.Stage | null>(null);
-  const [viewportSize, setViewportSize] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
   const { fetchImage, deleteImage } = useImages();
   const { dispatch } = usePartReducer();
   const { measureOperation } = usePerformanceTracker();
@@ -76,6 +73,21 @@ export default function GameBoard({
     () => Array.from(propertiesMap.values()).flat(),
     [propertiesMap]
   );
+
+  const {
+    canvasSize,
+    viewportSize,
+    camera,
+    handleWheel,
+    handleDragMove,
+    handleZoomIn,
+    handleZoomOut,
+    canZoomIn,
+    canZoomOut,
+  } = useGameCamera({
+    parts,
+    stageRef,
+  });
 
   // 手札の上のカードの表示制御
   const { cardVisibilityMap } = useHandVisibility(parts, gameBoardMode);
@@ -106,185 +118,6 @@ export default function GameBoard({
     isSelectionInProgress,
     isJustFinishedSelection,
   } = useSelection();
-
-  const canvasSize = useMemo(
-    () => ({
-      width: CANVAS_SIZE,
-      height: CANVAS_SIZE,
-    }),
-    []
-  );
-
-  const centerCoords = useMemo(
-    () => ({
-      x: canvasSize.width / 2,
-      y: canvasSize.height / 2,
-    }),
-    [canvasSize]
-  );
-
-  const calculateDynamicMargin = useCallback(
-    (scale: number) => {
-      const baseMargin =
-        Math.min(viewportSize.width, viewportSize.height) * 0.3;
-      return baseMargin / Math.max(scale, 0.5);
-    },
-    [viewportSize]
-  );
-
-  const constrainCamera = useCallback(
-    (x: number, y: number, scale: number) => {
-      const dynamicMargin = calculateDynamicMargin(scale);
-
-      const minX = -dynamicMargin;
-      const maxX =
-        canvasSize.width * scale - viewportSize.width + dynamicMargin;
-      const minY = -dynamicMargin;
-      const maxY =
-        canvasSize.height * scale - viewportSize.height + dynamicMargin;
-
-      const constrainedX = Math.max(minX, Math.min(maxX, x));
-      const constrainedY = Math.max(minY, Math.min(maxY, y));
-
-      return {
-        x: constrainedX,
-        y: constrainedY,
-        scale,
-      };
-    },
-    [viewportSize, canvasSize, calculateDynamicMargin]
-  );
-
-  // 全パーツの平均センター位置を計算する関数
-  const calculateAveragePartsCenter = useCallback((parts: Part[]) => {
-    if (parts.length === 0) return null;
-
-    const totalCenterX = parts.reduce((sum, part) => {
-      return sum + (part.position.x + part.width / 2);
-    }, 0);
-
-    const totalCenterY = parts.reduce((sum, part) => {
-      return sum + (part.position.y + part.height / 2);
-    }, 0);
-
-    return {
-      x: totalCenterX / parts.length,
-      y: totalCenterY / parts.length,
-    };
-  }, []);
-
-  // 初期カメラ位置を計算する関数
-  const calculateInitialCameraPosition = useCallback(
-    (averageCenter: { x: number; y: number }) => {
-      // カメラの中央が全パーツの平均センターになるようにカメラの左上位置を計算
-      const targetX = averageCenter.x * SCALE.DEFAULT - viewportSize.width / 2;
-      const targetY = averageCenter.y * SCALE.DEFAULT - viewportSize.height / 2;
-
-      return constrainCamera(targetX, targetY, SCALE.DEFAULT);
-    },
-    [viewportSize, constrainCamera]
-  );
-
-  // 全パーツの平均センター位置を計算（useMemo で最初の一回だけ計算）
-  const averagePartsCenter = useMemo(() => {
-    return calculateAveragePartsCenter(parts);
-  }, [parts, calculateAveragePartsCenter]);
-
-  const initialCamera = useMemo(() => {
-    if (!averagePartsCenter) {
-      // パーツがない場合はキャンバス中央を表示
-      return {
-        x: centerCoords.x * SCALE.DEFAULT - viewportSize.width / 2,
-        y: centerCoords.y * SCALE.DEFAULT - viewportSize.height / 2,
-        scale: SCALE.DEFAULT,
-      };
-    }
-
-    return calculateInitialCameraPosition(averagePartsCenter);
-  }, [
-    averagePartsCenter,
-    centerCoords,
-    viewportSize,
-    calculateInitialCameraPosition,
-  ]);
-
-  // 初期カメラ位置が変更された場合（partsが読み込まれた場合など）にカメラを更新
-  // ただし、一度初期化されたら以降は自動更新しない
-  const [camera, setCamera] = useState(() => initialCamera);
-  const [hasInitialized, setHasInitialized] = useState(false);
-  useEffect(() => {
-    if (!hasInitialized || parts.length === 0) {
-      setCamera(initialCamera);
-      if (parts.length > 0) {
-        setHasInitialized(true);
-      }
-    }
-  }, [initialCamera, hasInitialized, parts.length]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      const newViewportSize = {
-        width: window.innerWidth,
-        height: window.innerHeight,
-      };
-      setViewportSize(newViewportSize);
-
-      setCamera((prev) => constrainCamera(prev.x, prev.y, prev.scale));
-    };
-    window.addEventListener('resize', handleResize);
-
-    setCamera((prev) => constrainCamera(prev.x, prev.y, prev.scale));
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [constrainCamera]);
-  const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
-    e.evt.preventDefault();
-    // macOSトラックパッドの二本指移動でパン、Ctrlキー押下時はズーム
-    if (!e.evt.ctrlKey && !e.evt.metaKey) {
-      // パン（カメラ移動）
-      const { deltaX, deltaY } = e.evt;
-      setCamera((prev) => {
-        const newX = prev.x + deltaX;
-        const newY = prev.y + deltaY;
-        return constrainCamera(newX, newY, prev.scale);
-      });
-      return;
-    }
-    // ズーム（より滑らかなスケール変更）
-    const scaleBy = 1.02; // より細かいステップでズーム
-    const oldScale = camera.scale;
-    const stage = stageRef.current;
-    const pointer = stage?.getPointerPosition();
-    if (!pointer) return;
-
-    const mousePointTo = {
-      x: (pointer.x + camera.x) / oldScale,
-      y: (pointer.y + camera.y) / oldScale,
-    };
-
-    const direction = e.evt.deltaY > 0 ? -1 : 1;
-    const newScale =
-      direction > 0
-        ? Math.min(oldScale * scaleBy, SCALE.MAX)
-        : Math.max(oldScale / scaleBy, SCALE.MIN);
-
-    const newX = mousePointTo.x * newScale - pointer.x;
-    const newY = mousePointTo.y * newScale - pointer.y;
-
-    setCamera(constrainCamera(newX, newY, newScale));
-  };
-  const handleDragMove = (e: Konva.KonvaEventObject<DragEvent>) => {
-    const { movementX, movementY } = e.evt;
-    setCamera((prev) => {
-      const newX = prev.x - movementX;
-      const newY = prev.y - movementY;
-
-      return constrainCamera(newX, newY, prev.scale);
-    });
-    e.target.position({ x: 0, y: 0 });
-  };
 
   const [selectedPartIds, setSelectedPartIds] = useState<number[]>([]);
   const originalPositionsRef = useRef<Record<number, { x: number; y: number }>>(
@@ -592,44 +425,6 @@ export default function GameBoard({
     setSelectedPartIds([]);
   }, [handleDeleteImage, parts, properties, dispatch, selectedPartIds]);
 
-  const handleZoomIn = useCallback(() => {
-    const scaleBy = 1.1;
-    const oldScale = camera.scale;
-    const newScale = Math.min(oldScale * scaleBy, SCALE.MAX);
-
-    const viewportCenterX = viewportSize.width / 2;
-    const viewportCenterY = viewportSize.height / 2;
-
-    const mousePointTo = {
-      x: (viewportCenterX + camera.x) / oldScale,
-      y: (viewportCenterY + camera.y) / oldScale,
-    };
-
-    const newX = mousePointTo.x * newScale - viewportCenterX;
-    const newY = mousePointTo.y * newScale - viewportCenterY;
-
-    setCamera(constrainCamera(newX, newY, newScale));
-  }, [camera, viewportSize, constrainCamera]);
-
-  const handleZoomOut = useCallback(() => {
-    const scaleBy = 1.1;
-    const oldScale = camera.scale;
-    const newScale = Math.max(oldScale / scaleBy, SCALE.MIN);
-
-    const viewportCenterX = viewportSize.width / 2;
-    const viewportCenterY = viewportSize.height / 2;
-
-    const mousePointTo = {
-      x: (viewportCenterX + camera.x) / oldScale,
-      y: (viewportCenterY + camera.y) / oldScale,
-    };
-
-    const newX = mousePointTo.x * newScale - viewportCenterX;
-    const newY = mousePointTo.y * newScale - viewportCenterY;
-
-    setCamera(constrainCamera(newX, newY, newScale));
-  }, [camera, viewportSize, constrainCamera]);
-
   useEffect(() => {
     if (gameBoardMode !== GameBoardMode.CREATE) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -777,11 +572,11 @@ export default function GameBoard({
       const newY = baseY + deltaY;
 
       return {
-        x: Math.max(0, Math.min(CANVAS_SIZE - partObject.width, newX)),
-        y: Math.max(0, Math.min(CANVAS_SIZE - partObject.height, newY)),
+        x: Math.max(0, Math.min(canvasSize.width - partObject.width, newX)),
+        y: Math.max(0, Math.min(canvasSize.height - partObject.height, newY)),
       };
     },
-    []
+    [canvasSize.height, canvasSize.width]
   );
 
   // 画像IDからURLを取得して配列で返す関数をuseMemoで事前計算
@@ -993,8 +788,8 @@ export default function GameBoard({
       <ZoomToolbar
         zoomIn={handleZoomIn}
         zoomOut={handleZoomOut}
-        canZoomIn={camera.scale < SCALE.MAX}
-        canZoomOut={camera.scale > SCALE.MIN}
+        canZoomIn={canZoomIn}
+        canZoomOut={canZoomOut}
         zoomLevel={camera.scale}
       />
 
