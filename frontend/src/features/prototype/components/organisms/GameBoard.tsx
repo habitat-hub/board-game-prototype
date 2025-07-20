@@ -24,10 +24,12 @@ import RoleMenu from '@/features/prototype/components/molecules/RoleMenu';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
 import { GRID_SIZE } from '@/features/prototype/constants';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
+import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
 import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { useGameCamera } from '@/features/prototype/hooks/useGameCamera';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
 import { useHandVisibility } from '@/features/prototype/hooks/useHandVisibility';
+import { usePartDragSystem } from '@/features/prototype/hooks/usePartDragSystem';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { useSelection } from '@/features/prototype/hooks/useSelection';
@@ -68,12 +70,22 @@ export default function GameBoard({
   const { measureOperation } = usePerformanceTracker();
   const [images, setImages] = useState<Record<string, string>>({});
 
+  // 選択中のパーツ、および選択処理
+  const {
+    selectedPartIds,
+    selectPart,
+    selectMultipleParts,
+    clearSelection,
+    togglePartSelection,
+  } = useSelectedParts();
+
   const parts = useMemo(() => Array.from(partsMap.values()), [partsMap]);
   const properties = useMemo(
     () => Array.from(propertiesMap.values()).flat(),
     [propertiesMap]
   );
 
+  // カメラ機能
   const {
     canvasSize,
     viewportSize,
@@ -88,6 +100,25 @@ export default function GameBoard({
     parts,
     stageRef,
   });
+  // 複数パーツ選択機能
+  const {
+    isSelectionMode,
+    rectForSelection,
+    handleSelectionStart,
+    handleSelectionMove,
+    handleSelectionEnd,
+    toggleMode,
+    isSelectionInProgress,
+    isJustFinishedSelection,
+  } = useSelection();
+  // ドラッグ機能
+  const { handlePartDragStart, handlePartDragMove, handlePartDragEnd } =
+    usePartDragSystem({
+      parts,
+      canvasSize,
+      gameBoardMode,
+      stageRef: stageRef as React.RefObject<Konva.Stage>,
+    });
 
   // 手札の上のカードの表示制御
   const { cardVisibilityMap } = useHandVisibility(parts, gameBoardMode);
@@ -107,26 +138,6 @@ export default function GameBoard({
   const [needToReturnToSelectionMode, setNeedToReturnToSelectionMode] =
     useState(false);
 
-  // 選択機能
-  const {
-    isSelectionMode,
-    selectionRect,
-    handleSelectionStart,
-    handleSelectionMove,
-    handleSelectionEnd,
-    toggleMode,
-    isSelectionInProgress,
-    isJustFinishedSelection,
-  } = useSelection();
-
-  const [selectedPartIds, setSelectedPartIds] = useState<number[]>([]);
-  const originalPositionsRef = useRef<Record<number, { x: number; y: number }>>(
-    {}
-  );
-
-  const toggleIdInArray = (arr: number[], id: number) =>
-    arr.includes(id) ? arr.filter((v) => v !== id) : [...arr, id];
-
   const handlePartClick = (
     e: Konva.KonvaEventObject<MouseEvent>,
     partId: number
@@ -137,9 +148,11 @@ export default function GameBoard({
       handleCloseContextMenu();
     }
     const isShift = (e.evt as MouseEvent).shiftKey;
-    setSelectedPartIds((prev) =>
-      isShift ? toggleIdInArray(prev, partId) : [partId]
-    );
+    if (isShift) {
+      togglePartSelection(partId);
+    } else {
+      selectMultipleParts([partId]);
+    }
   };
 
   const handlePartContextMenu = (
@@ -211,166 +224,23 @@ export default function GameBoard({
     setContextMenuPartId(null);
   }, []);
 
-  const handlePartDragStart = (
-    e: Konva.KonvaEventObject<DragEvent>,
-    partId: number
-  ) => {
-    if (gameBoardMode === GameBoardMode.PREVIEW) return;
-    e.cancelBubble = true;
-    const newSelected = selectedPartIds.includes(partId)
-      ? selectedPartIds
-      : [partId];
-    setSelectedPartIds(newSelected);
-    originalPositionsRef.current = {};
-    newSelected.forEach((id) => {
-      const p = parts.find((pt) => pt.id === id);
-      if (p) {
-        originalPositionsRef.current[id] = {
-          x: p.position.x,
-          y: p.position.y,
-        };
-      }
-    });
-  };
-
-  const handlePartDragMove = (
-    e: Konva.KonvaEventObject<DragEvent>,
-    partId: number
-  ) => {
-    const originals = originalPositionsRef.current;
-    const orig = originals[partId];
-    if (!orig) return;
-    const pos = e.target.position();
-
-    const targetPart = parts.find((p) => p.id === partId);
-    if (!targetPart) return;
-
-    const offsetX = targetPart.width / 2;
-    const dx = pos.x - offsetX - orig.x;
-    const dy = pos.y - orig.y;
-    const stage = stageRef.current;
-    if (!stage) return;
-
-    const constrainedPos = constrainWithinCanvas(
-      targetPart,
-      orig.x,
-      orig.y,
-      dx,
-      dy
-    );
-    const constrainedDx = constrainedPos.x - orig.x;
-    const constrainedDy = constrainedPos.y - orig.y;
-
-    selectedPartIds.forEach((id) => {
-      if (id === partId) return;
-      const node = stage.findOne(`.part-${id}`) as Konva.Node;
-      const origPos = originals[id];
-      if (node && origPos) {
-        const otherPart = parts.find((p) => p.id === id);
-        if (otherPart) {
-          const otherOffsetX = otherPart.width / 2;
-
-          const otherConstrainedPos = constrainWithinCanvas(
-            otherPart,
-            origPos.x,
-            origPos.y,
-            constrainedDx,
-            constrainedDy
-          );
-
-          node.position({
-            x: otherConstrainedPos.x + otherOffsetX,
-            y: otherConstrainedPos.y,
-          });
-        }
-      }
-    });
-
-    e.target.position({
-      x: constrainedPos.x + offsetX,
-      y: constrainedPos.y,
-    });
-
-    stage.batchDraw();
-  };
-
-  const handlePartDragEnd = (
-    e: Konva.KonvaEventObject<DragEvent>,
-    partId: number
-  ) => {
-    if (gameBoardMode === GameBoardMode.PREVIEW) return;
-
-    measureOperation('Part Drag Update', () => {
-      const position = e.target.position();
-      const originals = originalPositionsRef.current;
-      const orig = originals[partId];
-      if (!orig) return;
-
-      const targetPart = parts.find((p) => p.id === partId);
-      if (!targetPart) return;
-
-      const offsetX = targetPart.width / 2;
-      const dx = position.x - offsetX - orig.x;
-      const dy = position.y - orig.y;
-
-      const constrainedPos = constrainWithinCanvas(
-        targetPart,
-        orig.x,
-        orig.y,
-        dx,
-        dy
-      );
-      const constrainedDx = constrainedPos.x - orig.x;
-      const constrainedDy = constrainedPos.y - orig.y;
-
-      Object.entries(originals).forEach(([idStr, { x, y }]) => {
-        const id = Number(idStr);
-        const part = parts.find((p) => p.id === id);
-        if (!part) return;
-
-        const partConstrainedPos = constrainWithinCanvas(
-          part,
-          x,
-          y,
-          constrainedDx,
-          constrainedDy
-        );
-
-        dispatch({
-          type: 'UPDATE_PART',
-          payload: {
-            partId: id,
-            updatePart: {
-              position: {
-                x: Math.round(partConstrainedPos.x),
-                y: Math.round(partConstrainedPos.y),
-              },
-            },
-          },
-        });
-      });
-
-      originalPositionsRef.current = {};
-    });
-  };
-
   const handleBackgroundClick = () => {
     // 矩形選択中の場合は背景クリックを無効化
-    if (isSelectionInProgress()) {
+    if (isSelectionInProgress) {
       return;
     }
     // 矩形選択完了直後の場合は背景クリックを無効化
-    if (isJustFinishedSelection()) {
+    if (isJustFinishedSelection) {
       return;
     }
     // パーツの選択を解除
-    setSelectedPartIds([]);
+    clearSelection();
   };
 
   const handleAddPart = useCallback(
     ({ part, properties }: AddPartProps) => {
       measureOperation('Part Addition', () => {
-        setSelectedPartIds([]);
+        clearSelection();
 
         dispatch({
           type: 'ADD_PART',
@@ -378,7 +248,7 @@ export default function GameBoard({
         });
       });
     },
-    [dispatch, measureOperation]
+    [clearSelection, dispatch, measureOperation]
   );
 
   const handleDeleteImage = useCallback(
@@ -422,8 +292,15 @@ export default function GameBoard({
     selectedPartIds.forEach((partId) => {
       dispatch({ type: 'DELETE_PART', payload: { partId } });
     });
-    setSelectedPartIds([]);
-  }, [handleDeleteImage, parts, properties, dispatch, selectedPartIds]);
+    clearSelection();
+  }, [
+    selectedPartIds,
+    clearSelection,
+    parts,
+    properties,
+    handleDeleteImage,
+    dispatch,
+  ]);
 
   useEffect(() => {
     if (gameBoardMode !== GameBoardMode.CREATE) return;
@@ -545,7 +422,7 @@ export default function GameBoard({
   const handleStageClick = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
       // 矩形選択中の場合はStageクリックを無効化
-      if (isSelectionInProgress()) {
+      if (isSelectionInProgress) {
         return;
       }
       if (showContextMenu) {
@@ -558,26 +435,6 @@ export default function GameBoard({
   );
 
   const { isGrabbing, eventHandlers: grabbingHandlers } = useGrabbingCursor();
-
-  // パーツの位置をキャンバス内に制限する関数
-  const constrainWithinCanvas = useCallback(
-    (
-      partObject: Part,
-      baseX: number,
-      baseY: number,
-      deltaX: number,
-      deltaY: number
-    ) => {
-      const newX = baseX + deltaX;
-      const newY = baseY + deltaY;
-
-      return {
-        x: Math.max(0, Math.min(canvasSize.width - partObject.width, newX)),
-        y: Math.max(0, Math.min(canvasSize.height - partObject.height, newY)),
-      };
-    },
-    [canvasSize.height, canvasSize.width]
-  );
 
   // 画像IDからURLを取得して配列で返す関数をuseMemoで事前計算
   const filteredImagesMap = useMemo(() => {
@@ -620,14 +477,14 @@ export default function GameBoard({
   useEffect(() => {
     // パーツ追加時に自分の追加したパーツを選択状態にする
     const handleAddPartResponse = (data: { partId: number }) => {
-      setSelectedPartIds([data.partId]);
+      selectPart(data.partId);
     };
     if (!socket) return;
     socket.on('ADD_PART_RESPONSE', handleAddPartResponse);
     return () => {
       socket.off('ADD_PART_RESPONSE', handleAddPartResponse);
     };
-  }, [socket]);
+  }, [socket, selectPart]);
 
   // カーソルのスタイル
   const cursorStyle = useMemo(() => {
@@ -681,7 +538,12 @@ export default function GameBoard({
                     onMouseMove: (e: Konva.KonvaEventObject<MouseEvent>) =>
                       handleSelectionMove(e, camera),
                     onMouseUp: (e: Konva.KonvaEventObject<MouseEvent>) =>
-                      handleSelectionEnd(e, parts, setSelectedPartIds),
+                      handleSelectionEnd(
+                        e,
+                        parts,
+                        selectMultipleParts,
+                        clearSelection
+                      ),
                   }
                 : {})}
             />
@@ -727,11 +589,11 @@ export default function GameBoard({
             })}
             {/* 選択モード時の矩形選択表示 */}
             <SelectionRect
-              x={selectionRect.x}
-              y={selectionRect.y}
-              width={selectionRect.width}
-              height={selectionRect.height}
-              visible={isSelectionMode && selectionRect.visible}
+              x={rectForSelection.x}
+              y={rectForSelection.y}
+              width={rectForSelection.width}
+              height={rectForSelection.height}
+              visible={isSelectionMode && rectForSelection.visible}
             />
           </Group>
         </Layer>
@@ -777,7 +639,7 @@ export default function GameBoard({
       {gameBoardMode === GameBoardMode.PLAY && (
         <PlaySidebar
           parts={parts}
-          onSelectPart={(partId) => setSelectedPartIds([partId])}
+          onSelectPart={(partId) => selectPart(partId)}
           selectedPartId={
             selectedPartIds.length === 1 ? selectedPartIds[0] : null
           }
