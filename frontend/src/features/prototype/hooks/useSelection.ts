@@ -1,5 +1,5 @@
 import type { KonvaEventObject } from 'konva/lib/Node';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { Part } from '@/api/types';
 import { isRectOverlap } from '@/features/prototype/utils/overlap';
@@ -19,19 +19,23 @@ interface Camera {
 }
 
 export function useSelection() {
+  // 複数選択可能モード
   const [isSelectionMode, setIsSelectionMode] = useState<boolean>(true);
-  const [selectionRect, setSelectionRect] = useState<SelectionRect>({
+  // 複数選択用の矩形
+  const [rectForSelection, setRectForSelection] = useState<SelectionRect>({
     x: 0,
     y: 0,
     width: 0,
     height: 0,
     visible: false,
   });
+  // 選択開始座標
   const selectionStartRef = useRef<{ x: number; y: number } | null>(null);
+  // 選択終了フラグ
   const justFinishedSelectionRef = useRef<boolean>(false);
 
   // Stage座標→カメラ考慮のキャンバス座標に変換
-  const toCanvasCoords = useCallback(
+  const convertToCanvasCoords = useCallback(
     (stageX: number, stageY: number, camera: Camera) => {
       return {
         x: (stageX + camera.x) / camera.scale,
@@ -50,11 +54,11 @@ export function useSelection() {
       const pos = e.target.getStage()?.getPointerPosition();
       if (!pos) return;
 
-      const { x, y } = toCanvasCoords(pos.x, pos.y, camera);
+      const { x, y } = convertToCanvasCoords(pos.x, pos.y, camera);
       selectionStartRef.current = { x, y };
-      setSelectionRect({ x, y, width: 0, height: 0, visible: true });
+      setRectForSelection({ x, y, width: 0, height: 0, visible: true });
     },
-    [isSelectionMode, toCanvasCoords]
+    [isSelectionMode, convertToCanvasCoords]
   );
 
   // 選択中の移動
@@ -65,7 +69,7 @@ export function useSelection() {
       const pos = e.target.getStage()?.getPointerPosition();
       if (!pos) return;
 
-      const { x, y } = toCanvasCoords(pos.x, pos.y, camera);
+      const { x, y } = convertToCanvasCoords(pos.x, pos.y, camera);
       const start = selectionStartRef.current;
       const rect = {
         x: Math.min(start.x, x),
@@ -74,9 +78,9 @@ export function useSelection() {
         height: Math.abs(y - start.y),
         visible: true,
       };
-      setSelectionRect(rect);
+      setRectForSelection(rect);
     },
-    [isSelectionMode, toCanvasCoords]
+    [isSelectionMode, convertToCanvasCoords]
   );
 
   // 選択終了
@@ -84,13 +88,14 @@ export function useSelection() {
     (
       e: KonvaEventObject<MouseEvent>,
       parts: Part[],
-      onPartsSelected: (partIds: number[]) => void
+      onPartsSelected: (partIds: number[]) => void,
+      onClearSelection: () => void
     ) => {
       if (!isSelectionMode || !selectionStartRef.current) return;
 
       e.cancelBubble = true;
 
-      const rect = selectionRect;
+      const rect = rectForSelection;
       if (rect.width > 0 && rect.height > 0) {
         const selected = parts.filter((part) => {
           const partRect = {
@@ -105,24 +110,21 @@ export function useSelection() {
         onPartsSelected(newSelectedIds);
         justFinishedSelectionRef.current = true;
       } else {
+        onClearSelection();
         justFinishedSelectionRef.current = false;
       }
 
-      setSelectionRect((r) => ({ ...r, visible: false }));
+      setRectForSelection((r) => ({ ...r, visible: false }));
       selectionStartRef.current = null;
     },
-    [isSelectionMode, selectionRect]
+    [isSelectionMode, rectForSelection]
   );
 
   const toggleMode = useCallback(() => {
     setIsSelectionMode((prev) => !prev);
   }, []);
 
-  const isSelectionInProgress = useCallback(() => {
-    return selectionStartRef.current !== null;
-  }, []);
-
-  const isJustFinishedSelection = useCallback(() => {
+  const isJustFinishedSelection = useMemo(() => {
     const result = justFinishedSelectionRef.current;
     if (result) {
       justFinishedSelectionRef.current = false;
@@ -131,18 +133,13 @@ export function useSelection() {
   }, []);
 
   return {
-    // States
     isSelectionMode,
-    selectionRect,
-
-    // Handlers
+    rectForSelection,
+    isSelectionInProgress: selectionStartRef.current !== null,
+    isJustFinishedSelection,
     handleSelectionStart,
     handleSelectionMove,
     handleSelectionEnd,
     toggleMode,
-
-    // Utilities
-    isSelectionInProgress,
-    isJustFinishedSelection,
   };
 }
