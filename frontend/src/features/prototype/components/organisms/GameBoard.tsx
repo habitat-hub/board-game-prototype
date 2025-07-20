@@ -25,7 +25,6 @@ import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
 import { GRID_SIZE } from '@/features/prototype/constants';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
-import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { useGameCamera } from '@/features/prototype/hooks/useGameCamera';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
 import { useHandVisibility } from '@/features/prototype/hooks/useHandVisibility';
@@ -68,7 +67,17 @@ export default function GameBoard({
   const { fetchImage, deleteImage } = useImages();
   const { dispatch } = usePartReducer();
   const { measureOperation } = usePerformanceTracker();
-  const [images, setImages] = useState<Record<string, string>>({});
+  const { isGrabbing, eventHandlers: grabbingHandlers } = useGrabbingCursor();
+
+  const parts = useMemo(() => Array.from(partsMap.values()), [partsMap]);
+  const properties = useMemo(
+    () => Array.from(propertiesMap.values()).flat(),
+    [propertiesMap]
+  );
+  // 手札の上のカードの表示制御
+  const { cardVisibilityMap } = useHandVisibility(parts, gameBoardMode);
+  // ロール管理情報を取得
+  const { userRoles } = useRoleManagement(projectId);
 
   // 選択中のパーツ、および選択処理
   const {
@@ -78,12 +87,6 @@ export default function GameBoard({
     clearSelection,
     togglePartSelection,
   } = useSelectedParts();
-
-  const parts = useMemo(() => Array.from(partsMap.values()), [partsMap]);
-  const properties = useMemo(
-    () => Array.from(propertiesMap.values()).flat(),
-    [propertiesMap]
-  );
 
   // カメラ機能
   const {
@@ -120,18 +123,12 @@ export default function GameBoard({
       stageRef: stageRef as React.RefObject<Konva.Stage>,
     });
 
-  // 手札の上のカードの表示制御
-  const { cardVisibilityMap } = useHandVisibility(parts, gameBoardMode);
-
-  // ロール管理情報を取得
-  const { userRoles } = useRoleManagement(projectId);
-
+  const [images, setImages] = useState<Record<string, string>>({});
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [contextMenuPartId, setContextMenuPartId] = useState<number | null>(
     null
   );
-
   // スペースキー押下しているか
   const [spacePressing, setSpacePressing] = useState(false);
   // 選択モードへの復帰が必要か
@@ -416,8 +413,6 @@ export default function GameBoard({
     };
   }, [fetchImage, properties]);
 
-  const { socket } = useSocket();
-
   // Stage全体のクリックイベントハンドラー
   const handleStageClick = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -433,8 +428,6 @@ export default function GameBoard({
     },
     [showContextMenu, handleCloseContextMenu, isSelectionInProgress]
   );
-
-  const { isGrabbing, eventHandlers: grabbingHandlers } = useGrabbingCursor();
 
   // 画像IDからURLを取得して配列で返す関数をuseMemoで事前計算
   const filteredImagesMap = useMemo(() => {
@@ -461,30 +454,6 @@ export default function GameBoard({
   const sortedParts = useMemo(() => {
     return [...parts].sort((a, b) => a.order - b.order);
   }, [parts]);
-
-  // パーツのプロパティマップをメモ化
-  const partPropertiesMap = useMemo(() => {
-    const map: Record<number, PartProperty[]> = {};
-    properties.forEach((property) => {
-      if (!map[property.partId]) {
-        map[property.partId] = [];
-      }
-      map[property.partId].push(property);
-    });
-    return map;
-  }, [properties]);
-
-  useEffect(() => {
-    // パーツ追加時に自分の追加したパーツを選択状態にする
-    const handleAddPartResponse = (data: { partId: number }) => {
-      selectPart(data.partId);
-    };
-    if (!socket) return;
-    socket.on('ADD_PART_RESPONSE', handleAddPartResponse);
-    return () => {
-      socket.off('ADD_PART_RESPONSE', handleAddPartResponse);
-    };
-  }, [socket, selectPart]);
 
   // カーソルのスタイル
   const cursorStyle = useMemo(() => {
@@ -558,7 +527,7 @@ export default function GameBoard({
 
             {/* パーツの表示 */}
             {sortedParts.map((part) => {
-              const partProperties = partPropertiesMap[part.id] || [];
+              const partProperties = propertiesMap.get(part.id) || [];
               const filteredImages = filteredImagesMap[part.id] || [];
               const isActive = selectedPartIds.includes(part.id);
 

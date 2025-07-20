@@ -15,7 +15,7 @@ import ShuffleIcon from '@/features/prototype/components/atoms/ShuffleIcon';
 import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { useCard } from '@/features/prototype/hooks/useCard';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
-import { useDeck } from '@/features/prototype/hooks/useDeck';
+import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePartTooltip } from '@/features/prototype/hooks/usePartTooltip';
 import { GameBoardMode } from '@/features/prototype/types';
 
@@ -62,7 +62,7 @@ export default function PartOnGameBoard({
 }: PartOnGameBoardProps) {
   const groupRef = useRef<Konva.Group>(null);
   const { isReversing, setIsReversing, reverseCard } = useCard(part);
-  const { shuffleDeck } = useDeck(part);
+  const { dispatch } = usePartReducer();
   const [scaleX, setScaleX] = useState(1);
   const { showDebugInfo } = useDebugMode();
   const { socket } = useSocket();
@@ -183,7 +183,7 @@ export default function PartOnGameBoard({
     if (!isInteractivePart) return;
 
     if (isDeck) {
-      shuffleDeck();
+      dispatch({ type: 'SHUFFLE_DECK', payload: { deckId: part.id } });
       return;
     }
 
