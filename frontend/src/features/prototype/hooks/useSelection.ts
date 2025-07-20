@@ -1,3 +1,6 @@
+/**
+ * @page ドラッグによる複数選択機能を管理するカスタムフック
+ */
 import type { KonvaEventObject } from 'konva/lib/Node';
 import { useCallback, useMemo, useRef, useState } from 'react';
 

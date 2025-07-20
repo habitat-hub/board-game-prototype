@@ -1,3 +1,6 @@
+/**
+ * @page ソケット通信の設定を行うカスタムフック
+ */
 import { useCallback, useEffect, useState } from 'react';
 
 import { Part, PartProperty } from '@/api/types';
