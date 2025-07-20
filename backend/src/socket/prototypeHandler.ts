@@ -125,11 +125,23 @@ function handleAddPart(socket: Socket, io: Server) {
           });
         });
 
-        const newProperties = await Promise.all(propertyCreationPromises);
+        await Promise.all(propertyCreationPromises);
+
+        // 作成されたプロパティを画像データを含めて再取得
+        const newPropertiesWithImages = await PartPropertyModel.findAll({
+          where: { partId: newPart.id },
+          include: [
+            {
+              model: ImageModel,
+              required: false, // LEFT JOIN
+              as: 'image',
+            },
+          ],
+        });
 
         io.to(prototypeId).emit('ADD_PART', {
           part: newPart,
-          properties: newProperties,
+          properties: newPropertiesWithImages,
         });
 
         // 新しいパーツのIDをクライアントに送信
