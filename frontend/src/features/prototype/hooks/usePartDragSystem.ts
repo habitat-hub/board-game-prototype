@@ -1,3 +1,6 @@
+/**
+ * @page パーツのドラッグを管理するカスタムフック
+ */
 import Konva from 'konva';
 import { useCallback, useRef } from 'react';
 

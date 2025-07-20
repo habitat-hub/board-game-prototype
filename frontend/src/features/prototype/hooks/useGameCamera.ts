@@ -1,3 +1,6 @@
+/**
+ * @page ゲームボードのカメラ制御を管理するカスタムフック
+ */
 import Konva from 'konva';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
