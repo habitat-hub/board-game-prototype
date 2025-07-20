@@ -77,15 +77,17 @@ export const usePartDragSystem = ({
       selectMultipleParts(newSelected);
 
       // 元位置の記録
-      const newOriginalPositions = newSelected.reduce(
-        (acc, id) => {
-          const part = parts.find((pt) => pt.id === id);
-          return part
-            ? { ...acc, [id]: { x: part.position.x, y: part.position.y } }
-            : acc;
-        },
-        {} as Record<number, { x: number; y: number }>
-      );
+      /**
+       * NOTE: reduceだと手続き的な書き方にはならないが、計算量がO(n2)になるので、
+       * 手続き的な書き方にしている。
+       */
+      const newOriginalPositions: Record<number, { x: number; y: number }> = {};
+      newSelected.forEach((id) => {
+        const part = parts.find((pt) => pt.id === id);
+        if (!part) return;
+
+        newOriginalPositions[id] = { x: part.position.x, y: part.position.y };
+      });
       originalPositionsRef.current = newOriginalPositions;
     },
     [gameBoardMode, selectedPartIds, selectMultipleParts, parts]
@@ -199,38 +201,37 @@ export const usePartDragSystem = ({
           partCurrentPosition.x - offsetX - partOriginalPosition.x;
         const originalDy = partCurrentPosition.y - partOriginalPosition.y;
 
-        const updatePartsData = Object.entries(originalPositions).reduce(
-          (acc, [idStr, { x, y }]) => {
-            const id = Number(idStr);
-            const part = parts.find((p) => p.id === id);
-            if (!part) return acc;
+        /**
+         * NOTE: reduceだと手続き的な書き方にはならないが、計算量がO(n2)になるので、
+         * 手続き的な書き方にしている。
+         */
+        const updatePartsData: Array<{
+          partId: number;
+          updatePart: { position: { x: number; y: number } };
+        }> = [];
+        Object.entries(originalPositions).forEach(([idStr, { x, y }]) => {
+          const id = Number(idStr);
+          const part = parts.find((p) => p.id === id);
+          if (!part) return;
 
-            // 各パーツごとに元の移動量で制約を適用
-            const newPosition = getConstrainedPosition(
-              part,
-              x,
-              y,
-              originalDx,
-              originalDy
-            );
-            return [
-              ...acc,
-              {
-                partId: id,
-                updatePart: {
-                  position: {
-                    x: Math.round(newPosition.x),
-                    y: Math.round(newPosition.y),
-                  },
-                },
+          // 各パーツごとに元の移動量で制約を適用
+          const newPosition = getConstrainedPosition(
+            part,
+            x,
+            y,
+            originalDx,
+            originalDy
+          );
+          updatePartsData.push({
+            partId: id,
+            updatePart: {
+              position: {
+                x: Math.round(newPosition.x),
+                y: Math.round(newPosition.y),
               },
-            ];
-          },
-          [] as {
-            partId: number;
-            updatePart: { position: { x: number; y: number } };
-          }[]
-        );
+            },
+          });
+        });
 
         // 副作用：状態更新をまとめて実行
         updatePartsData.forEach((updateData) => {
