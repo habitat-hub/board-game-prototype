@@ -66,7 +66,9 @@ export default function GameBoard({
   gameBoardMode,
 }: GameBoardProps) {
   const stageRef = useRef<Konva.Stage | null>(null);
+  // 前回のレンダリング時の画像IDを保持するref
   const prevImageRef = useRef<string[]>([]);
+  // 使用されなくなった画像IDを保持するref
   const unusedImageRef = useRef<string[]>([]);
   const { fetchImage, deleteImage } = useImages();
   const { dispatch } = usePartReducer();
