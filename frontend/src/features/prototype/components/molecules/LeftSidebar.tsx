@@ -8,7 +8,9 @@ import { MdMeetingRoom, MdDelete } from 'react-icons/md';
 
 import { useProject } from '@/api/hooks/useProject';
 import { Prototype, ProjectsDetailData } from '@/api/types';
+import { useProjectSocket } from '@/features/prototype/hooks/useProjectSocket';
 import { GameBoardMode } from '@/features/prototype/types';
+import { useUser } from '@/hooks/useUser';
 import formatDate from '@/utils/dateFormat';
 
 import GameBoardInstructionPanel from './GameBoardInstructionPanel';
@@ -23,6 +25,7 @@ export default function LeftSidebar({
   projectId: string;
 }) {
   const router = useRouter();
+  const { user } = useUser();
   const { getProject, createPrototypeVersion, deletePrototypeVersion } =
     useProject();
 
@@ -70,6 +73,52 @@ export default function LeftSidebar({
     }
   }, [getProject, projectId]);
 
+  /**
+   * ルーム作成時のコールバック（差分更新）
+   */
+  const handleRoomCreated = useCallback(
+    (version: Prototype, instance: Prototype) => {
+      setProject((prevProject) => {
+        if (!prevProject) return prevProject;
+
+        return {
+          ...prevProject,
+          prototypes: [...(prevProject.prototypes || []), version, instance],
+        };
+      });
+    },
+    []
+  );
+
+  /**
+   * ルーム削除時のコールバック（差分更新）
+   */
+  const handleRoomDeleted = useCallback(
+    (deletedVersionId: string, deletedInstanceIds: string[]) => {
+      setProject((prevProject) => {
+        if (!prevProject) return prevProject;
+
+        return {
+          ...prevProject,
+          prototypes: (prevProject.prototypes || []).filter(
+            (prototype) =>
+              prototype.id !== deletedVersionId &&
+              !deletedInstanceIds.includes(prototype.id)
+          ),
+        };
+      });
+    },
+    []
+  );
+
+  // プロジェクトレベルのSocket通信設定
+  useProjectSocket({
+    projectId,
+    userId: user?.id || '',
+    onRoomCreated: handleRoomCreated,
+    onRoomDeleted: handleRoomDeleted,
+  });
+
   // プロトタイプを取得する
   useEffect(() => {
     getPrototypes();
@@ -90,7 +139,6 @@ export default function LeftSidebar({
         console.error('Version or instance creation failed');
         return;
       }
-      await getPrototypes();
     } catch (error) {
       console.error('Error creating room:', error);
     } finally {
@@ -119,7 +167,6 @@ export default function LeftSidebar({
 
       // バージョン削除API（バージョンIDを指定してバージョンとインスタンスを一緒に削除）
       await deletePrototypeVersion(projectId, versionId);
-      await getPrototypes();
     } catch (error) {
       console.error('Error deleting room:', error);
     }
