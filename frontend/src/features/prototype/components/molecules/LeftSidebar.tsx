@@ -37,17 +37,24 @@ export default function LeftSidebar({
     ({ type }) => type === 'MASTER'
   );
 
-  // 戻るボタンの処理
+  /**
+   * 戻るボタンの処理
+   * モードに応じて適切なページに遷移する
+   */
   const handleBack = () => {
+    // 作成モードの場合はプロジェクト一覧に戻る
     if (gameBoardMode === GameBoardMode.CREATE) {
       router.push('/projects');
-    } else {
-      if (masterPrototype) {
+      return;
+    }
+    // プレビューまたはプレイモードの場合はマスタープロトタイプに戻る
+    if (
+      gameBoardMode === GameBoardMode.PLAY ||
+      gameBoardMode === GameBoardMode.PREVIEW
+    ) {
+      masterPrototype &&
         router.push(`/projects/${projectId}/prototypes/${masterPrototype.id}`);
-      } else {
-        // MASTERが見つからない場合はprojectsページに戻る
-        router.push('/projects');
-      }
+      return;
     }
   };
 
