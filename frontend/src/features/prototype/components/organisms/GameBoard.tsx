@@ -43,6 +43,7 @@ import { useRoleManagement } from '@/features/role/hooks/useRoleManagement';
 import {
   getImageFromIndexedDb,
   resetImageParamsInIndexedDb,
+  revokeMultipleObjectURLsAndCleanCache,
   saveImageToIndexedDb,
   updateImageParamsInIndexedDb,
 } from '@/utils/db';
@@ -65,6 +66,8 @@ export default function GameBoard({
   gameBoardMode,
 }: GameBoardProps) {
   const stageRef = useRef<Konva.Stage | null>(null);
+  const prevImageRef = useRef<string[]>([]);
+  const unusedImageRef = useRef<string[]>([]);
   const { fetchImage, deleteImage } = useImages();
   const { dispatch } = usePartReducer();
   const { measureOperation } = usePerformanceTracker();
@@ -373,12 +376,17 @@ export default function GameBoard({
   }, [spacePressing, isSelectionMode, needToReturnToSelectionMode, toggleMode]);
 
   useEffect(() => {
-    let urlsToRevoke: string[] = [];
-
     const loadImages = async () => {
       const uniqueImageIds = Array.from(
         new Set(properties.map((property) => property.imageId).filter(Boolean))
       ) as string[];
+
+      // 前回の画像IDと今回の画像IDを比較し、使われていない画像をメモリ開放対象とする
+      const prevImageIds = prevImageRef.current;
+      unusedImageRef.current = prevImageIds.filter(
+        (id) => !uniqueImageIds.includes(id)
+      );
+      prevImageRef.current = uniqueImageIds;
 
       const imageResultsRaw = await Promise.all(
         uniqueImageIds.map(async (imageId) => {
@@ -405,14 +413,15 @@ export default function GameBoard({
         newImages[imageId] = url;
       });
       setImages(newImages);
-
-      urlsToRevoke = imageResults ? imageResults.map(({ url }) => url) : [];
     };
 
     loadImages();
 
     return () => {
-      urlsToRevoke.forEach((url) => URL.revokeObjectURL(url));
+      const idsToRevoke = unusedImageRef.current;
+      if (idsToRevoke.length > 0) {
+        revokeMultipleObjectURLsAndCleanCache(idsToRevoke);
+      }
     };
   }, [fetchImage, properties]);
 
