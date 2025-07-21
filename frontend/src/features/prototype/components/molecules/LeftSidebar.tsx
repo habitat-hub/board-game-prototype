@@ -7,7 +7,7 @@ import { IoArrowBack, IoMenu, IoAdd } from 'react-icons/io5';
 import { MdMeetingRoom, MdDelete } from 'react-icons/md';
 
 import { useProject } from '@/api/hooks/useProject';
-import { Prototype } from '@/api/types';
+import { Prototype, ProjectsDetailData } from '@/api/types';
 import { GameBoardMode } from '@/features/prototype/types';
 import formatDate from '@/utils/dateFormat';
 
@@ -27,22 +27,44 @@ export default function LeftSidebar({
     useProject();
 
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
-  const [instances, setInstances] = useState<Prototype[]>([]);
+  const [project, setProject] = useState<ProjectsDetailData | null>(null);
   const [isRoomCreating, setIsRoomCreating] = useState(false);
+
+  // プロジェクトデータから必要な情報を取得
+  const instancePrototypes: Prototype[] =
+    project?.prototypes?.filter(({ type }) => type === 'INSTANCE') || [];
+  const masterPrototype: Prototype | undefined = project?.prototypes?.find(
+    ({ type }) => type === 'MASTER'
+  );
+
+  /**
+   * 戻るボタンの処理
+   * モードに応じて適切なページに遷移する
+   */
+  const handleBack = () => {
+    // 作成モードの場合はプロジェクト一覧に戻る
+    if (gameBoardMode === GameBoardMode.CREATE) {
+      router.push('/projects');
+      return;
+    }
+    // プレビューまたはプレイモードの場合はマスタープロトタイプに戻る
+    if (
+      gameBoardMode === GameBoardMode.PLAY ||
+      gameBoardMode === GameBoardMode.PREVIEW
+    ) {
+      masterPrototype &&
+        router.push(`/projects/${projectId}/prototypes/${masterPrototype.id}`);
+      return;
+    }
+  };
 
   /**
    * プロトタイプを取得する
    */
   const getPrototypes = useCallback(async () => {
     try {
-      const project = await getProject(projectId);
-
-      // インスタンス版プロトタイプのみを取得
-      const instancePrototypes = project.prototypes.filter(
-        ({ type }) => type === 'INSTANCE'
-      );
-
-      setInstances(instancePrototypes);
+      const projectData = await getProject(projectId);
+      setProject(projectData);
     } catch (error) {
       console.error('Error fetching prototypes:', error);
     }
@@ -82,7 +104,7 @@ export default function LeftSidebar({
 
     try {
       // インスタンスから対応するバージョンを見つける
-      const instance = instances.find((i) => i.id === instanceId);
+      const instance = instancePrototypes.find((i) => i.id === instanceId);
       if (!instance) {
         console.error('Instance not found');
         return;
@@ -132,7 +154,7 @@ export default function LeftSidebar({
             </div>
             <IoAdd className="h-5 w-5 text-kibako-secondary ml-1 transition-colors" />
           </button>
-          {instances
+          {instancePrototypes
             .slice()
             .sort((a, b) =>
               b.createdAt && a.createdAt
@@ -181,7 +203,7 @@ export default function LeftSidebar({
     >
       <div className="flex h-[48px] items-center justify-between p-2">
         <button
-          onClick={() => router.back()}
+          onClick={handleBack}
           className="p-1 hover:bg-wood-lightest/20 rounded-full transition-colors flex-shrink-0"
           title="戻る"
         >
