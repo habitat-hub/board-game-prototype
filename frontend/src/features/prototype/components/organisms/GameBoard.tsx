@@ -68,8 +68,6 @@ export default function GameBoard({
   const stageRef = useRef<Konva.Stage | null>(null);
   // 前回のレンダリング時の画像IDを保持するref
   const prevImageRef = useRef<string[]>([]);
-  // 使用されなくなった画像IDを保持するref
-  const unusedImageRef = useRef<string[]>([]);
   const { fetchImage, deleteImage } = useImages();
   const { dispatch } = usePartReducer();
   const { measureOperation } = usePerformanceTracker();
@@ -385,7 +383,7 @@ export default function GameBoard({
 
       // 前回の画像IDと今回の画像IDを比較し、使われていない画像をメモリ開放対象とする
       const prevImageIds = prevImageRef.current;
-      unusedImageRef.current = prevImageIds.filter(
+      const unusedImageIds = prevImageIds.filter(
         (id) => !uniqueImageIds.includes(id)
       );
       prevImageRef.current = uniqueImageIds;
@@ -415,15 +413,20 @@ export default function GameBoard({
         newImages[imageId] = url;
       });
       setImages(newImages);
+
+      //クリーンアップ関数で使用する為に、現在のスコープの値を返す
+      return unusedImageIds;
     };
 
-    loadImages();
+    const cleanupPromise = loadImages();
 
     return () => {
-      const idsToRevoke = unusedImageRef.current;
-      if (idsToRevoke.length > 0) {
-        revokeMultipleObjectURLsAndCleanCache(idsToRevoke);
-      }
+      cleanupPromise.then((unusedImageIds) => {
+        // 未使用の画像IDをIndexedDBから削除
+        if (unusedImageIds && unusedImageIds.length > 0) {
+          revokeMultipleObjectURLsAndCleanCache(unusedImageIds);
+        }
+      });
     };
   }, [fetchImage, properties]);
 
