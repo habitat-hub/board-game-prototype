@@ -1,31 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-/**
- * HTML版コンテキストメニューのProps
- */
 export interface ProjectContextMenuProps {
-  /**
-   * メニューの表示状態
-   */
+  // メニューの表示状態
   visible: boolean;
-  /**
-   * メニューの位置
-   */
+  // メニューの位置
   position: {
     x: number;
     y: number;
   };
-  /**
-   * メニューの幅（デフォルト: 120px）
-   */
+  // メニューの幅（デフォルト: 120px）
   width?: number;
-  /**
-   * 各メニューアイテムの高さ（デフォルト: 25px）
-   */
+  // 各メニューアイテムの高さ（デフォルト: 25px）
   itemHeight?: number;
-  /**
-   * メニュー項目の定義
-   */
+  // メニュー項目の定義
   items: {
     id: string;
     text: string;
@@ -33,15 +20,12 @@ export interface ProjectContextMenuProps {
     icon?: React.ReactNode;
     danger?: boolean;
   }[];
-  /**
-   * メニューを閉じるコールバック
-   */
+  // メニューを閉じるコールバック
   onClose: () => void;
 }
 
 /**
- * HTML版コンテキストメニューコンポーネント
- * ProjectListなどのHTML/CSSコンポーネントで使用
+ * 右クリックで表示されるメニュー
  */
 export const ProjectContextMenu: React.FC<ProjectContextMenuProps> = ({
   visible,
