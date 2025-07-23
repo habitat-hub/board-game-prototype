@@ -17,9 +17,9 @@ import Loading from '@/components/organisms/Loading';
 import useInlineEdit from '@/hooks/useInlineEdit';
 import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
 
-import { ProjectContextMenu } from '../atoms/ProjectContextMenu';
-import { ProjectCard } from '../molecules/ProjectCard';
-import { EmptyProjectState } from '../molecules/EmptyProjectState';
+import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
+import { EmptyProjectState } from '@/features/prototype/components/molecules/EmptyProjectState';
+import { ProjectCard } from '@/features/prototype/components/molecules/ProjectCard';
 
 /**
  * PrototypeListコンポーネントで使用される各種Stateの説明:
