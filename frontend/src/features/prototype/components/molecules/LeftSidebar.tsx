@@ -114,7 +114,7 @@ export default function LeftSidebar({
   // プロジェクトレベルのSocket通信設定
   useProjectSocket({
     projectId,
-    userId: user?.id || '',
+    userId: user?.id,
     onRoomCreated: handleRoomCreated,
     onRoomDeleted: handleRoomDeleted,
   });

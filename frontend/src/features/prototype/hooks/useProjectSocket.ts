@@ -10,7 +10,7 @@ interface UseProjectSocketProps {
   /** プロジェクトID */
   projectId: string;
   /** ユーザーID */
-  userId: string;
+  userId: string | undefined;
   /** ルーム作成時のコールバック */
   onRoomCreated: (version: Prototype, instance: Prototype) => void;
   /** ルーム削除時のコールバック */
@@ -30,7 +30,7 @@ export const useProjectSocket = ({
 
   // プロジェクトルームに参加
   const joinProject = useCallback(() => {
-    if (!socket) return;
+    if (!socket || !userId) return;
 
     socket.emit('JOIN_PROJECT', {
       projectId,
@@ -49,7 +49,7 @@ export const useProjectSocket = ({
 
   // Socket通信の設定
   useEffect(() => {
-    if (!socket) return;
+    if (!socket || !userId) return;
 
     // プロジェクトルームに参加
     joinProject();
@@ -84,7 +84,7 @@ export const useProjectSocket = ({
       // プロジェクトルームから退出
       leaveProject();
     };
-  }, [socket, joinProject, leaveProject, onRoomCreated, onRoomDeleted]);
+  }, [socket, joinProject, leaveProject, onRoomCreated, onRoomDeleted, userId]);
 
   return {
     joinProject,
