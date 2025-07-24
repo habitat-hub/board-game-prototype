@@ -22,27 +22,27 @@ import PartPropertySidebar from '@/features/prototype/components/molecules/PartP
 import PlaySidebar from '@/features/prototype/components/molecules/PlaySidebar';
 import RoleMenu from '@/features/prototype/components/molecules/RoleMenu';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
-import {
-  GRID_SIZE,
-  CANVAS_SIZE,
-  MIN_SCALE,
-  MAX_SCALE,
-  DEFAULT_INITIAL_SCALE,
-} from '@/features/prototype/constants/gameBoard';
+import { GRID_SIZE } from '@/features/prototype/constants';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
-import { useSocket } from '@/features/prototype/contexts/SocketContext';
+import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
+import { useGameCamera } from '@/features/prototype/hooks/useGameCamera';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
 import { useHandVisibility } from '@/features/prototype/hooks/useHandVisibility';
+import { usePartDragSystem } from '@/features/prototype/hooks/usePartDragSystem';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { useSelection } from '@/features/prototype/hooks/useSelection';
-import { AddPartProps, DeleteImageProps } from '@/features/prototype/type';
-import { CursorInfo } from '@/features/prototype/types/cursor';
-import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
+import {
+  AddPartProps,
+  DeleteImageProps,
+  CursorInfo,
+  GameBoardMode,
+} from '@/features/prototype/types';
 import { useRoleManagement } from '@/features/role/hooks/useRoleManagement';
 import {
   getImageFromIndexedDb,
   resetImageParamsInIndexedDb,
+  revokeMultipleObjectURLsAndCleanCache,
   saveImageToIndexedDb,
   updateImageParamsInIndexedDb,
 } from '@/utils/db';
@@ -65,221 +65,78 @@ export default function GameBoard({
   gameBoardMode,
 }: GameBoardProps) {
   const stageRef = useRef<Konva.Stage | null>(null);
-  const [viewportSize, setViewportSize] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
+  // 前回のレンダリング時の画像IDを保持するref
+  const prevImageRef = useRef<string[]>([]);
   const { fetchImage, deleteImage } = useImages();
   const { dispatch } = usePartReducer();
   const { measureOperation } = usePerformanceTracker();
-  const [images, setImages] = useState<Record<string, string>>({});
+  const { isGrabbing, eventHandlers: grabbingHandlers } = useGrabbingCursor();
 
   const parts = useMemo(() => Array.from(partsMap.values()), [partsMap]);
   const properties = useMemo(
     () => Array.from(propertiesMap.values()).flat(),
     [propertiesMap]
   );
-
   // 手札の上のカードの表示制御
   const { cardVisibilityMap } = useHandVisibility(parts, gameBoardMode);
-
   // ロール管理情報を取得
   const { userRoles } = useRoleManagement(projectId);
 
+  // 選択中のパーツ、および選択処理
+  const {
+    selectedPartIds,
+    selectPart,
+    selectMultipleParts,
+    clearSelection,
+    togglePartSelection,
+  } = useSelectedParts();
+
+  // カメラ機能
+  const {
+    canvasSize,
+    viewportSize,
+    camera,
+    handleWheel,
+    handleDragMove,
+    handleZoomIn,
+    handleZoomOut,
+    canZoomIn,
+    canZoomOut,
+  } = useGameCamera({
+    parts,
+    stageRef,
+  });
+  // 複数パーツ選択機能
+  const {
+    isSelectionMode,
+    rectForSelection,
+    handleSelectionStart,
+    handleSelectionMove,
+    handleSelectionEnd,
+    toggleMode,
+    isSelectionInProgress,
+    isJustFinishedSelection,
+  } = useSelection();
+  // ドラッグ機能
+  const { handlePartDragStart, handlePartDragMove, handlePartDragEnd } =
+    usePartDragSystem({
+      parts,
+      canvasSize,
+      gameBoardMode,
+      stageRef: stageRef as React.RefObject<Konva.Stage>,
+    });
+
+  const [images, setImages] = useState<Record<string, string>>({});
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [contextMenuPartId, setContextMenuPartId] = useState<number | null>(
     null
   );
-
-  const canvasSize = useMemo(
-    () => ({
-      width: CANVAS_SIZE,
-      height: CANVAS_SIZE,
-    }),
-    []
-  );
-
-  const centerCoords = useMemo(
-    () => ({
-      x: canvasSize.width / 2,
-      y: canvasSize.height / 2,
-    }),
-    [canvasSize]
-  );
-
-  const calculateDynamicMargin = useCallback(
-    (scale: number) => {
-      const baseMargin =
-        Math.min(viewportSize.width, viewportSize.height) * 0.3;
-      return baseMargin / Math.max(scale, 0.5);
-    },
-    [viewportSize]
-  );
-
-  const constrainCamera = useCallback(
-    (x: number, y: number, scale: number) => {
-      const dynamicMargin = calculateDynamicMargin(scale);
-
-      const minX = -dynamicMargin;
-      const maxX =
-        canvasSize.width * scale - viewportSize.width + dynamicMargin;
-      const minY = -dynamicMargin;
-      const maxY =
-        canvasSize.height * scale - viewportSize.height + dynamicMargin;
-
-      const constrainedX = Math.max(minX, Math.min(maxX, x));
-      const constrainedY = Math.max(minY, Math.min(maxY, y));
-
-      return {
-        x: constrainedX,
-        y: constrainedY,
-        scale,
-      };
-    },
-    [viewportSize, canvasSize, calculateDynamicMargin]
-  );
-
-  // 全パーツの平均センター位置を計算する関数
-  const calculateAveragePartsCenter = useCallback((parts: Part[]) => {
-    if (parts.length === 0) return null;
-
-    const totalCenterX = parts.reduce((sum, part) => {
-      return sum + (part.position.x + part.width / 2);
-    }, 0);
-
-    const totalCenterY = parts.reduce((sum, part) => {
-      return sum + (part.position.y + part.height / 2);
-    }, 0);
-
-    return {
-      x: totalCenterX / parts.length,
-      y: totalCenterY / parts.length,
-    };
-  }, []);
-
-  // 初期カメラ位置を計算する関数
-  const calculateInitialCameraPosition = useCallback(
-    (averageCenter: { x: number; y: number }) => {
-      // カメラの中央が全パーツの平均センターになるようにカメラの左上位置を計算
-      const targetX =
-        averageCenter.x * DEFAULT_INITIAL_SCALE - viewportSize.width / 2;
-      const targetY =
-        averageCenter.y * DEFAULT_INITIAL_SCALE - viewportSize.height / 2;
-
-      return constrainCamera(targetX, targetY, DEFAULT_INITIAL_SCALE);
-    },
-    [viewportSize, constrainCamera]
-  );
-
-  // 全パーツの平均センター位置を計算（useMemo で最初の一回だけ計算）
-  const averagePartsCenter = useMemo(() => {
-    return calculateAveragePartsCenter(parts);
-  }, [parts, calculateAveragePartsCenter]);
-
-  const initialCamera = useMemo(() => {
-    if (!averagePartsCenter) {
-      // パーツがない場合はキャンバス中央を表示
-      return {
-        x: centerCoords.x * DEFAULT_INITIAL_SCALE - viewportSize.width / 2,
-        y: centerCoords.y * DEFAULT_INITIAL_SCALE - viewportSize.height / 2,
-        scale: DEFAULT_INITIAL_SCALE,
-      };
-    }
-
-    return calculateInitialCameraPosition(averagePartsCenter);
-  }, [
-    averagePartsCenter,
-    centerCoords,
-    viewportSize,
-    calculateInitialCameraPosition,
-  ]);
-
-  // 初期カメラ位置が変更された場合（partsが読み込まれた場合など）にカメラを更新
-  // ただし、一度初期化されたら以降は自動更新しない
-  const [camera, setCamera] = useState(() => initialCamera);
-  const [hasInitialized, setHasInitialized] = useState(false);
-  useEffect(() => {
-    if (!hasInitialized || parts.length === 0) {
-      setCamera(initialCamera);
-      if (parts.length > 0) {
-        setHasInitialized(true);
-      }
-    }
-  }, [initialCamera, hasInitialized, parts.length]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      const newViewportSize = {
-        width: window.innerWidth,
-        height: window.innerHeight,
-      };
-      setViewportSize(newViewportSize);
-
-      setCamera((prev) => constrainCamera(prev.x, prev.y, prev.scale));
-    };
-    window.addEventListener('resize', handleResize);
-
-    setCamera((prev) => constrainCamera(prev.x, prev.y, prev.scale));
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [constrainCamera]);
-  const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
-    e.evt.preventDefault();
-    // macOSトラックパッドの二本指移動でパン、Ctrlキー押下時はズーム
-    if (!e.evt.ctrlKey && !e.evt.metaKey) {
-      // パン（カメラ移動）
-      const { deltaX, deltaY } = e.evt;
-      setCamera((prev) => {
-        const newX = prev.x + deltaX;
-        const newY = prev.y + deltaY;
-        return constrainCamera(newX, newY, prev.scale);
-      });
-      return;
-    }
-    // ズーム（より滑らかなスケール変更）
-    const scaleBy = 1.02; // より細かいステップでズーム
-    const oldScale = camera.scale;
-    const stage = stageRef.current;
-    const pointer = stage?.getPointerPosition();
-    if (!pointer) return;
-
-    const mousePointTo = {
-      x: (pointer.x + camera.x) / oldScale,
-      y: (pointer.y + camera.y) / oldScale,
-    };
-
-    const direction = e.evt.deltaY > 0 ? -1 : 1;
-    const newScale =
-      direction > 0
-        ? Math.min(oldScale * scaleBy, MAX_SCALE)
-        : Math.max(oldScale / scaleBy, MIN_SCALE);
-
-    const newX = mousePointTo.x * newScale - pointer.x;
-    const newY = mousePointTo.y * newScale - pointer.y;
-
-    setCamera(constrainCamera(newX, newY, newScale));
-  };
-  const handleDragMove = (e: Konva.KonvaEventObject<DragEvent>) => {
-    const { movementX, movementY } = e.evt;
-    setCamera((prev) => {
-      const newX = prev.x - movementX;
-      const newY = prev.y - movementY;
-
-      return constrainCamera(newX, newY, prev.scale);
-    });
-    e.target.position({ x: 0, y: 0 });
-  };
-
-  const [selectedPartIds, setSelectedPartIds] = useState<number[]>([]);
-  const originalPositionsRef = useRef<Record<number, { x: number; y: number }>>(
-    {}
-  );
-
-  const toggleIdInArray = (arr: number[], id: number) =>
-    arr.includes(id) ? arr.filter((v) => v !== id) : [...arr, id];
+  // スペースキー押下しているか
+  const [spacePressing, setSpacePressing] = useState(false);
+  // 選択モードへの復帰が必要か
+  const [needToReturnToSelectionMode, setNeedToReturnToSelectionMode] =
+    useState(false);
 
   const handlePartClick = (
     e: Konva.KonvaEventObject<MouseEvent>,
@@ -291,9 +148,11 @@ export default function GameBoard({
       handleCloseContextMenu();
     }
     const isShift = (e.evt as MouseEvent).shiftKey;
-    setSelectedPartIds((prev) =>
-      isShift ? toggleIdInArray(prev, partId) : [partId]
-    );
+    if (isShift) {
+      togglePartSelection(partId);
+    } else {
+      selectMultipleParts([partId]);
+    }
   };
 
   const handlePartContextMenu = (
@@ -365,166 +224,23 @@ export default function GameBoard({
     setContextMenuPartId(null);
   }, []);
 
-  const handlePartDragStart = (
-    e: Konva.KonvaEventObject<DragEvent>,
-    partId: number
-  ) => {
-    if (gameBoardMode === GameBoardMode.PREVIEW) return;
-    e.cancelBubble = true;
-    const newSelected = selectedPartIds.includes(partId)
-      ? selectedPartIds
-      : [partId];
-    setSelectedPartIds(newSelected);
-    originalPositionsRef.current = {};
-    newSelected.forEach((id) => {
-      const p = parts.find((pt) => pt.id === id);
-      if (p) {
-        originalPositionsRef.current[id] = {
-          x: p.position.x,
-          y: p.position.y,
-        };
-      }
-    });
-  };
-
-  const handlePartDragMove = (
-    e: Konva.KonvaEventObject<DragEvent>,
-    partId: number
-  ) => {
-    const originals = originalPositionsRef.current;
-    const orig = originals[partId];
-    if (!orig) return;
-    const pos = e.target.position();
-
-    const targetPart = parts.find((p) => p.id === partId);
-    if (!targetPart) return;
-
-    const offsetX = targetPart.width / 2;
-    const dx = pos.x - offsetX - orig.x;
-    const dy = pos.y - orig.y;
-    const stage = stageRef.current;
-    if (!stage) return;
-
-    const constrainedPos = constrainWithinCanvas(
-      targetPart,
-      orig.x,
-      orig.y,
-      dx,
-      dy
-    );
-    const constrainedDx = constrainedPos.x - orig.x;
-    const constrainedDy = constrainedPos.y - orig.y;
-
-    selectedPartIds.forEach((id) => {
-      if (id === partId) return;
-      const node = stage.findOne(`.part-${id}`) as Konva.Node;
-      const origPos = originals[id];
-      if (node && origPos) {
-        const otherPart = parts.find((p) => p.id === id);
-        if (otherPart) {
-          const otherOffsetX = otherPart.width / 2;
-
-          const otherConstrainedPos = constrainWithinCanvas(
-            otherPart,
-            origPos.x,
-            origPos.y,
-            constrainedDx,
-            constrainedDy
-          );
-
-          node.position({
-            x: otherConstrainedPos.x + otherOffsetX,
-            y: otherConstrainedPos.y,
-          });
-        }
-      }
-    });
-
-    e.target.position({
-      x: constrainedPos.x + offsetX,
-      y: constrainedPos.y,
-    });
-
-    stage.batchDraw();
-  };
-
-  const handlePartDragEnd = (
-    e: Konva.KonvaEventObject<DragEvent>,
-    partId: number
-  ) => {
-    if (gameBoardMode === GameBoardMode.PREVIEW) return;
-
-    measureOperation('Part Drag Update', () => {
-      const position = e.target.position();
-      const originals = originalPositionsRef.current;
-      const orig = originals[partId];
-      if (!orig) return;
-
-      const targetPart = parts.find((p) => p.id === partId);
-      if (!targetPart) return;
-
-      const offsetX = targetPart.width / 2;
-      const dx = position.x - offsetX - orig.x;
-      const dy = position.y - orig.y;
-
-      const constrainedPos = constrainWithinCanvas(
-        targetPart,
-        orig.x,
-        orig.y,
-        dx,
-        dy
-      );
-      const constrainedDx = constrainedPos.x - orig.x;
-      const constrainedDy = constrainedPos.y - orig.y;
-
-      Object.entries(originals).forEach(([idStr, { x, y }]) => {
-        const id = Number(idStr);
-        const part = parts.find((p) => p.id === id);
-        if (!part) return;
-
-        const partConstrainedPos = constrainWithinCanvas(
-          part,
-          x,
-          y,
-          constrainedDx,
-          constrainedDy
-        );
-
-        dispatch({
-          type: 'UPDATE_PART',
-          payload: {
-            partId: id,
-            updatePart: {
-              position: {
-                x: Math.round(partConstrainedPos.x),
-                y: Math.round(partConstrainedPos.y),
-              },
-            },
-          },
-        });
-      });
-
-      originalPositionsRef.current = {};
-    });
-  };
-
   const handleBackgroundClick = () => {
     // 矩形選択中の場合は背景クリックを無効化
-    if (isSelectionInProgress()) {
+    if (isSelectionInProgress) {
       return;
     }
     // 矩形選択完了直後の場合は背景クリックを無効化
-    if (isJustFinishedSelection()) {
+    if (isJustFinishedSelection) {
       return;
     }
     // パーツの選択を解除
-    setSelectedPartIds([]);
+    clearSelection();
   };
 
   const handleAddPart = useCallback(
     ({ part, properties }: AddPartProps) => {
       measureOperation('Part Addition', () => {
-        setSelectedPartIds([]);
+        clearSelection();
 
         dispatch({
           type: 'ADD_PART',
@@ -532,7 +248,7 @@ export default function GameBoard({
         });
       });
     },
-    [dispatch, measureOperation]
+    [clearSelection, dispatch, measureOperation]
   );
 
   const handleDeleteImage = useCallback(
@@ -576,46 +292,15 @@ export default function GameBoard({
     selectedPartIds.forEach((partId) => {
       dispatch({ type: 'DELETE_PART', payload: { partId } });
     });
-    setSelectedPartIds([]);
-  }, [handleDeleteImage, parts, properties, dispatch, selectedPartIds]);
-
-  const handleZoomIn = useCallback(() => {
-    const scaleBy = 1.1;
-    const oldScale = camera.scale;
-    const newScale = Math.min(oldScale * scaleBy, MAX_SCALE);
-
-    const viewportCenterX = viewportSize.width / 2;
-    const viewportCenterY = viewportSize.height / 2;
-
-    const mousePointTo = {
-      x: (viewportCenterX + camera.x) / oldScale,
-      y: (viewportCenterY + camera.y) / oldScale,
-    };
-
-    const newX = mousePointTo.x * newScale - viewportCenterX;
-    const newY = mousePointTo.y * newScale - viewportCenterY;
-
-    setCamera(constrainCamera(newX, newY, newScale));
-  }, [camera, viewportSize, constrainCamera]);
-
-  const handleZoomOut = useCallback(() => {
-    const scaleBy = 1.1;
-    const oldScale = camera.scale;
-    const newScale = Math.max(oldScale / scaleBy, MIN_SCALE);
-
-    const viewportCenterX = viewportSize.width / 2;
-    const viewportCenterY = viewportSize.height / 2;
-
-    const mousePointTo = {
-      x: (viewportCenterX + camera.x) / oldScale,
-      y: (viewportCenterY + camera.y) / oldScale,
-    };
-
-    const newX = mousePointTo.x * newScale - viewportCenterX;
-    const newY = mousePointTo.y * newScale - viewportCenterY;
-
-    setCamera(constrainCamera(newX, newY, newScale));
-  }, [camera, viewportSize, constrainCamera]);
+    clearSelection();
+  }, [
+    selectedPartIds,
+    clearSelection,
+    parts,
+    properties,
+    handleDeleteImage,
+    dispatch,
+  ]);
 
   useEffect(() => {
     if (gameBoardMode !== GameBoardMode.CREATE) return;
@@ -639,13 +324,66 @@ export default function GameBoard({
     };
   }, [handleDeletePart, gameBoardMode]);
 
+  // スペースキー検出とモード切り替え
   useEffect(() => {
-    let urlsToRevoke: string[] = [];
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // スペースキー以外のイベント、またはスペースキー押下中の場合は無視
+      if (e.code !== 'Space' || spacePressing) return;
+      e.preventDefault();
+      setSpacePressing(true);
 
+      // 入力フィールドにフォーカスがある場合は無視
+      const active = document.activeElement;
+      const tag = active && (active.tagName || '').toUpperCase();
+      if (
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        active?.hasAttribute('contenteditable')
+      ) {
+        return;
+      }
+
+      // 選択モードの場合のみ、一時的にパンモードに切り替え
+      if (isSelectionMode) {
+        setNeedToReturnToSelectionMode(true);
+        toggleMode();
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      // スペースキー以外のイベント、またはスペースキー押下中でない場合は無視
+      if (e.code !== 'Space' || !spacePressing) return;
+      e.preventDefault();
+      setSpacePressing(false);
+
+      // 元々選択モードだった場合、選択モードに復帰
+      if (needToReturnToSelectionMode && !isSelectionMode) {
+        setNeedToReturnToSelectionMode(false);
+        toggleMode();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [spacePressing, isSelectionMode, needToReturnToSelectionMode, toggleMode]);
+
+  useEffect(() => {
     const loadImages = async () => {
       const uniqueImageIds = Array.from(
         new Set(properties.map((property) => property.imageId).filter(Boolean))
       ) as string[];
+
+      // 前回の画像IDと今回の画像IDを比較し、使われていない画像をメモリ開放対象とする
+      const prevImageIds = prevImageRef.current;
+      const unusedImageIds = prevImageIds.filter(
+        (id) => !uniqueImageIds.includes(id)
+      );
+      prevImageRef.current = uniqueImageIds;
 
       const imageResultsRaw = await Promise.all(
         uniqueImageIds.map(async (imageId) => {
@@ -673,35 +411,27 @@ export default function GameBoard({
       });
       setImages(newImages);
 
-      urlsToRevoke = imageResults ? imageResults.map(({ url }) => url) : [];
+      //クリーンアップ関数で使用する為に、現在のスコープの値を返す
+      return unusedImageIds;
     };
 
-    loadImages();
+    const cleanupPromise = loadImages();
 
     return () => {
-      urlsToRevoke.forEach((url) => URL.revokeObjectURL(url));
+      cleanupPromise.then((unusedImageIds) => {
+        // 未使用の画像IDをIndexedDBから削除
+        if (unusedImageIds && unusedImageIds.length > 0) {
+          revokeMultipleObjectURLsAndCleanCache(unusedImageIds);
+        }
+      });
     };
   }, [fetchImage, properties]);
-
-  const { socket } = useSocket();
-
-  // 選択機能
-  const {
-    isSelectionMode,
-    selectionRect,
-    handleSelectionStart,
-    handleSelectionMove,
-    handleSelectionEnd,
-    toggleMode,
-    isSelectionInProgress,
-    isJustFinishedSelection,
-  } = useSelection();
 
   // Stage全体のクリックイベントハンドラー
   const handleStageClick = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
       // 矩形選択中の場合はStageクリックを無効化
-      if (isSelectionInProgress()) {
+      if (isSelectionInProgress) {
         return;
       }
       if (showContextMenu) {
@@ -711,28 +441,6 @@ export default function GameBoard({
       }
     },
     [showContextMenu, handleCloseContextMenu, isSelectionInProgress]
-  );
-
-  const { isGrabbing, eventHandlers: grabbingHandlers } = useGrabbingCursor();
-
-  // パーツの位置をキャンバス内に制限する関数
-  const constrainWithinCanvas = useCallback(
-    (
-      partObject: Part,
-      baseX: number,
-      baseY: number,
-      deltaX: number,
-      deltaY: number
-    ) => {
-      const newX = baseX + deltaX;
-      const newY = baseY + deltaY;
-
-      return {
-        x: Math.max(0, Math.min(CANVAS_SIZE - partObject.width, newX)),
-        y: Math.max(0, Math.min(CANVAS_SIZE - partObject.height, newY)),
-      };
-    },
-    []
   );
 
   // 画像IDからURLを取得して配列で返す関数をuseMemoで事前計算
@@ -761,29 +469,14 @@ export default function GameBoard({
     return [...parts].sort((a, b) => a.order - b.order);
   }, [parts]);
 
-  // パーツのプロパティマップをメモ化
-  const partPropertiesMap = useMemo(() => {
-    const map: Record<number, PartProperty[]> = {};
-    properties.forEach((property) => {
-      if (!map[property.partId]) {
-        map[property.partId] = [];
-      }
-      map[property.partId].push(property);
-    });
-    return map;
-  }, [properties]);
-
-  useEffect(() => {
-    // パーツ追加時に自分の追加したパーツを選択状態にする
-    const handleAddPartResponse = (data: { partId: number }) => {
-      setSelectedPartIds([data.partId]);
-    };
-    if (!socket) return;
-    socket.on('ADD_PART_RESPONSE', handleAddPartResponse);
-    return () => {
-      socket.off('ADD_PART_RESPONSE', handleAddPartResponse);
-    };
-  }, [socket]);
+  // カーソルのスタイル
+  const cursorStyle = useMemo(() => {
+    // スペース押下状態、または選択モードでない場合
+    if (spacePressing || !isSelectionMode) {
+      return isGrabbing ? 'grabbing' : 'grab';
+    }
+    return 'default';
+  }, [spacePressing, isGrabbing, isSelectionMode]);
 
   return (
     <DebugModeProvider>
@@ -799,11 +492,7 @@ export default function GameBoard({
         onClick={handleStageClick}
         {...grabbingHandlers}
         style={{
-          cursor: isSelectionMode
-            ? 'default'
-            : isGrabbing
-              ? 'grabbing'
-              : 'grab',
+          cursor: cursorStyle,
         }}
       >
         <Layer>
@@ -832,7 +521,12 @@ export default function GameBoard({
                     onMouseMove: (e: Konva.KonvaEventObject<MouseEvent>) =>
                       handleSelectionMove(e, camera),
                     onMouseUp: (e: Konva.KonvaEventObject<MouseEvent>) =>
-                      handleSelectionEnd(e, parts, setSelectedPartIds),
+                      handleSelectionEnd(
+                        e,
+                        parts,
+                        selectMultipleParts,
+                        clearSelection
+                      ),
                   }
                 : {})}
             />
@@ -847,7 +541,7 @@ export default function GameBoard({
 
             {/* パーツの表示 */}
             {sortedParts.map((part) => {
-              const partProperties = partPropertiesMap[part.id] || [];
+              const partProperties = propertiesMap.get(part.id) || [];
               const filteredImages = filteredImagesMap[part.id] || [];
               const isActive = selectedPartIds.includes(part.id);
 
@@ -864,6 +558,7 @@ export default function GameBoard({
                   gameBoardMode={gameBoardMode}
                   isActive={isActive}
                   isOtherPlayerCard={isOtherPlayerCard}
+                  userRoles={userRoles}
                   onClick={(e) => handlePartClick(e, part.id)}
                   onDragStart={(e) => handlePartDragStart(e, part.id)}
                   onDragMove={(e) => handlePartDragMove(e, part.id)}
@@ -877,11 +572,11 @@ export default function GameBoard({
             })}
             {/* 選択モード時の矩形選択表示 */}
             <SelectionRect
-              x={selectionRect.x}
-              y={selectionRect.y}
-              width={selectionRect.width}
-              height={selectionRect.height}
-              visible={isSelectionMode && selectionRect.visible}
+              x={rectForSelection.x}
+              y={rectForSelection.y}
+              width={rectForSelection.width}
+              height={rectForSelection.height}
+              visible={isSelectionMode && rectForSelection.visible}
             />
           </Group>
         </Layer>
@@ -927,7 +622,7 @@ export default function GameBoard({
       {gameBoardMode === GameBoardMode.PLAY && (
         <PlaySidebar
           parts={parts}
-          onSelectPart={(partId) => setSelectedPartIds([partId])}
+          onSelectPart={(partId) => selectPart(partId)}
           selectedPartId={
             selectedPartIds.length === 1 ? selectedPartIds[0] : null
           }
@@ -938,8 +633,8 @@ export default function GameBoard({
       <ZoomToolbar
         zoomIn={handleZoomIn}
         zoomOut={handleZoomOut}
-        canZoomIn={camera.scale < MAX_SCALE}
-        canZoomOut={camera.scale > MIN_SCALE}
+        canZoomIn={canZoomIn}
+        canZoomOut={canZoomOut}
         zoomLevel={camera.scale}
       />
 

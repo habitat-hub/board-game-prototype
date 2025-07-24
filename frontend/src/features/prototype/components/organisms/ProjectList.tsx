@@ -5,23 +5,20 @@ import React, {
   useState,
   useEffect,
   useCallback,
-  useContext,
 } from 'react';
 import { createPortal } from 'react-dom';
 import { FaPlus } from 'react-icons/fa';
-import { GiWoodenCrate, GiCardAceSpades, GiPuzzle } from 'react-icons/gi';
 import { RiLoaderLine } from 'react-icons/ri';
 
 import { useProject } from '@/api/hooks/useProject';
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Prototype, Project } from '@/api/types';
 import Loading from '@/components/organisms/Loading';
-import { UserContext } from '@/contexts/UserContext';
+import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
+import { EmptyProjectState } from '@/features/prototype/components/molecules/EmptyProjectState';
+import { ProjectCard } from '@/features/prototype/components/molecules/ProjectCard';
 import useInlineEdit from '@/hooks/useInlineEdit';
-import formatDate from '@/utils/dateFormat';
 import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
-
-import { ProjectContextMenu } from '../atoms/ProjectContextMenu';
 
 /**
  * PrototypeListコンポーネントで使用される各種Stateの説明:
@@ -37,8 +34,6 @@ const ProjectList: React.FC = () => {
   const router = useRouter();
   const { updatePrototype } = usePrototypes();
   const { getProjects, createProject } = useProject();
-  // UserContextからユーザー情報を取得
-  const userContext = useContext(UserContext);
   // インライン編集フック
   const {
     editingId: nameEditingId,
@@ -122,20 +117,7 @@ const ProjectList: React.FC = () => {
     return `${randomAdjective}な${randomNoun}`;
   };
 
-  /**
-   * ランダムなアイコンを取得する
-   * @param id プロトタイプID（一意性を保つため）
-   * @returns アイコンコンポーネント
-   */
-  const getRandomIcon = (id: string) => {
-    const icons = [GiWoodenCrate, GiCardAceSpades, GiPuzzle];
-    // IDをもとにハッシュ値を生成して一意性を保つ
-    const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const iconIndex = hash % icons.length;
-    const IconComponent = icons[iconIndex];
-    
-    return <IconComponent className="w-20 h-20 text-white/80" />;
-  };
+
 
   /**
    * 新しいプロトタイプを作成する
@@ -310,37 +292,17 @@ const ProjectList: React.FC = () => {
 
   if (prototypeList.length === 0) {
     return (
-      <div className="fixed inset-0 z-10">
-        <button
-          onClick={handleCreatePrototype}
-          disabled={isCreating}
-          className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-row items-center justify-center gap-4 px-14 py-8 rounded-3xl shadow-[0_10px_40px_0_rgba(0,0,0,0.45),0_2px_8px_0_rgba(0,0,0,0.25)] bg-kibako-primary text-kibako-white text-2xl font-bold transition-all duration-200 border-4 border-kibako-accent hover:bg-kibako-accent hover:text-kibako-primary hover:scale-105 hover:shadow-[0_16px_56px_0_rgba(0,0,0,0.55),0_4px_16px_0_rgba(0,0,0,0.30)] active:scale-95 focus:outline-none focus:ring-4 focus:ring-kibako-accent/40 select-none ${isCreating ? 'opacity-80 cursor-not-allowed' : ''}`}
-          style={{ minWidth: 360, minHeight: 100 }}
-          title="新規プロトタイプを作成する"
-        >
-          {isCreating ? (
-            <RiLoaderLine
-              className="w-14 h-14 animate-spin text-kibako-primary bg-kibako-accent rounded-full p-2 shadow-lg"
-              aria-hidden="true"
-            />
-          ) : (
-            <GiWoodenCrate
-              className="w-20 h-20 text-kibako-accent drop-shadow-xl transform -rotate-6 bg-white rounded-2xl p-2 shadow-lg border-2 border-kibako-accent"
-              aria-hidden="true"
-            />
-          )}
-          <span className="text-2xl font-bold tracking-wide drop-shadow-sm">
-            {isCreating ? '作成中...' : 'KIBAKOの世界へ飛び込む！'}
-          </span>
-        </button>
-      </div>
+      <EmptyProjectState
+        isCreating={isCreating}
+        onCreatePrototype={handleCreatePrototype}
+      />
     );
   }
 
   return (
     <div className="max-w-6xl mx-auto py-16 relative px-4">
       {/* タイトル */}
-      <h1 className="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
+      <h1 className="text-3xl text-wood-darkest font-bold mb-8 text-center bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
         プロトタイプ一覧
       </h1>
 
@@ -348,121 +310,65 @@ const ProjectList: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {prototypeList.map(({ masterPrototype, project }) => {
           if (!masterPrototype) return null;
-          const { id, name, createdAt } = masterPrototype;
+          const { id } = masterPrototype;
           const isNameEditing = isEditing(id);
           
           /**
-           * カードダブルクリック時の処理
+           * カードクリック時の処理
            */
-          const handleCardDoubleClick = () => {
+          const handleCardClick = () => {
             router.push(`/projects/${project.id}/prototypes/${id}`);
           };
+
+          /**
+           * ProjectCard用のイベントハンドラー
+           */
+          const handleProjectCardSubmit = (e: React.FormEvent<HTMLFormElement>) =>
+            handleSubmit(e, handleNameEditComplete, validatePrototypeName);
+          
+          const handleProjectCardBlur = () =>
+            handleBlur(handleNameEditComplete, validatePrototypeName);
+          
+          const handleProjectCardKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) =>
+            handleKeyDown(e, handleNameEditComplete, validatePrototypeName);
           
           return (
-            <div
+            <ProjectCard
               key={id}
-              className="bg-content border border-wood-lightest/20 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer"
-              onDoubleClick={handleCardDoubleClick}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                handleContextMenu(e, project, masterPrototype);
-              }}
-              title="ダブルクリックで編集 / 右クリックでメニュー表示"
-            >
-              {/* カード画像エリア */}
-              <div className="relative h-48 bg-gradient-to-br from-header via-header-light to-header-light/80 flex items-center justify-center">
-                {getRandomIcon(id)}
-                <div className="absolute inset-0 bg-black/10 rounded-t-xl"></div>
-              </div>
-
-              {/* カード内容 */}
-              <div className="p-4 space-y-4">
-                {/* プロトタイプ名 */}
-                <div className="min-h-[25px] flex items-center">
-                  {isNameEditing ? (
-                    <form
-                      className="w-full"
-                      onSubmit={(e) =>
-                        handleSubmit(
-                          e,
-                          handleNameEditComplete,
-                          validatePrototypeName
-                        )
-                      }
-                    >
-                      <input
-                        type="text"
-                        value={editedName}
-                        onChange={(e) => setEditedName(e.target.value)}
-                        onBlur={() =>
-                          handleBlur(
-                            handleNameEditComplete,
-                            validatePrototypeName
-                          ).catch((error) => {
-                            console.error('Error in onBlur:', error);
-                            alert(error.message || 'エラーが発生しました');
-                          })
-                        }
-                        onKeyDown={(e) =>
-                          handleKeyDown(
-                            e,
-                            handleNameEditComplete,
-                            validatePrototypeName
-                          ).catch((error) => {
-                            console.error('Error in onKeyDown:', error);
-                            alert(error.message || 'エラーが発生しました');
-                          })
-                        }
-                        className="w-full text-wood-darkest font-semibold bg-transparent border border-transparent rounded-md p-2 -m-2 focus:outline-none focus:bg-white focus:border-header focus:shadow-sm transition-all text-lg"
-                        autoFocus
-                      />
-                    </form>
-                  ) : (
-                    <span className="text-wood-darkest font-semibold p-2 -m-2 rounded-md text-left text-lg leading-tight">
-                      {name}
-                    </span>
-                  )}
-                </div>
-                {/* 詳細情報 */}
-                <div className="space-y-2">
-                  <div className="flex justify-end">
-                    <div className="text-right text-xs text-wood/60 space-y-1">
-                      <div>
-                        作成者: {userContext?.user?.id === project.userId
-                          ? '自分'
-                          : '他のユーザー'}
-                      </div>
-                      <div>作成日時: {formatDate(createdAt, true)}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+              project={project}
+              masterPrototype={masterPrototype}
+              isNameEditing={isNameEditing}
+              editedName={editedName}
+              setEditedName={setEditedName}
+              onCardClick={handleCardClick}
+              onContextMenu={handleContextMenu}
+              onSubmit={handleProjectCardSubmit}
+              onBlur={handleProjectCardBlur}
+              onKeyDown={handleProjectCardKeyDown}
+            />
           );
         })}
       </div>
       
-      {/* 新規プロトタイプ作成ボタン */}
-      <div className="flex justify-center">
-        <button
-          onClick={handleCreatePrototype}
-          disabled={isCreating}
-          className={`w-full max-w-md bg-gradient-to-r from-header/90 to-header-light/90 text-white p-3 rounded-xl border border-header/20 font-medium transition-all duration-300 transform 
-            ${
-              isCreating
-                ? 'opacity-80 cursor-not-allowed'
-                : 'hover:shadow-xl hover:-translate-y-1'
-            }`}
-        >
-          <div className="flex items-center justify-center">
-            {isCreating && (
-              <RiLoaderLine className="w-5 h-5 mr-2 animate-spin" />
-            )}
-            <FaPlus className={`w-5 h-5 mr-2 ${isCreating ? 'hidden' : ''}`} />
-            <span>{isCreating ? '作成中...' : '新しいプロトタイプを作成'}</span>
-          </div>
-        </button>
-      </div>
+      {/* 新規プロトタイプ作成ボタン（フローティングアクションボタン） */}
+      <button
+        onClick={handleCreatePrototype}
+        disabled={isCreating}
+        className={`fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-header to-header-light text-white rounded-full shadow-lg transition-all duration-300 transform z-50 flex items-center justify-center
+          ${
+            isCreating
+              ? 'opacity-80 cursor-not-allowed'
+              : 'hover:shadow-xl hover:scale-110 hover:from-header-light hover:to-header'
+          }`}
+        title={isCreating ? '作成中...' : '新しいプロトタイプを作成'}
+      >
+        {isCreating ? (
+          <RiLoaderLine className="w-6 h-6 animate-spin" />
+        ) : (
+          <FaPlus className="w-5 h-5" />
+        )}
+      </button>
+
       {/* コンテキストメニュー */}
       {contextMenu.targetProject && createPortal(
         <ProjectContextMenu

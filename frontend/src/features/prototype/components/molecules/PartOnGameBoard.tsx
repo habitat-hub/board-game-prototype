@@ -1,5 +1,11 @@
 import Konva from 'konva';
-import React, { useMemo, useRef, useEffect, useState } from 'react';
+import React, {
+  useMemo,
+  useRef,
+  useEffect,
+  useState,
+  useCallback,
+} from 'react';
 import { Group, Rect, Text, Image } from 'react-konva';
 import useImage from 'use-image';
 
@@ -9,8 +15,9 @@ import ShuffleIcon from '@/features/prototype/components/atoms/ShuffleIcon';
 import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { useCard } from '@/features/prototype/hooks/useCard';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
-import { useDeck } from '@/features/prototype/hooks/useDeck';
-import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
+import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
+import { usePartTooltip } from '@/features/prototype/hooks/usePartTooltip';
+import { GameBoardMode } from '@/features/prototype/types';
 
 interface PartOnGameBoardProps {
   part: Part;
@@ -30,6 +37,12 @@ interface PartOnGameBoardProps {
     type: 'front' | 'back' | 'frontmost' | 'backmost'
   ) => void;
   isActive: boolean;
+  // ユーザー情報
+  userRoles?: Array<{
+    userId: string;
+    user: { id: string; username: string };
+    roles: Array<{ name: string; description: string }>;
+  }>;
 }
 
 export default function PartOnGameBoard({
@@ -45,16 +58,38 @@ export default function PartOnGameBoard({
   onContextMenu,
   onChangePartOrder,
   isActive = false,
+  userRoles = [],
 }: PartOnGameBoardProps) {
   const groupRef = useRef<Konva.Group>(null);
   const { isReversing, setIsReversing, reverseCard } = useCard(part);
-  const { shuffleDeck } = useDeck(part);
+  const { dispatch } = usePartReducer();
   const [scaleX, setScaleX] = useState(1);
   const { showDebugInfo } = useDebugMode();
   const { socket } = useSocket();
 
+  // ツールチップ機能
+  const {
+    handleMouseEnter: tooltipMouseEnter,
+    handleMouseLeave: tooltipMouseLeave,
+    hideTooltip,
+  } = usePartTooltip({ part });
+
   const isCard = part.type === 'card';
   const isDeck = part.type === 'deck';
+
+  // 手札の持ち主
+  const handOwnerName = useMemo(() => {
+    // 手札表示が不要な場合
+    if (
+      gameBoardMode !== GameBoardMode.PLAY ||
+      part.type !== 'hand' ||
+      !part.ownerId
+    ) {
+      return null;
+    }
+    return userRoles.find((userRole) => userRole.user.id === part.ownerId)?.user
+      .username;
+  }, [gameBoardMode, part.type, part.ownerId, userRoles]);
 
   // カードの反転を受信する
   useEffect(() => {
@@ -148,7 +183,7 @@ export default function PartOnGameBoard({
     if (!isInteractivePart) return;
 
     if (isDeck) {
-      shuffleDeck();
+      dispatch({ type: 'SHUFFLE_DECK', payload: { deckId: part.id } });
       return;
     }
 
@@ -162,6 +197,9 @@ export default function PartOnGameBoard({
   const offsetX = part.width / 2;
 
   const handleDragStart = (e: Konva.KonvaEventObject<DragEvent>) => {
+    // ドラッグ開始時にツールチップを非表示
+    hideTooltip();
+
     // プレイモード時にカードまたはトークンがドラッグされたら最前面に移動
     if (
       gameBoardMode === GameBoardMode.PLAY &&
@@ -178,6 +216,50 @@ export default function PartOnGameBoard({
     onContextMenu(e, part.id);
   };
 
+  // プレイモードでエリアパーツの場合は移動禁止
+  const isDraggable = !(
+    gameBoardMode === GameBoardMode.PLAY && part.type === 'area'
+  );
+
+  /**
+   * マウスがパーツに乗った時の処理（カーソル変更・ツールチップ開始）
+   */
+  const handleMouseEnter = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent>) => {
+      // Groupの参照が取得できない場合は早期リターン
+      if (!groupRef.current) return;
+
+      const stage = groupRef.current.getStage();
+      // Stageが存在しない場合は早期リターン
+      if (!stage) return;
+
+      // カーソル変更
+      stage.container().style.cursor = isDraggable ? 'grab' : 'not-allowed';
+
+      // ツールチップ表示開始
+      tooltipMouseEnter(e);
+    },
+    [isDraggable, tooltipMouseEnter]
+  );
+
+  /**
+   * マウスがパーツから離れた時の処理（カーソル復元・ツールチップ非表示）
+   */
+  const handleMouseLeave = useCallback(() => {
+    // Groupの参照が取得できない場合は早期リターン
+    if (!groupRef.current) return;
+
+    const stage = groupRef.current.getStage();
+    // Stageが存在しない場合は早期リターン
+    if (!stage) return;
+
+    // カーソル復元
+    stage.container().style.cursor = 'default';
+
+    // ツールチップ非表示
+    tooltipMouseLeave();
+  }, [tooltipMouseLeave]);
+
   return (
     <Group
       ref={groupRef}
@@ -187,8 +269,10 @@ export default function PartOnGameBoard({
       width={part.width}
       height={part.height}
       offsetX={offsetX}
-      draggable
+      draggable={isDraggable}
       scaleX={scaleX}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       onDragStart={handleDragStart}
       onDragMove={(e) => onDragMove(e, part.id)}
       onDragEnd={(e) => onDragEnd(e, part.id)}
@@ -236,11 +320,23 @@ export default function PartOnGameBoard({
         y={5}
       />
 
+      {/* 手札の持ち主表示（プレイモードのみ） */}
+      {handOwnerName && (
+        <Text
+          text={`持ち主: ${handOwnerName}`}
+          fontSize={12}
+          fill={targetProperty?.textColor || 'black'}
+          width={part.width - 10}
+          align="center"
+          y={35}
+        />
+      )}
+
       {/* 説明文 */}
       {targetProperty?.description && (
         <Text
           text={targetProperty.description}
-          fontSize={10}
+          fontSize={12}
           fill={targetProperty.textColor || '#666'}
           width={part.width - 20}
           align="center"

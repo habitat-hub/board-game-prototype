@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { Part } from '@/api/types';
-import { GameBoardMode } from '@/features/prototype/types/gameBoardMode';
+import { GameBoardMode } from '@/features/prototype/types';
 import { useUser } from '@/hooks/useUser';
 
 // グリッドセルのサイズ（ピクセル）
