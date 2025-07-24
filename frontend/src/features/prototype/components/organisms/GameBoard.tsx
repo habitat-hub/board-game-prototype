@@ -42,6 +42,7 @@ import { useRoleManagement } from '@/features/role/hooks/useRoleManagement';
 import {
   getImageFromIndexedDb,
   resetImageParamsInIndexedDb,
+  revokeMultipleObjectURLsAndCleanCache,
   saveImageToIndexedDb,
   updateImageParamsInIndexedDb,
 } from '@/utils/db';
@@ -64,6 +65,8 @@ export default function GameBoard({
   gameBoardMode,
 }: GameBoardProps) {
   const stageRef = useRef<Konva.Stage | null>(null);
+  // 前回のレンダリング時の画像IDを保持するref
+  const prevImageRef = useRef<string[]>([]);
   const { fetchImage, deleteImage } = useImages();
   const { dispatch } = usePartReducer();
   const { measureOperation } = usePerformanceTracker();
@@ -370,12 +373,17 @@ export default function GameBoard({
   }, [spacePressing, isSelectionMode, needToReturnToSelectionMode, toggleMode]);
 
   useEffect(() => {
-    let urlsToRevoke: string[] = [];
-
     const loadImages = async () => {
       const uniqueImageIds = Array.from(
         new Set(properties.map((property) => property.imageId).filter(Boolean))
       ) as string[];
+
+      // 前回の画像IDと今回の画像IDを比較し、使われていない画像をメモリ開放対象とする
+      const prevImageIds = prevImageRef.current;
+      const unusedImageIds = prevImageIds.filter(
+        (id) => !uniqueImageIds.includes(id)
+      );
+      prevImageRef.current = uniqueImageIds;
 
       const imageResultsRaw = await Promise.all(
         uniqueImageIds.map(async (imageId) => {
@@ -403,13 +411,19 @@ export default function GameBoard({
       });
       setImages(newImages);
 
-      urlsToRevoke = imageResults ? imageResults.map(({ url }) => url) : [];
+      //クリーンアップ関数で使用する為に、現在のスコープの値を返す
+      return unusedImageIds;
     };
 
-    loadImages();
+    const cleanupPromise = loadImages();
 
     return () => {
-      urlsToRevoke.forEach((url) => URL.revokeObjectURL(url));
+      cleanupPromise.then((unusedImageIds) => {
+        // 未使用の画像IDをIndexedDBから削除
+        if (unusedImageIds && unusedImageIds.length > 0) {
+          revokeMultipleObjectURLsAndCleanCache(unusedImageIds);
+        }
+      });
     };
   }, [fetchImage, properties]);
 
