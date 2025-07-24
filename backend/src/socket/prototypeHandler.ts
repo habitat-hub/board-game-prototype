@@ -17,6 +17,30 @@ interface SocketData {
 }
 
 /**
+ * 指定されたパーツIDリストに対応するプロパティを画像データを含めて取得する
+ * @param partIds - パーツIDの配列
+ * @returns 画像データを含むプロパティの配列
+ */
+async function fetchPropertiesWithImagesByPartIds(
+  partIds: number[]
+): Promise<PartPropertyModel[]> {
+  if (partIds.length === 0) {
+    return [];
+  }
+
+  return await PartPropertyModel.findAll({
+    where: { partId: partIds }, // IN句として解釈される
+    include: [
+      {
+        model: ImageModel,
+        required: false, // LEFT JOIN
+        as: 'image',
+      },
+    ],
+  });
+}
+
+/**
  * 指定されたプロトタイプバージョンIDに関連する全てのパーツとプロパティを取得する。
  *
  * @param {string} prototypeId - プロトタイプID
@@ -125,11 +149,15 @@ function handleAddPart(socket: Socket, io: Server) {
           });
         });
 
-        const newProperties = await Promise.all(propertyCreationPromises);
+        await Promise.all(propertyCreationPromises);
+
+        // 追加したPartProperty及び紐づく画像を取得
+        const newPropertiesWithImages =
+          await fetchPropertiesWithImagesByPartIds([newPart.id]);
 
         io.to(prototypeId).emit('ADD_PART', {
           part: newPart,
-          properties: newProperties,
+          properties: newPropertiesWithImages,
         });
 
         // 新しいパーツのIDをクライアントに送信
@@ -164,7 +192,7 @@ function handleUpdatePart(socket: Socket, io: Server) {
       const { prototypeId } = socket.data as SocketData;
 
       let updatedPart: PartModel | null = null;
-      let updatedProperties: PartPropertyModel[] | null = null;
+      let updatedPropertiesWithImages: PartPropertyModel[] | null = null;
 
       try {
         // Partの更新
@@ -201,13 +229,18 @@ function handleUpdatePart(socket: Socket, io: Server) {
           });
 
           // 更新処理の実行
-          const result = await Promise.all(updatePromises);
-          updatedProperties = result.map(([, result]) => result[0].dataValues);
+          await Promise.all(updatePromises);
+
+          // 更新したPartProperty及び紐づく画像を取得
+          updatedPropertiesWithImages =
+            await fetchPropertiesWithImagesByPartIds([partId]);
         }
 
         io.to(prototypeId).emit('UPDATE_PARTS', {
           parts: updatedPart ? [updatedPart] : [],
-          properties: updatedProperties ? updatedProperties : [],
+          properties: updatedPropertiesWithImages
+            ? updatedPropertiesWithImages
+            : [],
         });
       } catch (error) {
         console.error('パーツの更新に失敗しました。', error);

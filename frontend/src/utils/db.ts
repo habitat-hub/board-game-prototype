@@ -45,14 +45,16 @@ export const saveImageToIndexedDb = async (
       deletedAt: null,
       isDeleted: false,
     });
-    // オブジェクトURLをキャッシュに保存
-    const objectURL = URL.createObjectURL(imageBlob);
+
+    // 既存のオブジェクトURLがある場合はクリーンアップ
     if (objectUrlCache.has(id)) {
-      URL.revokeObjectURL(objectUrlCache.get(id)!); // 古いオブジェクトURLを解放
-      objectUrlCache.delete(id); // 古いキャッシュを削除
+      revokeObjectURLAndCleanCache(id);
     }
-    // 新しいオブジェクトURLをキャッシュに保存
+
+    // 新しいオブジェクトURLを作成してキャッシュに保存
+    const objectURL = URL.createObjectURL(imageBlob);
     objectUrlCache.set(id, objectURL);
+
     return {
       imageBlob,
       objectURL: objectURL,
@@ -133,11 +135,12 @@ export const deleteExpiredImagesFromIndexedDb = async (): Promise<void> => {
         new Date(record.deletedAt) < threshold
     );
 
+    // 期限切れレコードのURLとキャッシュをクリーンアップ
+    const expiredIds = expiredRecords.map(record => record.id);
+    revokeMultipleObjectURLsAndCleanCache(expiredIds);
+
+    // IndexedDBからレコードを削除
     for (const record of expiredRecords) {
-      if (objectUrlCache.has(record.id)) {
-        URL.revokeObjectURL(objectUrlCache.get(record.id)!); // オブジェクトURLを解放
-        objectUrlCache.delete(record.id); // キャッシュを削除
-      }
       await db.delete(STORE_NAME, record.id);
     }
   } catch (error) {
@@ -164,4 +167,18 @@ export const resetImageParamsInIndexedDb = async (
   } catch (error) {
     // エラー時は何もしない
   }
+};
+
+// オブジェクトURLとキャッシュをクリーンアップする関数
+export const revokeObjectURLAndCleanCache = (id: string): void => {
+  const objectURL = objectUrlCache.get(id);
+  if (objectURL) {
+    URL.revokeObjectURL(objectURL); // オブジェクトURLを解放
+    objectUrlCache.delete(id); // キャッシュを削除
+  }
+};
+
+// 複数のIDに対してオブジェクトURLとキャッシュをクリーンアップする関数
+export const revokeMultipleObjectURLsAndCleanCache = (ids: string[]): void => {
+  ids.forEach((id) => revokeObjectURLAndCleanCache(id));
 };

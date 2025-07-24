@@ -29,6 +29,8 @@ import projectRoutes from './routes/project';
 import userRoutes from './routes/user';
 import imageRoutes from './routes/image';
 import handlePrototype from './socket/prototypeHandler';
+import handleProject from './socket/projectHandler';
+import { setIOInstance } from './utils/socketManager';
 
 import { errorHandler } from './middlewares/errorHandler';
 
@@ -202,8 +204,11 @@ app.use('/api/images', imageRoutes);
 app.use(errorHandler);
 
 // Socket.io接続
+setIOInstance(io); // グローバルにioインスタンスを設定
+
 io.on('connection', (socket: Socket) => {
   handlePrototype(socket, io);
+  handleProject(socket, io);
 
   socket.on('disconnect', () => {
     console.log('user disconnected');

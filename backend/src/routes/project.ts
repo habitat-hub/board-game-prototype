@@ -8,6 +8,7 @@ import {
   checkProjectManagePermission,
 } from '../middlewares/authorization';
 import { getAccessiblePrototypes } from '../helpers/prototypeHelper';
+import { getIOInstance } from '../utils/socketManager';
 import sequelize from '../models';
 import {
   createProject,
@@ -202,6 +203,19 @@ router.post(
           transaction,
         });
       await transaction.commit();
+
+      // Socket.IOでルーム作成を全ユーザーに通知
+      try {
+        const io = getIOInstance();
+        io.to(`project:${req.params.projectId}`).emit('ROOM_CREATED', {
+          version: versionPrototype,
+          instance: instancePrototype,
+        });
+      } catch (socketError) {
+        console.warn('Socket.IO notification failed:', socketError);
+        // Socket通信が失敗してもAPIのレスポンスは正常に返す
+      }
+
       res
         .status(201)
         .json({ version: versionPrototype, instance: instancePrototype });
@@ -311,6 +325,19 @@ router.delete(
       });
 
       await transaction.commit();
+
+      // Socket.IOでルーム削除を全ユーザーに通知
+      try {
+        const io = getIOInstance();
+        io.to(`project:${projectId}`).emit('ROOM_DELETED', {
+          deletedVersionId: versionPrototype.id,
+          deletedInstanceIds,
+        });
+      } catch (socketError) {
+        console.warn('Socket.IO notification failed:', socketError);
+        // Socket通信が失敗してもAPIのレスポンスは正常に返す
+      }
+
       res.json({
         message: 'プロトタイプルームを削除しました',
         deletedVersion: versionPrototype.id,
