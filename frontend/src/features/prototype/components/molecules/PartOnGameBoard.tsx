@@ -213,6 +213,7 @@ export default function PartOnGameBoard({
   // コンテキストメニュー用ハンドラー
   const handleContextMenu = (e: Konva.KonvaEventObject<PointerEvent>) => {
     e.evt.preventDefault();
+    hideTooltip();
     onContextMenu(e, part.id);
   };
 
