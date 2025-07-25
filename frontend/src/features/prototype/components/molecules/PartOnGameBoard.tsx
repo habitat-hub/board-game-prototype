@@ -15,6 +15,7 @@ import ShuffleIcon from '@/features/prototype/components/atoms/ShuffleIcon';
 import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { useCard } from '@/features/prototype/hooks/useCard';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
+import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePartTooltip } from '@/features/prototype/hooks/usePartTooltip';
 import { GameBoardMode } from '@/features/prototype/types';
@@ -66,6 +67,7 @@ export default function PartOnGameBoard({
   const [scaleX, setScaleX] = useState(1);
   const { showDebugInfo } = useDebugMode();
   const { socket } = useSocket();
+  const { eventHandlers } = useGrabbingCursor();
 
   // ツールチップ機能
   const {
@@ -213,6 +215,7 @@ export default function PartOnGameBoard({
   // コンテキストメニュー用ハンドラー
   const handleContextMenu = (e: Konva.KonvaEventObject<PointerEvent>) => {
     e.evt.preventDefault();
+    hideTooltip();
     onContextMenu(e, part.id);
   };
 
@@ -222,43 +225,26 @@ export default function PartOnGameBoard({
   );
 
   /**
-   * マウスがパーツに乗った時の処理（カーソル変更・ツールチップ開始）
+   * マウスがパーツに乗った時の処理（ツールチップ開始）
    */
   const handleMouseEnter = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
-      // Groupの参照が取得できない場合は早期リターン
-      if (!groupRef.current) return;
-
-      const stage = groupRef.current.getStage();
-      // Stageが存在しない場合は早期リターン
-      if (!stage) return;
-
-      // カーソル変更
-      stage.container().style.cursor = isDraggable ? 'grab' : 'not-allowed';
-
       // ツールチップ表示開始
       tooltipMouseEnter(e);
     },
-    [isDraggable, tooltipMouseEnter]
+    [tooltipMouseEnter]
   );
 
   /**
-   * マウスがパーツから離れた時の処理（カーソル復元・ツールチップ非表示）
+   * マウスがパーツから離れた時の処理（ツールチップ非表示）
    */
   const handleMouseLeave = useCallback(() => {
-    // Groupの参照が取得できない場合は早期リターン
-    if (!groupRef.current) return;
-
-    const stage = groupRef.current.getStage();
-    // Stageが存在しない場合は早期リターン
-    if (!stage) return;
-
-    // カーソル復元
-    stage.container().style.cursor = 'default';
-
     // ツールチップ非表示
     tooltipMouseLeave();
-  }, [tooltipMouseLeave]);
+
+    // useGrabbingCursor のイベントハンドラーを呼び出し
+    eventHandlers.onMouseLeave();
+  }, [tooltipMouseLeave, eventHandlers]);
 
   return (
     <Group
@@ -273,6 +259,8 @@ export default function PartOnGameBoard({
       scaleX={scaleX}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onMouseDown={eventHandlers.onMouseDown}
+      onMouseUp={eventHandlers.onMouseUp}
       onDragStart={handleDragStart}
       onDragMove={(e) => onDragMove(e, part.id)}
       onDragEnd={(e) => onDragEnd(e, part.id)}

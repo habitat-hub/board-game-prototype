@@ -490,6 +490,7 @@ export default function GameBoard({
         ref={stageRef}
         onWheel={handleWheel}
         onClick={handleStageClick}
+        onContextMenu={handleCloseContextMenu}
         {...grabbingHandlers}
         style={{
           cursor: cursorStyle,
