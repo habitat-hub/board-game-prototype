@@ -202,6 +202,15 @@ export default function PartOnGameBoard({
     // ドラッグ開始時にツールチップを非表示
     hideTooltip();
 
+    // ドラッグ中のカーソルを設定
+    const stage = e.target.getStage();
+    if (stage && isDraggable) {
+      const container = stage.container();
+      if (container) {
+        container.style.cursor = 'grabbing';
+      }
+    }
+
     // プレイモード時にカードまたはトークンがドラッグされたら最前面に移動
     if (
       gameBoardMode === GameBoardMode.PLAY &&
@@ -231,8 +240,17 @@ export default function PartOnGameBoard({
     (e: Konva.KonvaEventObject<MouseEvent>) => {
       // ツールチップ表示開始
       tooltipMouseEnter(e);
+
+      // カーソルを動的に変更
+      const stage = e.target.getStage();
+      if (stage) {
+        const container = stage.container();
+        if (container) {
+          container.style.cursor = isDraggable ? 'grab' : 'not-allowed';
+        }
+      }
     },
-    [tooltipMouseEnter]
+    [tooltipMouseEnter, isDraggable]
   );
 
   /**
@@ -241,6 +259,15 @@ export default function PartOnGameBoard({
   const handleMouseLeave = useCallback(() => {
     // ツールチップ非表示
     tooltipMouseLeave();
+
+    // カーソルをデフォルトに戻す
+    const stage = groupRef.current?.getStage();
+    if (stage) {
+      const container = stage.container();
+      if (container) {
+        container.style.cursor = 'default';
+      }
+    }
 
     // useGrabbingCursor のイベントハンドラーを呼び出し
     eventHandlers.onMouseLeave();
@@ -257,13 +284,24 @@ export default function PartOnGameBoard({
       offsetX={offsetX}
       draggable={isDraggable}
       scaleX={scaleX}
+      cursor={isDraggable ? 'grab' : 'not-allowed'}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onMouseDown={eventHandlers.onMouseDown}
       onMouseUp={eventHandlers.onMouseUp}
       onDragStart={handleDragStart}
       onDragMove={(e) => onDragMove(e, part.id)}
-      onDragEnd={(e) => onDragEnd(e, part.id)}
+      onDragEnd={(e) => {
+        onDragEnd(e, part.id);
+        // ドラッグ終了後のカーソルを設定
+        const stage = e.target.getStage();
+        if (stage) {
+          const container = stage.container();
+          if (container) {
+            container.style.cursor = isDraggable ? 'grab' : 'not-allowed';
+          }
+        }
+      }}
       onClick={onClick}
       onDblClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
