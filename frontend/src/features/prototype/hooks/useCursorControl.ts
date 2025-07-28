@@ -10,7 +10,7 @@ export const useCursorControl = (isDraggable: boolean) => {
    * ドラッグ可能な状態に基づいてカーソルの種類を決定する
    * @returns カーソルの種類（'grab' または 'not-allowed'）
    */
-  const getCursorType = useCallback(() => {
+  const getCursorType = useCallback((): 'grab' | 'not-allowed' => {
     return isDraggable ? 'grab' : 'not-allowed';
   }, [isDraggable]);
 
@@ -20,7 +20,7 @@ export const useCursorControl = (isDraggable: boolean) => {
    * @param cursorType - 設定するカーソルの種類
    */
   const setCursor = useCallback(
-    (stage: Konva.Stage | null, cursorType: string) => {
+    (stage: Konva.Stage | null, cursorType: string): void => {
       if (stage) {
         const container = stage.container();
         if (container) {
@@ -36,7 +36,7 @@ export const useCursorControl = (isDraggable: boolean) => {
    * @param stage - KonvaのStageオブジェクト
    */
   const setDraggableCursor = useCallback(
-    (stage: Konva.Stage | null) => {
+    (stage: Konva.Stage | null): void => {
       setCursor(stage, getCursorType());
     },
     [setCursor, getCursorType]
@@ -47,7 +47,7 @@ export const useCursorControl = (isDraggable: boolean) => {
    * @param stage - KonvaのStageオブジェクト
    */
   const setGrabbingCursor = useCallback(
-    (stage: Konva.Stage | null) => {
+    (stage: Konva.Stage | null): void => {
       setCursor(stage, 'grabbing');
     },
     [setCursor]
@@ -58,7 +58,7 @@ export const useCursorControl = (isDraggable: boolean) => {
    * @param stage - KonvaのStageオブジェクト
    */
   const setDefaultCursor = useCallback(
-    (stage: Konva.Stage | null) => {
+    (stage: Konva.Stage | null): void => {
       setCursor(stage, 'default');
     },
     [setCursor]
