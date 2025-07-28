@@ -137,17 +137,11 @@ export const useGameCamera = ({
   const [camera, setCamera] = useState<CameraPosition>(() => initialCamera);
   const hasInitializedRef = useRef(false);
 
-  // カメラ位置の初期化とリセット
+  // カメラ位置の初期化
   useEffect(() => {
-    // パーツがある場合、初期位置にリセット
+    // 初回のみ、パーツがある場合に初期位置に設定
     if (!hasInitializedRef.current && parts.length > 0) {
       hasInitializedRef.current = true;
-      setCamera(initialCamera);
-      return;
-    }
-
-    // パーツが0の場合、初期位置にリセット
-    if (parts.length === 0) {
       setCamera(initialCamera);
     }
   }, [parts.length, initialCamera]);
