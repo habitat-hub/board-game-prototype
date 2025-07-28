@@ -300,7 +300,6 @@ export default function PartOnGameBoard({
       offsetX={offsetX}
       draggable={isDraggable}
       scaleX={scaleX}
-      cursor={isDraggable ? 'grab' : 'not-allowed'}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onMouseDown={eventHandlers.onMouseDown}
