@@ -228,6 +228,22 @@ export default function PartOnGameBoard({
     onContextMenu(e, part.id);
   };
 
+  /**
+   * ドラッグ終了時の処理
+   * @param e - Konvaのドラッグイベントオブジェクト
+   */
+  const handleDragEnd = (e: Konva.KonvaEventObject<DragEvent>) => {
+    onDragEnd(e, part.id);
+    // ドラッグ終了後のカーソルを設定
+    const stage = e.target.getStage();
+    if (stage) {
+      const container = stage.container();
+      if (container) {
+        container.style.cursor = isDraggable ? 'grab' : 'not-allowed';
+      }
+    }
+  };
+
   // プレイモードでエリアパーツの場合は移動禁止
   const isDraggable = !(
     gameBoardMode === GameBoardMode.PLAY && part.type === 'area'
@@ -291,17 +307,7 @@ export default function PartOnGameBoard({
       onMouseUp={eventHandlers.onMouseUp}
       onDragStart={handleDragStart}
       onDragMove={(e) => onDragMove(e, part.id)}
-      onDragEnd={(e) => {
-        onDragEnd(e, part.id);
-        // ドラッグ終了後のカーソルを設定
-        const stage = e.target.getStage();
-        if (stage) {
-          const container = stage.container();
-          if (container) {
-            container.style.cursor = isDraggable ? 'grab' : 'not-allowed';
-          }
-        }
-      }}
+      onDragEnd={handleDragEnd}
       onClick={onClick}
       onDblClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
