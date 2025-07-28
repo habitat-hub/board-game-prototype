@@ -14,6 +14,7 @@ import FlipIcon from '@/features/prototype/components/atoms/FlipIcon';
 import ShuffleIcon from '@/features/prototype/components/atoms/ShuffleIcon';
 import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { useCard } from '@/features/prototype/hooks/useCard';
+import { useCursorControl } from '@/features/prototype/hooks/useCursorControl';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
@@ -68,6 +69,19 @@ export default function PartOnGameBoard({
   const { showDebugInfo } = useDebugMode();
   const { socket } = useSocket();
   const { eventHandlers } = useGrabbingCursor();
+
+  // プレイモードでエリアパーツの場合は移動禁止
+  const isDraggable = !(
+    gameBoardMode === GameBoardMode.PLAY && part.type === 'area'
+  );
+
+  // カーソル制御hooks
+  const {
+    getCursorType,
+    setDraggableCursor,
+    setGrabbingCursor,
+    setDefaultCursor,
+  } = useCursorControl(isDraggable);
 
   // ツールチップ機能
   const {
@@ -204,11 +218,8 @@ export default function PartOnGameBoard({
 
     // ドラッグ中のカーソルを設定
     const stage = e.target.getStage();
-    if (stage && isDraggable) {
-      const container = stage.container();
-      if (container) {
-        container.style.cursor = 'grabbing';
-      }
+    if (isDraggable) {
+      setGrabbingCursor(stage);
     }
 
     // プレイモード時にカードまたはトークンがドラッグされたら最前面に移動
@@ -236,18 +247,8 @@ export default function PartOnGameBoard({
     onDragEnd(e, part.id);
     // ドラッグ終了後のカーソルを設定
     const stage = e.target.getStage();
-    if (stage) {
-      const container = stage.container();
-      if (container) {
-        container.style.cursor = isDraggable ? 'grab' : 'not-allowed';
-      }
-    }
+    setDraggableCursor(stage);
   };
-
-  // プレイモードでエリアパーツの場合は移動禁止
-  const isDraggable = !(
-    gameBoardMode === GameBoardMode.PLAY && part.type === 'area'
-  );
 
   /**
    * マウスがパーツに乗った時の処理（ツールチップ開始）
@@ -259,14 +260,9 @@ export default function PartOnGameBoard({
 
       // カーソルを動的に変更
       const stage = e.target.getStage();
-      if (stage) {
-        const container = stage.container();
-        if (container) {
-          container.style.cursor = isDraggable ? 'grab' : 'not-allowed';
-        }
-      }
+      setDraggableCursor(stage);
     },
-    [tooltipMouseEnter, isDraggable]
+    [tooltipMouseEnter, setDraggableCursor]
   );
 
   /**
@@ -278,16 +274,11 @@ export default function PartOnGameBoard({
 
     // カーソルをデフォルトに戻す
     const stage = groupRef.current?.getStage();
-    if (stage) {
-      const container = stage.container();
-      if (container) {
-        container.style.cursor = 'default';
-      }
-    }
+    setDefaultCursor(stage || null);
 
     // useGrabbingCursor のイベントハンドラーを呼び出し
     eventHandlers.onMouseLeave();
-  }, [tooltipMouseLeave, eventHandlers]);
+  }, [tooltipMouseLeave, setDefaultCursor, eventHandlers]);
 
   return (
     <Group
@@ -300,6 +291,7 @@ export default function PartOnGameBoard({
       offsetX={offsetX}
       draggable={isDraggable}
       scaleX={scaleX}
+      cursor={getCursorType()}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onMouseDown={eventHandlers.onMouseDown}
