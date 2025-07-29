@@ -14,6 +14,7 @@ import FlipIcon from '@/features/prototype/components/atoms/FlipIcon';
 import ShuffleIcon from '@/features/prototype/components/atoms/ShuffleIcon';
 import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { useCard } from '@/features/prototype/hooks/useCard';
+import { useCursorControl } from '@/features/prototype/hooks/useCursorControl';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
@@ -68,6 +69,19 @@ export default function PartOnGameBoard({
   const { showDebugInfo } = useDebugMode();
   const { socket } = useSocket();
   const { eventHandlers } = useGrabbingCursor();
+
+  // プレイモードでエリアパーツの場合は移動禁止
+  const isDraggable = !(
+    gameBoardMode === GameBoardMode.PLAY && part.type === 'area'
+  );
+
+  // カーソル制御hooks
+  const {
+    getCursorType,
+    setDraggableCursor,
+    setGrabbingCursor,
+    setDefaultCursor,
+  } = useCursorControl(isDraggable);
 
   // ツールチップ機能
   const {
@@ -202,6 +216,12 @@ export default function PartOnGameBoard({
     // ドラッグ開始時にツールチップを非表示
     hideTooltip();
 
+    // ドラッグ中のカーソルを設定
+    const stage = e.target.getStage();
+    if (isDraggable) {
+      setGrabbingCursor(stage);
+    }
+
     // プレイモード時にカードまたはトークンがドラッグされたら最前面に移動
     if (
       gameBoardMode === GameBoardMode.PLAY &&
@@ -219,10 +239,16 @@ export default function PartOnGameBoard({
     onContextMenu(e, part.id);
   };
 
-  // プレイモードでエリアパーツの場合は移動禁止
-  const isDraggable = !(
-    gameBoardMode === GameBoardMode.PLAY && part.type === 'area'
-  );
+  /**
+   * ドラッグ終了時の処理
+   * @param e - Konvaのドラッグイベントオブジェクト
+   */
+  const handleDragEnd = (e: Konva.KonvaEventObject<DragEvent>) => {
+    onDragEnd(e, part.id);
+    // ドラッグ終了後のカーソルを設定
+    const stage = e.target.getStage();
+    setDraggableCursor(stage);
+  };
 
   /**
    * マウスがパーツに乗った時の処理（ツールチップ開始）
@@ -231,8 +257,12 @@ export default function PartOnGameBoard({
     (e: Konva.KonvaEventObject<MouseEvent>) => {
       // ツールチップ表示開始
       tooltipMouseEnter(e);
+
+      // カーソルを動的に変更
+      const stage = e.target.getStage();
+      setDraggableCursor(stage);
     },
-    [tooltipMouseEnter]
+    [tooltipMouseEnter, setDraggableCursor]
   );
 
   /**
@@ -242,9 +272,13 @@ export default function PartOnGameBoard({
     // ツールチップ非表示
     tooltipMouseLeave();
 
+    // カーソルをデフォルトに戻す
+    const stage = groupRef.current?.getStage();
+    setDefaultCursor(stage || null);
+
     // useGrabbingCursor のイベントハンドラーを呼び出し
     eventHandlers.onMouseLeave();
-  }, [tooltipMouseLeave, eventHandlers]);
+  }, [tooltipMouseLeave, setDefaultCursor, eventHandlers]);
 
   return (
     <Group
@@ -257,13 +291,14 @@ export default function PartOnGameBoard({
       offsetX={offsetX}
       draggable={isDraggable}
       scaleX={scaleX}
+      cursor={getCursorType()}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onMouseDown={eventHandlers.onMouseDown}
       onMouseUp={eventHandlers.onMouseUp}
       onDragStart={handleDragStart}
       onDragMove={(e) => onDragMove(e, part.id)}
-      onDragEnd={(e) => onDragEnd(e, part.id)}
+      onDragEnd={handleDragEnd}
       onClick={onClick}
       onDblClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
