@@ -2,7 +2,7 @@
  * @page ゲームボードのカメラ制御を管理するカスタムフック
  */
 import Konva from 'konva';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Part } from '@/api/types';
 import {
@@ -128,11 +128,6 @@ export const useGameCamera = ({
     [getConstrainedCameraPosition, parts]
   );
 
-  // 初期カメラ位置
-  const initialCamera = useMemo((): CameraPosition => {
-    return calculateInitialCameraPosition(viewportSize);
-  }, [calculateInitialCameraPosition, viewportSize]);
-
   // カメラの状態管理
   const [camera, setCamera] = useState<CameraPosition>(() => ({
     x: 0,
@@ -146,9 +141,9 @@ export const useGameCamera = ({
     // 初回のみ、パーツがある場合に初期位置に設定
     if (!hasInitializedRef.current && parts.length > 0) {
       hasInitializedRef.current = true;
-      setCamera(initialCamera);
+      setCamera(calculateInitialCameraPosition(viewportSize));
     }
-  }, [parts.length, initialCamera]);
+  }, [parts.length, calculateInitialCameraPosition, viewportSize]);
 
   // ウィンドウリサイズの処理
   useEffect(() => {
