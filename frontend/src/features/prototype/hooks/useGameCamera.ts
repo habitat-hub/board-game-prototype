@@ -134,7 +134,11 @@ export const useGameCamera = ({
   }, [calculateInitialCameraPosition, viewportSize]);
 
   // カメラの状態管理
-  const [camera, setCamera] = useState<CameraPosition>(() => initialCamera);
+  const [camera, setCamera] = useState<CameraPosition>(() => ({
+    x: 0,
+    y: 0,
+    scale: CAMERA_SCALE.DEFAULT,
+  }));
   const hasInitializedRef = useRef(false);
 
   // カメラ位置の初期化
