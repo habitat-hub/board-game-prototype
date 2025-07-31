@@ -128,12 +128,14 @@ function handleAddPart(socket: Socket, io: Server) {
       const { prototypeId } = socket.data as SocketData;
 
       try {
-        const maxOrder: number | null = await PartModel.max('order', {
+        const parts = await PartModel.findAll({
           where: { prototypeId },
+          order: [['order', 'ASC']],
         });
 
-        // maxOrderがnullの場合（まだパーツが存在しない場合）は0.5
-        // そうでなければ(1+maxOrder)/2を使用
+        const maxOrder =
+          parts.length > 0 ? parts[parts.length - 1].order : null;
+
         const newOrder = maxOrder === null ? 0.5 : (1 + maxOrder) / 2;
 
         const newPart = await PartModel.create({
@@ -151,7 +153,6 @@ function handleAddPart(socket: Socket, io: Server) {
 
         await Promise.all(propertyCreationPromises);
 
-        // 追加したPartProperty及び紐づく画像を取得
         const newPropertiesWithImages =
           await fetchPropertiesWithImagesByPartIds([newPart.id]);
 
@@ -159,6 +160,13 @@ function handleAddPart(socket: Socket, io: Server) {
           part: newPart,
           properties: newPropertiesWithImages,
         });
+
+        // 新しいパーツをpartsに追加
+        const updatedParts = [...parts, newPart];
+
+        if (isRebalanceNeeded(updatedParts)) {
+          await rebalanceOrders(prototypeId, updatedParts, io);
+        }
 
         // 新しいパーツのIDをクライアントに送信
         // これによりクライアント側で新パーツをすぐ参照できるようになる
@@ -417,13 +425,20 @@ function handleChangeOrder(socket: Socket, io: Server) {
             break;
           }
           case 'frontmost': {
+            // リバランスが必要なら実行
+            if (isRebalanceNeeded(partsBackToFront)) {
+              await rebalanceOrders(prototypeId, partsBackToFront, io);
+            }
+
             // 最前面に移動
             const partFrontMost = partsBackToFront[partsBackToFront.length - 1];
             const newOrder = (partFrontMost.order + 1) / 2;
+
             const [, result] = await PartModel.update(
               { order: newOrder },
               { where: { id: partId }, returning: true }
             );
+
             io.to(prototypeId).emit('UPDATE_PARTS', {
               parts: [result[0].dataValues],
               properties: [],
@@ -501,6 +516,55 @@ function handleUpdateCursor(socket: Socket, io: Server) {
     io.to(prototypeId).emit('UPDATE_CURSORS', {
       cursors: cursorMap[prototypeId],
     });
+  });
+}
+
+/**
+ * Ordersのリバランス
+ * @param prototypeId - プロトタイプID
+ * @param parts - パーツの配列
+ * @param io - Server
+ */
+async function rebalanceOrders(
+  prototypeId: string,
+  parts: PartModel[],
+  io: Server
+) {
+  console.log('Rebalancing orders for parts in prototype:', prototypeId);
+  const totalParts = parts.length;
+
+  // 0~1の間で等間隔に設定
+  // 例えば、3つのパーツがある場合、0.25, 0.5, 0.75のように設定
+  // これにより、パーツの順番が0と1に近い値を省いた等間隔
+  const step = 1 / (totalParts + 1);
+  parts.forEach((part, i) => (part.order = step * (i + 1)));
+
+  // データベースに一括更新
+  await Promise.all(
+    parts.map((part) =>
+      PartModel.update({ order: part.order }, { where: { id: part.id } })
+    )
+  );
+
+  // 全てのパーツをemit
+  io.to(prototypeId).emit('UPDATE_PARTS', {
+    parts: parts.map((part) => part.dataValues),
+    properties: [],
+  });
+
+  console.log('Rebalancing completed for prototype:', prototypeId);
+}
+
+/**
+ * 最小限のOrder間隔チェック
+ * @param parts - パーツの配列
+ * @returns リバランスが必要な場合はtrue
+ */
+function isRebalanceNeeded(parts: PartModel[]): boolean {
+  const MIN_ORDER_GAP = 0.00001; // 最小間隔
+  return parts.some((part, index) => {
+    if (index === 0) return false;
+    return part.order - parts[index - 1].order < MIN_ORDER_GAP;
   });
 }
 
