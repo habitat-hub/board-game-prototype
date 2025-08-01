@@ -335,10 +335,21 @@ function handleChangeOrder(socket: Socket, io: Server) {
       const { prototypeId } = socket.data as SocketData;
 
       try {
-        const partsBackToFront = await PartModel.findAll({
-          where: { prototypeId },
-          order: [['order', 'ASC']],
-        });
+        const getPartsWithRebalanceIfNeeded = async () => {
+          const parts = await PartModel.findAll({
+            where: { prototypeId },
+            order: [['order', 'ASC']],
+          });
+
+          // リバランスが必要なら実行し、リバランス済みパーツを取得
+          if (isRebalanceNeeded(parts)) {
+            return await rebalanceOrders(prototypeId, parts, io);
+          }
+
+          return parts;
+        };
+
+        const partsBackToFront = await getPartsWithRebalanceIfNeeded();
 
         const selfPartIndex = partsBackToFront.findIndex(
           (part) => part.id === partId
@@ -430,11 +441,6 @@ function handleChangeOrder(socket: Socket, io: Server) {
             break;
           }
           case 'frontmost': {
-            // リバランスが必要なら実行
-            if (isRebalanceNeeded(partsBackToFront)) {
-              await rebalanceOrders(prototypeId, partsBackToFront, io);
-            }
-
             // 最前面に移動
             const partFrontMost = partsBackToFront[partsBackToFront.length - 1];
             const newOrder = (partFrontMost.order + MAX_ORDER_VALUE) / 2;
@@ -530,13 +536,13 @@ function handleUpdateCursor(socket: Socket, io: Server) {
  * @param prototypeId - プロトタイプID
  * @param parts - パーツの配列
  * @param io - Server
- * @returns Promise<void> - リバランス処理の完了を示すPromise
+ * @returns Promise<PartModel[]> - リバランス済みのパーツ配列を返すPromise
  */
 async function rebalanceOrders(
   prototypeId: string,
   parts: PartModel[],
   io: Server
-): Promise<void> {
+): Promise<PartModel[]> {
   console.log('Rebalancing orders for parts in prototype:', prototypeId);
   const totalParts = parts.length;
 
@@ -561,6 +567,9 @@ async function rebalanceOrders(
   });
 
   console.log('Rebalancing completed for prototype:', prototypeId);
+
+  // リバランス済みのパーツ配列を返す
+  return parts;
 }
 
 /**
