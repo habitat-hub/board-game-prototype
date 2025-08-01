@@ -1,4 +1,4 @@
-// プロトタイプのパーツの順序に関する定数
+// プロトタイプ内のパーツの最大order値
 export const MAX_ORDER_VALUE = 1;
 
 /**
