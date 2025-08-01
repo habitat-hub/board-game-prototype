@@ -54,7 +54,7 @@
       if (commentsRes.ok) {
         const comments = await commentsRes.json();
         commentTexts = comments
-          .map((c) => `- ${c.user.login}: ${c.body}`)
+          .map((c) => `${c.user.login}:\n${c.body}`)
           .join("\n");
 
         console.log(`Fetched ${comments.length} comment(s).`);
