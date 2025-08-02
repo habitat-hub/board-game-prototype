@@ -30,7 +30,6 @@ import userRoutes from './routes/user';
 import imageRoutes from './routes/image';
 import handlePrototype from './socket/prototypeHandler';
 import handleProject from './socket/projectHandler';
-import { setIOInstance } from './utils/socketManager';
 
 import { errorHandler } from './middlewares/errorHandler';
 
@@ -202,9 +201,6 @@ app.use('/api/images', imageRoutes);
 
 // エラーハンドリングミドルウェアの適用
 app.use(errorHandler);
-
-// Socket.io接続
-setIOInstance(io); // グローバルにioインスタンスを設定
 
 io.on('connection', (socket: Socket) => {
   handlePrototype(socket, io);

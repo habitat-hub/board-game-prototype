@@ -8,7 +8,6 @@ import {
   checkProjectManagePermission,
 } from '../middlewares/authorization';
 import { getAccessiblePrototypes } from '../helpers/prototypeHelper';
-import { getIOInstance } from '../utils/socketManager';
 import sequelize from '../models';
 import {
   createProject,
@@ -206,7 +205,7 @@ router.post(
 
       // Socket.IOでルーム作成を全ユーザーに通知
       try {
-        const io = getIOInstance();
+        const io = req.app.get('io');
         io.to(`project:${req.params.projectId}`).emit('ROOM_CREATED', {
           version: versionPrototype,
           instance: instancePrototype,
@@ -328,7 +327,7 @@ router.delete(
 
       // Socket.IOでルーム削除を全ユーザーに通知
       try {
-        const io = getIOInstance();
+        const io = req.app.get('io');
         io.to(`project:${projectId}`).emit('ROOM_DELETED', {
           deletedVersionId: versionPrototype.id,
           deletedInstanceIds,
