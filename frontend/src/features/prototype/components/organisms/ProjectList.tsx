@@ -1,11 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { FaPlus } from 'react-icons/fa';
 import { RiLoaderLine } from 'react-icons/ri';
@@ -24,8 +20,8 @@ import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
  * PrototypeListコンポーネントで使用される各種Stateの説明:
  *
  * @state isLoading - データ取得中のローディング状態を管理するState。
- * @state isCreating - プロトタイプ作成中のローディング状態を管理するState。
- * @state prototypeList - プロジェクトとプロトタイプのリストを保持するState。
+ * @state isCreating - プロジェクト作成中のローディング状態を管理するState。
+ * @state prototypeList - プロジェクトのリストを保持するState。
  * @state sort - プロトタイプのソート条件（キーと順序）を管理するState。
  *
  * 編集機能はuseInlineEditカスタムフックで管理されています。
@@ -116,8 +112,6 @@ const ProjectList: React.FC = () => {
 
     return `${randomAdjective}な${randomNoun}`;
   };
-
-
 
   /**
    * 新しいプロトタイプを作成する
@@ -231,7 +225,6 @@ const ProjectList: React.FC = () => {
     fetchProjects();
   }, [fetchProjects]);
 
-
   /**
    * 右クリック時の処理
    */
@@ -262,7 +255,10 @@ const ProjectList: React.FC = () => {
   /**
    * コンテキストメニューのアイテム定義
    */
-  const getContextMenuItems = (project: Project, masterPrototype: Prototype) => [
+  const getContextMenuItems = (
+    project: Project,
+    masterPrototype: Prototype
+  ) => [
     {
       id: 'rename',
       text: '名前の変更',
@@ -303,16 +299,16 @@ const ProjectList: React.FC = () => {
     <div className="max-w-6xl mx-auto py-16 relative px-4">
       {/* タイトル */}
       <h1 className="text-3xl text-wood-darkest font-bold mb-8 text-center bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
-        プロトタイプ一覧
+        プロジェクト一覧
       </h1>
 
-      {/* プロトタイプ一覧（カード形式） */}
+      {/* プロジェクト一覧（カード形式） */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {prototypeList.map(({ masterPrototype, project }) => {
           if (!masterPrototype) return null;
           const { id } = masterPrototype;
           const isNameEditing = isEditing(id);
-          
+
           /**
            * カードクリック時の処理
            */
@@ -323,15 +319,17 @@ const ProjectList: React.FC = () => {
           /**
            * ProjectCard用のイベントハンドラー
            */
-          const handleProjectCardSubmit = (e: React.FormEvent<HTMLFormElement>) =>
-            handleSubmit(e, handleNameEditComplete, validatePrototypeName);
-          
+          const handleProjectCardSubmit = (
+            e: React.FormEvent<HTMLFormElement>
+          ) => handleSubmit(e, handleNameEditComplete, validatePrototypeName);
+
           const handleProjectCardBlur = () =>
             handleBlur(handleNameEditComplete, validatePrototypeName);
-          
-          const handleProjectCardKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) =>
-            handleKeyDown(e, handleNameEditComplete, validatePrototypeName);
-          
+
+          const handleProjectCardKeyDown = (
+            e: React.KeyboardEvent<HTMLInputElement>
+          ) => handleKeyDown(e, handleNameEditComplete, validatePrototypeName);
+
           return (
             <ProjectCard
               key={id}
@@ -349,8 +347,8 @@ const ProjectList: React.FC = () => {
           );
         })}
       </div>
-      
-      {/* 新規プロトタイプ作成ボタン（フローティングアクションボタン） */}
+
+      {/* 新規プロジェクト作成ボタン（フローティングアクションボタン） */}
       <button
         onClick={handleCreatePrototype}
         disabled={isCreating}
@@ -360,7 +358,7 @@ const ProjectList: React.FC = () => {
               ? 'opacity-80 cursor-not-allowed'
               : 'hover:shadow-xl hover:scale-110 hover:from-header-light hover:to-header'
           }`}
-        title={isCreating ? '作成中...' : '新しいプロトタイプを作成'}
+        title={isCreating ? '作成中...' : '新しいプロジェクトを作成'}
       >
         {isCreating ? (
           <RiLoaderLine className="w-6 h-6 animate-spin" />
@@ -370,19 +368,21 @@ const ProjectList: React.FC = () => {
       </button>
 
       {/* コンテキストメニュー */}
-      {contextMenu.targetProject && createPortal(
-        <ProjectContextMenu
-          visible={contextMenu.visible}
-          position={contextMenu.position}
-          width={140}
-          itemHeight={32}
-          items={getContextMenuItems(
-            contextMenu.targetProject.project,
-            contextMenu.targetProject.masterPrototype
-          )}
-          onClose={closeContextMenu}
-        />
-      , document.body)}
+      {contextMenu.targetProject &&
+        createPortal(
+          <ProjectContextMenu
+            visible={contextMenu.visible}
+            position={contextMenu.position}
+            width={140}
+            itemHeight={32}
+            items={getContextMenuItems(
+              contextMenu.targetProject.project,
+              contextMenu.targetProject.masterPrototype
+            )}
+            onClose={closeContextMenu}
+          />,
+          document.body
+        )}
     </div>
   );
 };

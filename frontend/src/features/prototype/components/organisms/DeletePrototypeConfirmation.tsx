@@ -92,14 +92,14 @@ const DeletePrototypeConfirmation = () => {
     return (
       <div className="max-w-3xl mx-auto mt-16 p-8 bg-white rounded-xl shadow-lg">
         <div className="text-center text-gray-600">
-          プロトタイプが見つかりません
+          プロジェクトが見つかりません
         </div>
         <div className="mt-4 text-center">
           <button
             onClick={() => router.push('/projects')}
             className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
           >
-            プロトタイプ一覧へ戻る
+            プロジェクト一覧へ戻る
           </button>
         </div>
       </div>
@@ -120,22 +120,20 @@ const DeletePrototypeConfirmation = () => {
 
       <div className="text-center mb-6">
         <h1 className="text-2xl font-bold text-red-600 mb-2">
-          プロトタイプを削除
+          プロジェクトを削除
         </h1>
         <div className="bg-red-50 rounded-lg p-4 text-red-800 mb-6">
           <p className="mb-2">
             <span className="font-bold">警告:</span> 削除操作は取り消せません。
           </p>
-          <p>
-            このプロトタイプの全てのバージョン、プレイルーム、関連するデータが完全に削除されます。
-          </p>
+          <p>このプロジェクトに関連する全てのデータが完全に削除されます。</p>
         </div>
       </div>
 
       <div className="bg-gray-50 p-6 rounded-lg mb-8 border border-gray-200">
-        <h2 className="text-xl font-semibold mb-4">削除するプロトタイプ</h2>
+        <h2 className="text-xl font-semibold mb-4">削除するプロジェクト</h2>
         <div className="mb-4">
-          <div className="text-sm text-gray-500">プロトタイプ名</div>
+          <div className="text-sm text-gray-500">プロジェクト名</div>
           <div className="text-lg font-medium">{masterPrototype?.name}</div>
         </div>
       </div>
