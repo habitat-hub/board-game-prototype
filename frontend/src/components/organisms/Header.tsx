@@ -10,11 +10,11 @@ const Header: React.FC = () => {
   const pathname = usePathname();
 
   /**
-   * プロトタイプ一覧画面へ遷移する
-   * 現在すでにプロトタイプ一覧画面またはログイン画面にいる場合は何もしない
+   * プロジェクト一覧画面へ遷移する
+   * 現在すでにプロジェクト一覧画面またはログイン画面にいる場合は何もしない
    */
-  const goToPrototypes = () => {
-    // プロトタイプ一覧画面、またはログイン画面の場合
+  const goToProjects = () => {
+    // プロジェクト一覧画面、またはログイン画面の場合
     if (pathname === '/projects' || pathname === '/') return;
 
     router.push('/projects');
@@ -22,7 +22,7 @@ const Header: React.FC = () => {
 
   return (
     <header className="bg-kibako-primary text-white p-6 flex justify-between items-center h-20">
-      <button onClick={goToPrototypes}>
+      <button onClick={goToProjects}>
         <div className="flex gap-2">
           <GiWoodenCrate className="text-4xl drop-shadow-xl transform -rotate-6 text-kibako-white" />
           <span className="text-3xl tracking-wider font-medium text-kibako-white">

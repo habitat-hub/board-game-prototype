@@ -4,7 +4,7 @@ import React from 'react';
 import ProjectList from '@/features/prototype/components/organisms/ProjectList';
 
 export const metadata: Metadata = {
-  title: 'プロトタイプ一覧',
+  title: 'プロジェクト一覧',
 };
 
 const ProjectsPage: React.FC = () => {
