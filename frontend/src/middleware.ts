@@ -22,7 +22,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon') ||
     pathname.startsWith('/images') ||
-    pathname.includes('.')
+    /\.(ico|png|jpg|jpeg|gif|svg|css|js|woff|woff2|ttf|eot)$/i.test(pathname)
   ) {
     return NextResponse.next();
   }
