@@ -1,45 +1,26 @@
-'use client';
-
-import { useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 import { GiWoodenCrate } from 'react-icons/gi';
 
+import MaintenanceReloadButton from '@/components/molecules/MaintenanceReloadButton';
 import {
-  isMaintenanceMode,
   getMaintenanceMessage,
   getMaintenanceEndTime,
 } from '@/utils/maintenance';
 
+interface MaintenanceProps {
+  returnTo: string;
+}
+
 /**
- * メンテナンスページコンポーネント
+ * メンテナンスページコンポーネント (Server Component)
  * メンテナンス中のシステム状態をユーザーに通知するためのページ
- * このコンポーネントは、メンテナンス中の情報を表示し、ユーザーに再読み込みを促す
- * また、メンテナンスモードが解除された場合は元のページに戻る機能も提供する
  * @returns メンテナンスページのJSX要素
  */
-const Maintenance: React.FC = () => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  // クエリパラメータから元のパスを取得
-  // メンテナンスページにリダイレクトされた場合、returnToパラメータに元のパスが含まれる
-  // 例: /maintenance?returnTo=/original-path
-  // これを使ってメンテナンスモードが解除された際に元のパスに戻る
-  const returnTo = searchParams.get('returnTo');
-
+const Maintenance: React.FC<MaintenanceProps> = ({ returnTo }) => {
   // メンテナンスメッセージを取得
   const message = getMaintenanceMessage();
   // メンテナンス終了予定時刻を取得
   const endTime = getMaintenanceEndTime();
-
-  const handleReload = () => {
-    // メンテナンスモードが解除されていて元のパスがある場合はそこに戻る
-    if (!isMaintenanceMode()) {
-      router.replace(returnTo || '/');
-    } else {
-      window.location.reload();
-    }
-  };
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-content-secondary to-content-DEFAULT flex items-center justify-center p-4">
@@ -79,15 +60,8 @@ const Maintenance: React.FC = () => {
           <span>システム復旧作業中...</span>
         </div>
 
-        {/* 再読み込みボタン */}
-        <div className="mt-6 pt-4 border-t border-wood-light">
-          <button
-            onClick={handleReload}
-            className="text-kibako-accent hover:text-kibako-primary text-sm transition-colors duration-200 font-medium"
-          >
-            ページを再読み込み
-          </button>
-        </div>
+        {/* 再読み込みボタン（Client Component） */}
+        <MaintenanceReloadButton returnTo={returnTo} />
       </div>
     </div>
   );

@@ -24,6 +24,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function MaintenancePage() {
-  return <Maintenance />;
+export default async function MaintenancePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ returnTo?: string }>;
+}) {
+  const resolvedSearchParams = await searchParams;
+  return <Maintenance returnTo={resolvedSearchParams.returnTo || '/'} />;
 }
