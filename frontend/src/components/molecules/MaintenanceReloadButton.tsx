@@ -5,8 +5,10 @@ import React, { useEffect } from 'react';
 
 import { isMaintenanceMode } from '@/utils/maintenance';
 
+// メンテナンス再読み込みボタンコンポーネントのProps型定義
 interface MaintenanceReloadButtonProps {
-  returnTo?: string;
+  // メンテナンス終了後にリダイレクトする元のページURL
+  returnTo: string;
 }
 
 /**
@@ -15,22 +17,28 @@ interface MaintenanceReloadButtonProps {
  */
 const MaintenanceReloadButton: React.FC<MaintenanceReloadButtonProps> = ({
   returnTo,
-}) => {
+}): React.JSX.Element => {
   const router = useRouter();
 
   // コンポーネントマウント時にメンテナンス状態をチェック
+  // 画面上のリロードボタン、もしくは、ブラウザのリロードで発火
   useEffect(() => {
+    // メンテナンスモードが解除されており、リダイレクト先が指定されている場合
     if (!isMaintenanceMode() && returnTo) {
       router.replace(returnTo);
     }
   }, [router, returnTo]);
 
+  /*
+   * ページ再読み込みまたはリダイレクト処理
+   * メンテナンスモードの場合はページを再読み込み
+   * それ以外の場合は指定された元のページへリダイレクト
+   */
   const handleReload = () => {
-    // メンテナンスモードが解除されていて元のパスがある場合はそこに戻る
-    if (!isMaintenanceMode()) {
-      router.replace(returnTo || '/');
-    } else {
+    try {
       window.location.reload();
+    } catch (error) {
+      console.error('Error reloading the page:', error);
     }
   };
 

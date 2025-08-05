@@ -7,7 +7,9 @@ import {
   getMaintenanceEndTime,
 } from '@/utils/maintenance';
 
+// メンテナンスページコンポーネントのProps型定義
 interface MaintenanceProps {
+  // メンテナンス終了後にリダイレクトする元のページURL
   returnTo: string;
 }
 
@@ -16,7 +18,9 @@ interface MaintenanceProps {
  * メンテナンス中のシステム状態をユーザーに通知するためのページ
  * @returns メンテナンスページのJSX要素
  */
-const Maintenance: React.FC<MaintenanceProps> = ({ returnTo }) => {
+const Maintenance: React.FC<MaintenanceProps> = ({
+  returnTo,
+}): React.JSX.Element => {
   // メンテナンスメッセージを取得
   const message = getMaintenanceMessage();
   // メンテナンス終了予定時刻を取得
