@@ -1,0 +1,47 @@
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+import { isMaintenanceMode, getAllowedPaths } from '@/utils/maintenance';
+
+export function middleware(request: NextRequest) {
+  // メンテナンスモードでない場合は通常処理
+  if (!isMaintenanceMode()) {
+    return NextResponse.next();
+  }
+
+  const { pathname } = request.nextUrl;
+  const allowedPaths = getAllowedPaths();
+
+  // allowedPaths（maintenance.jsonで管理）とメンテナンスページは表示を許可
+  if (allowedPaths.includes(pathname) || pathname.startsWith('/maintenance')) {
+    return NextResponse.next();
+  }
+
+  // 静的ファイル（画像、CSS、JSなど）は通す（メンテナンスページ表示に必要）
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/favicon') ||
+    pathname.startsWith('/images') ||
+    pathname.includes('.')
+  ) {
+    return NextResponse.next();
+  }
+
+  // その他のページはメンテナンスページにリダイレクト（元のパスをクエリパラメータreturnToに保存）
+  const maintenanceUrl = new URL('/maintenance', request.url);
+  maintenanceUrl.searchParams.set('returnTo', pathname);
+  return NextResponse.redirect(maintenanceUrl);
+}
+
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
+};
