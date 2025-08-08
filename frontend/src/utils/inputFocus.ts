@@ -3,12 +3,17 @@
  * @returns 入力フィールドにフォーカスがある場合はtrue
  */
 export function isInputFieldFocused(): boolean {
+  // SSR safety guard
+  if (typeof document === 'undefined') {
+    return false;
+  }
+
   const active = document.activeElement;
   const tag = active && (active.tagName || '').toUpperCase();
 
   return (
     tag === 'INPUT' ||
     tag === 'TEXTAREA' ||
-    active?.hasAttribute('contenteditable') === true
+    (active instanceof HTMLElement && active.isContentEditable)
   );
 }
