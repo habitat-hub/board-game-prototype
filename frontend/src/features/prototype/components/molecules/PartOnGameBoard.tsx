@@ -12,6 +12,8 @@ import useImage from 'use-image';
 import { Part, PartProperty } from '@/api/types';
 import FlipIcon from '@/features/prototype/components/atoms/FlipIcon';
 import ShuffleIcon from '@/features/prototype/components/atoms/ShuffleIcon';
+import { FLIP_ANIMATION } from '@/features/prototype/constants/animation';
+import { TEXT_LAYOUT } from '@/features/prototype/constants/part';
 import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { useCard } from '@/features/prototype/hooks/useCard';
 import { useCursorControl } from '@/features/prototype/hooks/useCursorControl';
@@ -20,13 +22,6 @@ import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor'
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePartTooltip } from '@/features/prototype/hooks/usePartTooltip';
 import { GameBoardMode } from '@/features/prototype/types';
-
-// フリップアニメーション時間（ミリ秒）
-export const FLIP_ANIMATION_DURATION_MS = 800;
-
-// テキストレイアウト定数
-const TEXT_LINE_GAP = 14; // テキスト行間のギャップ
-const TEXT_HORIZONTAL_MARGIN = 10; // テキストの左右マージン
 
 interface PartOnGameBoardProps {
   part: Part;
@@ -150,7 +145,7 @@ export default function PartOnGameBoard({
     const anim = new Konva.Animation((frame) => {
       if (!frame || !groupRef.current) return;
 
-      const duration = FLIP_ANIMATION_DURATION_MS; // フリップアニメーション時間
+      const duration = FLIP_ANIMATION.DURATION_MS; // フリップアニメーション時間
       const timePassed = frame.time % duration;
       const progress = timePassed / duration;
 
@@ -363,10 +358,10 @@ export default function PartOnGameBoard({
           text={`持ち主: ${handOwnerName}`}
           fontSize={12}
           fill={targetProperty?.textColor || 'black'}
-          width={part.width - TEXT_HORIZONTAL_MARGIN * 2}
+          width={part.width - TEXT_LAYOUT.HORIZONTAL_MARGIN * 2}
           align="center"
-          y={part.height / 2 - TEXT_LINE_GAP}
-          x={TEXT_HORIZONTAL_MARGIN}
+          y={part.height / 2 - TEXT_LAYOUT.LINE_GAP}
+          x={TEXT_LAYOUT.HORIZONTAL_MARGIN}
           wrap="word"
           ellipsis={true}
           perfectDrawEnabled={false}
@@ -381,10 +376,10 @@ export default function PartOnGameBoard({
           text={targetProperty.description}
           fontSize={12}
           fill={targetProperty.textColor || '#666'}
-          width={part.width - TEXT_HORIZONTAL_MARGIN * 2}
+          width={part.width - TEXT_LAYOUT.HORIZONTAL_MARGIN * 2}
           align="center"
           y={part.height / 2}
-          x={TEXT_HORIZONTAL_MARGIN}
+          x={TEXT_LAYOUT.HORIZONTAL_MARGIN}
           wrap="word"
           ellipsis={true}
           perfectDrawEnabled={false}
