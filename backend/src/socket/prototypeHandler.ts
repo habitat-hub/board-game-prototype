@@ -131,17 +131,37 @@ function handleAddPart(socket: Socket, io: Server) {
     }) => {
       const { prototypeId } = socket.data as SocketData;
 
+      /**
+       * 新しいパーツのorder値を計算する
+       * @param parts - 既存のパーツ配列（orderの昇順でソート済み）
+       * @param partType - パーツのタイプ
+       * @returns 新しいパーツのorder値
+       */
+      const calculateNewPartOrder = (
+        parts: PartModel[],
+        partType: string
+      ): number => {
+        if (parts.length === 0) {
+          // パーツが存在しない場合は中央値
+          return 0.5;
+        } else if (partType === 'card' || partType === 'token') {
+          // カード・トークンは最前面に追加
+          const maxOrder = parts[parts.length - 1].order;
+          return (maxOrder + MAX_ORDER_VALUE) / 2;
+        } else {
+          // それ以外のパーツは最背面に追加
+          const minOrder = parts[0].order;
+          return (minOrder + 0) / 2;
+        }
+      };
+
       try {
         const parts = await PartModel.findAll({
           where: { prototypeId },
           order: [['order', 'ASC']],
         });
 
-        const maxOrder =
-          parts.length > 0 ? parts[parts.length - 1].order : null;
-
-        const newOrder =
-          maxOrder === null ? 0.5 : (maxOrder + MAX_ORDER_VALUE) / 2;
+        const newOrder = calculateNewPartOrder(parts, part.type);
 
         const newPart = await PartModel.create({
           ...part,
