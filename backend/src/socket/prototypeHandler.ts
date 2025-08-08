@@ -9,6 +9,7 @@ import ImageModel from '../models/Image';
 import {
   ORDER_MAX_EXCLUSIVE,
   ORDER_MIN_EXCLUSIVE,
+  ORDER_RANGE,
   MIN_ORDER_GAP,
 } from '../constants/prototypeConstants';
 
@@ -573,7 +574,7 @@ async function rebalanceOrders(
 
   // ORDER_MIN_EXCLUSIVEからORDER_MAX_EXCLUSIVEの間で等間隔に設定
   // 例えば、3つのパーツがある場合、0.25, 0.5, 0.75のように設定
-  const step = (ORDER_MAX_EXCLUSIVE - ORDER_MIN_EXCLUSIVE) / (totalParts + 1);
+  const step = ORDER_RANGE / (totalParts + 1);
 
   // partsの各要素のorderを直接更新
   parts.forEach((part, i) => {
