@@ -398,9 +398,9 @@ export default function PartOnGameBoard({
       {showDebugInfo && (
         <Group x={5} y={5} listening={false}>
           <Rect
-            width={85}
-            height={25}
-            fill="rgba(0, 0, 0, 0.7)"
+            width={90}
+            height={20}
+            fill="rgba(200, 200, 200, 0.8)"
             cornerRadius={4}
             perfectDrawEnabled={false}
             hitStrokeWidth={0}
@@ -408,8 +408,8 @@ export default function PartOnGameBoard({
           />
           <Text
             text={`ID:${part.id}\nO:${typeof part.order === 'number' ? part.order : 'N/A'}`}
-            fontSize={10}
-            fill="white"
+            fontSize={7}
+            fill="black"
             width={85}
             align="left"
             x={5}
