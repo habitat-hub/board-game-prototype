@@ -21,6 +21,9 @@ import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePartTooltip } from '@/features/prototype/hooks/usePartTooltip';
 import { GameBoardMode } from '@/features/prototype/types';
 
+// フリップアニメーション時間（ミリ秒）
+export const FLIP_ANIMATION_DURATION_MS = 800;
+
 interface PartOnGameBoardProps {
   part: Part;
   properties: PartProperty[];
@@ -143,7 +146,7 @@ export default function PartOnGameBoard({
     const anim = new Konva.Animation((frame) => {
       if (!frame || !groupRef.current) return;
 
-      const duration = 800; // アニメーション時間 (ミリ秒)
+      const duration = FLIP_ANIMATION_DURATION_MS; // フリップアニメーション時間
       const timePassed = frame.time % duration;
       const progress = timePassed / duration;
 
