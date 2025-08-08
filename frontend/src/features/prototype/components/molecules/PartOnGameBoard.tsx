@@ -312,7 +312,6 @@ export default function PartOnGameBoard({
         stroke={'grey'}
         strokeWidth={1}
         cornerRadius={isCard ? 10 : 4}
-        opacity={part.type === 'area' ? 0.6 : 1}
         dash={part.type === 'area' ? [4, 4] : undefined}
         shadowColor={isActive ? 'rgba(59, 130, 246, 1)' : 'transparent'}
         shadowBlur={isActive ? 10 : 0}
@@ -329,7 +328,6 @@ export default function PartOnGameBoard({
           width={part.width}
           height={part.height}
           cornerRadius={isCard ? 10 : 4}
-          opacity={part.type === 'area' ? 0.6 : 1}
           alt={targetProperty?.name || 'Game part'}
           perfectDrawEnabled={false}
           hitStrokeWidth={0}
