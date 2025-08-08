@@ -22,6 +22,10 @@ import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor'
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePartTooltip } from '@/features/prototype/hooks/usePartTooltip';
 import { GameBoardMode } from '@/features/prototype/types';
+import {
+  isPhysicalPartType,
+  isConceptPartType,
+} from '@/features/prototype/utils/partUtils';
 
 interface PartOnGameBoardProps {
   part: Part;
@@ -310,13 +314,23 @@ export default function PartOnGameBoard({
         height={part.height}
         fill={imageLoaded ? 'white' : targetProperty?.color || 'white'}
         stroke={'grey'}
-        strokeWidth={1}
-        cornerRadius={isCard ? 10 : 4}
-        dash={part.type === 'area' ? [4, 4] : undefined}
-        shadowColor={isActive ? 'rgba(59, 130, 246, 1)' : 'transparent'}
-        shadowBlur={isActive ? 10 : 0}
-        shadowOffsetX={0}
-        shadowOffsetY={0}
+        strokeWidth={part.type === 'area' ? 3 : 1}
+        cornerRadius={isConceptPartType(part.type) ? 20 : isCard ? 10 : 4}
+        dash={
+          isConceptPartType(part.type) || part.type === 'area'
+            ? [8, 8]
+            : undefined
+        }
+        shadowColor={
+          isActive
+            ? 'rgba(59, 130, 246, 1)'
+            : isPhysicalPartType(part.type)
+              ? 'rgba(0, 0, 0, 0.15)'
+              : 'transparent'
+        }
+        shadowBlur={isActive ? 10 : isPhysicalPartType(part.type) ? 4 : 0}
+        shadowOffsetX={isActive ? 0 : isPhysicalPartType(part.type) ? 2 : 0}
+        shadowOffsetY={isActive ? 0 : isPhysicalPartType(part.type) ? 2 : 0}
         perfectDrawEnabled={false}
         hitStrokeWidth={0}
       />
