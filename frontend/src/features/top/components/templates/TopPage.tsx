@@ -10,11 +10,11 @@ import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import { GiWoodenCrate } from 'react-icons/gi';
 
-import FloatingActionButton from '@/features/about/components/atoms/FloatingActionButton';
-import CatchCopyCard from '@/features/about/components/molecules/CatchCopyCard';
-import MiniGameBoard from '@/features/about/components/organisms/MiniGameBoard';
+import FloatingActionButton from '@/features/top/components/atoms/FloatingActionButton';
+import CatchCopyCard from '@/features/top/components/molecules/CatchCopyCard';
+import MiniGameBoard from '@/features/top/components/organisms/MiniGameBoard';
 
-const About: React.FC = () => {
+const TopPage: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const { scrollYProgress } = useScroll();
 
@@ -613,4 +613,4 @@ const About: React.FC = () => {
   );
 };
 
-export default About;
+export default TopPage;

@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   // カノニカルURL
   metadataBase: new URL('https://kibako.habitat-hub.com'),
   alternates: {
-    canonical: '/about',
+    canonical: '/',
   },
 
   // Open Graph
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     title: 'KIBAKO - ボードゲーム試作品作成アプリ',
     description:
       '気軽にボードゲームを作ろう - アイデアを素早く試作品に。ボードゲームをオンライン上で作成し、繰り返しテストプレイできます。',
-    url: 'https://kibako.habitat-hub.com/about',
+    url: 'https://kibako.habitat-hub.com/',
     images: [
       {
         url: '/images/og-image.png',
