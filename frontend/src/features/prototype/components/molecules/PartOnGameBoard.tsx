@@ -23,8 +23,14 @@ import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePartTooltip } from '@/features/prototype/hooks/usePartTooltip';
 import { GameBoardMode } from '@/features/prototype/types';
 import {
-  isPhysicalPartType,
-  isConceptPartType,
+  getCornerRadius,
+  getImageCornerRadius,
+  getStrokeWidth,
+  getDashPattern,
+  getShadowColor,
+  getShadowBlur,
+  getShadowOffsetX,
+  getShadowOffsetY,
 } from '@/features/prototype/utils/partUtils';
 
 interface PartOnGameBoardProps {
@@ -314,23 +320,13 @@ export default function PartOnGameBoard({
         height={part.height}
         fill={imageLoaded ? 'white' : targetProperty?.color || 'white'}
         stroke={'grey'}
-        strokeWidth={part.type === 'area' ? 3 : 1}
-        cornerRadius={isConceptPartType(part.type) ? 20 : isCard ? 10 : 4}
-        dash={
-          isConceptPartType(part.type) || part.type === 'area'
-            ? [8, 8]
-            : undefined
-        }
-        shadowColor={
-          isActive
-            ? 'rgba(59, 130, 246, 1)'
-            : isPhysicalPartType(part.type)
-              ? 'rgba(0, 0, 0, 0.15)'
-              : 'transparent'
-        }
-        shadowBlur={isActive ? 10 : isPhysicalPartType(part.type) ? 4 : 0}
-        shadowOffsetX={isActive ? 0 : isPhysicalPartType(part.type) ? 2 : 0}
-        shadowOffsetY={isActive ? 0 : isPhysicalPartType(part.type) ? 2 : 0}
+        strokeWidth={getStrokeWidth(part.type)}
+        cornerRadius={getCornerRadius(part.type)}
+        dash={getDashPattern(part.type)}
+        shadowColor={getShadowColor(part.type, isActive)}
+        shadowBlur={getShadowBlur(part.type, isActive)}
+        shadowOffsetX={getShadowOffsetX(part.type, isActive)}
+        shadowOffsetY={getShadowOffsetY(part.type, isActive)}
         perfectDrawEnabled={false}
         hitStrokeWidth={0}
       />
@@ -341,7 +337,7 @@ export default function PartOnGameBoard({
           image={image}
           width={part.width}
           height={part.height}
-          cornerRadius={isCard ? 10 : 4}
+          cornerRadius={getImageCornerRadius(part.type)}
           alt={targetProperty?.name || 'Game part'}
           perfectDrawEnabled={false}
           hitStrokeWidth={0}
