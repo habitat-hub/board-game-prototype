@@ -187,8 +187,10 @@ function handleAddPart(socket: Socket, io: Server) {
           properties: newPropertiesWithImages,
         });
 
-        // 新しいパーツをpartsに追加
-        const updatedParts = [...parts, newPart];
+        // 新しいパーツを正しい位置に挿入してソート順を維持
+        const updatedParts = [...parts, newPart].sort(
+          (a, b) => a.order - b.order
+        );
 
         if (isRebalanceNeeded(updatedParts)) {
           await rebalanceOrders(prototypeId, updatedParts, io);
