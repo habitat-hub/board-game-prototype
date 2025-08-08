@@ -29,6 +29,8 @@ export default function SelectionRect({
       strokeWidth={1}
       dash={[4, 2]}
       listening={false}
+      perfectDrawEnabled={false}
+      hitStrokeWidth={0}
     />
   );
 }

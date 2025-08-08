@@ -9,7 +9,7 @@ export const CAMERA_SCALE = {
   /** ズームのステップ倍率 */
   STEP: 1.1,
   /** ホイールズームのステップ倍率（より細かい） */
-  WHEEL_STEP: 1.02,
+  WHEEL_STEP: 1.06,
 } as const;
 
 /** カメラの動的マージン設定 */

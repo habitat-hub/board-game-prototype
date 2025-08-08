@@ -514,6 +514,7 @@ export default function GameBoard({
               draggable={!isSelectionMode}
               onDragMove={handleDragMove}
               onClick={handleBackgroundClick}
+              hitStrokeWidth={0}
               // 矩形選択用イベントを背景Rectに直接バインド
               {...(isSelectionMode
                 ? {
