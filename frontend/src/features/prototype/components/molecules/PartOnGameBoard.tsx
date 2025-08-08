@@ -35,9 +35,6 @@ interface PartOnGameBoardProps {
     e: Konva.KonvaEventObject<PointerEvent>,
     partId: number
   ) => void;
-  onChangePartOrder: (
-    type: 'front' | 'back' | 'frontmost' | 'backmost'
-  ) => void;
   isActive: boolean;
   // ユーザー情報
   userRoles?: Array<{
@@ -58,7 +55,6 @@ export default function PartOnGameBoard({
   onDragEnd,
   onClick,
   onContextMenu,
-  onChangePartOrder,
   isActive = false,
   userRoles = [],
 }: PartOnGameBoardProps) {
@@ -222,13 +218,6 @@ export default function PartOnGameBoard({
       setGrabbingCursor(stage);
     }
 
-    // プレイモード時にカードまたはトークンがドラッグされたら最前面に移動
-    if (
-      gameBoardMode === GameBoardMode.PLAY &&
-      (part.type === 'card' || part.type === 'token')
-    ) {
-      onChangePartOrder('frontmost');
-    }
     onDragStart(e);
   };
 
