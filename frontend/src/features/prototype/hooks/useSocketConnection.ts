@@ -69,6 +69,20 @@ export const useSocketConnection = ({
   useEffect(() => {
     if (!socket) return;
 
+    // エラーハンドリング
+    socket.on('connect_error', () => {
+      // 再接続を試行
+      socket.connect();
+    });
+
+    // 切断時の処理
+    socket.on('disconnect', (reason) => {
+      // 予期しない切断の場合は再接続を試行
+      if (reason === 'io server disconnect' || reason === 'transport error') {
+        socket.connect();
+      }
+    });
+
     // サーバーに接続した後、特定のプロトタイプに参加
     socket.emit('JOIN_PROTOTYPE', {
       prototypeId,
@@ -150,6 +164,8 @@ export const useSocketConnection = ({
 
     return () => {
       // イベントリスナーを削除
+      socket.off('connect_error');
+      socket.off('disconnect');
       socket.off('INITIAL_PARTS');
       socket.off('ADD_PART');
       socket.off('ADD_PART_RESPONSE');
