@@ -136,7 +136,7 @@ export default function PartOnGameBoard({
     const anim = new Konva.Animation((frame) => {
       if (!frame || !groupRef.current) return;
 
-      const duration = 200; // アニメーション時間 (ミリ秒)
+      const duration = 800; // アニメーション時間 (ミリ秒)
       const timePassed = frame.time % duration;
       const progress = timePassed / duration;
 
