@@ -130,8 +130,15 @@ export default function PartOnGameBoard({
     if (!isCard || !isReversing || !groupRef.current) return;
 
     // フリップアニメーション
-    const layer = groupRef.current.getLayer();
-    if (!layer) return;
+    const node = groupRef.current;
+    const layer =
+      node.getLayer() || node.getStage()?.getLayers?.()?.[0] || null;
+    if (!layer) {
+      // レイヤー未構築時は状態を復帰して中断
+      setScaleX(1);
+      setIsReversing(false);
+      return;
+    }
 
     const anim = new Konva.Animation((frame) => {
       if (!frame || !groupRef.current) return;
