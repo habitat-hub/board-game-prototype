@@ -5,10 +5,16 @@ on:
     branches:
       - main
       - develop
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-lint.yml'
   pull_request:
     branches:
       - main
       - develop
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-lint.yml'
 
 jobs:
   frontend-lint:
