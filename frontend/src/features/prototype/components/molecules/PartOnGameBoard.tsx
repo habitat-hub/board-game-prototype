@@ -24,6 +24,10 @@ import { GameBoardMode } from '@/features/prototype/types';
 // フリップアニメーション時間（ミリ秒）
 export const FLIP_ANIMATION_DURATION_MS = 800;
 
+// テキストレイアウト定数
+const TEXT_LINE_GAP = 14; // テキスト行間のギャップ
+const TEXT_HORIZONTAL_MARGIN = 10; // テキストの左右マージン
+
 interface PartOnGameBoardProps {
   part: Part;
   properties: PartProperty[];
@@ -359,10 +363,10 @@ export default function PartOnGameBoard({
           text={`持ち主: ${handOwnerName}`}
           fontSize={12}
           fill={targetProperty?.textColor || 'black'}
-          width={part.width}
+          width={part.width - TEXT_HORIZONTAL_MARGIN * 2}
           align="center"
-          y={part.height / 2}
-          x={10}
+          y={part.height / 2 - TEXT_LINE_GAP}
+          x={TEXT_HORIZONTAL_MARGIN}
           wrap="word"
           ellipsis={true}
           perfectDrawEnabled={false}
@@ -377,10 +381,10 @@ export default function PartOnGameBoard({
           text={targetProperty.description}
           fontSize={12}
           fill={targetProperty.textColor || '#666'}
-          width={part.width - 20}
+          width={part.width - TEXT_HORIZONTAL_MARGIN * 2}
           align="center"
           y={part.height / 2}
-          x={10}
+          x={TEXT_HORIZONTAL_MARGIN}
           wrap="word"
           ellipsis={true}
           perfectDrawEnabled={false}
