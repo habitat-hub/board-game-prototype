@@ -1,5 +1,11 @@
-// プロトタイプ内のパーツの最大order値
-export const MAX_ORDER_VALUE = 1;
+// プロトタイプ内のパーツの最大order値（排他的境界）
+export const ORDER_MAX_EXCLUSIVE = 1;
+
+// プロトタイプ内のパーツの最小order値（排他的境界）
+export const ORDER_MIN_EXCLUSIVE = 0;
+
+// 排他的境界間の幅
+export const ORDER_RANGE = ORDER_MAX_EXCLUSIVE - ORDER_MIN_EXCLUSIVE;
 
 /**
  * パーツ順序のリバランスが必要かどうかを判定する最小間隔

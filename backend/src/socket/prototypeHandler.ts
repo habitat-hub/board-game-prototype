@@ -7,7 +7,9 @@ import { shuffleDeck, isOverlapping } from '../helpers/prototypeHelper';
 import type { CursorInfo } from '../types/cursor';
 import ImageModel from '../models/Image';
 import {
-  MAX_ORDER_VALUE,
+  ORDER_MAX_EXCLUSIVE,
+  ORDER_MIN_EXCLUSIVE,
+  ORDER_RANGE,
   MIN_ORDER_GAP,
 } from '../constants/prototypeConstants';
 
@@ -131,17 +133,37 @@ function handleAddPart(socket: Socket, io: Server) {
     }) => {
       const { prototypeId } = socket.data as SocketData;
 
+      /**
+       * 新しいパーツのorder値を計算する
+       * @param parts - 既存のパーツ配列（orderの昇順でソート済み）
+       * @param partType - パーツのタイプ
+       * @returns 新しいパーツのorder値
+       */
+      const calculateNewPartOrder = (
+        parts: PartModel[],
+        partType: string
+      ): number => {
+        if (parts.length === 0) {
+          // パーツが存在しない場合は中央値
+          return (ORDER_MAX_EXCLUSIVE + ORDER_MIN_EXCLUSIVE) / 2;
+        } else if (partType === 'card' || partType === 'token') {
+          // カード・トークンは最前面に追加
+          const maxOrder = parts[parts.length - 1].order;
+          return (maxOrder + ORDER_MAX_EXCLUSIVE) / 2;
+        } else {
+          // それ以外のパーツは最背面に追加
+          const minOrder = parts[0].order;
+          return (minOrder + ORDER_MIN_EXCLUSIVE) / 2;
+        }
+      };
+
       try {
         const parts = await PartModel.findAll({
           where: { prototypeId },
           order: [['order', 'ASC']],
         });
 
-        const maxOrder =
-          parts.length > 0 ? parts[parts.length - 1].order : null;
-
-        const newOrder =
-          maxOrder === null ? 0.5 : (maxOrder + MAX_ORDER_VALUE) / 2;
+        const newOrder = calculateNewPartOrder(parts, part.type);
 
         const newPart = await PartModel.create({
           ...part,
@@ -166,8 +188,10 @@ function handleAddPart(socket: Socket, io: Server) {
           properties: newPropertiesWithImages,
         });
 
-        // 新しいパーツをpartsに追加
-        const updatedParts = [...parts, newPart];
+        // 新しいパーツを正しい位置に挿入してソート順を維持
+        const updatedParts = [...parts, newPart].sort(
+          (a, b) => a.order - b.order
+        );
 
         if (isRebalanceNeeded(updatedParts)) {
           await rebalanceOrders(prototypeId, updatedParts, io);
@@ -386,7 +410,8 @@ function handleChangeOrder(socket: Socket, io: Server) {
               );
               const newOrder =
                 (underLappingPart.order +
-                  (partsBackToFront[prevPartIndex - 1]?.order ?? 0)) /
+                  (partsBackToFront[prevPartIndex - 1]?.order ??
+                    ORDER_MIN_EXCLUSIVE)) /
                 2;
               const [, result] = await PartModel.update(
                 { order: newOrder },
@@ -413,7 +438,8 @@ function handleChangeOrder(socket: Socket, io: Server) {
               );
               const newOrder =
                 (overLappingPart.order +
-                  (partsBackToFront[nextPartIndex + 1]?.order ?? 1)) /
+                  (partsBackToFront[nextPartIndex + 1]?.order ??
+                    ORDER_MAX_EXCLUSIVE)) /
                 2;
               const [, result] = await PartModel.update(
                 { order: newOrder },
@@ -429,7 +455,7 @@ function handleChangeOrder(socket: Socket, io: Server) {
           case 'backmost': {
             // 最背面に移動
             const partBackMost = partsBackToFront[0];
-            const newOrder = (partBackMost.order + 0) / 2;
+            const newOrder = (partBackMost.order + ORDER_MIN_EXCLUSIVE) / 2;
             const [, result] = await PartModel.update(
               { order: newOrder },
               { where: { id: partId }, returning: true }
@@ -443,7 +469,7 @@ function handleChangeOrder(socket: Socket, io: Server) {
           case 'frontmost': {
             // 最前面に移動
             const partFrontMost = partsBackToFront[partsBackToFront.length - 1];
-            const newOrder = (partFrontMost.order + MAX_ORDER_VALUE) / 2;
+            const newOrder = (partFrontMost.order + ORDER_MAX_EXCLUSIVE) / 2;
 
             const [, result] = await PartModel.update(
               { order: newOrder },
@@ -546,13 +572,12 @@ async function rebalanceOrders(
   console.log('Rebalancing orders for parts in prototype:', prototypeId);
   const totalParts = parts.length;
 
-  // 0からMAX_ORDER_VALUEの間で等間隔に設定
-  // 例えば、3つのパーツがある場合、0.25, 0.5, 0.75のように設定
-  const step = MAX_ORDER_VALUE / (totalParts + 1);
+  // ORDER_RANGEを基に等間隔のステップを計算
+  const step = ORDER_RANGE / (totalParts + 1);
 
   // partsの各要素のorderを直接更新
   parts.forEach((part, i) => {
-    part.order = step * (i + 1);
+    part.order = ORDER_MIN_EXCLUSIVE + step * (i + 1);
   });
 
   await Promise.all(
