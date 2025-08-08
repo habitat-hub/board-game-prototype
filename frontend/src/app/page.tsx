@@ -1,15 +1,15 @@
 import { Metadata } from 'next';
 import React from 'react';
 
-import About from '@/features/about/components/templates/About';
+import TopPage from '@/features/top/components/templates/TopPage';
 
 export const metadata: Metadata = {
-  title: 'KIBAKOについて',
+  title: 'KIBAKO',
   description: 'ボードゲーム試作品作成アプリ「KIBAKO」の紹介ページです。',
 };
 
 function Home() {
-  return <About />;
+  return <TopPage />;
 }
 
 export default Home;

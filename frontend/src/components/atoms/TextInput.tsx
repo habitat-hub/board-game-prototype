@@ -9,6 +9,8 @@ type TextInputProps = {
   icon: ReactNode;
   // 複数行入力を許可するか
   multiline?: boolean;
+  // 複数行入力時にリサイズを許可するか
+  resizable?: boolean;
 };
 
 const TextInput: React.FC<TextInputProps> = ({
@@ -16,6 +18,7 @@ const TextInput: React.FC<TextInputProps> = ({
   onChange,
   icon,
   multiline = false,
+  resizable = false,
 }) => {
   // 入力値
   const [inputValue, setInputValue] = useState(value);
@@ -74,7 +77,11 @@ const TextInput: React.FC<TextInputProps> = ({
         onCompositionEnd={handleCompositionEnd}
         rows={multiline ? 3 : undefined}
         className={`h-fit w-full rounded-lg border border-[#f5f5f5] bg-[#f5f5f5] px-2 py-1 pl-6 text-xs hover:border-[#e8e8e8] ${
-          multiline ? 'resize-none' : ''
+          multiline && !resizable
+            ? 'resize-none'
+            : multiline && resizable
+              ? 'resize-y'
+              : ''
         }`}
       />
       <p className="absolute left-2 top-2 text-[10px] text-gray-400">{icon}</p>

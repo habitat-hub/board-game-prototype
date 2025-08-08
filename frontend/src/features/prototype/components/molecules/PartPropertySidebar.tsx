@@ -259,56 +259,53 @@ export default function PartPropertySidebar({
   return (
     <>
       {selectedPart && (
-        <div className="fixed top-20 right-4 flex w-[240px] flex-col rounded-lg shadow-lg border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary max-h-[calc(100vh-32px)] overflow-y-auto">
-          <div className="border-b border-wood-lightest/60 rounded-t-lg bg-gradient-to-r from-wood-light/30 to-wood-light/20 py-2 px-4">
+        <div className="fixed top-20 right-4 flex w-[240px] flex-col rounded-lg shadow-lg border border-kibako-accent/70 bg-gradient-to-b from-kibako-secondary to-kibako-secondary/80 max-h-[80vh]">
+          {/* 固定ヘッダー */}
+          <div className="border-b border-kibako-accent/80 rounded-t-lg bg-gradient-to-r from-kibako-primary/70 to-kibako-primary/50 py-2 px-4 flex-shrink-0">
             <div className="flex items-center">
               {selectedPart.type === 'card' ? (
-                <GiCard10Clubs className="h-4 w-4 text-wood-dark mr-2" />
+                <GiCard10Clubs className="h-4 w-4 text-kibako-white mr-2" />
               ) : selectedPart.type === 'token' ? (
-                <Gi3dMeeple className="h-4 w-4 text-wood-dark mr-2" />
+                <Gi3dMeeple className="h-4 w-4 text-kibako-white mr-2" />
               ) : selectedPart.type === 'hand' ? (
-                <GiPokerHand className="h-4 w-4 text-wood-dark mr-2" />
+                <GiPokerHand className="h-4 w-4 text-kibako-white mr-2" />
               ) : selectedPart.type === 'deck' ? (
-                <GiStoneBlock className="h-4 w-4 text-wood-dark mr-2" />
+                <GiStoneBlock className="h-4 w-4 text-kibako-white mr-2" />
               ) : selectedPart.type === 'area' ? (
-                <BiArea className="h-4 w-4 text-wood-dark mr-2" />
+                <BiArea className="h-4 w-4 text-kibako-white mr-2" />
               ) : null}
-              <span className="text-[12px] font-medium text-wood-darkest">
+              <span className="text-[12px] font-medium text-kibako-white">
                 プロパティ編集
               </span>
             </div>
           </div>
-          <div className="flex flex-col gap-2 p-4">
-            <span className="mb-2 text-[11px] font-medium">共通</span>
-            <div className="flex items-center px-2 pb-2">
-              <div className="w-1/2">
-                <TextIconButton
-                  text="複製"
-                  icon={<FaRegCopy className="h-3 w-3" />}
-                  isSelected={false}
-                  onClick={() => {
-                    handleCopyPart();
-                  }}
-                />
-              </div>
-              <div className="w-1/2">
-                <TextIconButton
-                  text="削除"
-                  icon={<FaRegTrashAlt className="h-3 w-3" />}
-                  isSelected={false}
-                  onClick={() => {
-                    onDeletePart();
-                  }}
-                />
-              </div>
+          {/* スクロール可能なコンテンツエリア */}
+          <div className="flex flex-col gap-2 p-4 overflow-y-auto overflow-x-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex items-center justify-around px-2 pb-2">
+              <TextIconButton
+                text="複製"
+                icon={<FaRegCopy className="h-3 w-3" />}
+                isSelected={false}
+                onClick={() => {
+                  handleCopyPart();
+                }}
+              />
+              <TextIconButton
+                text="削除"
+                icon={<FaRegTrashAlt className="h-3 w-3" />}
+                isSelected={false}
+                onClick={() => {
+                  onDeletePart();
+                }}
+              />
             </div>
             {selectedPart.type === 'card' && (
               <div className="flex items-center justify-center mb-2">
                 <span
-                  className={`text-xs font-medium px-3 py-1 rounded-full text-blue-800 ${
+                  className={`text-xs font-medium px-3 py-1 rounded-full ${
                     selectedPart.frontSide === 'front'
-                      ? 'bg-green-100'
-                      : 'bg-red-100'
+                      ? 'text-green-800 bg-green-200'
+                      : 'text-red-800 bg-red-200'
                   }`}
                 >
                   {selectedPart.frontSide === 'front'
@@ -318,7 +315,7 @@ export default function PartPropertySidebar({
               </div>
             )}
             <div className="flex flex-col gap-1">
-              <p className="text-[9px] font-medium text-wood-dark">位置</p>
+              <p className="text-[9px] font-medium text-kibako-white">位置</p>
               <div className="flex w-full gap-2 mb-2">
                 <NumberInput
                   key={`${selectedPart.id}-x-${selectedPart.position.x}`}
@@ -353,7 +350,7 @@ export default function PartPropertySidebar({
                   icon={<>Y</>}
                 />
               </div>
-              <p className="text-[9px] font-medium text-wood-dark">サイズ</p>
+              <p className="text-[9px] font-medium text-kibako-white">サイズ</p>
               <div className="flex w-full gap-2 mb-2">
                 <NumberInput
                   key={`${selectedPart.id}-width-${selectedPart.width}`}
@@ -384,7 +381,7 @@ export default function PartPropertySidebar({
                   icon={<>H</>}
                 />
               </div>
-              <p className="text-[9px] font-medium text-wood-dark">名前</p>
+              <p className="text-[9px] font-medium text-kibako-white">名前</p>
               <div className="flex w-full mb-2">
                 <TextInput
                   key={`${selectedPart.id}-name-${currentProperty?.name}`}
@@ -393,7 +390,7 @@ export default function PartPropertySidebar({
                   icon={<>T</>}
                 />
               </div>
-              <p className="text-[9px] font-medium text-wood-dark">説明</p>
+              <p className="text-[9px] font-medium text-kibako-white">説明</p>
               <div className="flex w-full mb-2">
                 <TextInput
                   key={`${selectedPart.id}-description-${currentProperty?.description}`}
@@ -403,9 +400,10 @@ export default function PartPropertySidebar({
                   }
                   icon={<>T</>}
                   multiline
+                  resizable
                 />
               </div>
-              <p className="text-[9px] font-medium text-wood-dark">
+              <p className="text-[9px] font-medium text-kibako-white">
                 テキスト色
               </p>
               <div className="w-full mb-2 px-4">
@@ -425,7 +423,7 @@ export default function PartPropertySidebar({
                   ))}
                 </div>
               </div>
-              <p className="text-[9px] font-medium text-wood-dark">背景色</p>
+              <p className="text-[9px] font-medium text-kibako-white">背景色</p>
               <div className="w-full mb-2 px-4">
                 <div className="grid grid-cols-4 gap-2">
                   {COLORS.BACKGROUNDS.map((color) => (
@@ -451,19 +449,19 @@ export default function PartPropertySidebar({
                     }
                     className="w-5 h-5"
                   />
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-kibako-white">
                     カスタムカラーを選択
                   </span>
                 </div>
               </div>
               <div className="flex flex-col gap-1">
-                <p className="text-[9px] font-medium text-gray-500">画像</p>
+                <p className="text-[9px] font-medium text-kibako-white">画像</p>
                 <div className="flex items-center w-full px-2 mb-2 gap-2">
                   {uploadedImage ? (
                     <>
                       {/* アップロードした画像のdisplayNameを表示 */}
                       <span
-                        className="text-xs text-gray-700 truncate w-1/2"
+                        className="text-xs text-kibako-white truncate w-1/2"
                         title={uploadedImage.displayName}
                       >
                         {uploadedImage.displayName}
