@@ -130,6 +130,9 @@ export default function PartOnGameBoard({
     if (!isCard || !isReversing || !groupRef.current) return;
 
     // フリップアニメーション
+    const layer = groupRef.current.getLayer();
+    if (!layer) return;
+
     const anim = new Konva.Animation((frame) => {
       if (!frame || !groupRef.current) return;
 
@@ -151,14 +154,14 @@ export default function PartOnGameBoard({
         setScaleX(1);
         setIsReversing(false);
       }
-    }, groupRef.current.getLayer());
+    }, layer);
 
     anim.start();
 
     return () => {
       anim.stop();
     };
-  }, [isReversing, isCard, setIsReversing]);
+  }, [isReversing, isCard, setIsReversing, part.id]);
 
   // 常に裏面を表示すべきカードか
   const shouldAlwaysDisplayBackSide =
@@ -306,6 +309,8 @@ export default function PartOnGameBoard({
         shadowBlur={isActive ? 10 : 0}
         shadowOffsetX={0}
         shadowOffsetY={0}
+        perfectDrawEnabled={false}
+        hitStrokeWidth={0}
       />
 
       {/* 画像があれば表示 */}
@@ -317,6 +322,9 @@ export default function PartOnGameBoard({
           cornerRadius={isCard ? 10 : 4}
           opacity={part.type === 'area' ? 0.6 : 1}
           alt={targetProperty?.name || 'Game part'}
+          perfectDrawEnabled={false}
+          hitStrokeWidth={0}
+          listening={false}
         />
       )}
 
@@ -330,6 +338,9 @@ export default function PartOnGameBoard({
         align="center"
         padding={10}
         y={5}
+        perfectDrawEnabled={false}
+        hitStrokeWidth={0}
+        listening={false}
       />
 
       {/* 手札の持ち主表示（プレイモードのみ） */}
@@ -338,9 +349,15 @@ export default function PartOnGameBoard({
           text={`持ち主: ${handOwnerName}`}
           fontSize={12}
           fill={targetProperty?.textColor || 'black'}
-          width={part.width - 10}
+          width={part.width}
           align="center"
-          y={35}
+          y={part.height / 2}
+          x={10}
+          wrap="word"
+          ellipsis={true}
+          perfectDrawEnabled={false}
+          hitStrokeWidth={0}
+          listening={false}
         />
       )}
 
@@ -356,23 +373,29 @@ export default function PartOnGameBoard({
           x={10}
           wrap="word"
           ellipsis={true}
+          perfectDrawEnabled={false}
+          hitStrokeWidth={0}
+          listening={false}
         />
       )}
 
       {/* タイプを示す小さなアイコン */}
-      <Group x={part.width - 30} y={part.height - 25}>
+      <Group x={part.width - 30} y={part.height - 25} listening={false}>
         {isDeck && <ShuffleIcon size={20} color="#666" />}
         {isCard && <FlipIcon size={20} color="#666" />}
       </Group>
 
       {/* デバッグ情報: ID と順序（order） - showDebugInfoがtrueの場合のみ表示 */}
       {showDebugInfo && (
-        <Group x={5} y={5}>
+        <Group x={5} y={5} listening={false}>
           <Rect
             width={85}
             height={25}
             fill="rgba(0, 0, 0, 0.7)"
             cornerRadius={4}
+            perfectDrawEnabled={false}
+            hitStrokeWidth={0}
+            listening={false}
           />
           <Text
             text={`ID:${part.id}\nO:${typeof part.order === 'number' ? part.order : 'N/A'}`}
@@ -382,6 +405,9 @@ export default function PartOnGameBoard({
             align="left"
             x={5}
             y={3}
+            perfectDrawEnabled={false}
+            hitStrokeWidth={0}
+            listening={false}
           />
         </Group>
       )}

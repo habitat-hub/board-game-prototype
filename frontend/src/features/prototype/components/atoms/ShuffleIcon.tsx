@@ -10,7 +10,7 @@ const ShuffleIcon: React.FC<DeckIconProps> = ({ size, color }) => {
   const scale = size / 102.4; // SVGのviewBox(1024x1024)に基づいてスケール調整
 
   return (
-    <Group>
+    <Group listening={false}>
       <Path
         data="M3530 8684 c-74 -20 -153 -69 -208 -129 -43 -48 -112 -173 -112 -205
 0 -9 -28 -27 -67 -45 -116 -52 -220 -167 -254 -282 -10 -37 -17 -44 -57 -57
@@ -37,6 +37,9 @@ c1053 3 1451 1 1482 -7 64 -17 123 -68 158 -136 l30 -59 0 -2805 0 -2806 -22
         scaleY={0.01 * scale}
         x={0}
         y={0}
+        perfectDrawEnabled={false}
+        listening={false}
+        hitStrokeWidth={0}
       />
       <Path
         data="M7750 7279 c-448 -69 -479 -75 -506 -100 -51 -48 -40 -79 215 -611
@@ -52,6 +55,9 @@ c1053 3 1451 1 1482 -7 64 -17 123 -68 158 -136 l30 -59 0 -2805 0 -2806 -22
         scaleY={0.01 * scale}
         x={0}
         y={0}
+        perfectDrawEnabled={false}
+        listening={false}
+        hitStrokeWidth={0}
       />
       <Path
         data="M2005 6731 c-157 -90 -377 -334 -506 -559 -89 -155 -170 -384 -204
@@ -67,6 +73,9 @@ c1053 3 1451 1 1482 -7 64 -17 123 -68 158 -136 l30 -59 0 -2805 0 -2806 -22
         scaleY={0.01 * scale}
         x={0}
         y={0}
+        perfectDrawEnabled={false}
+        listening={false}
+        hitStrokeWidth={0}
       />
     </Group>
   );
