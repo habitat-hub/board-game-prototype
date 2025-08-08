@@ -329,8 +329,6 @@ export default function GameBoard({
     const handleKeyDown = (e: KeyboardEvent) => {
       // スペースキー以外のイベント、またはスペースキー押下中の場合は無視
       if (e.code !== 'Space' || spacePressing) return;
-      e.preventDefault();
-      setSpacePressing(true);
 
       // 入力フィールドにフォーカスがある場合は無視
       const active = document.activeElement;
@@ -343,6 +341,9 @@ export default function GameBoard({
         return;
       }
 
+      e.preventDefault();
+      setSpacePressing(true);
+
       // 選択モードの場合のみ、一時的にパンモードに切り替え
       if (isSelectionMode) {
         setNeedToReturnToSelectionMode(true);
@@ -353,6 +354,18 @@ export default function GameBoard({
     const handleKeyUp = (e: KeyboardEvent) => {
       // スペースキー以外のイベント、またはスペースキー押下中でない場合は無視
       if (e.code !== 'Space' || !spacePressing) return;
+
+      // 入力フィールドにフォーカスがある場合は無視
+      const active = document.activeElement;
+      const tag = active && (active.tagName || '').toUpperCase();
+      if (
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        active?.hasAttribute('contenteditable')
+      ) {
+        return;
+      }
+
       e.preventDefault();
       setSpacePressing(false);
 
