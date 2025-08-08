@@ -259,8 +259,9 @@ export default function PartPropertySidebar({
   return (
     <>
       {selectedPart && (
-        <div className="fixed top-20 right-4 flex w-[240px] flex-col rounded-lg shadow-lg border border-kibako-accent/70 bg-gradient-to-b from-kibako-secondary to-kibako-secondary/80 max-h-[calc(100vh-32px)] overflow-y-auto">
-          <div className="border-b border-kibako-accent/80 rounded-t-lg bg-gradient-to-r from-kibako-primary/70 to-kibako-primary/50 py-2 px-4">
+        <div className="fixed top-20 right-4 flex w-[240px] flex-col rounded-lg shadow-lg border border-kibako-accent/70 bg-gradient-to-b from-kibako-secondary to-kibako-secondary/80 max-h-[80vh]">
+          {/* 固定ヘッダー */}
+          <div className="border-b border-kibako-accent/80 rounded-t-lg bg-gradient-to-r from-kibako-primary/70 to-kibako-primary/50 py-2 px-4 flex-shrink-0">
             <div className="flex items-center">
               {selectedPart.type === 'card' ? (
                 <GiCard10Clubs className="h-4 w-4 text-kibako-white mr-2" />
@@ -278,7 +279,8 @@ export default function PartPropertySidebar({
               </span>
             </div>
           </div>
-          <div className="flex flex-col gap-2 p-4">
+          {/* スクロール可能なコンテンツエリア */}
+          <div className="flex flex-col gap-2 p-4 overflow-y-auto overflow-x-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             <div className="flex items-center justify-around px-2 pb-2">
               <TextIconButton
                 text="複製"
@@ -398,6 +400,7 @@ export default function PartPropertySidebar({
                   }
                   icon={<>T</>}
                   multiline
+                  resizable
                 />
               </div>
               <p className="text-[9px] font-medium text-kibako-white">
