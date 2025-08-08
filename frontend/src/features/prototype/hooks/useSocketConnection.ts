@@ -70,13 +70,15 @@ export const useSocketConnection = ({
     if (!socket) return;
 
     // エラーハンドリング
-    socket.on('connect_error', () => {
+    socket.on('connect_error', (error) => {
+      console.error('Socket接続エラーが発生しました:', error);
       // 再接続を試行
       socket.connect();
     });
 
     // 切断時の処理
     socket.on('disconnect', (reason) => {
+      console.error('Socket接続が切断されました:', { reason });
       // 予期しない切断の場合は再接続を試行
       if (reason === 'io server disconnect' || reason === 'transport error') {
         socket.connect();

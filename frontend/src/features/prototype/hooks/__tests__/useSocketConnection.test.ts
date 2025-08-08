@@ -71,7 +71,17 @@ describe('useSocketConnection', () => {
   };
 
   describe('エラーハンドリング', () => {
-    it('connect_errorが発生した際に再接続が試行される', () => {
+    let consoleSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      consoleSpy.mockRestore();
+    });
+
+    it('connect_errorが発生した際にログを出力して再接続が試行される', () => {
       renderHook(() => useSocketConnection(defaultProps));
 
       const connectErrorCallback = getEventCallback(
@@ -82,10 +92,14 @@ describe('useSocketConnection', () => {
       const testError = new Error('Connection failed');
       connectErrorCallback!(testError);
 
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Socket接続エラーが発生しました:',
+        testError
+      );
       expect(mockSocket.connect).toHaveBeenCalledTimes(1);
     });
 
-    it('disconnectイベントで再接続が適切に処理される', () => {
+    it('disconnectイベントでログを出力して再接続が適切に処理される', () => {
       renderHook(() => useSocketConnection(defaultProps));
 
       const disconnectCallback = getEventCallback(
@@ -95,11 +109,18 @@ describe('useSocketConnection', () => {
 
       // サーバー側の切断では再接続
       disconnectCallback!('io server disconnect');
+      expect(consoleSpy).toHaveBeenCalledWith('Socket接続が切断されました:', {
+        reason: 'io server disconnect',
+      });
       expect(mockSocket.connect).toHaveBeenCalledTimes(1);
 
       // クライアント側の切断では再接続しない
       jest.clearAllMocks();
+      consoleSpy.mockClear();
       disconnectCallback!('io client disconnect');
+      expect(consoleSpy).toHaveBeenCalledWith('Socket接続が切断されました:', {
+        reason: 'io client disconnect',
+      });
       expect(mockSocket.connect).not.toHaveBeenCalled();
     });
   });
