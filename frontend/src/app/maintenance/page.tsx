@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 
 import Maintenance from '@/components/templates/Maintenance';
 
+export const runtime = 'edge';
+
 const MAINTENANCE_TITLE = 'メンテナンス中';
 const MAINTENANCE_DESCRIPTION =
   'KIBAKOは現在メンテナンス中です。しばらくお待ちください。';
