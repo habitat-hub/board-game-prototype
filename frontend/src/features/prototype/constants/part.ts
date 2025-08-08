@@ -26,6 +26,14 @@ export const COLORS = {
   ],
 };
 
+/** テキストレイアウト設定 */
+export const TEXT_LAYOUT = {
+  /** テキスト行間のギャップ */
+  LINE_GAP: 14,
+  /** テキストの左右マージン */
+  HORIZONTAL_MARGIN: 10,
+} as const;
+
 // パーツのデフォルト設定
 export const PART_DEFAULT_CONFIG: Record<string, PartDefaultConfig> = {
   // カード

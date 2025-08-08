@@ -514,6 +514,7 @@ export default function GameBoard({
               draggable={!isSelectionMode}
               onDragMove={handleDragMove}
               onClick={handleBackgroundClick}
+              hitStrokeWidth={0}
               // 矩形選択用イベントを背景Rectに直接バインド
               {...(isSelectionMode
                 ? {
@@ -565,9 +566,6 @@ export default function GameBoard({
                   onDragMove={(e) => handlePartDragMove(e, part.id)}
                   onDragEnd={(e, partId) => handlePartDragEnd(e, partId)}
                   onContextMenu={(e) => handlePartContextMenu(e, part.id)}
-                  onChangePartOrder={(type) =>
-                    handleChangePartOrder(type, part.id)
-                  }
                 />
               );
             })}

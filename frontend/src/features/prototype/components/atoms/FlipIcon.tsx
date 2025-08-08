@@ -10,7 +10,7 @@ const FlipIcon: React.FC<CardIconProps> = ({ size, color }) => {
   const scale = size / 20; // ベースサイズを20pxとして計算
 
   return (
-    <Group>
+    <Group listening={false}>
       {/* カードのベース */}
       <Path
         data="M2235 8820 c-178 -37 -325 -174 -370 -345 -13 -53 -15 -421 -15 -3355 0 -3614 -4 -3348 58 -3464 35 -66 134 -164 198 -198 115 -61 -7 -58 2030 -58 1829 0 1863 0 1926 20 122 37 239 134 294 242 58 114 54 -128 54 3453 0 3174 -1 3293 -19 3357 -36 131 -124 239 -243 299 -123 62 -7 59 -2028 58 -1015 -1 -1863 -5 -1885 -9z m3793 -251 c68 -33 105 -71 136 -139 l21 -45 0 -3270 0 -3270 -21 -45 c-29 -61 -71 -103 -135 -137 l-54 -28 -1824 -3 c-1595 -2 -1831 0 -1876 13 -62 17 -136 79 -168 139 l-22 41 -3 3274 c-1 2167 1 3286 8 3311 20 74 90 148 166 175 33 12 340 14 1875 15 l1836 0 61 -31z"
@@ -19,6 +19,9 @@ const FlipIcon: React.FC<CardIconProps> = ({ size, color }) => {
         scaleY={0.002 * scale}
         x={1.5 * scale}
         y={0 * scale}
+        perfectDrawEnabled={false}
+        listening={false}
+        hitStrokeWidth={0}
       />
       {/* 反転アイコン */}
       <Path
@@ -28,6 +31,9 @@ const FlipIcon: React.FC<CardIconProps> = ({ size, color }) => {
         scaleY={0.002 * scale}
         x={1 * scale}
         y={0 * scale}
+        perfectDrawEnabled={false}
+        listening={false}
+        hitStrokeWidth={0}
       />
     </Group>
   );

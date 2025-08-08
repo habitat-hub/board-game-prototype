@@ -49,7 +49,8 @@ const GridLines: React.FC<GridLinesProps> = ({
           points={[x, startY, x, endY]}
           stroke="#ccc"
           strokeWidth={1}
-          perfectDrawEnabled={false} // パフォーマンス向上のため
+          listening={false} // グリッド線はインタラクション不要
+          hitStrokeWidth={0}
         />
       );
     }
@@ -62,7 +63,8 @@ const GridLines: React.FC<GridLinesProps> = ({
           points={[startX, y, endX, y]}
           stroke="#ccc"
           strokeWidth={1}
-          perfectDrawEnabled={false} // パフォーマンス向上のため
+          listening={false} // グリッド線はインタラクション不要
+          hitStrokeWidth={0}
         />
       );
     }

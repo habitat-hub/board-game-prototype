@@ -79,6 +79,21 @@ export const usePartDragSystem = ({
         : [partId];
       selectMultipleParts(newSelected);
 
+      // プレイモード時の単一選択カード/トークンのfrontmost処理
+      // 複数選択時はfrontmost処理をスキップ
+      if (gameBoardMode === GameBoardMode.PLAY && newSelected.length === 1) {
+        const draggedPart = parts.find((pt) => pt.id === partId);
+        if (
+          draggedPart &&
+          (draggedPart.type === 'card' || draggedPart.type === 'token')
+        ) {
+          dispatch({
+            type: 'CHANGE_ORDER',
+            payload: { partId, type: 'frontmost' },
+          });
+        }
+      }
+
       // 元位置の記録
       /**
        * NOTE: reduceだと手続き的な書き方にはならないが、計算量がO(n2)になるので、
@@ -93,7 +108,7 @@ export const usePartDragSystem = ({
       });
       originalPositionsRef.current = newOriginalPositions;
     },
-    [gameBoardMode, selectedPartIds, selectMultipleParts, parts]
+    [gameBoardMode, selectedPartIds, selectMultipleParts, parts, dispatch]
   );
 
   /**
