@@ -343,11 +343,6 @@ export default function GameBoard({
       // スペースキー以外のイベント、またはスペースキー押下中でない場合は無視
       if (e.code !== 'Space' || !spacePressing) return;
 
-      // 入力フィールドにフォーカスがある場合は無視
-      if (isInputFieldFocused()) {
-        return;
-      }
-
       e.preventDefault();
       setSpacePressing(false);
 
