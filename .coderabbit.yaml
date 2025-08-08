@@ -1,7 +1,13 @@
 # CodeRabbit Configuration
 # このファイルはCodeRabbitの動作を設定します
 
-review:
+reviews:
+  # レビューの詳細度（assertive: 指摘多め, chill: 控えめ）
+  profile: chill
+
+  # PR サマリーの自動生成を有効化
+  high_level_summary: true
+
   # レビュー対象から除外するパスを指定
   path_filters:
     # 自動生成されるAPIタイプファイル（swagger-typescript-api生成）
@@ -10,31 +16,13 @@ review:
     - '!frontend/src/api/types/data-contracts.ts'
     - '!frontend/src/api/types/http-client.ts'
 
-  # 言語固有の設定
-  language_filters:
-    # TypeScriptファイルは積極的にレビュー
-    - 'typescript'
-    - 'javascript'
-    - 'tsx'
-    - 'jsx'
-
-# AI機能の設定
-ai:
-  # レビューの詳細度
-  review_depth: "standard"
-  
-  # セキュリティ脆弱性の検出を有効化
-  security_review: true
-  
-  # パフォーマンスに関するレビューを有効化
-  performance_review: true
-
-# プルリクエストの設定
-pr_summary:
-  # PRサマリーの自動生成を有効化
-  enabled: true
-
-# コメントの設定
-comments:
-  # 解決されたコメントを自動で非表示
-  auto_hide_resolved: true
+  # ツール設定
+  tools:
+    eslint:
+      enabled: true
+    semgrep:
+      enabled: true
+    oxc:
+      enabled: true
+    yamllint:
+      enabled: true
