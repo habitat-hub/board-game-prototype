@@ -7,6 +7,8 @@ import React, {
   ReactNode,
 } from 'react';
 
+import { isInputFieldFocused } from '@/utils/inputFocus';
+
 interface DebugModeContextType {
   showDebugInfo: boolean;
   toggleDebugInfo: () => void;
@@ -29,6 +31,11 @@ export const DebugModeProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     // キーボードイベントのリスナーを追加
     const handleKeyDown = (e: KeyboardEvent) => {
+      // 入力フィールドにフォーカスがある場合は無視
+      if (isInputFieldFocused()) {
+        return;
+      }
+
       // Cmd+i または Ctrl+i でデバッグ情報の表示/非表示を切り替え
       if ((e.metaKey || e.ctrlKey) && e.key === 'i') {
         e.preventDefault();

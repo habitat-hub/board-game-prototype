@@ -12,6 +12,7 @@ import {
   PARTS_INFO,
   OPERATIONS_INFO,
 } from '@/features/prototype/constants/helpInfo';
+import { isInputFieldFocused } from '@/utils/inputFocus';
 
 export default function GameBoardInstructionPanel() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -23,12 +24,7 @@ export default function GameBoardInstructionPanel() {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // ユーザーが入力中の場合は何もしない
-      const target = event.target as HTMLElement;
-      if (
-        target.tagName === 'INPUT' ||
-        target.tagName === 'TEXTAREA' ||
-        target.contentEditable === 'true'
-      ) {
+      if (isInputFieldFocused()) {
         return;
       }
 

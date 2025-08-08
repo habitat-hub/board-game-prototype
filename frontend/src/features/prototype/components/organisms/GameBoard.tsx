@@ -46,6 +46,7 @@ import {
   saveImageToIndexedDb,
   updateImageParamsInIndexedDb,
 } from '@/utils/db';
+import { isInputFieldFocused } from '@/utils/inputFocus';
 
 interface GameBoardProps {
   prototypeName: string;
@@ -306,14 +307,7 @@ export default function GameBoard({
     if (gameBoardMode !== GameBoardMode.CREATE) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Delete' || e.key === 'Backspace') {
-        const active = document.activeElement;
-        const tag = active && (active.tagName || '').toUpperCase();
-        if (
-          tag === 'INPUT' ||
-          tag === 'TEXTAREA' ||
-          active?.hasAttribute('contenteditable')
-        )
-          return;
+        if (isInputFieldFocused()) return;
         e.preventDefault();
         handleDeletePart();
       }
@@ -329,19 +323,14 @@ export default function GameBoard({
     const handleKeyDown = (e: KeyboardEvent) => {
       // スペースキー以外のイベント、またはスペースキー押下中の場合は無視
       if (e.code !== 'Space' || spacePressing) return;
-      e.preventDefault();
-      setSpacePressing(true);
 
       // 入力フィールドにフォーカスがある場合は無視
-      const active = document.activeElement;
-      const tag = active && (active.tagName || '').toUpperCase();
-      if (
-        tag === 'INPUT' ||
-        tag === 'TEXTAREA' ||
-        active?.hasAttribute('contenteditable')
-      ) {
+      if (isInputFieldFocused()) {
         return;
       }
+
+      e.preventDefault();
+      setSpacePressing(true);
 
       // 選択モードの場合のみ、一時的にパンモードに切り替え
       if (isSelectionMode) {
@@ -353,6 +342,7 @@ export default function GameBoard({
     const handleKeyUp = (e: KeyboardEvent) => {
       // スペースキー以外のイベント、またはスペースキー押下中でない場合は無視
       if (e.code !== 'Space' || !spacePressing) return;
+
       e.preventDefault();
       setSpacePressing(false);
 
