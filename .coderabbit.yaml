@@ -1,0 +1,40 @@
+# CodeRabbit Configuration
+# このファイルはCodeRabbitの動作を設定します
+
+review:
+  # レビュー対象から除外するパスを指定
+  path_filters:
+    # 自動生成されるAPIタイプファイル（swagger-typescript-api生成）
+    - '!frontend/src/api/types/Api.ts'
+    - '!frontend/src/api/types/Auth.ts'
+    - '!frontend/src/api/types/data-contracts.ts'
+    - '!frontend/src/api/types/http-client.ts'
+
+  # 言語固有の設定
+  language_filters:
+    # TypeScriptファイルは積極的にレビュー
+    - 'typescript'
+    - 'javascript'
+    - 'tsx'
+    - 'jsx'
+
+# AI機能の設定
+ai:
+  # レビューの詳細度
+  review_depth: "standard"
+  
+  # セキュリティ脆弱性の検出を有効化
+  security_review: true
+  
+  # パフォーマンスに関するレビューを有効化
+  performance_review: true
+
+# プルリクエストの設定
+pr_summary:
+  # PRサマリーの自動生成を有効化
+  enabled: true
+
+# コメントの設定
+comments:
+  # 解決されたコメントを自動で非表示
+  auto_hide_resolved: true
