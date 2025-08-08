@@ -1,6 +1,9 @@
 // プロトタイプ内のパーツの最大order値
 export const MAX_ORDER_VALUE = 1;
 
+// プロトタイプ内のパーツの最小order値
+export const MIN_ORDER_VALUE = 0;
+
 /**
  * パーツ順序のリバランスが必要かどうかを判定する最小間隔
  *

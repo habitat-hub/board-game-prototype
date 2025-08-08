@@ -8,6 +8,7 @@ import type { CursorInfo } from '../types/cursor';
 import ImageModel from '../models/Image';
 import {
   MAX_ORDER_VALUE,
+  MIN_ORDER_VALUE,
   MIN_ORDER_GAP,
 } from '../constants/prototypeConstants';
 
@@ -143,7 +144,7 @@ function handleAddPart(socket: Socket, io: Server) {
       ): number => {
         if (parts.length === 0) {
           // パーツが存在しない場合は中央値
-          return 0.5;
+          return (MAX_ORDER_VALUE + MIN_ORDER_VALUE) / 2;
         } else if (partType === 'card' || partType === 'token') {
           // カード・トークンは最前面に追加
           const maxOrder = parts[parts.length - 1].order;
@@ -151,7 +152,7 @@ function handleAddPart(socket: Socket, io: Server) {
         } else {
           // それ以外のパーツは最背面に追加
           const minOrder = parts[0].order;
-          return (minOrder + 0) / 2;
+          return (minOrder + MIN_ORDER_VALUE) / 2;
         }
       };
 
@@ -406,7 +407,8 @@ function handleChangeOrder(socket: Socket, io: Server) {
               );
               const newOrder =
                 (underLappingPart.order +
-                  (partsBackToFront[prevPartIndex - 1]?.order ?? 0)) /
+                  (partsBackToFront[prevPartIndex - 1]?.order ??
+                    MIN_ORDER_VALUE)) /
                 2;
               const [, result] = await PartModel.update(
                 { order: newOrder },
@@ -433,7 +435,7 @@ function handleChangeOrder(socket: Socket, io: Server) {
               );
               const newOrder =
                 (overLappingPart.order +
-                  (partsBackToFront[nextPartIndex + 1]?.order ?? 1)) /
+                  (partsBackToFront[nextPartIndex + 1]?.order ?? MAX_ORDER_VALUE)) /
                 2;
               const [, result] = await PartModel.update(
                 { order: newOrder },
@@ -449,7 +451,7 @@ function handleChangeOrder(socket: Socket, io: Server) {
           case 'backmost': {
             // 最背面に移動
             const partBackMost = partsBackToFront[0];
-            const newOrder = (partBackMost.order + 0) / 2;
+            const newOrder = (partBackMost.order + MIN_ORDER_VALUE) / 2;
             const [, result] = await PartModel.update(
               { order: newOrder },
               { where: { id: partId }, returning: true }
@@ -566,7 +568,7 @@ async function rebalanceOrders(
   console.log('Rebalancing orders for parts in prototype:', prototypeId);
   const totalParts = parts.length;
 
-  // 0からMAX_ORDER_VALUEの間で等間隔に設定
+  // MIN_ORDER_VALUEからMAX_ORDER_VALUEの間で等間隔に設定
   // 例えば、3つのパーツがある場合、0.25, 0.5, 0.75のように設定
   const step = MAX_ORDER_VALUE / (totalParts + 1);
 
