@@ -572,8 +572,7 @@ async function rebalanceOrders(
   console.log('Rebalancing orders for parts in prototype:', prototypeId);
   const totalParts = parts.length;
 
-  // ORDER_MIN_EXCLUSIVEからORDER_MAX_EXCLUSIVEの間で等間隔に設定
-  // 例えば、3つのパーツがある場合、0.25, 0.5, 0.75のように設定
+  // ORDER_RANGEを基に等間隔のステップを計算
   const step = ORDER_RANGE / (totalParts + 1);
 
   // partsの各要素のorderを直接更新
