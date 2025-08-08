@@ -110,6 +110,32 @@ cd frontend
 npm run dev
 ```
 
+## API タイプ生成
+
+このプロジェクトでは、バックエンドのSwagger仕様書から自動的にTypeScriptの型定義を生成しています。
+
+### 自動生成ファイル
+
+以下のファイルは自動生成されるため、直接編集しないでください：
+
+- `frontend/src/api/types/Api.ts`
+- `frontend/src/api/types/Auth.ts`
+- `frontend/src/api/types/data-contracts.ts`
+- `frontend/src/api/types/http-client.ts`
+
+### 型定義の更新方法
+
+1. バックエンドでSwagger定義を更新
+2. バックエンドディレクトリで以下のコマンドを実行：
+
+```bash
+cd backend
+npm run generate-swagger
+npm run generate-api-types
+```
+
+**注意**: これらのファイルは`.eslintignore`で除外されており、lintチェックの対象外です。
+
 ## ER 図
 
 ![ER図](backend/erd.svg)
