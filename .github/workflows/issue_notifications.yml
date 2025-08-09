@@ -1,9 +1,14 @@
 # .github/workflows/issue_notifications.yml
 name: Issue Notifications
 
+# このワークフローが実行される条件:
+# GitHubのIssueに対する以下のアクション時に実行される
+# - opened: 新しいIssueが作成された時
+# - closed: Issueがクローズされた時
+# 目的：Issue の状態変更をDiscordに自動通知する
 on:
   issues:
-    types: [opened, closed]
+    types: [opened, closed]  # Issue作成時とクローズ時にDiscord通知
 
 permissions:
   issues: read

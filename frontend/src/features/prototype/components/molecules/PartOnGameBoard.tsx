@@ -22,6 +22,16 @@ import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor'
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePartTooltip } from '@/features/prototype/hooks/usePartTooltip';
 import { GameBoardMode } from '@/features/prototype/types';
+import {
+  getCornerRadius,
+  getImageCornerRadius,
+  getStrokeWidth,
+  getDashPattern,
+  getShadowColor,
+  getShadowBlur,
+  getShadowOffsetX,
+  getShadowOffsetY,
+} from '@/features/prototype/utils/partUtils';
 
 interface PartOnGameBoardProps {
   part: Part;
@@ -310,14 +320,13 @@ export default function PartOnGameBoard({
         height={part.height}
         fill={imageLoaded ? 'white' : targetProperty?.color || 'white'}
         stroke={'grey'}
-        strokeWidth={1}
-        cornerRadius={isCard ? 10 : 4}
-        opacity={part.type === 'area' ? 0.6 : 1}
-        dash={part.type === 'area' ? [4, 4] : undefined}
-        shadowColor={isActive ? 'rgba(59, 130, 246, 1)' : 'transparent'}
-        shadowBlur={isActive ? 10 : 0}
-        shadowOffsetX={0}
-        shadowOffsetY={0}
+        strokeWidth={getStrokeWidth(part.type)}
+        cornerRadius={getCornerRadius(part.type)}
+        dash={getDashPattern(part.type)}
+        shadowColor={getShadowColor(part.type, isActive)}
+        shadowBlur={getShadowBlur(part.type, isActive)}
+        shadowOffsetX={getShadowOffsetX(part.type, isActive)}
+        shadowOffsetY={getShadowOffsetY(part.type, isActive)}
         perfectDrawEnabled={false}
         hitStrokeWidth={0}
       />
@@ -328,8 +337,7 @@ export default function PartOnGameBoard({
           image={image}
           width={part.width}
           height={part.height}
-          cornerRadius={isCard ? 10 : 4}
-          opacity={part.type === 'area' ? 0.6 : 1}
+          cornerRadius={getImageCornerRadius(part.type)}
           alt={targetProperty?.name || 'Game part'}
           perfectDrawEnabled={false}
           hitStrokeWidth={0}
