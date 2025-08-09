@@ -1,25 +1,25 @@
 name: Frontend Test
 
+# このワークフローが実行される条件:
+# 1. developブランチをターゲットとするPR時（feature→develop PR）
+# 2. mainブランチをターゲットとするPR時（develop→main PR）
+# 
+# 開発フロー想定:
+# feature branch → develop (PR) → main (PR)
+# developへの直接pushは行わないため、pull_requestイベントのみで十分
 on:
-  push:
-    branches:
-      - main
-      - develop
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/frontend-test.yml'
   pull_request:
     branches:
-      - main
-      - develop
+      - develop  # developをターゲットとするPR時に実行（feature→develop PR）
+      - main     # mainブランチをターゲットとするPR時に実行（develop→main PR）
     paths:
-      - 'frontend/**'
-      - '.github/workflows/frontend-test.yml'
+      - 'frontend/**'  # フロントエンドディレクトリ内のファイル変更時のみ
+      - '.github/workflows/frontend-test.yml'  # このワークフローファイル自体の変更時
 
 jobs:
   frontend-test:
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         node-version: [20.x]
