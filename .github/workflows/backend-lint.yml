@@ -1,7 +1,7 @@
 name: Backend Lint
 
 # このワークフローが実行される条件:
-# 1. developブランチをターゲットとするPR時（feature→backend PR）
+# 1. developブランチをターゲットとするPR時（feature→develop PR）
 # 2. mainブランチをターゲットとするPR時（develop→main PR）
 # 
 # 開発フロー想定:
