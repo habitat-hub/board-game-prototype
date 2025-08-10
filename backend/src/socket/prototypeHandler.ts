@@ -132,7 +132,10 @@ function handleJoinPrototype(socket: Socket, io: Server): void {
                 );
               }
             } catch (e) {
-              console.error('Failed to notify previous project room:', e);
+              console.error(
+                '以前のプロジェクトルームへの通知に失敗しました:',
+                e
+              );
             }
             // 空ならマップ片付け
             if (
