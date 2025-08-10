@@ -10,6 +10,7 @@ import { useProject } from '@/api/hooks/useProject';
 import { Prototype, ProjectsDetailData } from '@/api/types';
 import { useProjectSocket } from '@/features/prototype/hooks/useProjectSocket';
 import { GameBoardMode } from '@/features/prototype/types';
+import { ConnectedUser } from '@/features/prototype/types/livePrototypeInformation';
 import { useUser } from '@/hooks/useUser';
 import formatDate from '@/utils/dateFormat';
 
@@ -32,8 +33,9 @@ export default function LeftSidebar({
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
   const [project, setProject] = useState<ProjectsDetailData | null>(null);
   const [isRoomCreating, setIsRoomCreating] = useState(false);
+  // ルームIDごとの接続中ユーザー一覧
   const [roomConnectedUsers, setRoomConnectedUsers] = useState<
-    Record<string, Array<{ userId: string; username: string }>>
+    Record<string, ConnectedUser[]>
   >({});
 
   // プロジェクトデータから必要な情報を取得
