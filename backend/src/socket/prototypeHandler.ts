@@ -13,6 +13,7 @@ import {
   ORDER_RANGE,
   MIN_ORDER_GAP,
 } from '../constants/prototypeConstants';
+import { PROTOTYPE_SOCKET_EVENT } from '../constants/socketConstants';
 
 // カーソル情報のマップ
 const cursorMap: Record<string, Record<string, CursorInfo>> = {};
@@ -91,7 +92,7 @@ export async function fetchPartsAndProperties(prototypeId: string) {
  */
 function handleJoinPrototype(socket: Socket, io: Server): void {
   socket.on(
-    'JOIN_PROTOTYPE',
+    PROTOTYPE_SOCKET_EVENT.JOIN_PROTOTYPE,
     async ({
       prototypeId,
       userId,

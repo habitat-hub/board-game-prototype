@@ -4,7 +4,7 @@
 import { useCallback, useEffect } from 'react';
 
 import { Prototype } from '@/api/types';
-import { SOCKET_EVENT } from '@/features/prototype/constants/socket';
+import { PROJECT_SOCKET_EVENT } from '@/features/prototype/constants/socket';
 import { useSocket } from '@/features/prototype/contexts/SocketContext';
 
 interface UseProjectSocketProps {
@@ -68,7 +68,7 @@ export const useProjectSocket = ({
 
     // ルーム作成イベントを監視
     socket.on(
-      SOCKET_EVENT.ROOM_CREATED,
+      PROJECT_SOCKET_EVENT.ROOM_CREATED,
       ({ version, instance }: { version: Prototype; instance: Prototype }) => {
         onRoomCreated(version, instance);
       }
@@ -76,7 +76,7 @@ export const useProjectSocket = ({
 
     // ルーム削除イベントを監視
     socket.on(
-      SOCKET_EVENT.ROOM_DELETED,
+      PROJECT_SOCKET_EVENT.ROOM_DELETED,
       ({
         deletedVersionId,
         deletedInstanceIds,
@@ -90,7 +90,7 @@ export const useProjectSocket = ({
 
     // ルーム別接続中ユーザー初期データを監視
     socket.on(
-      SOCKET_EVENT.ROOM_CONNECTED_USERS,
+      PROJECT_SOCKET_EVENT.ROOM_CONNECTED_USERS,
       (
         roomUsers: Record<string, Array<{ userId: string; username: string }>>
       ) => {
@@ -100,7 +100,7 @@ export const useProjectSocket = ({
 
     // ルーム別接続中ユーザー更新を監視
     socket.on(
-      SOCKET_EVENT.ROOM_CONNECTED_USERS_UPDATE,
+      PROJECT_SOCKET_EVENT.ROOM_CONNECTED_USERS_UPDATE,
       ({
         prototypeId,
         users,
@@ -115,10 +115,10 @@ export const useProjectSocket = ({
     return () => {
       // イベントリスナーを削除
       const events = [
-        SOCKET_EVENT.ROOM_CREATED,
-        SOCKET_EVENT.ROOM_DELETED,
-        SOCKET_EVENT.ROOM_CONNECTED_USERS,
-        SOCKET_EVENT.ROOM_CONNECTED_USERS_UPDATE,
+        PROJECT_SOCKET_EVENT.ROOM_CREATED,
+        PROJECT_SOCKET_EVENT.ROOM_DELETED,
+        PROJECT_SOCKET_EVENT.ROOM_CONNECTED_USERS,
+        PROJECT_SOCKET_EVENT.ROOM_CONNECTED_USERS_UPDATE,
       ];
       events.forEach((event) => socket.off(event));
 

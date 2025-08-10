@@ -5,7 +5,8 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { Part, PartProperty } from '@/api/types';
 import {
-  SOCKET_EVENT,
+  COMMON_SOCKET_EVENT,
+  PROTOTYPE_SOCKET_EVENT,
   UNEXPECTED_DISCONNECT_REASONS,
 } from '@/features/prototype/constants/socket';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
@@ -17,14 +18,14 @@ import {
   PropertiesMap,
 } from '@/features/prototype/types';
 
-interface UseSocketConnectionProps {
+interface UsePrototypeSocketProps {
   /** プロトタイプID */
   prototypeId: string;
   /** ユーザーID */
   userId: string;
 }
 
-interface UseSocketConnectionReturn {
+interface UsePrototypeSocketReturn {
   /** パーツのMap */
   partsMap: PartsMap;
   /** パーツプロパティのMap */
@@ -42,10 +43,10 @@ interface ConnectedUsersPayload {
   users: ConnectedUser[];
 }
 
-export const useSocketConnection = ({
+export const usePrototypeSocket = ({
   prototypeId,
   userId,
-}: UseSocketConnectionProps): UseSocketConnectionReturn => {
+}: UsePrototypeSocketProps): UsePrototypeSocketReturn => {
   const { socket } = useSocket();
   const { selectMultipleParts } = useSelectedParts();
 
@@ -85,14 +86,14 @@ export const useSocketConnection = ({
     if (!socket) return;
 
     // エラーハンドリング
-    socket.on(SOCKET_EVENT.CONNECT_ERROR, (error) => {
+    socket.on(COMMON_SOCKET_EVENT.CONNECT_ERROR, (error) => {
       console.error('Socket接続エラーが発生しました:', error);
       // 再接続を試行
       socket.connect();
     });
 
     // 切断時の処理
-    socket.on(SOCKET_EVENT.DISCONNECT, (reason: string) => {
+    socket.on(COMMON_SOCKET_EVENT.DISCONNECT, (reason: string) => {
       // 予期しない切断の場合は再接続を試行
       if (UNEXPECTED_DISCONNECT_REASONS.has(reason)) {
         console.error('Socket接続が予期せず切断されました:', { reason });
@@ -101,13 +102,13 @@ export const useSocketConnection = ({
     });
 
     // サーバーに接続した後、特定のプロトタイプに参加
-    socket.emit(SOCKET_EVENT.JOIN_PROTOTYPE, {
+    socket.emit(PROTOTYPE_SOCKET_EVENT.JOIN_PROTOTYPE, {
       prototypeId,
       userId,
     });
 
     // 初期データ受信（全データ）
-    socket.on(SOCKET_EVENT.INITIAL_PARTS, ({ parts, properties }) => {
+    socket.on(PROTOTYPE_SOCKET_EVENT.INITIAL_PARTS, ({ parts, properties }) => {
       const { newPartsMap, newPropertiesMap } = convertToMaps(
         parts,
         properties
@@ -117,7 +118,7 @@ export const useSocketConnection = ({
     });
 
     // パーツ追加
-    socket.on(SOCKET_EVENT.ADD_PART, ({ part, properties }) => {
+    socket.on(PROTOTYPE_SOCKET_EVENT.ADD_PART, ({ part, properties }) => {
       setPartsMap((prevPartsMap) => {
         const newPartsMap = new Map(prevPartsMap);
         newPartsMap.set(part.id, part);
@@ -132,12 +133,12 @@ export const useSocketConnection = ({
     });
 
     // パーツ追加レスポンス（自分の追加したパーツを選択状態にする）
-    socket.on(SOCKET_EVENT.ADD_PART_RESPONSE, ({ partId }) => {
+    socket.on(PROTOTYPE_SOCKET_EVENT.ADD_PART_RESPONSE, ({ partId }) => {
       selectMultipleParts([partId]);
     });
 
     // パーツ更新
-    socket.on(SOCKET_EVENT.UPDATE_PARTS, ({ parts, properties }) => {
+    socket.on(PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS, ({ parts, properties }) => {
       setPartsMap((prevPartsMap) => {
         const newPartsMap = new Map(prevPartsMap);
         parts.forEach((part: Part) => {
@@ -160,7 +161,7 @@ export const useSocketConnection = ({
     });
 
     // パーツ削除
-    socket.on(SOCKET_EVENT.DELETE_PART, ({ partId }) => {
+    socket.on(PROTOTYPE_SOCKET_EVENT.DELETE_PART, ({ partId }) => {
       setPartsMap((prevPartsMap) => {
         const newPartsMap = new Map(prevPartsMap);
         newPartsMap.delete(partId);
@@ -175,13 +176,13 @@ export const useSocketConnection = ({
     });
 
     // カーソル更新
-    socket.on(SOCKET_EVENT.UPDATE_CURSORS, ({ cursors }) => {
+    socket.on(PROTOTYPE_SOCKET_EVENT.UPDATE_CURSORS, ({ cursors }) => {
       setCursors(cursors);
     });
 
     // 接続中ユーザーリスト更新
     socket.on(
-      SOCKET_EVENT.CONNECTED_USERS,
+      PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS,
       (payload: ConnectedUsersPayload) => {
         setConnectedUsers(payload.users);
       }
@@ -192,15 +193,15 @@ export const useSocketConnection = ({
       // JOIN_PROTOTYPEはemitリスナーを登録しないため、削除不要
       // 他のイベントはすべて削除
       const events = [
-        SOCKET_EVENT.CONNECT_ERROR,
-        SOCKET_EVENT.DISCONNECT,
-        SOCKET_EVENT.INITIAL_PARTS,
-        SOCKET_EVENT.ADD_PART,
-        SOCKET_EVENT.ADD_PART_RESPONSE,
-        SOCKET_EVENT.UPDATE_PARTS,
-        SOCKET_EVENT.DELETE_PART,
-        SOCKET_EVENT.UPDATE_CURSORS,
-        SOCKET_EVENT.CONNECTED_USERS,
+        COMMON_SOCKET_EVENT.CONNECT_ERROR,
+        COMMON_SOCKET_EVENT.DISCONNECT,
+        PROTOTYPE_SOCKET_EVENT.INITIAL_PARTS,
+        PROTOTYPE_SOCKET_EVENT.ADD_PART,
+        PROTOTYPE_SOCKET_EVENT.ADD_PART_RESPONSE,
+        PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS,
+        PROTOTYPE_SOCKET_EVENT.DELETE_PART,
+        PROTOTYPE_SOCKET_EVENT.UPDATE_CURSORS,
+        PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS,
       ];
       events.forEach((event) => socket.off(event));
     };

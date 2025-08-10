@@ -3,6 +3,7 @@ import PrototypeModel from '../models/Prototype';
 import { hasPermission } from '../helpers/roleHelper';
 import { RESOURCE_TYPES, PERMISSION_ACTIONS } from '../const';
 import { connectedUsersMap } from './prototypeHandler';
+import { PROJECT_SOCKET_EVENT } from '../constants/socketConstants';
 
 // socket.dataの型定義
 interface ProjectSocketData {

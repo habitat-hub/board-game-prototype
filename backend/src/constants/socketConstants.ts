@@ -36,6 +36,10 @@ export const PROTOTYPE_SOCKET_EVENT = {
  * プロジェクト全体での操作に関するイベント（ルーム管理など）
  */
 export const PROJECT_SOCKET_EVENT = {
+  // プロジェクトへの参加
+  JOIN_PROJECT: 'JOIN_PROJECT',
+  // プロジェクトからの退出
+  LEAVE_PROJECT: 'LEAVE_PROJECT',
   // ルーム作成
   ROOM_CREATED: 'ROOM_CREATED',
   // ルーム削除
@@ -55,11 +59,3 @@ export const SOCKET_DISCONNECT_REASON = {
   // 通信エラーによる切断
   TRANSPORT_ERROR: 'transport error',
 } as const;
-
-/**
- * 想定外の切断理由をまとめたセット
- */
-export const UNEXPECTED_DISCONNECT_REASONS = new Set<string>([
-  SOCKET_DISCONNECT_REASON.IO_SERVER_DISCONNECT,
-  SOCKET_DISCONNECT_REASON.TRANSPORT_ERROR,
-]);
