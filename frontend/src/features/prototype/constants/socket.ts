@@ -20,6 +20,8 @@ export const SOCKET_EVENT = {
   DELETE_PART: 'DELETE_PART',
   // カーソル情報の更新
   UPDATE_CURSORS: 'UPDATE_CURSORS',
+  // 接続中ユーザーリストの更新
+  CONNECTED_USERS: 'CONNECTED_USERS',
 } as const;
 
 /**

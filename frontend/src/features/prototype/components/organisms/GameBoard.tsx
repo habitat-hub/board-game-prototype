@@ -55,6 +55,10 @@ interface GameBoardProps {
   propertiesMap: Map<number, PartProperty[]>;
   cursors: Record<string, CursorInfo>;
   gameBoardMode: GameBoardMode;
+  connectedUsers: Array<{
+    userId: string;
+    username: string;
+  }>;
 }
 
 export default function GameBoard({
@@ -64,6 +68,7 @@ export default function GameBoard({
   propertiesMap,
   cursors,
   gameBoardMode,
+  connectedUsers,
 }: GameBoardProps) {
   const stageRef = useRef<Konva.Stage | null>(null);
   // 前回のレンダリング時の画像IDを保持するref
@@ -577,14 +582,19 @@ export default function GameBoard({
         projectId={projectId}
       />
 
+      {/* ロールメニュー - CREATEモードとPLAYモードで表示 */}
+      {(gameBoardMode === GameBoardMode.CREATE ||
+        gameBoardMode === GameBoardMode.PLAY) && (
+        <RoleMenu
+          projectId={projectId}
+          connectedUsers={connectedUsers}
+          loading={false}
+          showRoleManagementButton={gameBoardMode === GameBoardMode.CREATE}
+        />
+      )}
+
       {gameBoardMode === GameBoardMode.CREATE && (
         <>
-          {/* ロールメニュー */}
-          <RoleMenu
-            projectId={projectId}
-            userRoles={userRoles}
-            loading={false}
-          />
           {/* フローティングパーツ作成メニュー */}
           <PartCreateMenu
             onAddPart={handleAddPart}

@@ -2,6 +2,7 @@ import { Server, Socket } from 'socket.io';
 import PrototypeModel from '../models/Prototype';
 import { hasPermission } from '../helpers/roleHelper';
 import { RESOURCE_TYPES, PERMISSION_ACTIONS } from '../const';
+import { connectedUsersMap } from './prototypeHandler';
 
 // socket.dataの型定義
 interface ProjectSocketData {
@@ -46,6 +47,33 @@ function handleJoinProject(socket: Socket) {
 
         // プロジェクトルームに参加
         socket.join(`project:${projectId}`);
+
+        // プロジェクト内の全ルームの接続中ユーザー情報を送信
+        const roomConnectedUsers: Record<
+          string,
+          Array<{ userId: string; username: string }>
+        > = {};
+
+        // プロジェクトに属するプロトタイプを取得
+        const prototypes = await PrototypeModel.findAll({
+          where: { projectId },
+          attributes: ['id'],
+        });
+
+        // 各プロトタイプの接続中ユーザー情報を収集
+        prototypes.forEach((prototype) => {
+          const prototypeId = prototype.id;
+          if (connectedUsersMap[prototypeId]) {
+            roomConnectedUsers[prototypeId] = Object.values(
+              connectedUsersMap[prototypeId]
+            );
+          } else {
+            roomConnectedUsers[prototypeId] = [];
+          }
+        });
+
+        // クライアントに送信
+        socket.emit('ROOM_CONNECTED_USERS', roomConnectedUsers);
 
         console.log(
           `User ${userId} successfully joined project ${projectId} room`
@@ -147,8 +175,6 @@ export default function handleProject(socket: Socket, io: Server) {
       console.log(
         `ユーザー ${userId} がプロジェクト ${projectId} から切断されました`
       );
-      // 必要に応じて他のプロジェクトメンバーに通知可能
-      // io.to(`project:${projectId}`).emit('USER_DISCONNECTED', { userId });
     }
   });
 }

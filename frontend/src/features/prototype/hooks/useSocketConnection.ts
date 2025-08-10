@@ -24,6 +24,13 @@ interface UseSocketConnectionProps {
   userId: string;
 }
 
+interface ConnectedUser {
+  /** ユーザーID */
+  userId: string;
+  /** ユーザー名 */
+  username: string;
+}
+
 interface UseSocketConnectionReturn {
   /** パーツのMap */
   partsMap: PartsMap;
@@ -31,6 +38,8 @@ interface UseSocketConnectionReturn {
   propertiesMap: PropertiesMap;
   /** カーソル情報 */
   cursors: Record<string, CursorInfo>;
+  /** 接続中ユーザーリスト */
+  connectedUsers: ConnectedUser[];
 }
 
 export const useSocketConnection = ({
@@ -44,8 +53,10 @@ export const useSocketConnection = ({
   const [partsMap, setPartsMap] = useState<PartsMap>(new Map());
   // パーツのプロパティをMap管理（O(1)アクセス）
   const [propertiesMap, setPropertiesMap] = useState<PropertiesMap>(new Map());
-  // カーソル
+  // カーソル情報
   const [cursors, setCursors] = useState<Record<string, CursorInfo>>({});
+  // 接続中ユーザーリスト
+  const [connectedUsers, setConnectedUsers] = useState<ConnectedUser[]>([]);
 
   // パーツとプロパティをMapに変換する関数
   const convertToMaps = useCallback(
@@ -168,6 +179,11 @@ export const useSocketConnection = ({
       setCursors(cursors);
     });
 
+    // 接続中ユーザーリスト更新
+    socket.on(SOCKET_EVENT.CONNECTED_USERS, ({ users }) => {
+      setConnectedUsers(users);
+    });
+
     return () => {
       // イベントリスナーを削除
       // JOIN_PROTOTYPEはemitリスナーを登録しないため、削除不要
@@ -181,6 +197,7 @@ export const useSocketConnection = ({
         SOCKET_EVENT.UPDATE_PARTS,
         SOCKET_EVENT.DELETE_PART,
         SOCKET_EVENT.UPDATE_CURSORS,
+        SOCKET_EVENT.CONNECTED_USERS,
       ];
       events.forEach((event) => socket.off(event));
     };
@@ -190,5 +207,6 @@ export const useSocketConnection = ({
     partsMap,
     propertiesMap,
     cursors,
+    connectedUsers,
   };
 };

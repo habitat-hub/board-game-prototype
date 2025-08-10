@@ -18,6 +18,15 @@ interface UseProjectSocketProps {
     deletedVersionId: string,
     deletedInstanceIds: string[]
   ) => void;
+  /** ルーム別接続中ユーザー初期データ取得時のコールバック */
+  onRoomConnectedUsers?: (
+    roomUsers: Record<string, Array<{ userId: string; username: string }>>
+  ) => void;
+  /** ルーム別接続中ユーザー更新時のコールバック */
+  onRoomConnectedUsersUpdate?: (
+    prototypeId: string,
+    users: Array<{ userId: string; username: string }>
+  ) => void;
 }
 
 export const useProjectSocket = ({
@@ -25,6 +34,8 @@ export const useProjectSocket = ({
   userId,
   onRoomCreated,
   onRoomDeleted,
+  onRoomConnectedUsers,
+  onRoomConnectedUsersUpdate,
 }: UseProjectSocketProps) => {
   const { socket } = useSocket();
 
@@ -76,15 +87,50 @@ export const useProjectSocket = ({
       }
     );
 
+    // ルーム別接続中ユーザー初期データを監視
+    socket.on(
+      'ROOM_CONNECTED_USERS',
+      (
+        roomUsers: Record<string, Array<{ userId: string; username: string }>>
+      ) => {
+        onRoomConnectedUsers?.(roomUsers);
+      }
+    );
+
+    // ルーム別接続中ユーザー更新を監視
+    socket.on(
+      'ROOM_CONNECTED_USERS_UPDATE',
+      ({
+        prototypeId,
+        users,
+      }: {
+        prototypeId: string;
+        users: Array<{ userId: string; username: string }>;
+      }) => {
+        onRoomConnectedUsersUpdate?.(prototypeId, users);
+      }
+    );
+
     return () => {
       // イベントリスナーを削除
       socket.off('ROOM_CREATED');
       socket.off('ROOM_DELETED');
+      socket.off('ROOM_CONNECTED_USERS');
+      socket.off('ROOM_CONNECTED_USERS_UPDATE');
 
       // プロジェクトルームから退出
       leaveProject();
     };
-  }, [socket, joinProject, leaveProject, onRoomCreated, onRoomDeleted, userId]);
+  }, [
+    socket,
+    joinProject,
+    leaveProject,
+    onRoomCreated,
+    onRoomDeleted,
+    onRoomConnectedUsers,
+    onRoomConnectedUsersUpdate,
+    userId,
+  ]);
 
   return {
     joinProject,

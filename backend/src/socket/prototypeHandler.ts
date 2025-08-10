@@ -3,6 +3,7 @@ import PartModel from '../models/Part';
 import PartPropertyModel from '../models/PartProperty';
 import { UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import PrototypeModel from '../models/Prototype';
+import UserModel from '../models/User';
 import { shuffleDeck, isOverlapping } from '../helpers/prototypeHelper';
 import type { CursorInfo } from '../types/cursor';
 import ImageModel from '../models/Image';
@@ -15,6 +16,12 @@ import {
 
 // カーソル情報のマップ
 const cursorMap: Record<string, Record<string, CursorInfo>> = {};
+
+// 接続中ユーザー情報のマップ (prototypeId -> userId -> user info)
+export const connectedUsersMap: Record<
+  string,
+  Record<string, { userId: string; username: string }>
+> = {};
 
 // socket.dataの型定義
 interface SocketData {
@@ -80,8 +87,9 @@ export async function fetchPartsAndProperties(prototypeId: string) {
 /**
  * プロトタイプ参加
  * @param socket - Socket
+ * @param io - Server
  */
-function handleJoinPrototype(socket: Socket) {
+function handleJoinPrototype(socket: Socket, io: Server) {
   socket.on(
     'JOIN_PROTOTYPE',
     async ({
@@ -95,6 +103,10 @@ function handleJoinPrototype(socket: Socket) {
         const prototype = await PrototypeModel.findByPk(prototypeId);
         if (!prototype) return;
 
+        // ユーザー情報を取得
+        const user = await UserModel.findByPk(userId);
+        if (!user) return;
+
         // socket.dataにprototypeIdとuserIdを設定
         socket.data = {
           ...socket.data,
@@ -104,10 +116,31 @@ function handleJoinPrototype(socket: Socket) {
 
         socket.join(prototypeId);
 
+        // 接続中ユーザーマップに追加
+        if (!connectedUsersMap[prototypeId]) {
+          connectedUsersMap[prototypeId] = {};
+        }
+        connectedUsersMap[prototypeId][userId] = {
+          userId: user.id,
+          username: user.username,
+        };
+
         const partsAndProperties = await fetchPartsAndProperties(prototypeId);
         socket.emit('INITIAL_PARTS', partsAndProperties);
         socket.emit('UPDATE_CURSORS', {
           cursors: cursorMap[prototypeId] || {},
+        });
+
+        // 接続中ユーザーリストを全クライアントに送信
+        io.to(prototypeId).emit('CONNECTED_USERS', {
+          users: Object.values(connectedUsersMap[prototypeId] || {}),
+        });
+
+        // プロジェクトルーム全体にルーム別接続中ユーザー更新を通知
+        const projectId = prototype.projectId;
+        io.to(`project:${projectId}`).emit('ROOM_CONNECTED_USERS_UPDATE', {
+          prototypeId,
+          users: Object.values(connectedUsersMap[prototypeId] || {}),
         });
       } catch (error) {
         console.error('プロトタイプの参加に失敗しました。', error);
@@ -612,7 +645,7 @@ function isRebalanceNeeded(parts: PartModel[]): boolean {
 }
 
 export default function handlePrototype(socket: Socket, io: Server) {
-  handleJoinPrototype(socket);
+  handleJoinPrototype(socket, io);
   handleAddPart(socket, io);
   handleUpdatePart(socket, io);
   handleDeletePart(socket, io);
@@ -621,10 +654,39 @@ export default function handlePrototype(socket: Socket, io: Server) {
   handleShuffleDeck(socket, io);
   handleUpdateCursor(socket, io);
 
-  socket.on('disconnect', () => {
+  socket.on('disconnect', async () => {
     const { prototypeId, userId } = socket.data as SocketData;
     if (prototypeId && userId) {
+      // カーソル情報を削除
       delete cursorMap[prototypeId]?.[userId];
+
+      // 接続中ユーザーから削除
+      if (connectedUsersMap[prototypeId]) {
+        delete connectedUsersMap[prototypeId][userId];
+
+        // 更新された接続中ユーザーリストを送信
+        io.to(prototypeId).emit('CONNECTED_USERS', {
+          users: Object.values(connectedUsersMap[prototypeId] || {}),
+        });
+
+        // プロジェクトルーム全体にルーム別接続中ユーザー更新を通知
+        try {
+          const prototype = await PrototypeModel.findByPk(prototypeId);
+          if (prototype) {
+            const projectId = prototype.projectId;
+            io.to(`project:${projectId}`).emit('ROOM_CONNECTED_USERS_UPDATE', {
+              prototypeId,
+              users: Object.values(connectedUsersMap[prototypeId] || {}),
+            });
+          }
+        } catch (error) {
+          console.error(
+            'Failed to notify project room about user disconnection:',
+            error
+          );
+        }
+      }
+
       io.to(prototypeId).emit('UPDATE_CURSORS', {
         cursors: cursorMap[prototypeId] || {},
       });

@@ -25,10 +25,11 @@ const SocketGameBoard: React.FC<SocketGameBoardProps> = ({
   userId,
   gameBoardMode,
 }) => {
-  const { partsMap, propertiesMap, cursors } = useSocketConnection({
-    prototypeId,
-    userId,
-  });
+  const { partsMap, propertiesMap, cursors, connectedUsers } =
+    useSocketConnection({
+      prototypeId,
+      userId,
+    });
 
   return (
     <GameBoard
@@ -38,6 +39,7 @@ const SocketGameBoard: React.FC<SocketGameBoardProps> = ({
       cursors={cursors}
       projectId={projectId}
       gameBoardMode={gameBoardMode}
+      connectedUsers={connectedUsers}
     />
   );
 };
