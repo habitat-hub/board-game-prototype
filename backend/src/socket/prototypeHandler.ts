@@ -89,7 +89,7 @@ export async function fetchPartsAndProperties(prototypeId: string) {
  * @param socket - Socket
  * @param io - Server
  */
-function handleJoinPrototype(socket: Socket, io: Server) {
+function handleJoinPrototype(socket: Socket, io: Server): void {
   socket.on(
     'JOIN_PROTOTYPE',
     async ({
@@ -145,7 +145,9 @@ function handleJoinPrototype(socket: Socket, io: Server) {
           // ソケットを旧ルームから退出
           try {
             socket.leave(prevPrototypeId);
-          } catch {}
+          } catch (error) {
+            console.error('Error while leaving the previous room:', error);
+          }
         }
 
         // socket.dataにprototypeIdとuserIdを設定
