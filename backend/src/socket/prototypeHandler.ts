@@ -200,7 +200,7 @@ function handleJoinPrototype(socket: Socket, io: Server): void {
  * @param socket - Socket
  * @param io - Server
  */
-function handleAddPart(socket: Socket, io: Server) {
+function handleAddPart(socket: Socket, io: Server): void {
   socket.on(
     'ADD_PART',
     async ({
@@ -293,7 +293,7 @@ function handleAddPart(socket: Socket, io: Server) {
  * @param socket - Socket
  * @param io - Server
  */
-function handleUpdatePart(socket: Socket, io: Server) {
+function handleUpdatePart(socket: Socket, io: Server): void {
   socket.on(
     'UPDATE_PART',
     async ({
@@ -370,7 +370,7 @@ function handleUpdatePart(socket: Socket, io: Server) {
  * @param socket - Socket
  * @param io - Server
  */
-function handleDeletePart(socket: Socket, io: Server) {
+function handleDeletePart(socket: Socket, io: Server): void {
   socket.on('DELETE_PART', async ({ partId }: { partId: number }) => {
     const { prototypeId } = socket.data as SocketData;
 
@@ -386,7 +386,7 @@ function handleDeletePart(socket: Socket, io: Server) {
  * @param socket - Socket
  * @param io - Server
  */
-function handleFlipCard(socket: Socket, io: Server) {
+function handleFlipCard(socket: Socket, io: Server): void {
   socket.on(
     'FLIP_CARD',
     async ({
@@ -425,7 +425,7 @@ function handleFlipCard(socket: Socket, io: Server) {
  * @param socket - Socket
  * @param io - Server
  */
-function handleChangeOrder(socket: Socket, io: Server) {
+function handleChangeOrder(socket: Socket, io: Server): void {
   socket.on(
     'CHANGE_ORDER',
     async ({
@@ -576,7 +576,7 @@ function handleChangeOrder(socket: Socket, io: Server) {
  * @param socket - Socket
  * @param io - Server
  */
-function handleShuffleDeck(socket: Socket, io: Server) {
+function handleShuffleDeck(socket: Socket, io: Server): void {
   socket.on('SHUFFLE_DECK', async ({ deckId }: { deckId: number }) => {
     const { prototypeId } = socket.data as SocketData;
 
@@ -616,7 +616,7 @@ function handleShuffleDeck(socket: Socket, io: Server) {
  * @param socket - Socket
  * @param io - Server
  */
-function handleUpdateCursor(socket: Socket, io: Server) {
+function handleUpdateCursor(socket: Socket, io: Server): void {
   socket.on('UPDATE_CURSOR', (cursorInfo: CursorInfo) => {
     const { prototypeId } = socket.data as SocketData;
 
