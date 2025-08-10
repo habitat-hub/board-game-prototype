@@ -23,6 +23,7 @@ import {
   OFFSET_STEP_X,
 } from '@/features/prototype/constants/part';
 import { AddPartProps } from '@/features/prototype/types';
+import { CommonPartProperties } from '@/features/prototype/types/part';
 import { isRectOverlap } from '@/features/prototype/utils/overlap';
 
 export default function PartCreateMenu({
@@ -131,8 +132,7 @@ export default function PartCreateMenu({
         frontSide: 'front',
       };
 
-      // パーツの共通プロパティ
-      const commonProperties = {
+      const commonProperties: CommonPartProperties = {
         name: partConfig.name,
         description: partConfig.description,
         color: partConfig.color,

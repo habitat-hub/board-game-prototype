@@ -7,22 +7,28 @@ export interface PartDefaultConfig {
   /** パーツの種類 */
   type: Part['type'];
   /** パーツの名前 */
-  name: string;
+  name: PartProperty['name'];
   /** パーツの幅 */
-  width: number;
+  width: Part['width'];
   /** パーツの高さ */
-  height: number;
+  height: Part['height'];
   /** パーツの説明 */
-  description: string;
+  description: PartProperty['description'];
   /** パーツのテキスト色 */
-  textColor: string;
+  textColor: PartProperty['textColor'];
   /** パーツの背景色 */
-  color: string;
+  color: PartProperty['color'];
   /** 表面の説明 */
-  frontDescription?: string;
+  frontDescription?: PartProperty['description'];
   /** 裏面の説明 */
-  backDescription?: string;
+  backDescription?: PartProperty['description'];
 }
+
+/**
+ * パーツの共通プロパティ型
+ */
+export interface CommonPartProperties
+  extends Pick<PartProperty, 'name' | 'description' | 'color' | 'textColor'> {}
 
 /**
  * パーツを追加時のprops
