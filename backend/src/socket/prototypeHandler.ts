@@ -107,6 +107,47 @@ function handleJoinPrototype(socket: Socket, io: Server) {
         const user = await UserModel.findByPk(userId);
         if (!user) return;
 
+        // 既存ルームからの離脱・接続中ユーザー更新
+        const prevPrototypeId = (socket.data as SocketData)?.prototypeId;
+        if (prevPrototypeId && prevPrototypeId !== prototypeId) {
+          // 旧ルームの接続中ユーザーから削除
+          if (connectedUsersMap[prevPrototypeId]) {
+            delete connectedUsersMap[prevPrototypeId][userId];
+            // 旧ルームへ更新通知
+            io.to(prevPrototypeId).emit('CONNECTED_USERS', {
+              users: Object.values(connectedUsersMap[prevPrototypeId] || {}),
+            });
+            // 旧プロジェクトルームへ更新通知
+            try {
+              const prevProto = await PrototypeModel.findByPk(prevPrototypeId);
+              if (prevProto) {
+                io.to(`project:${prevProto.projectId}`).emit(
+                  'ROOM_CONNECTED_USERS_UPDATE',
+                  {
+                    prototypeId: prevPrototypeId,
+                    users: Object.values(
+                      connectedUsersMap[prevPrototypeId] || {}
+                    ),
+                  }
+                );
+              }
+            } catch (e) {
+              console.error('Failed to notify previous project room:', e);
+            }
+            // 空ならマップ片付け
+            if (
+              connectedUsersMap[prevPrototypeId] &&
+              Object.keys(connectedUsersMap[prevPrototypeId]).length === 0
+            ) {
+              delete connectedUsersMap[prevPrototypeId];
+            }
+          }
+          // ソケットを旧ルームから退出
+          try {
+            socket.leave(prevPrototypeId);
+          } catch {}
+        }
+
         // socket.dataにprototypeIdとuserIdを設定
         socket.data = {
           ...socket.data,
