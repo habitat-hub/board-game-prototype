@@ -6,8 +6,8 @@ import { Socket } from 'socket.io-client';
 
 import { PartProperty } from '@/api/types';
 import { SOCKET_EVENT } from '@/features/prototype/constants/socket';
-
-import { useSocketConnection } from '../useSocketConnection';
+import { useSocketConnection } from '@/features/prototype/hooks/useSocketConnection';
+import { ConnectedUser } from '@/features/prototype/types/livePrototypeInformation';
 
 // Socket.ioのイベントコールバックの型定義
 type SocketEventCall = [string, (...args: unknown[]) => void];
@@ -337,7 +337,7 @@ describe('useSocketConnection', () => {
         SOCKET_EVENT.CONNECTED_USERS
       );
 
-      const mockUsers = [
+      const mockUsers: ConnectedUser[] = [
         { userId: 'user1', username: 'User One' },
         { userId: 'user2', username: 'User Two' },
       ];
