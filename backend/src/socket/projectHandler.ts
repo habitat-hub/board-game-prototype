@@ -62,14 +62,10 @@ function handleJoinProject(socket: Socket) {
 
         // 各プロトタイプの接続中ユーザー情報を収集
         prototypes.forEach((prototype) => {
-          const prototypeId = prototype.id;
-          if (connectedUsersMap[prototypeId]) {
-            roomConnectedUsers[prototypeId] = Object.values(
-              connectedUsersMap[prototypeId]
-            );
-          } else {
-            roomConnectedUsers[prototypeId] = [];
-          }
+          const prototypeId = String(prototype.id);
+          roomConnectedUsers[prototypeId] = Object.values(
+            connectedUsersMap[prototypeId] ?? {}
+          );
         });
 
         // クライアントに送信
