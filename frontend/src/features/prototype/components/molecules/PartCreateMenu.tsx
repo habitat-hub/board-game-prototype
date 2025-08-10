@@ -131,21 +131,6 @@ export default function PartCreateMenu({
         frontSide: 'front',
       };
 
-      // パーツタイプ別の設定を適用
-      const typeSpecificConfigs: Record<Part['type'], () => void> = {
-        card: () => {
-          newPart.frontSide = 'front';
-        },
-        hand: () => {
-          // 手札作成時の処理（現在は何もしない）
-        },
-        token: () => {},
-        deck: () => {},
-        area: () => {},
-      };
-      // パーツタイプに応じた処理を実行
-      typeSpecificConfigs[partType]();
-
       // パーツの共通プロパティ
       const commonProperties = {
         name: partConfig.name,
