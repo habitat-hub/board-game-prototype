@@ -4,31 +4,24 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { Part, PartProperty } from '@/api/types';
-import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
 import {
+  SOCKET_EVENT,
+  UNEXPECTED_DISCONNECT_REASONS,
+} from '@/features/prototype/constants/socket';
+import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
+import { useSocket } from '@/features/prototype/contexts/SocketContext';
+import {
+  ConnectedUser,
   CursorInfo,
   PartsMap,
   PropertiesMap,
 } from '@/features/prototype/types';
-
-import {
-  SOCKET_EVENT,
-  UNEXPECTED_DISCONNECT_REASONS,
-} from '../constants/socket';
-import { useSocket } from '../contexts/SocketContext';
 
 interface UseSocketConnectionProps {
   /** プロトタイプID */
   prototypeId: string;
   /** ユーザーID */
   userId: string;
-}
-
-interface ConnectedUser {
-  /** ユーザーID */
-  userId: string;
-  /** ユーザー名 */
-  username: string;
 }
 
 interface UseSocketConnectionReturn {
