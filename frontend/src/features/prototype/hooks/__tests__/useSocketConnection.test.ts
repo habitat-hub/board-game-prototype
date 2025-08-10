@@ -109,18 +109,19 @@ describe('useSocketConnection', () => {
 
       // サーバー側の切断では再接続
       disconnectCallback!('io server disconnect');
-      expect(consoleSpy).toHaveBeenCalledWith('Socket接続が切断されました:', {
-        reason: 'io server disconnect',
-      });
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Socket接続が予期せず切断されました:',
+        {
+          reason: 'io server disconnect',
+        }
+      );
       expect(mockSocket.connect).toHaveBeenCalledTimes(1);
 
       // クライアント側の切断では再接続しない
       jest.clearAllMocks();
       consoleSpy.mockClear();
       disconnectCallback!('io client disconnect');
-      expect(consoleSpy).toHaveBeenCalledWith('Socket接続が切断されました:', {
-        reason: 'io client disconnect',
-      });
+      expect(consoleSpy).not.toHaveBeenCalled();
       expect(mockSocket.connect).not.toHaveBeenCalled();
     });
   });
