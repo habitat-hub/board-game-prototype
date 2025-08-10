@@ -690,7 +690,7 @@ function isRebalanceNeeded(parts: PartModel[]): boolean {
   });
 }
 
-export default function handlePrototype(socket: Socket, io: Server) {
+export default function handlePrototype(socket: Socket, io: Server): void {
   handleJoinPrototype(socket, io);
   handleAddPart(socket, io);
   handleUpdatePart(socket, io);
