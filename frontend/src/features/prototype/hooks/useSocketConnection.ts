@@ -42,6 +42,13 @@ interface UseSocketConnectionReturn {
   connectedUsers: ConnectedUser[];
 }
 
+/*
+ * 接続中ユーザーリストのペイロード型
+ */
+interface ConnectedUsersPayload {
+  users: ConnectedUser[];
+}
+
 export const useSocketConnection = ({
   prototypeId,
   userId,
@@ -180,9 +187,12 @@ export const useSocketConnection = ({
     });
 
     // 接続中ユーザーリスト更新
-    socket.on(SOCKET_EVENT.CONNECTED_USERS, ({ users }) => {
-      setConnectedUsers(users);
-    });
+    socket.on(
+      SOCKET_EVENT.CONNECTED_USERS,
+      (payload: ConnectedUsersPayload) => {
+        setConnectedUsers(payload.users);
+      }
+    );
 
     return () => {
       // イベントリスナーを削除
