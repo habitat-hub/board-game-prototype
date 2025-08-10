@@ -1,5 +1,7 @@
 /**
  * ソケット通信で使用するイベント名の定数
+ * TODO: prototypeIdレベルのイベント名とprojectIdレベルのイベント名を分類して定義する
+ * PROTOTYPE_SOCKET_EVENTとPROJECT_SOCKET_EVENTのように分けるイメージ
  */
 export const SOCKET_EVENT = {
   // 接続エラー発生時
@@ -22,6 +24,14 @@ export const SOCKET_EVENT = {
   UPDATE_CURSORS: 'UPDATE_CURSORS',
   // 接続中ユーザーリストの更新
   CONNECTED_USERS: 'CONNECTED_USERS',
+  // ルーム作成
+  ROOM_CREATED: 'ROOM_CREATED',
+  // ルーム削除
+  ROOM_DELETED: 'ROOM_DELETED',
+  // ルーム別接続中ユーザー初期データ
+  ROOM_CONNECTED_USERS: 'ROOM_CONNECTED_USERS',
+  // ルーム別接続中ユーザー更新
+  ROOM_CONNECTED_USERS_UPDATE: 'ROOM_CONNECTED_USERS_UPDATE',
 } as const;
 
 /**
