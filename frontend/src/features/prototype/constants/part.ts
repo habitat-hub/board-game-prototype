@@ -1,3 +1,7 @@
+/**
+ * パーツ作成時の連打防止用スリープ時間（ミリ秒）
+ */
+export const PART_CREATE_THROTTLE_MS = 300;
 // パーツ配置のための定数
 export const POSITION_ATTEMPTS = 100;
 export const OFFSET_STEP_X = 25;

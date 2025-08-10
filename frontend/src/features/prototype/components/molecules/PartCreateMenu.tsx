@@ -21,6 +21,7 @@ import {
 import {
   POSITION_ATTEMPTS,
   OFFSET_STEP_X,
+  PART_CREATE_THROTTLE_MS,
 } from '@/features/prototype/constants/part';
 import { AddPartProps } from '@/features/prototype/types';
 import { CommonPartProperties } from '@/features/prototype/types/part';
@@ -162,8 +163,10 @@ export default function PartCreateMenu({
           : [{ side: 'front', ...commonProperties }];
 
       onAddPart({ part: newPart, properties: newPartProperties });
-      // 連打防止のために0.3秒のスリープ
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      // 連打防止のためにスリープ
+      await new Promise((resolve) =>
+        setTimeout(resolve, PART_CREATE_THROTTLE_MS)
+      );
     } catch (error) {
       console.error('パーツ作成中にエラーが発生しました:', error);
     } finally {
