@@ -118,9 +118,7 @@ describe('useSocketConnection', () => {
       jest.clearAllMocks();
       consoleSpy.mockClear();
       disconnectCallback!('io client disconnect');
-      expect(consoleSpy).toHaveBeenCalledWith('Socket接続が切断されました:', {
-        reason: 'io client disconnect',
-      });
+      expect(consoleSpy).not.toHaveBeenCalled();
       expect(mockSocket.connect).not.toHaveBeenCalled();
     });
   });
