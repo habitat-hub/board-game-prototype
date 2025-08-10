@@ -5,7 +5,7 @@ import { Image, Part, PartProperty } from '@/api/types';
  */
 export interface PartDefaultConfig {
   /** パーツの種類 */
-  type: 'card' | 'token' | 'hand' | 'deck' | 'area';
+  type: Part['type'];
   /** パーツの名前 */
   name: string;
   /** パーツの幅 */

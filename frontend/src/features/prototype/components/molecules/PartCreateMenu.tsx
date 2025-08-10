@@ -34,9 +34,12 @@ export default function PartCreateMenu({
 }) {
   const [creatingPartType, setCreatingPartType] = useState<string | null>(null);
 
-  const handleCreatePart = async (
-    partType: 'card' | 'token' | 'hand' | 'deck' | 'area'
-  ) => {
+  /**
+   * 新しいパーツを作成し、中央に配置して追加します。
+   * @param partType 作成するパーツの種類（'card' | 'token' | 'hand' | 'deck' | 'area'）
+   * @returns Promise<void>
+   */
+  const handleCreatePart = async (partType: Part['type']): Promise<void> => {
     // 既に作成中の場合は何もしない
     if (creatingPartType) return;
 
@@ -44,19 +47,17 @@ export default function PartCreateMenu({
 
     try {
       // パーツの初期設定情報を取得するためのマッピング
-      const configMapping = {
+      const configMapping: Record<
+        Part['type'],
+        typeof PART_DEFAULT_CONFIG.CARD
+      > = {
         card: PART_DEFAULT_CONFIG.CARD,
         token: PART_DEFAULT_CONFIG.TOKEN,
         hand: PART_DEFAULT_CONFIG.HAND,
         deck: PART_DEFAULT_CONFIG.DECK,
         area: PART_DEFAULT_CONFIG.AREA,
       };
-
       const partConfig = configMapping[partType];
-      // パーツの初期設定情報が存在しない場合
-      if (!partConfig) {
-        return;
-      }
 
       // パーツを中央に配置する座標を計算する関数
       const getCenteredPosition = (
@@ -124,7 +125,7 @@ export default function PartCreateMenu({
       };
 
       // パーツタイプ別の設定を適用
-      const typeSpecificConfigs = {
+      const typeSpecificConfigs: Record<Part['type'], () => void> = {
         card: () => {
           newPart.frontSide = 'front';
         },
@@ -135,7 +136,6 @@ export default function PartCreateMenu({
         deck: () => {},
         area: () => {},
       };
-
       // パーツタイプに応じた処理を実行
       typeSpecificConfigs[partType]();
 
