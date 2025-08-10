@@ -8,13 +8,11 @@ import Link from 'next/link';
 import { FaUsers } from 'react-icons/fa';
 
 import { MAX_DISPLAY_USERS } from '@/features/prototype/constants/presence';
+import { ConnectedUser } from '@/features/prototype/types';
 
 interface RoleMenuProps {
   projectId: string;
-  connectedUsers: Array<{
-    userId: string;
-    username: string;
-  }>;
+  connectedUsers: ConnectedUser[];
   loading?: boolean;
   showRoleManagementButton?: boolean;
 }
