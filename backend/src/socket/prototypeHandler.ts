@@ -703,9 +703,11 @@ export default function handlePrototype(socket: Socket, io: Server) {
   socket.on('disconnecting', () => {
     // ソケットが切断される直前に呼び出される
     for (const room of socket.rooms) {
-      if (room.startsWith('prototype:')) {
-        const prototypeId = room.split(':')[1];
+      // プロトタイプルームの場合（自身の socket.id 以外 かつ 管理対象のルーム）
+      if (room !== socket.id && connectedUsersMap[room]) {
+        const prototypeId = room;
         const { userId } = socket.data as SocketData;
+        if (!userId) continue;
 
         if (connectedUsersMap[prototypeId]) {
           // 接続中ユーザー情報から削除
