@@ -170,6 +170,8 @@ export default function PartCreateMenu({
           : [{ side: 'front', ...commonProperties }];
 
       onAddPart({ part: newPart, properties: newPartProperties });
+      // 連打防止のために0.3秒のスリープ
+      await new Promise((resolve) => setTimeout(resolve, 300));
     } catch (error) {
       console.error('パーツ作成中にエラーが発生しました:', error);
     } finally {
