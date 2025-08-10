@@ -8,8 +8,10 @@ import { MdMeetingRoom, MdDelete } from 'react-icons/md';
 
 import { useProject } from '@/api/hooks/useProject';
 import { Prototype, ProjectsDetailData } from '@/api/types';
+import { MAX_DISPLAY_USERS } from '@/features/prototype/constants';
 import { useProjectSocket } from '@/features/prototype/hooks/useProjectSocket';
 import { GameBoardMode } from '@/features/prototype/types';
+import { ConnectedUser } from '@/features/prototype/types/livePrototypeInformation';
 import { useUser } from '@/hooks/useUser';
 import formatDate from '@/utils/dateFormat';
 
@@ -32,6 +34,10 @@ export default function LeftSidebar({
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
   const [project, setProject] = useState<ProjectsDetailData | null>(null);
   const [isRoomCreating, setIsRoomCreating] = useState(false);
+  // ルームIDごとの接続中ユーザー一覧
+  const [roomConnectedUsers, setRoomConnectedUsers] = useState<
+    Record<string, ConnectedUser[]>
+  >({});
 
   // プロジェクトデータから必要な情報を取得
   const instancePrototypes: Prototype[] =
@@ -111,12 +117,42 @@ export default function LeftSidebar({
     []
   );
 
+  /**
+   * ルーム別接続中ユーザー初期データ取得時のコールバック
+   */
+  const handleRoomConnectedUsers = useCallback(
+    (
+      roomUsers: Record<string, Array<{ userId: string; username: string }>>
+    ) => {
+      setRoomConnectedUsers(roomUsers);
+    },
+    []
+  );
+
+  /**
+   * ルーム別接続中ユーザー更新時のコールバック
+   */
+  const handleRoomConnectedUsersUpdate = useCallback(
+    (
+      prototypeId: string,
+      users: Array<{ userId: string; username: string }>
+    ) => {
+      setRoomConnectedUsers((prevRoomUsers) => ({
+        ...prevRoomUsers,
+        [prototypeId]: users,
+      }));
+    },
+    []
+  );
+
   // プロジェクトレベルのSocket通信設定
   useProjectSocket({
     projectId,
     userId: user?.id,
     onRoomCreated: handleRoomCreated,
     onRoomDeleted: handleRoomDeleted,
+    onRoomConnectedUsers: handleRoomConnectedUsers,
+    onRoomConnectedUsersUpdate: handleRoomConnectedUsersUpdate,
   });
 
   // プロトタイプを取得する
@@ -209,34 +245,63 @@ export default function LeftSidebar({
                   new Date(a.createdAt).getTime()
                 : 0
             )
-            .map((instance) => (
-              <div key={instance.id} className="relative flex-shrink-0">
-                <Link
-                  href={`/projects/${projectId}/prototypes/${instance.id}`}
-                  className="group"
-                  title={`${instance.name + '版'}のルームを開く`}
-                >
-                  <div className="flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 group-hover:bg-kibako-accent/10 group-hover:border-kibako-accent border border-transparent">
-                    <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[180px]">
-                        {instance.name}
-                      </span>
-                      <span className="text-xs text-kibako-secondary mt-0.5 flex items-center gap-1">
-                        <span className="font-bold">入室する</span>
-                      </span>
+            .map((instance) => {
+              const connectedUsers = roomConnectedUsers[instance.id] || [];
+              return (
+                <div key={instance.id} className="relative flex-shrink-0">
+                  <Link
+                    href={`/projects/${projectId}/prototypes/${instance.id}`}
+                    className="group"
+                    title={`${instance.name + '版'}のルームを開く`}
+                  >
+                    <div className="flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 group-hover:bg-kibako-accent/10 group-hover:border-kibako-accent border border-transparent">
+                      <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[180px]">
+                          {instance.name}
+                        </span>
+                        <div className="text-xs text-kibako-secondary mt-0.5">
+                          <div className="flex items-center gap-1 mb-1">
+                            <span className="font-bold">入室する</span>
+                          </div>
+                          {connectedUsers.length > 0 && (
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs">接続中:</span>
+                              <div className="flex -space-x-1">
+                                {connectedUsers
+                                  .slice(0, MAX_DISPLAY_USERS)
+                                  .map((user, idx) => (
+                                    <span
+                                      key={user.userId}
+                                      className="flex items-center justify-center w-5 h-5 rounded-full bg-kibako-accent text-kibako-white font-bold text-xs border border-kibako-white"
+                                      style={{ zIndex: 10 - idx }}
+                                      title={user.username}
+                                    >
+                                      {user.username.charAt(0).toUpperCase()}
+                                    </span>
+                                  ))}
+                                {connectedUsers.length > MAX_DISPLAY_USERS && (
+                                  <span className="text-xs text-kibako-secondary ml-1">
+                                    +{connectedUsers.length - MAX_DISPLAY_USERS}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-                <button
-                  onClick={() => handleDeleteRoom(instance.id)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full group/delete hover:bg-kibako-accent/20 focus:outline-none flex items-center justify-center"
-                  title="ルームを削除"
-                >
-                  <MdDelete className="h-5 w-5 text-kibako-secondary transition-colors" />
-                </button>
-              </div>
-            ))}
+                  </Link>
+                  <button
+                    onClick={() => handleDeleteRoom(instance.id)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full group/delete hover:bg-kibako-accent/20 focus:outline-none flex items-center justify-center"
+                    title="ルームを削除"
+                  >
+                    <MdDelete className="h-5 w-5 text-kibako-secondary transition-colors" />
+                  </button>
+                </div>
+              );
+            })}
         </div>
       </div>
     );

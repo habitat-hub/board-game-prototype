@@ -4,6 +4,7 @@
 import { useCallback, useEffect } from 'react';
 
 import { Prototype } from '@/api/types';
+import { SOCKET_EVENT } from '@/features/prototype/constants/socket';
 import { useSocket } from '@/features/prototype/contexts/SocketContext';
 
 interface UseProjectSocketProps {
@@ -18,6 +19,15 @@ interface UseProjectSocketProps {
     deletedVersionId: string,
     deletedInstanceIds: string[]
   ) => void;
+  /** ルーム別接続中ユーザー初期データ取得時のコールバック */
+  onRoomConnectedUsers?: (
+    roomUsers: Record<string, Array<{ userId: string; username: string }>>
+  ) => void;
+  /** ルーム別接続中ユーザー更新時のコールバック */
+  onRoomConnectedUsersUpdate?: (
+    prototypeId: string,
+    users: Array<{ userId: string; username: string }>
+  ) => void;
 }
 
 export const useProjectSocket = ({
@@ -25,6 +35,8 @@ export const useProjectSocket = ({
   userId,
   onRoomCreated,
   onRoomDeleted,
+  onRoomConnectedUsers,
+  onRoomConnectedUsersUpdate,
 }: UseProjectSocketProps) => {
   const { socket } = useSocket();
 
@@ -56,7 +68,7 @@ export const useProjectSocket = ({
 
     // ルーム作成イベントを監視
     socket.on(
-      'ROOM_CREATED',
+      SOCKET_EVENT.ROOM_CREATED,
       ({ version, instance }: { version: Prototype; instance: Prototype }) => {
         onRoomCreated(version, instance);
       }
@@ -64,7 +76,7 @@ export const useProjectSocket = ({
 
     // ルーム削除イベントを監視
     socket.on(
-      'ROOM_DELETED',
+      SOCKET_EVENT.ROOM_DELETED,
       ({
         deletedVersionId,
         deletedInstanceIds,
@@ -76,15 +88,53 @@ export const useProjectSocket = ({
       }
     );
 
+    // ルーム別接続中ユーザー初期データを監視
+    socket.on(
+      SOCKET_EVENT.ROOM_CONNECTED_USERS,
+      (
+        roomUsers: Record<string, Array<{ userId: string; username: string }>>
+      ) => {
+        onRoomConnectedUsers?.(roomUsers);
+      }
+    );
+
+    // ルーム別接続中ユーザー更新を監視
+    socket.on(
+      SOCKET_EVENT.ROOM_CONNECTED_USERS_UPDATE,
+      ({
+        prototypeId,
+        users,
+      }: {
+        prototypeId: string;
+        users: Array<{ userId: string; username: string }>;
+      }) => {
+        onRoomConnectedUsersUpdate?.(prototypeId, users);
+      }
+    );
+
     return () => {
       // イベントリスナーを削除
-      socket.off('ROOM_CREATED');
-      socket.off('ROOM_DELETED');
+      const events = [
+        SOCKET_EVENT.ROOM_CREATED,
+        SOCKET_EVENT.ROOM_DELETED,
+        SOCKET_EVENT.ROOM_CONNECTED_USERS,
+        SOCKET_EVENT.ROOM_CONNECTED_USERS_UPDATE,
+      ];
+      events.forEach((event) => socket.off(event));
 
       // プロジェクトルームから退出
       leaveProject();
     };
-  }, [socket, joinProject, leaveProject, onRoomCreated, onRoomDeleted, userId]);
+  }, [
+    socket,
+    joinProject,
+    leaveProject,
+    onRoomCreated,
+    onRoomDeleted,
+    onRoomConnectedUsers,
+    onRoomConnectedUsersUpdate,
+    userId,
+  ]);
 
   return {
     joinProject,

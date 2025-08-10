@@ -3,6 +3,7 @@ import PartModel from '../models/Part';
 import PartPropertyModel from '../models/PartProperty';
 import { UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import PrototypeModel from '../models/Prototype';
+import UserModel from '../models/User';
 import { shuffleDeck, isOverlapping } from '../helpers/prototypeHelper';
 import type { CursorInfo } from '../types/cursor';
 import ImageModel from '../models/Image';
@@ -15,6 +16,12 @@ import {
 
 // カーソル情報のマップ
 const cursorMap: Record<string, Record<string, CursorInfo>> = {};
+
+// 接続中ユーザー情報のマップ (prototypeId -> userId -> user info)
+export const connectedUsersMap: Record<
+  string,
+  Record<string, { userId: string; username: string }>
+> = {};
 
 // socket.dataの型定義
 interface SocketData {
@@ -80,8 +87,9 @@ export async function fetchPartsAndProperties(prototypeId: string) {
 /**
  * プロトタイプ参加
  * @param socket - Socket
+ * @param io - Server
  */
-function handleJoinPrototype(socket: Socket) {
+function handleJoinPrototype(socket: Socket, io: Server): void {
   socket.on(
     'JOIN_PROTOTYPE',
     async ({
@@ -95,6 +103,56 @@ function handleJoinPrototype(socket: Socket) {
         const prototype = await PrototypeModel.findByPk(prototypeId);
         if (!prototype) return;
 
+        // ユーザー情報を取得
+        const user = await UserModel.findByPk(userId);
+        if (!user) return;
+
+        // 既存ルームからの離脱・接続中ユーザー更新
+        const prevPrototypeId = (socket.data as SocketData)?.prototypeId;
+        if (prevPrototypeId && prevPrototypeId !== prototypeId) {
+          // 旧ルームの接続中ユーザーから削除
+          if (connectedUsersMap[prevPrototypeId]) {
+            delete connectedUsersMap[prevPrototypeId][userId];
+            // 旧ルームへ更新通知
+            io.to(prevPrototypeId).emit('CONNECTED_USERS', {
+              users: Object.values(connectedUsersMap[prevPrototypeId] || {}),
+            });
+            // 旧プロジェクトルームへ更新通知
+            try {
+              const prevProto = await PrototypeModel.findByPk(prevPrototypeId);
+              if (prevProto) {
+                io.to(`project:${prevProto.projectId}`).emit(
+                  'ROOM_CONNECTED_USERS_UPDATE',
+                  {
+                    prototypeId: prevPrototypeId,
+                    users: Object.values(
+                      connectedUsersMap[prevPrototypeId] || {}
+                    ),
+                  }
+                );
+              }
+            } catch (e) {
+              console.error(
+                '以前のプロジェクトルームへの通知に失敗しました:',
+                e
+              );
+            }
+            // 空ならマップ片付け
+            if (
+              connectedUsersMap[prevPrototypeId] &&
+              Object.keys(connectedUsersMap[prevPrototypeId]).length === 0
+            ) {
+              delete connectedUsersMap[prevPrototypeId];
+            }
+          }
+          // ソケットを旧ルームから退出
+          try {
+            socket.leave(prevPrototypeId);
+          } catch (error) {
+            console.error('Error while leaving the previous room:', error);
+          }
+        }
+
         // socket.dataにprototypeIdとuserIdを設定
         socket.data = {
           ...socket.data,
@@ -104,10 +162,31 @@ function handleJoinPrototype(socket: Socket) {
 
         socket.join(prototypeId);
 
+        // 接続中ユーザーマップに追加
+        if (!connectedUsersMap[prototypeId]) {
+          connectedUsersMap[prototypeId] = {};
+        }
+        connectedUsersMap[prototypeId][userId] = {
+          userId: user.id,
+          username: user.username,
+        };
+
         const partsAndProperties = await fetchPartsAndProperties(prototypeId);
         socket.emit('INITIAL_PARTS', partsAndProperties);
         socket.emit('UPDATE_CURSORS', {
           cursors: cursorMap[prototypeId] || {},
+        });
+
+        // 接続中ユーザーリストを全クライアントに送信
+        io.to(prototypeId).emit('CONNECTED_USERS', {
+          users: Object.values(connectedUsersMap[prototypeId] || {}),
+        });
+
+        // プロジェクトルーム全体にルーム別接続中ユーザー更新を通知
+        const projectId = prototype.projectId;
+        io.to(`project:${projectId}`).emit('ROOM_CONNECTED_USERS_UPDATE', {
+          prototypeId,
+          users: Object.values(connectedUsersMap[prototypeId] || {}),
         });
       } catch (error) {
         console.error('プロトタイプの参加に失敗しました。', error);
@@ -121,7 +200,7 @@ function handleJoinPrototype(socket: Socket) {
  * @param socket - Socket
  * @param io - Server
  */
-function handleAddPart(socket: Socket, io: Server) {
+function handleAddPart(socket: Socket, io: Server): void {
   socket.on(
     'ADD_PART',
     async ({
@@ -214,7 +293,7 @@ function handleAddPart(socket: Socket, io: Server) {
  * @param socket - Socket
  * @param io - Server
  */
-function handleUpdatePart(socket: Socket, io: Server) {
+function handleUpdatePart(socket: Socket, io: Server): void {
   socket.on(
     'UPDATE_PART',
     async ({
@@ -291,7 +370,7 @@ function handleUpdatePart(socket: Socket, io: Server) {
  * @param socket - Socket
  * @param io - Server
  */
-function handleDeletePart(socket: Socket, io: Server) {
+function handleDeletePart(socket: Socket, io: Server): void {
   socket.on('DELETE_PART', async ({ partId }: { partId: number }) => {
     const { prototypeId } = socket.data as SocketData;
 
@@ -307,7 +386,7 @@ function handleDeletePart(socket: Socket, io: Server) {
  * @param socket - Socket
  * @param io - Server
  */
-function handleFlipCard(socket: Socket, io: Server) {
+function handleFlipCard(socket: Socket, io: Server): void {
   socket.on(
     'FLIP_CARD',
     async ({
@@ -346,7 +425,7 @@ function handleFlipCard(socket: Socket, io: Server) {
  * @param socket - Socket
  * @param io - Server
  */
-function handleChangeOrder(socket: Socket, io: Server) {
+function handleChangeOrder(socket: Socket, io: Server): void {
   socket.on(
     'CHANGE_ORDER',
     async ({
@@ -497,7 +576,7 @@ function handleChangeOrder(socket: Socket, io: Server) {
  * @param socket - Socket
  * @param io - Server
  */
-function handleShuffleDeck(socket: Socket, io: Server) {
+function handleShuffleDeck(socket: Socket, io: Server): void {
   socket.on('SHUFFLE_DECK', async ({ deckId }: { deckId: number }) => {
     const { prototypeId } = socket.data as SocketData;
 
@@ -537,7 +616,7 @@ function handleShuffleDeck(socket: Socket, io: Server) {
  * @param socket - Socket
  * @param io - Server
  */
-function handleUpdateCursor(socket: Socket, io: Server) {
+function handleUpdateCursor(socket: Socket, io: Server): void {
   socket.on('UPDATE_CURSOR', (cursorInfo: CursorInfo) => {
     const { prototypeId } = socket.data as SocketData;
 
@@ -611,8 +690,8 @@ function isRebalanceNeeded(parts: PartModel[]): boolean {
   });
 }
 
-export default function handlePrototype(socket: Socket, io: Server) {
-  handleJoinPrototype(socket);
+export default function handlePrototype(socket: Socket, io: Server): void {
+  handleJoinPrototype(socket, io);
   handleAddPart(socket, io);
   handleUpdatePart(socket, io);
   handleDeletePart(socket, io);
@@ -621,10 +700,76 @@ export default function handlePrototype(socket: Socket, io: Server) {
   handleShuffleDeck(socket, io);
   handleUpdateCursor(socket, io);
 
-  socket.on('disconnect', () => {
+  socket.on('disconnecting', () => {
+    // ソケットが切断される直前に呼び出される
+    for (const room of socket.rooms) {
+      // プロトタイプルームの場合（自身の socket.id 以外 かつ 管理対象のルーム）
+      if (room !== socket.id && connectedUsersMap[room]) {
+        const prototypeId = room;
+        const { userId } = socket.data as SocketData;
+        if (!userId) continue;
+
+        if (connectedUsersMap[prototypeId]) {
+          // 接続中ユーザー情報から削除
+          delete connectedUsersMap[prototypeId][userId];
+
+          // ルームが空の場合、エントリを削除
+          if (Object.keys(connectedUsersMap[prototypeId]).length === 0) {
+            delete connectedUsersMap[prototypeId];
+          }
+
+          // 残りのユーザーに更新を通知
+          io.to(prototypeId).emit('CONNECTED_USERS', {
+            users: Object.values(connectedUsersMap[prototypeId] || {}),
+          });
+        }
+      }
+    }
+  });
+
+  socket.on('disconnect', async () => {
+    // ソケットが完全に切断されたときに呼び出される
     const { prototypeId, userId } = socket.data as SocketData;
     if (prototypeId && userId) {
+      // カーソル情報を削除
       delete cursorMap[prototypeId]?.[userId];
+
+      // 接続中ユーザー情報から削除
+      if (connectedUsersMap[prototypeId]) {
+        delete connectedUsersMap[prototypeId][userId];
+
+        // 更新された接続中ユーザーリストを通知
+        io.to(prototypeId).emit('CONNECTED_USERS', {
+          users: Object.values(connectedUsersMap[prototypeId] || {}),
+        });
+
+        // プロジェクトルームにユーザー切断を通知
+        try {
+          const prototype = await PrototypeModel.findByPk(prototypeId);
+          if (prototype) {
+            const projectId = prototype.projectId;
+            io.to(`project:${projectId}`).emit('ROOM_CONNECTED_USERS_UPDATE', {
+              prototypeId,
+              users: Object.values(connectedUsersMap[prototypeId] || {}),
+            });
+          }
+        } catch (error) {
+          console.error(
+            'プロジェクトルームへのユーザー切断通知に失敗しました:',
+            error
+          );
+        }
+
+        // ルームが空の場合、エントリを削除
+        if (
+          connectedUsersMap[prototypeId] &&
+          Object.keys(connectedUsersMap[prototypeId]).length === 0
+        ) {
+          delete connectedUsersMap[prototypeId];
+        }
+      }
+
+      // カーソル情報の更新を通知
       io.to(prototypeId).emit('UPDATE_CURSORS', {
         cursors: cursorMap[prototypeId] || {},
       });
