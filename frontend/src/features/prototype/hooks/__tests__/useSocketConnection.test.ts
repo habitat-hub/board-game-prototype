@@ -327,5 +327,25 @@ describe('useSocketConnection', () => {
 
       expect(mockSelectMultipleParts).toHaveBeenCalledWith([123]);
     });
+
+    it('CONNECTED_USERSイベントで接続中ユーザーリストが正しく更新される', () => {
+      const { result } = renderHook(() => useSocketConnection(defaultProps));
+
+      const connectedUsersCallback = getEventCallback(
+        mockSocket.on as jest.Mock,
+        'CONNECTED_USERS'
+      );
+
+      const mockUsers = [
+        { userId: 'user1', username: 'User One' },
+        { userId: 'user2', username: 'User Two' },
+      ];
+
+      act(() => {
+        connectedUsersCallback!({ users: mockUsers });
+      });
+
+      expect(result.current.connectedUsers).toEqual(mockUsers);
+    });
   });
 });
