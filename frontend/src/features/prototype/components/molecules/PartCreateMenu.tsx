@@ -18,6 +18,10 @@ import {
   PART_DEFAULT_CONFIG,
   CANVAS_SIZE,
 } from '@/features/prototype/constants';
+import {
+  POSITION_ATTEMPTS,
+  OFFSET_STEP_X,
+} from '@/features/prototype/constants/part';
 import { AddPartProps } from '@/features/prototype/types';
 import { isRectOverlap } from '@/features/prototype/utils/overlap';
 
@@ -65,7 +69,7 @@ export default function PartCreateMenu({
         partHeight: number,
         camera: { x: number; y: number; scale: number },
         viewportSize: { width: number; height: number }
-      ) => {
+      ): { x: number; y: number } => {
         const cameraCenterX =
           (camera.x + viewportSize.width / 2) / camera.scale;
         const cameraCenterY =
@@ -84,9 +88,12 @@ export default function PartCreateMenu({
             Math.round(cameraCenterY - partHeight / 2)
           )
         );
-        // 既存パーツと重ならない位置までxのみ+25ずつずらす
+        // 既存パーツと重ならない位置までxのみ+OFFSET_STEP_Xずつずらす
         const baseX = x;
-        const candidate = Array.from({ length: 100 }, (_, i) => baseX + 25 * i)
+        const candidate = Array.from(
+          { length: POSITION_ATTEMPTS },
+          (_, i) => baseX + OFFSET_STEP_X * i
+        )
           .map((candidateX) => ({
             x: Math.min(candidateX, CANVAS_SIZE - partWidth),
             y,

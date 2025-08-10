@@ -1,3 +1,6 @@
+// パーツ配置のための定数
+export const POSITION_ATTEMPTS = 100;
+export const OFFSET_STEP_X = 25;
 import { PartDefaultConfig } from '@/features/prototype/types';
 
 /**
