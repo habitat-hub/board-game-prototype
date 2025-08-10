@@ -1,6 +1,21 @@
 import { PartDefaultConfig } from '@/features/prototype/types';
 
 /**
+ * パーツ作成時の連打防止用スリープ時間（ミリ秒）
+ */
+export const PART_CREATE_THROTTLE_MS = 300;
+
+/**
+ * パーツの配置を試行する最大回数
+ */
+export const POSITION_ATTEMPTS: number = 20;
+
+/**
+ * パーツの配置時のX方向のオフセット量
+ */
+export const OFFSET_STEP_X: number = 10;
+
+/**
  * パーツのカラー定義
  */
 export const COLORS = {
