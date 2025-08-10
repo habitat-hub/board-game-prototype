@@ -5,6 +5,7 @@ import { renderHook, act } from '@testing-library/react';
 import { Socket } from 'socket.io-client';
 
 import { PartProperty } from '@/api/types';
+import { SOCKET_EVENT } from '@/features/prototype/constants/socket';
 
 import { useSocketConnection } from '../useSocketConnection';
 
@@ -144,11 +145,11 @@ describe('useSocketConnection', () => {
       const expectedOffEvents = [
         'connect_error',
         'disconnect',
-        'INITIAL_PARTS',
-        'ADD_PART',
-        'ADD_PART_RESPONSE',
-        'UPDATE_PARTS',
-        'DELETE_PART',
+        SOCKET_EVENT.INITIAL_PARTS,
+        SOCKET_EVENT.ADD_PART,
+        SOCKET_EVENT.ADD_PART_RESPONSE,
+        SOCKET_EVENT.UPDATE_PARTS,
+        SOCKET_EVENT.DELETE_PART,
         'UPDATE_CURSORS',
       ];
 
@@ -164,7 +165,7 @@ describe('useSocketConnection', () => {
 
       const initialPartsCallback = getEventCallback(
         mockSocket.on as jest.Mock,
-        'INITIAL_PARTS'
+        SOCKET_EVENT.INITIAL_PARTS
       );
 
       const mockParts = [
@@ -199,7 +200,7 @@ describe('useSocketConnection', () => {
 
       const addPartCallback = getEventCallback(
         mockSocket.on as jest.Mock,
-        'ADD_PART'
+        SOCKET_EVENT.ADD_PART
       );
 
       const mockPart = { id: 3, name: 'New Part', x: 500, y: 600 };
@@ -225,7 +226,7 @@ describe('useSocketConnection', () => {
       // 初期データを設定
       const initialPartsCallback = getEventCallback(
         mockSocket.on as jest.Mock,
-        'INITIAL_PARTS'
+        SOCKET_EVENT.INITIAL_PARTS
       );
       const mockParts = [{ id: 1, name: 'Part 1', x: 100, y: 200 }];
       const mockProperties = [
@@ -242,7 +243,7 @@ describe('useSocketConnection', () => {
 
       const deletePartCallback = getEventCallback(
         mockSocket.on as jest.Mock,
-        'DELETE_PART'
+        SOCKET_EVENT.DELETE_PART
       );
 
       act(() => {
@@ -259,7 +260,7 @@ describe('useSocketConnection', () => {
       // 初期データを設定（front, backの両方があるパーツ）
       const initialPartsCallback = getEventCallback(
         mockSocket.on as jest.Mock,
-        'INITIAL_PARTS'
+        SOCKET_EVENT.INITIAL_PARTS
       );
       const initialParts = [{ id: 1, name: 'Part 1', x: 100, y: 200 }];
       const initialProperties = [
@@ -284,7 +285,7 @@ describe('useSocketConnection', () => {
 
       const updatePartsCallback = getEventCallback(
         mockSocket.on as jest.Mock,
-        'UPDATE_PARTS'
+        SOCKET_EVENT.UPDATE_PARTS
       );
 
       // frontのみを更新
@@ -320,7 +321,7 @@ describe('useSocketConnection', () => {
 
       const addPartResponseCallback = getEventCallback(
         mockSocket.on as jest.Mock,
-        'ADD_PART_RESPONSE'
+        SOCKET_EVENT.ADD_PART_RESPONSE
       );
 
       addPartResponseCallback!({ partId: 123 });
@@ -333,7 +334,7 @@ describe('useSocketConnection', () => {
 
       const connectedUsersCallback = getEventCallback(
         mockSocket.on as jest.Mock,
-        'CONNECTED_USERS'
+        SOCKET_EVENT.CONNECTED_USERS
       );
 
       const mockUsers = [
