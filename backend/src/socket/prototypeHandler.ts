@@ -695,22 +695,48 @@ export default function handlePrototype(socket: Socket, io: Server) {
   handleShuffleDeck(socket, io);
   handleUpdateCursor(socket, io);
 
+  socket.on('disconnecting', () => {
+    // ソケットが切断される直前に呼び出される
+    for (const room of socket.rooms) {
+      if (room.startsWith('prototype:')) {
+        const prototypeId = room.split(':')[1];
+        const { userId } = socket.data as SocketData;
+
+        if (connectedUsersMap[prototypeId]) {
+          // 接続中ユーザー情報から削除
+          delete connectedUsersMap[prototypeId][userId];
+
+          // ルームが空の場合、エントリを削除
+          if (Object.keys(connectedUsersMap[prototypeId]).length === 0) {
+            delete connectedUsersMap[prototypeId];
+          }
+
+          // 残りのユーザーに更新を通知
+          io.to(prototypeId).emit('CONNECTED_USERS', {
+            users: Object.values(connectedUsersMap[prototypeId] || {}),
+          });
+        }
+      }
+    }
+  });
+
   socket.on('disconnect', async () => {
+    // ソケットが完全に切断されたときに呼び出される
     const { prototypeId, userId } = socket.data as SocketData;
     if (prototypeId && userId) {
       // カーソル情報を削除
       delete cursorMap[prototypeId]?.[userId];
 
-      // 接続中ユーザーから削除
+      // 接続中ユーザー情報から削除
       if (connectedUsersMap[prototypeId]) {
         delete connectedUsersMap[prototypeId][userId];
 
-        // 更新された接続中ユーザーリストを送信
+        // 更新された接続中ユーザーリストを通知
         io.to(prototypeId).emit('CONNECTED_USERS', {
           users: Object.values(connectedUsersMap[prototypeId] || {}),
         });
 
-        // プロジェクトルーム全体にルーム別接続中ユーザー更新を通知
+        // プロジェクトルームにユーザー切断を通知
         try {
           const prototype = await PrototypeModel.findByPk(prototypeId);
           if (prototype) {
@@ -722,12 +748,21 @@ export default function handlePrototype(socket: Socket, io: Server) {
           }
         } catch (error) {
           console.error(
-            'Failed to notify project room about user disconnection:',
+            'プロジェクトルームへのユーザー切断通知に失敗しました:',
             error
           );
         }
+
+        // ルームが空の場合、エントリを削除
+        if (
+          connectedUsersMap[prototypeId] &&
+          Object.keys(connectedUsersMap[prototypeId]).length === 0
+        ) {
+          delete connectedUsersMap[prototypeId];
+        }
       }
 
+      // カーソル情報の更新を通知
       io.to(prototypeId).emit('UPDATE_CURSORS', {
         cursors: cursorMap[prototypeId] || {},
       });
