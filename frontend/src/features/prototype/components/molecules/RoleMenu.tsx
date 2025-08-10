@@ -7,7 +7,7 @@
 import Link from 'next/link';
 import { FaUsers } from 'react-icons/fa';
 
-const MAX_DISPLAY_USERS = 3;
+import { MAX_DISPLAY_USERS } from '@/features/prototype/constants/presence';
 
 interface RoleMenuProps {
   projectId: string;

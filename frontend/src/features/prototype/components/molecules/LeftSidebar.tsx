@@ -8,6 +8,7 @@ import { MdMeetingRoom, MdDelete } from 'react-icons/md';
 
 import { useProject } from '@/api/hooks/useProject';
 import { Prototype, ProjectsDetailData } from '@/api/types';
+import { MAX_DISPLAY_USERS } from '@/features/prototype/constants';
 import { useProjectSocket } from '@/features/prototype/hooks/useProjectSocket';
 import { GameBoardMode } from '@/features/prototype/types';
 import { ConnectedUser } from '@/features/prototype/types/livePrototypeInformation';
@@ -267,19 +268,21 @@ export default function LeftSidebar({
                             <div className="flex items-center gap-1">
                               <span className="text-xs">接続中:</span>
                               <div className="flex -space-x-1">
-                                {connectedUsers.slice(0, 3).map((user, idx) => (
-                                  <span
-                                    key={user.userId}
-                                    className="flex items-center justify-center w-5 h-5 rounded-full bg-kibako-accent text-kibako-white font-bold text-xs border border-kibako-white"
-                                    style={{ zIndex: 10 - idx }}
-                                    title={user.username}
-                                  >
-                                    {user.username.charAt(0).toUpperCase()}
-                                  </span>
-                                ))}
-                                {connectedUsers.length > 3 && (
+                                {connectedUsers
+                                  .slice(0, MAX_DISPLAY_USERS)
+                                  .map((user, idx) => (
+                                    <span
+                                      key={user.userId}
+                                      className="flex items-center justify-center w-5 h-5 rounded-full bg-kibako-accent text-kibako-white font-bold text-xs border border-kibako-white"
+                                      style={{ zIndex: 10 - idx }}
+                                      title={user.username}
+                                    >
+                                      {user.username.charAt(0).toUpperCase()}
+                                    </span>
+                                  ))}
+                                {connectedUsers.length > MAX_DISPLAY_USERS && (
                                   <span className="text-xs text-kibako-secondary ml-1">
-                                    +{connectedUsers.length - 3}
+                                    +{connectedUsers.length - MAX_DISPLAY_USERS}
                                   </span>
                                 )}
                               </div>
