@@ -12,8 +12,8 @@ import {
   ORDER_MIN_EXCLUSIVE,
   ORDER_RANGE,
   MIN_ORDER_GAP,
-} from '../constants/prototypeConstants';
-import { PROTOTYPE_SOCKET_EVENT } from '../constants/socketConstants';
+} from '../constants/prototype';
+import { PROTOTYPE_SOCKET_EVENT } from '../constants/socket';
 
 // カーソル情報のマップ
 const cursorMap: Record<string, Record<string, CursorInfo>> = {};
