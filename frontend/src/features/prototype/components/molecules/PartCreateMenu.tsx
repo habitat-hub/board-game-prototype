@@ -4,6 +4,7 @@
 
 'use client';
 
+import { useState } from 'react';
 import { BiArea } from 'react-icons/bi';
 import {
   Gi3dMeeple,
@@ -17,7 +18,13 @@ import {
   PART_DEFAULT_CONFIG,
   CANVAS_SIZE,
 } from '@/features/prototype/constants';
+import {
+  POSITION_ATTEMPTS,
+  OFFSET_STEP_X,
+  PART_CREATE_THROTTLE_MS,
+} from '@/features/prototype/constants/part';
 import { AddPartProps } from '@/features/prototype/types';
+import { CommonPartProperties } from '@/features/prototype/types/part';
 import { isRectOverlap } from '@/features/prototype/utils/overlap';
 
 export default function PartCreateMenu({
@@ -31,133 +38,140 @@ export default function PartCreateMenu({
   viewportSize: { width: number; height: number };
   parts: Part[];
 }) {
-  const handleCreatePart = (
-    partType: 'card' | 'token' | 'hand' | 'deck' | 'area'
-  ) => {
-    // パーツの初期設定情報を取得するためのマッピング
-    const configMapping = {
-      card: PART_DEFAULT_CONFIG.CARD,
-      token: PART_DEFAULT_CONFIG.TOKEN,
-      hand: PART_DEFAULT_CONFIG.HAND,
-      deck: PART_DEFAULT_CONFIG.DECK,
-      area: PART_DEFAULT_CONFIG.AREA,
-    };
+  const [creatingPartType, setCreatingPartType] = useState<string | null>(null);
 
-    const partConfig = configMapping[partType];
-    // パーツの初期設定情報が存在しない場合
-    if (!partConfig) {
-      return;
-    }
+  /**
+   * 新しいパーツを作成し、中央に配置して追加します。
+   * @param partType 作成するパーツの種類（'card' | 'token' | 'hand' | 'deck' | 'area'）
+   * @returns Promise<void>
+   */
+  const handleCreatePart = async (partType: Part['type']): Promise<void> => {
+    // 既に作成中の場合は何もしない
+    if (creatingPartType) return;
 
-    // パーツを中央に配置する座標を計算する関数
-    const getCenteredPosition = (
-      partWidth: number,
-      partHeight: number,
-      camera: { x: number; y: number; scale: number },
-      viewportSize: { width: number; height: number }
-    ) => {
-      const cameraCenterX = (camera.x + viewportSize.width / 2) / camera.scale;
-      const cameraCenterY = (camera.y + viewportSize.height / 2) / camera.scale;
-      const x = Math.max(
-        0,
-        Math.min(
-          CANVAS_SIZE - partWidth,
-          Math.round(cameraCenterX - partWidth / 2)
-        )
-      );
-      const y = Math.max(
-        0,
-        Math.min(
-          CANVAS_SIZE - partHeight,
-          Math.round(cameraCenterY - partHeight / 2)
-        )
-      );
-      // 既存パーツと重ならない位置までxのみ+25ずつずらす
-      const baseX = x;
-      const candidate = Array.from({ length: 100 }, (_, i) => baseX + 25 * i)
-        .map((candidateX) => ({
-          x: Math.min(candidateX, CANVAS_SIZE - partWidth),
-          y,
-        }))
-        .find(
-          (pos) =>
-            !parts.some((p) =>
-              isRectOverlap(
-                { x: pos.x, y: pos.y, width: partWidth, height: partHeight },
-                {
-                  x: p.position.x,
-                  y: p.position.y,
-                  width: p.width,
-                  height: p.height,
-                }
-              )
-            )
+    setCreatingPartType(partType);
+
+    try {
+      // パーツの初期設定情報を取得するためのマッピング
+      const configMapping: Record<
+        Part['type'],
+        typeof PART_DEFAULT_CONFIG.CARD
+      > = {
+        card: PART_DEFAULT_CONFIG.CARD,
+        token: PART_DEFAULT_CONFIG.TOKEN,
+        hand: PART_DEFAULT_CONFIG.HAND,
+        deck: PART_DEFAULT_CONFIG.DECK,
+        area: PART_DEFAULT_CONFIG.AREA,
+      };
+      const partConfig = configMapping[partType];
+
+      // パーツを中央に配置する座標を計算する関数
+      const getCenteredPosition = (
+        partWidth: number,
+        partHeight: number,
+        camera: { x: number; y: number; scale: number },
+        viewportSize: { width: number; height: number }
+      ): { x: number; y: number } => {
+        const cameraCenterX =
+          (camera.x + viewportSize.width / 2) / camera.scale;
+        const cameraCenterY =
+          (camera.y + viewportSize.height / 2) / camera.scale;
+        const x = Math.max(
+          0,
+          Math.min(
+            CANVAS_SIZE - partWidth,
+            Math.round(cameraCenterX - partWidth / 2)
+          )
         );
-      return candidate ?? { x, y };
-    };
+        const y = Math.max(
+          0,
+          Math.min(
+            CANVAS_SIZE - partHeight,
+            Math.round(cameraCenterY - partHeight / 2)
+          )
+        );
+        // 既存パーツと重ならない位置までxのみ+OFFSET_STEP_Xずつずらす
+        const baseX = x;
+        const candidate = Array.from(
+          { length: POSITION_ATTEMPTS },
+          (_, i) => baseX + OFFSET_STEP_X * i
+        )
+          .map((candidateX) => ({
+            x: Math.min(candidateX, CANVAS_SIZE - partWidth),
+            y,
+          }))
+          .find(
+            (pos) =>
+              !parts.some((p) =>
+                isRectOverlap(
+                  { x: pos.x, y: pos.y, width: partWidth, height: partHeight },
+                  {
+                    x: p.position.x,
+                    y: p.position.y,
+                    width: p.width,
+                    height: p.height,
+                  }
+                )
+              )
+          );
+        return candidate ?? { x, y };
+      };
 
-    const newPart: Omit<
-      Part,
-      'id' | 'prototypeId' | 'order' | 'createdAt' | 'updatedAt'
-    > = {
-      type: partType,
-      position: getCenteredPosition(
-        partConfig.width,
-        partConfig.height,
-        camera,
-        viewportSize
-      ),
-      width: partConfig.width,
-      height: partConfig.height,
-      frontSide: 'front',
-    };
+      const newPart: Omit<
+        Part,
+        'id' | 'prototypeId' | 'order' | 'createdAt' | 'updatedAt'
+      > = {
+        type: partType,
+        position: getCenteredPosition(
+          partConfig.width,
+          partConfig.height,
+          camera,
+          viewportSize
+        ),
+        width: partConfig.width,
+        height: partConfig.height,
+        frontSide: 'front',
+      };
 
-    // パーツタイプ別の設定を適用
-    const typeSpecificConfigs = {
-      card: () => {
-        newPart.frontSide = 'front';
-      },
-      hand: () => {
-        // 手札作成時の処理（現在は何もしない）
-      },
-      token: () => {},
-      deck: () => {},
-      area: () => {},
-    };
+      const commonProperties: CommonPartProperties = {
+        name: partConfig.name,
+        description: partConfig.description,
+        color: partConfig.color,
+        textColor: partConfig.textColor,
+      };
 
-    // パーツタイプに応じた処理を実行
-    typeSpecificConfigs[partType]();
+      // カードの場合は表裏両方のプロパティを作成、それ以外は表面のみ
+      const newPartProperties: Omit<
+        PartProperty,
+        'id' | 'partId' | 'createdAt' | 'updatedAt'
+      >[] =
+        partType === 'card'
+          ? [
+              {
+                side: 'front',
+                ...commonProperties,
+                description:
+                  partConfig.frontDescription || partConfig.description,
+              },
+              {
+                side: 'back',
+                ...commonProperties,
+                description:
+                  partConfig.backDescription || partConfig.description,
+              },
+            ]
+          : [{ side: 'front', ...commonProperties }];
 
-    // パーツの共通プロパティ
-    const commonProperties = {
-      name: partConfig.name,
-      description: partConfig.description,
-      color: partConfig.color,
-      textColor: partConfig.textColor,
-    };
-
-    // カードの場合は表裏両方のプロパティを作成、それ以外は表面のみ
-    const newPartProperties: Omit<
-      PartProperty,
-      'id' | 'partId' | 'createdAt' | 'updatedAt'
-    >[] =
-      partType === 'card'
-        ? [
-            {
-              side: 'front',
-              ...commonProperties,
-              description:
-                partConfig.frontDescription || partConfig.description,
-            },
-            {
-              side: 'back',
-              ...commonProperties,
-              description: partConfig.backDescription || partConfig.description,
-            },
-          ]
-        : [{ side: 'front', ...commonProperties }];
-
-    onAddPart({ part: newPart, properties: newPartProperties });
+      onAddPart({ part: newPart, properties: newPartProperties });
+      // 連打防止のためにスリープ
+      await new Promise((resolve) =>
+        setTimeout(resolve, PART_CREATE_THROTTLE_MS)
+      );
+    } catch (error) {
+      console.error('パーツ作成中にエラーが発生しました:', error);
+    } finally {
+      setCreatingPartType(null);
+    }
   };
 
   // パーツタイプとアイコンのマッピング（グループ分けをやめて1つの配列に統合、順番も指定通りに）
@@ -198,12 +212,23 @@ export default function PartCreateMenu({
             <button
               key={partType.type}
               onClick={() => handleCreatePart(partType.type)}
-              className="group relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-wood to-wood-dark hover:from-wood-dark hover:to-wood-darkest rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-md"
+              disabled={creatingPartType !== null}
+              className={`group relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-wood to-wood-dark rounded-lg transition-all duration-200 ${
+                creatingPartType !== null
+                  ? 'opacity-50 cursor-not-allowed scale-95'
+                  : 'hover:from-wood-dark hover:to-wood-darkest hover:scale-105 hover:shadow-md'
+              }`}
               title={`${partType.name}を作成`}
             >
-              {partType.icon}
+              {creatingPartType === partType.type ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                partType.icon
+              )}
               <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-header text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                {partType.name}
+                {creatingPartType === partType.type
+                  ? '作成中...'
+                  : partType.name}
               </div>
             </button>
           ))}

@@ -5,8 +5,9 @@ import { renderHook, act } from '@testing-library/react';
 import { Socket } from 'socket.io-client';
 
 import { PartProperty } from '@/api/types';
-
-import { useSocketConnection } from '../useSocketConnection';
+import { SOCKET_EVENT } from '@/features/prototype/constants/socket';
+import { useSocketConnection } from '@/features/prototype/hooks/useSocketConnection';
+import { ConnectedUser } from '@/features/prototype/types/livePrototypeInformation';
 
 // Socket.ioのイベントコールバックの型定義
 type SocketEventCall = [string, (...args: unknown[]) => void];
@@ -109,18 +110,19 @@ describe('useSocketConnection', () => {
 
       // サーバー側の切断では再接続
       disconnectCallback!('io server disconnect');
-      expect(consoleSpy).toHaveBeenCalledWith('Socket接続が切断されました:', {
-        reason: 'io server disconnect',
-      });
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Socket接続が予期せず切断されました:',
+        {
+          reason: 'io server disconnect',
+        }
+      );
       expect(mockSocket.connect).toHaveBeenCalledTimes(1);
 
       // クライアント側の切断では再接続しない
       jest.clearAllMocks();
       consoleSpy.mockClear();
       disconnectCallback!('io client disconnect');
-      expect(consoleSpy).toHaveBeenCalledWith('Socket接続が切断されました:', {
-        reason: 'io client disconnect',
-      });
+      expect(consoleSpy).not.toHaveBeenCalled();
       expect(mockSocket.connect).not.toHaveBeenCalled();
     });
   });
@@ -143,11 +145,11 @@ describe('useSocketConnection', () => {
       const expectedOffEvents = [
         'connect_error',
         'disconnect',
-        'INITIAL_PARTS',
-        'ADD_PART',
-        'ADD_PART_RESPONSE',
-        'UPDATE_PARTS',
-        'DELETE_PART',
+        SOCKET_EVENT.INITIAL_PARTS,
+        SOCKET_EVENT.ADD_PART,
+        SOCKET_EVENT.ADD_PART_RESPONSE,
+        SOCKET_EVENT.UPDATE_PARTS,
+        SOCKET_EVENT.DELETE_PART,
         'UPDATE_CURSORS',
       ];
 
@@ -163,7 +165,7 @@ describe('useSocketConnection', () => {
 
       const initialPartsCallback = getEventCallback(
         mockSocket.on as jest.Mock,
-        'INITIAL_PARTS'
+        SOCKET_EVENT.INITIAL_PARTS
       );
 
       const mockParts = [
@@ -198,7 +200,7 @@ describe('useSocketConnection', () => {
 
       const addPartCallback = getEventCallback(
         mockSocket.on as jest.Mock,
-        'ADD_PART'
+        SOCKET_EVENT.ADD_PART
       );
 
       const mockPart = { id: 3, name: 'New Part', x: 500, y: 600 };
@@ -224,7 +226,7 @@ describe('useSocketConnection', () => {
       // 初期データを設定
       const initialPartsCallback = getEventCallback(
         mockSocket.on as jest.Mock,
-        'INITIAL_PARTS'
+        SOCKET_EVENT.INITIAL_PARTS
       );
       const mockParts = [{ id: 1, name: 'Part 1', x: 100, y: 200 }];
       const mockProperties = [
@@ -241,7 +243,7 @@ describe('useSocketConnection', () => {
 
       const deletePartCallback = getEventCallback(
         mockSocket.on as jest.Mock,
-        'DELETE_PART'
+        SOCKET_EVENT.DELETE_PART
       );
 
       act(() => {
@@ -258,7 +260,7 @@ describe('useSocketConnection', () => {
       // 初期データを設定（front, backの両方があるパーツ）
       const initialPartsCallback = getEventCallback(
         mockSocket.on as jest.Mock,
-        'INITIAL_PARTS'
+        SOCKET_EVENT.INITIAL_PARTS
       );
       const initialParts = [{ id: 1, name: 'Part 1', x: 100, y: 200 }];
       const initialProperties = [
@@ -283,7 +285,7 @@ describe('useSocketConnection', () => {
 
       const updatePartsCallback = getEventCallback(
         mockSocket.on as jest.Mock,
-        'UPDATE_PARTS'
+        SOCKET_EVENT.UPDATE_PARTS
       );
 
       // frontのみを更新
@@ -319,12 +321,32 @@ describe('useSocketConnection', () => {
 
       const addPartResponseCallback = getEventCallback(
         mockSocket.on as jest.Mock,
-        'ADD_PART_RESPONSE'
+        SOCKET_EVENT.ADD_PART_RESPONSE
       );
 
       addPartResponseCallback!({ partId: 123 });
 
       expect(mockSelectMultipleParts).toHaveBeenCalledWith([123]);
+    });
+
+    it('CONNECTED_USERSイベントで接続中ユーザーリストが正しく更新される', () => {
+      const { result } = renderHook(() => useSocketConnection(defaultProps));
+
+      const connectedUsersCallback = getEventCallback(
+        mockSocket.on as jest.Mock,
+        SOCKET_EVENT.CONNECTED_USERS
+      );
+
+      const mockUsers: ConnectedUser[] = [
+        { userId: 'user1', username: 'User One' },
+        { userId: 'user2', username: 'User Two' },
+      ];
+
+      act(() => {
+        connectedUsersCallback!({ users: mockUsers });
+      });
+
+      expect(result.current.connectedUsers).toEqual(mockUsers);
     });
   });
 });
