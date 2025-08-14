@@ -36,7 +36,7 @@ export const useProjectSocket = ({
   const joinProject = useCallback(() => {
     if (!socket || !userId) return;
 
-    socket.emit('JOIN_PROJECT', {
+    socket.emit(PROJECT_SOCKET_EVENT.JOIN_PROJECT, {
       projectId,
       userId,
     });
@@ -46,7 +46,7 @@ export const useProjectSocket = ({
   const leaveProject = useCallback(() => {
     if (!socket) return;
 
-    socket.emit('LEAVE_PROJECT', {
+    socket.emit(PROJECT_SOCKET_EVENT.LEAVE_PROJECT, {
       projectId,
     });
   }, [socket, projectId]);
@@ -75,9 +75,7 @@ export const useProjectSocket = ({
 
   // ルーム別接続中ユーザー初期データ取得時の内部処理
   const handleRoomConnectedUsers = useCallback(
-    (
-      roomUsers: Record<string, Array<{ userId: string; username: string }>>
-    ) => {
+    (roomUsers: Record<string, ConnectedUser[]>) => {
       setRoomConnectedUsers(roomUsers);
     },
     []
@@ -85,10 +83,7 @@ export const useProjectSocket = ({
 
   // ルーム別接続中ユーザー更新時の内部処理
   const handleRoomConnectedUsersUpdate = useCallback(
-    (
-      prototypeId: string,
-      users: Array<{ userId: string; username: string }>
-    ) => {
+    (prototypeId: string, users: ConnectedUser[]) => {
       setRoomConnectedUsers((prev) => ({
         ...prev,
         [prototypeId]: users,
@@ -134,9 +129,7 @@ export const useProjectSocket = ({
     // ルーム別接続中ユーザー初期データを監視
     socket.on(
       PROJECT_SOCKET_EVENT.ROOM_CONNECTED_USERS,
-      (
-        roomUsers: Record<string, Array<{ userId: string; username: string }>>
-      ) => {
+      (roomUsers: Record<string, ConnectedUser[]>) => {
         handleRoomConnectedUsers(roomUsers);
       }
     );
@@ -149,7 +142,7 @@ export const useProjectSocket = ({
         users,
       }: {
         prototypeId: string;
-        users: Array<{ userId: string; username: string }>;
+        users: ConnectedUser[];
       }) => {
         handleRoomConnectedUsersUpdate(prototypeId, users);
       }

@@ -86,7 +86,7 @@ export const usePrototypeSocket = ({
     if (!socket) return;
 
     // エラーハンドリング
-    socket.on(COMMON_SOCKET_EVENT.CONNECT_ERROR, (error) => {
+    socket.on(COMMON_SOCKET_EVENT.CONNECT_ERROR, (error: unknown) => {
       console.error('Socket接続エラーが発生しました:', error);
       // 再接続を試行
       socket.connect();
@@ -133,9 +133,12 @@ export const usePrototypeSocket = ({
     });
 
     // パーツ追加レスポンス（自分の追加したパーツを選択状態にする）
-    socket.on(PROTOTYPE_SOCKET_EVENT.ADD_PART_RESPONSE, ({ partId }) => {
-      selectMultipleParts([partId]);
-    });
+    socket.on(
+      PROTOTYPE_SOCKET_EVENT.ADD_PART_RESPONSE,
+      ({ partId }: { partId: number }) => {
+        selectMultipleParts([partId]);
+      }
+    );
 
     // パーツ更新
     socket.on(PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS, ({ parts, properties }) => {
@@ -176,9 +179,12 @@ export const usePrototypeSocket = ({
     });
 
     // カーソル更新
-    socket.on(PROTOTYPE_SOCKET_EVENT.UPDATE_CURSORS, ({ cursors }) => {
-      setCursors(cursors);
-    });
+    socket.on(
+      PROTOTYPE_SOCKET_EVENT.UPDATE_CURSORS,
+      ({ cursors }: { cursors: Record<string, CursorInfo> }) => {
+        setCursors(cursors);
+      }
+    );
 
     // 接続中ユーザーリスト更新
     socket.on(

@@ -6,6 +6,8 @@ export const COMMON_SOCKET_EVENT = {
   CONNECT_ERROR: 'connect_error',
   // 切断時
   DISCONNECT: 'disconnect',
+  // エラー通知
+  ERROR: 'ERROR',
 } as const;
 
 /**
@@ -23,12 +25,22 @@ export const PROTOTYPE_SOCKET_EVENT = {
   ADD_PART_RESPONSE: 'ADD_PART_RESPONSE',
   // パーツ情報の更新
   UPDATE_PARTS: 'UPDATE_PARTS',
+  // パーツ情報の部分更新
+  UPDATE_PART: 'UPDATE_PART',
   // パーツ削除
   DELETE_PART: 'DELETE_PART',
   // カーソル情報の更新
   UPDATE_CURSORS: 'UPDATE_CURSORS',
+  // 単一カーソル更新
+  UPDATE_CURSOR: 'UPDATE_CURSOR',
   // 接続中ユーザーリストの更新
   CONNECTED_USERS: 'CONNECTED_USERS',
+  // カード反転
+  FLIP_CARD: 'FLIP_CARD',
+  // パーツ順序変更
+  CHANGE_ORDER: 'CHANGE_ORDER',
+  // デッキのシャッフル
+  SHUFFLE_DECK: 'SHUFFLE_DECK',
 } as const;
 
 /**
@@ -36,6 +48,10 @@ export const PROTOTYPE_SOCKET_EVENT = {
  * プロジェクト全体での操作に関するイベント（ルーム管理など）
  */
 export const PROJECT_SOCKET_EVENT = {
+  // プロジェクトへの参加
+  JOIN_PROJECT: 'JOIN_PROJECT',
+  // プロジェクトからの退出
+  LEAVE_PROJECT: 'LEAVE_PROJECT',
   // ルーム作成
   ROOM_CREATED: 'ROOM_CREATED',
   // ルーム削除

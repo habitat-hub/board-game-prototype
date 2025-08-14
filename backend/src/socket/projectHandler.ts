@@ -3,7 +3,7 @@ import PrototypeModel from '../models/Prototype';
 import { hasPermission } from '../helpers/roleHelper';
 import { RESOURCE_TYPES, PERMISSION_ACTIONS } from '../const';
 import { connectedUsersMap } from './prototypeHandler';
-import { PROJECT_SOCKET_EVENT } from '../constants/socket';
+import { PROJECT_SOCKET_EVENT, COMMON_SOCKET_EVENT } from '../constants/socket';
 
 // socket.dataの型定義
 interface ProjectSocketData {
@@ -18,7 +18,7 @@ interface ProjectSocketData {
  */
 function handleJoinProject(socket: Socket) {
   socket.on(
-    'JOIN_PROJECT',
+    PROJECT_SOCKET_EVENT.JOIN_PROJECT,
     async ({ projectId, userId }: { projectId: string; userId: string }) => {
       try {
         // プロジェクトへの読み取り権限をチェック
@@ -33,7 +33,7 @@ function handleJoinProject(socket: Socket) {
           console.warn(
             `User ${userId} attempted to join project ${projectId} without permission`
           );
-          socket.emit('ERROR', {
+          socket.emit(COMMON_SOCKET_EVENT.ERROR, {
             message: 'プロジェクトへのアクセス権限がありません',
           });
           return;
@@ -70,14 +70,17 @@ function handleJoinProject(socket: Socket) {
         });
 
         // クライアントに送信
-        socket.emit('ROOM_CONNECTED_USERS', roomConnectedUsers);
+        socket.emit(
+          PROJECT_SOCKET_EVENT.ROOM_CONNECTED_USERS,
+          roomConnectedUsers
+        );
 
         console.log(
           `User ${userId} successfully joined project ${projectId} room`
         );
       } catch (error) {
         console.error('プロジェクトの参加に失敗しました。', error);
-        socket.emit('ERROR', {
+        socket.emit(COMMON_SOCKET_EVENT.ERROR, {
           message: 'プロジェクトへの参加に失敗しました',
         });
       }
@@ -92,7 +95,7 @@ function handleJoinProject(socket: Socket) {
  */
 function handleRoomCreated(socket: Socket, io: Server) {
   socket.on(
-    'ROOM_CREATED',
+    PROJECT_SOCKET_EVENT.ROOM_CREATED,
     async ({
       projectId,
       versionPrototype,
@@ -104,7 +107,7 @@ function handleRoomCreated(socket: Socket, io: Server) {
     }) => {
       try {
         // プロジェクトルーム内の全ユーザーにルーム作成を通知
-        io.to(`project:${projectId}`).emit('ROOM_CREATED', {
+        io.to(`project:${projectId}`).emit(PROJECT_SOCKET_EVENT.ROOM_CREATED, {
           version: versionPrototype,
           instance: instancePrototype,
         });
@@ -122,7 +125,7 @@ function handleRoomCreated(socket: Socket, io: Server) {
  */
 function handleRoomDeleted(socket: Socket, io: Server) {
   socket.on(
-    'ROOM_DELETED',
+    PROJECT_SOCKET_EVENT.ROOM_DELETED,
     async ({
       projectId,
       deletedVersionId,
@@ -134,7 +137,7 @@ function handleRoomDeleted(socket: Socket, io: Server) {
     }) => {
       try {
         // プロジェクトルーム内の全ユーザーにルーム削除を通知
-        io.to(`project:${projectId}`).emit('ROOM_DELETED', {
+        io.to(`project:${projectId}`).emit(PROJECT_SOCKET_EVENT.ROOM_DELETED, {
           deletedVersionId,
           deletedInstanceIds,
         });
@@ -150,13 +153,16 @@ function handleRoomDeleted(socket: Socket, io: Server) {
  * @param socket - Socket
  */
 function handleLeaveProject(socket: Socket) {
-  socket.on('LEAVE_PROJECT', ({ projectId }: { projectId: string }) => {
-    try {
-      socket.leave(`project:${projectId}`);
-    } catch (error) {
-      console.error('プロジェクトからの退出に失敗しました。', error);
+  socket.on(
+    PROJECT_SOCKET_EVENT.LEAVE_PROJECT,
+    ({ projectId }: { projectId: string }) => {
+      try {
+        socket.leave(`project:${projectId}`);
+      } catch (error) {
+        console.error('プロジェクトからの退出に失敗しました。', error);
+      }
     }
-  });
+  );
 }
 
 export default function handleProject(socket: Socket, io: Server) {
@@ -165,7 +171,7 @@ export default function handleProject(socket: Socket, io: Server) {
   handleRoomDeleted(socket, io);
   handleLeaveProject(socket);
 
-  socket.on('disconnect', () => {
+  socket.on(COMMON_SOCKET_EVENT.DISCONNECT, () => {
     const { projectId, userId } = socket.data as ProjectSocketData;
     if (projectId && userId) {
       // プロジェクト切断時の処理
