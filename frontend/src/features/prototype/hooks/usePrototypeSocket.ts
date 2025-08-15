@@ -42,7 +42,16 @@ interface UsePrototypeSocketReturn {
 interface ConnectedUsersPayload {
   users: ConnectedUser[];
 }
-
+/**
+ * プロトタイプ用ソケットを初期化し、イベントを購読して状態を同期するカスタムフック
+ * @param prototypeId プロトタイプID（string）
+ * @param userId ユーザーID（string）
+ * @returns パーツ・プロパティ・カーソル・接続中ユーザーの状態を返す
+ *   - partsMap: パーツのMap
+ *   - propertiesMap: パーツプロパティのMap
+ *   - cursors: ユーザーIDをキーにしたカーソル情報
+ *   - connectedUsers: 接続中ユーザー配列
+ */
 export const usePrototypeSocket = ({
   prototypeId,
   userId,
