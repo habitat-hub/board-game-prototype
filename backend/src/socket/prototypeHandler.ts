@@ -16,6 +16,7 @@ import {
 import {
   PROTOTYPE_SOCKET_EVENT,
   PROJECT_SOCKET_EVENT,
+  COMMON_SOCKET_EVENT,
 } from '../constants/socket';
 
 // カーソル情報のマップ
@@ -718,7 +719,7 @@ export default function handlePrototype(socket: Socket, io: Server): void {
   handleShuffleDeck(socket, io);
   handleUpdateCursor(socket, io);
 
-  socket.on('disconnecting', () => {
+  socket.on(COMMON_SOCKET_EVENT.DISCONNECTING, () => {
     // ソケットが切断される直前に呼び出される
     for (const room of socket.rooms) {
       // プロトタイプルームの場合（自身の socket.id 以外 かつ 管理対象のルーム）
@@ -745,7 +746,7 @@ export default function handlePrototype(socket: Socket, io: Server): void {
     }
   });
 
-  socket.on('disconnect', async () => {
+  socket.on(COMMON_SOCKET_EVENT.DISCONNECT, async () => {
     // ソケットが完全に切断されたときに呼び出される
     const { prototypeId, userId } = socket.data as SocketData;
     if (prototypeId && userId) {
