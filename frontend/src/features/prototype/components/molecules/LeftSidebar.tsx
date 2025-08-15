@@ -88,7 +88,7 @@ export default function LeftSidebar({
       // Socket通信のプロトタイプ状態も更新
       updatePrototypes(projectData.prototypes || []);
     } catch (error) {
-      console.error('Error fetching prototypes:', error);
+      console.error('プロトタイプの取得中にエラーが発生しました：', error);
     }
   }, [getProject, projectId, updatePrototypes]);
 
