@@ -30,6 +30,7 @@ import userRoutes from './routes/user';
 import imageRoutes from './routes/image';
 import handlePrototype from './socket/prototypeHandler';
 import handleProject from './socket/projectHandler';
+import { COMMON_SOCKET_EVENT } from './constants/socket';
 
 import { errorHandler } from './middlewares/errorHandler';
 
@@ -206,7 +207,7 @@ io.on('connection', (socket: Socket) => {
   handlePrototype(socket, io);
   handleProject(socket, io);
 
-  socket.on('disconnect', () => {
+  socket.on(COMMON_SOCKET_EVENT.DISCONNECT, () => {
     console.log('user disconnected');
   });
 });

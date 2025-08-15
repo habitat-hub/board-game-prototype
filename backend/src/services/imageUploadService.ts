@@ -9,7 +9,7 @@ import {
   IMAGE_ALLOWED_MIME_TYPES,
   IMAGE_MAX_SIZE,
   IMAGE_MAX_SIZE_MB,
-} from '../constants/fileConstants';
+} from '../constants/file';
 import ImageModel from '../models/Image';
 import { handleAWSError } from '../utils/awsErrorHandler';
 

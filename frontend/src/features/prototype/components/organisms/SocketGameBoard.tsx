@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useSocketConnection } from '@/features/prototype/hooks/useSocketConnection';
+import { usePrototypeSocket } from '@/features/prototype/hooks/usePrototypeSocket';
 import { GameBoardMode } from '@/features/prototype/types';
 
 import GameBoard from './GameBoard';
@@ -26,7 +26,7 @@ const SocketGameBoard: React.FC<SocketGameBoardProps> = ({
   gameBoardMode,
 }) => {
   const { partsMap, propertiesMap, cursors, connectedUsers } =
-    useSocketConnection({
+    usePrototypeSocket({
       prototypeId,
       userId,
     });

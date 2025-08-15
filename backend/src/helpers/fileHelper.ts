@@ -1,8 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import {
-  FILE_DEFAULT_NAME,
-  FILE_MAX_NAME_LENGTH,
-} from '../constants/fileConstants';
+import { FILE_DEFAULT_NAME, FILE_MAX_NAME_LENGTH } from '../constants/file';
 
 type FileNameParts = {
   baseName: string;
