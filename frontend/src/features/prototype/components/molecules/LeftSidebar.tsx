@@ -46,8 +46,10 @@ export default function LeftSidebar({
 
   // プロジェクトデータから必要な情報を取得
   // Socket通信で更新されたプロトタイプがあればそれを優先、なければプロジェクトのプロトタイプを使用
-  const prototypes =
-    socketPrototypes.length > 0 ? socketPrototypes : project?.prototypes || [];
+  const prototypes: Prototype[] =
+    socketPrototypes.length > 0
+      ? socketPrototypes
+      : (project?.prototypes ?? []);
   const instancePrototypes: Prototype[] = prototypes.filter(
     ({ type }) => type === 'INSTANCE'
   );
