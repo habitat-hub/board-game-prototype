@@ -5,7 +5,10 @@ import { renderHook, act } from '@testing-library/react';
 import { Socket } from 'socket.io-client';
 
 import { PartProperty } from '@/api/types';
-import { PROTOTYPE_SOCKET_EVENT } from '@/features/prototype/constants/socket';
+import {
+  COMMON_SOCKET_EVENT,
+  PROTOTYPE_SOCKET_EVENT,
+} from '@/features/prototype/constants/socket';
 import { usePrototypeSocket } from '@/features/prototype/hooks/usePrototypeSocket';
 import { ConnectedUser } from '@/features/prototype/types/livePrototypeInformation';
 
@@ -87,7 +90,7 @@ describe('usePrototypeSocket', () => {
 
       const connectErrorCallback = getEventCallback(
         mockSocket.on as jest.Mock,
-        'connect_error'
+        COMMON_SOCKET_EVENT.CONNECT_ERROR
       );
 
       const testError = new Error('Connection failed');
@@ -105,7 +108,7 @@ describe('usePrototypeSocket', () => {
 
       const disconnectCallback = getEventCallback(
         mockSocket.on as jest.Mock,
-        'disconnect'
+        COMMON_SOCKET_EVENT.DISCONNECT
       );
 
       // サーバー側の切断では再接続
@@ -131,10 +134,13 @@ describe('usePrototypeSocket', () => {
     it('JOIN_PROTOTYPEイベントが正しく送信される', () => {
       renderHook(() => usePrototypeSocket(defaultProps));
 
-      expect(mockSocket.emit).toHaveBeenCalledWith('JOIN_PROTOTYPE', {
-        prototypeId: 'test-prototype-id',
-        userId: 'test-user-id',
-      });
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        PROTOTYPE_SOCKET_EVENT.JOIN_PROTOTYPE,
+        {
+          prototypeId: 'test-prototype-id',
+          userId: 'test-user-id',
+        }
+      );
     });
 
     it('クリーンアップ時にイベントリスナーが削除される', () => {
@@ -143,14 +149,15 @@ describe('usePrototypeSocket', () => {
       unmount();
 
       const expectedOffEvents = [
-        'connect_error',
-        'disconnect',
+        COMMON_SOCKET_EVENT.CONNECT_ERROR,
+        COMMON_SOCKET_EVENT.DISCONNECT,
         PROTOTYPE_SOCKET_EVENT.INITIAL_PARTS,
         PROTOTYPE_SOCKET_EVENT.ADD_PART,
         PROTOTYPE_SOCKET_EVENT.ADD_PART_RESPONSE,
         PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS,
         PROTOTYPE_SOCKET_EVENT.DELETE_PART,
-        'UPDATE_CURSORS',
+        PROTOTYPE_SOCKET_EVENT.UPDATE_CURSORS,
+        PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS,
       ];
 
       expectedOffEvents.forEach((eventName) => {
