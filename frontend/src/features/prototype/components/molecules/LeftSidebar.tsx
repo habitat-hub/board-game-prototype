@@ -30,11 +30,7 @@ export default function LeftSidebar({
   const { getProject, createPrototypeVersion, deletePrototypeVersion } =
     useProject();
 
-  const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
-  const [project, setProject] = useState<ProjectsDetailData | null>(null);
-  const [isRoomCreating, setIsRoomCreating] = useState(false);
-
-  // プロジェクトレベルのSocket通信設定
+  // プロジェクトレベルのSocket通信設定（state 初期化前に宣言し、project 依存を排除）
   const {
     prototypes: socketPrototypes,
     roomConnectedUsers,
@@ -42,8 +38,11 @@ export default function LeftSidebar({
   } = useProjectSocket({
     projectId,
     userId: user?.id,
-    initialPrototypes: project?.prototypes || [],
   });
+
+  const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
+  const [project, setProject] = useState<ProjectsDetailData | null>(null);
+  const [isRoomCreating, setIsRoomCreating] = useState(false);
 
   // プロジェクトデータから必要な情報を取得
   // Socket通信で更新されたプロトタイプがあればそれを優先、なければプロジェクトのプロトタイプを使用
