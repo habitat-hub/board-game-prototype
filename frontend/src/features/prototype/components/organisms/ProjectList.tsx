@@ -166,7 +166,11 @@ const ProjectList: React.FC = () => {
       );
       if (!prototype) return;
 
-      // masterプロトタイプの名前をAPIで更新
+      /**
+       * masterプロトタイプの名前をAPIで更新
+       * NOTE: ユーザーに見せるプロジェクト名はプロトタイプで管理している。
+       * プロトタイプ名を更新した際にはユーザーに見せるプロジェクト名も更新する必要があるためプロジェクトのキャッシュを削除する
+       */
       await updatePrototypeMutation.mutateAsync({
         prototypeId: nameEditingId,
         data: {
