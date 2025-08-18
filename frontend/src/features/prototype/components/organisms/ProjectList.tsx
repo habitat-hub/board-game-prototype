@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { FaPlus } from 'react-icons/fa';
 import { RiLoaderLine } from 'react-icons/ri';
@@ -17,19 +17,22 @@ import useInlineEdit from '@/hooks/useInlineEdit';
 import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
 
 /**
- * PrototypeListコンポーネントで使用される各種Stateの説明:
+ * ProjectListコンポーネントで使用される各種Stateの説明:
  *
- * @state isLoading - データ取得中のローディング状態を管理するState。
  * @state isCreating - プロジェクト作成中のローディング状態を管理するState。
  * @state prototypeList - プロジェクトのリストを保持するState。
- * @state sort - プロトタイプのソート条件（キーと順序）を管理するState。
- *
+ * 
+ * データ取得はuseQueryで管理され、タブ切り替え時の自動再取得に対応しています。
  * 編集機能はuseInlineEditカスタムフックで管理されています。
  */
 const ProjectList: React.FC = () => {
   const router = useRouter();
-  const { updatePrototype } = usePrototypes();
-  const { getProjects, createProject } = useProject();
+  const { useUpdatePrototype } = usePrototypes();
+  const { useGetProjects, createProject } = useProject();
+
+  // useQueryとuseMutationフックの使用
+  const { data: projectsData, isLoading, error } = useGetProjects();
+  const updatePrototypeMutation = useUpdatePrototype();
   // インライン編集フック
   const {
     editingId: nameEditingId,
@@ -41,17 +44,15 @@ const ProjectList: React.FC = () => {
     handleSubmit,
     handleBlur,
   } = useInlineEdit();
-  // ローディング状態を管理するState
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+
   // プロトタイプ作成中フラグ
   const [isCreating, setIsCreating] = useState<boolean>(false);
-  // 編集用プロトタイプ
-  const [prototypeList, setPrototypeList] = useState<
-    {
-      project: Project;
-      masterPrototype: Prototype | undefined;
-    }[]
-  >([]);
+
+  // データ変換処理
+  const prototypeList = projectsData?.map(({ project, prototypes }) => ({
+    project,
+    masterPrototype: prototypes.find(({ type }) => type === 'MASTER'),
+  })) || [];
 
   // コンテキストメニューの状態
   const [contextMenu, setContextMenu] = useState<{
@@ -165,52 +166,22 @@ const ProjectList: React.FC = () => {
       );
       if (!prototype) return;
 
-      // masterプロトタイプの名前をAPIで更新
-      await updatePrototype(nameEditingId, {
-        name: newName.trim(),
+      /**
+       * masterプロトタイプの名前をAPIで更新
+       * NOTE: ユーザーに見せるプロジェクト名はプロトタイプで管理している。
+       * プロトタイプ名を更新した際にはユーザーに見せるプロジェクト名も更新する必要があるためプロジェクトのキャッシュを削除する
+       */
+      await updatePrototypeMutation.mutateAsync({
+        prototypeId: nameEditingId,
+        data: {
+          name: newName.trim(),
+        },
       });
-
-      setPrototypeList((prevList) =>
-        prevList.map((item) => {
-          if (item.masterPrototype?.id === nameEditingId) {
-            return {
-              ...item,
-              masterPrototype: {
-                ...item.masterPrototype,
-                name: newName.trim(),
-              },
-            };
-          }
-          return item;
-        })
-      );
     } catch (error) {
       console.error('Error updating prototype name:', error);
       throw new Error('プロトタイプ名の更新中にエラーが発生しました。');
     }
   };
-
-  /**
-   * プロトタイプを取得する
-   */
-  const fetchProjects = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      const response = await getProjects();
-      const prototypeInfo = response.map(({ project, prototypes }) => {
-        return {
-          project,
-          masterPrototype: prototypes.find(({ type }) => type === 'MASTER'),
-        };
-      });
-      setPrototypeList(prototypeInfo);
-    } catch (error) {
-      console.error('Error fetching prototypes:', error);
-    } finally {
-      setIsLoading(false); // ローディング終了
-    }
-  }, [getProjects]);
 
   // プロトタイプ名のバリデーション関数
   const validatePrototypeName = (value: string): string | null => {
@@ -219,11 +190,6 @@ const ProjectList: React.FC = () => {
     }
     return null;
   };
-
-  // プロトタイプの取得
-  useEffect(() => {
-    fetchProjects();
-  }, [fetchProjects]);
 
   /**
    * 右クリック時の処理
@@ -280,13 +246,15 @@ const ProjectList: React.FC = () => {
         router.push(`/projects/${project.id}/delete`);
       },
     },
-  ];
+    ];
 
+  // ローディング表示
   if (isLoading) {
     return <Loading />;
   }
 
-  if (prototypeList.length === 0) {
+  // 空状態表示
+  if (prototypeList.length === 0 || error) {
     return (
       <EmptyProjectState
         isCreating={isCreating}
