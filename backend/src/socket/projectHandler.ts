@@ -4,6 +4,7 @@ import { hasPermission } from '../helpers/roleHelper';
 import { RESOURCE_TYPES, PERMISSION_ACTIONS } from '../const';
 import { connectedUsersMap } from './prototypeHandler';
 import { PROJECT_SOCKET_EVENT, COMMON_SOCKET_EVENT } from '../constants/socket';
+import type { DisconnectReason } from 'socket.io';
 
 // socket.dataの型定義
 interface ProjectSocketData {
@@ -171,12 +172,12 @@ export default function handleProject(socket: Socket, io: Server) {
   handleRoomDeleted(socket, io);
   handleLeaveProject(socket);
 
-  socket.on(COMMON_SOCKET_EVENT.DISCONNECT, () => {
+  socket.on(COMMON_SOCKET_EVENT.DISCONNECT, (reason: DisconnectReason) => {
     const { projectId, userId } = socket.data as ProjectSocketData;
     if (projectId && userId) {
       // プロジェクト切断時の処理
       console.log(
-        `ユーザー ${userId} がプロジェクト ${projectId} から切断されました`
+        `ユーザー ${userId} がプロジェクト ${projectId} から切断されました: ${reason}`
       );
     }
   });

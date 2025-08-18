@@ -18,6 +18,7 @@ import {
   PROJECT_SOCKET_EVENT,
   COMMON_SOCKET_EVENT,
 } from '../constants/socket';
+import type { DisconnectReason } from 'socket.io';
 
 // カーソル情報のマップ
 const cursorMap: Record<string, Record<string, CursorInfo>> = {};
@@ -746,55 +747,59 @@ export default function handlePrototype(socket: Socket, io: Server): void {
     }
   });
 
-  socket.on(COMMON_SOCKET_EVENT.DISCONNECT, async () => {
-    // ソケットが完全に切断されたときに呼び出される
-    const { prototypeId, userId } = socket.data as SocketData;
-    if (prototypeId && userId) {
-      // カーソル情報を削除
-      delete cursorMap[prototypeId]?.[userId];
+  socket.on(
+    COMMON_SOCKET_EVENT.DISCONNECT,
+    async (reason: DisconnectReason) => {
+      console.log('ソケットが切断されました:', reason);
+      // ソケットが完全に切断されたときに呼び出される
+      const { prototypeId, userId } = socket.data as SocketData;
+      if (prototypeId && userId) {
+        // カーソル情報を削除
+        delete cursorMap[prototypeId]?.[userId];
 
-      // 接続中ユーザー情報から削除
-      if (connectedUsersMap[prototypeId]) {
-        delete connectedUsersMap[prototypeId][userId];
+        // 接続中ユーザー情報から削除
+        if (connectedUsersMap[prototypeId]) {
+          delete connectedUsersMap[prototypeId][userId];
 
-        // 更新された接続中ユーザーリストを通知
-        io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS, {
-          users: Object.values(connectedUsersMap[prototypeId] || {}),
-        });
+          // 更新された接続中ユーザーリストを通知
+          io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS, {
+            users: Object.values(connectedUsersMap[prototypeId] || {}),
+          });
 
-        // プロジェクトルームにユーザー切断を通知
-        try {
-          const prototype = await PrototypeModel.findByPk(prototypeId);
-          if (prototype) {
-            const projectId = prototype.projectId;
-            io.to(`project:${projectId}`).emit(
-              PROJECT_SOCKET_EVENT.ROOM_CONNECTED_USERS_UPDATE,
-              {
-                prototypeId,
-                users: Object.values(connectedUsersMap[prototypeId] || {}),
-              }
+          // プロジェクトルームにユーザー切断を通知
+          try {
+            const prototype = await PrototypeModel.findByPk(prototypeId);
+            if (prototype) {
+              const projectId = prototype.projectId;
+              io.to(`project:${projectId}`).emit(
+                PROJECT_SOCKET_EVENT.ROOM_CONNECTED_USERS_UPDATE,
+                {
+                  prototypeId,
+                  users: Object.values(connectedUsersMap[prototypeId] || {}),
+                }
+              );
+            }
+          } catch (error) {
+            console.error(
+              'プロジェクトルームへのユーザー切断通知に失敗しました:',
+              error
             );
           }
-        } catch (error) {
-          console.error(
-            'プロジェクトルームへのユーザー切断通知に失敗しました:',
-            error
-          );
+
+          // ルームが空の場合、エントリを削除
+          if (
+            connectedUsersMap[prototypeId] &&
+            Object.keys(connectedUsersMap[prototypeId]).length === 0
+          ) {
+            delete connectedUsersMap[prototypeId];
+          }
         }
 
-        // ルームが空の場合、エントリを削除
-        if (
-          connectedUsersMap[prototypeId] &&
-          Object.keys(connectedUsersMap[prototypeId]).length === 0
-        ) {
-          delete connectedUsersMap[prototypeId];
-        }
+        // カーソル情報の更新を通知
+        io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_CURSORS, {
+          cursors: cursorMap[prototypeId] || {},
+        });
       }
-
-      // カーソル情報の更新を通知
-      io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_CURSORS, {
-        cursors: cursorMap[prototypeId] || {},
-      });
     }
-  });
+  );
 }

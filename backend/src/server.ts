@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import http from 'http';
 import cors from 'cors';
 import { Server, Socket } from 'socket.io';
+import type { DisconnectReason } from 'socket.io';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import fs from 'fs';
@@ -207,8 +208,8 @@ io.on('connection', (socket: Socket) => {
   handlePrototype(socket, io);
   handleProject(socket, io);
 
-  socket.on(COMMON_SOCKET_EVENT.DISCONNECT, () => {
-    console.log('user disconnected');
+  socket.on(COMMON_SOCKET_EVENT.DISCONNECT, (reason: DisconnectReason) => {
+    console.log('ユーザーが切断しました：' + reason);
   });
 });
 
