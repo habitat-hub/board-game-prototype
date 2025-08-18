@@ -1,3 +1,4 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
 import { projectService } from '@/api/endpoints/project';
@@ -8,19 +9,33 @@ import {
 } from '@/api/types';
 
 export const useProject = () => {
+  const queryClient = useQueryClient();
+
   /**
    * プロジェクト一覧取得
    */
-  const getProjects = useCallback(async () => {
-    return await projectService.getProjects();
-  }, []);
+  const useGetProjects = () => {
+    return useQuery({
+      queryKey: ['projects'],
+      queryFn: () => projectService.getProjects(),
+      // タブが切り替わった時に常にリフェッチする（staleTimeに関係なく）
+      refetchOnWindowFocus: 'always',
+      // ページに戻った時に確実にリフェッチするため
+      refetchOnMount: 'always',
+      // データキャッシュ時間（1分間）
+      staleTime: 1 * 60 * 1000,
+    });
+  };
 
   /**
    * プロジェクト作成
    */
   const createProject = useCallback(async (data: ProjectsCreatePayload) => {
-    return await projectService.createProject(data);
-  }, []);
+    const result = await projectService.createProject(data);
+    // 作成成功時にキャッシュを無効化して、戻ってきた時に最新データを取得
+    queryClient.invalidateQueries({ queryKey: ['projects'] });
+    return result;
+  }, [queryClient]);
 
   /**
    * プロトタイプバージョン作成
@@ -124,7 +139,7 @@ export const useProject = () => {
   );
 
   return {
-    getProjects,
+    useGetProjects,
     createProject,
     getProject,
     getAccessUsersByProject,
