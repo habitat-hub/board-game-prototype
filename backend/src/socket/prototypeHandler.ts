@@ -391,8 +391,15 @@ function handleDeletePart(socket: Socket, io: Server): void {
       const { prototypeId } = socket.data as SocketData;
 
       // PartPropertyは CASCADE で自動的に削除される
-      await PartModel.destroy({ where: { id: partId } });
-      io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.DELETE_PART, { partId });
+      try {
+        await PartModel.destroy({ where: { id: partId } });
+        io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.DELETE_PART, {
+          partId,
+        });
+      } catch (error) {
+        // サーバー側に詳細ログを残す
+        console.error('パートの削除に失敗しました。partId:', partId, error);
+      }
     }
   );
 }
