@@ -4,6 +4,8 @@
 export const COMMON_SOCKET_EVENT = {
   // 接続エラー発生時
   CONNECT_ERROR: 'connect_error',
+  // 切断直前
+  DISCONNECTING: 'disconnecting',
   // 切断時
   DISCONNECT: 'disconnect',
   // エラー通知

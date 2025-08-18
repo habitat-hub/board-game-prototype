@@ -209,6 +209,7 @@ export const usePrototypeSocket = ({
       // 他のイベントはすべて削除
       const events = [
         COMMON_SOCKET_EVENT.CONNECT_ERROR,
+        COMMON_SOCKET_EVENT.DISCONNECTING,
         COMMON_SOCKET_EVENT.DISCONNECT,
         PROTOTYPE_SOCKET_EVENT.INITIAL_PARTS,
         PROTOTYPE_SOCKET_EVENT.ADD_PART,
