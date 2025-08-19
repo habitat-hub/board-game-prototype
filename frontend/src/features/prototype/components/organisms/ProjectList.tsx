@@ -320,19 +320,19 @@ const ProjectList: React.FC = () => {
           <button
             onClick={handleCreatePrototype}
             disabled={isCreating}
-            className={`inline-flex items-center gap-2 h-12 px-4 bg-white border-2 border-kibako-tertiary text-kibako-primary text-bold rounded-xl shadow-lg transition-all duration-300 transform z-50
+            className={`inline-flex items-center gap-2 h-12 px-4 bg-white border-2 border-kibako-tertiary text-kibako-primary font-bold rounded-xl shadow-lg transition-all duration-300 transform z-50
               ${isCreating ? 'opacity-80 cursor-not-allowed' : 'hover:shadow-xl hover:scale-105'}`}
             title={isCreating ? '作成中...' : '新しいプロジェクトを作成'}
           >
             {isCreating ? (
               <>
                 <RiLoaderLine className="w-5 h-5 animate-spin" />
-                <span className="text-sm font-medium">作成中...</span>
+                <span className="text-sm">作成中...</span>
               </>
             ) : (
               <>
-                <FaPlus className="w-4 h-4" />
-                <span className="text-sm font-medium">新規作成</span>
+                <FaPlus className="w-5 h-5" />
+                <span className="text-sm">新規作成</span>
               </>
             )}
           </button>
