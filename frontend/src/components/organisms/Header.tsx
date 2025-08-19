@@ -21,11 +21,11 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="bg-kibako-primary text-white p-6 flex justify-between items-center h-20">
+    <header className="sticky top-0 z-40 bg-kibako-accent/50 px-8 flex justify-between items-center h-20 backdrop-blur-sm rounded-3xl">
       <button onClick={goToProjects}>
         <div className="flex gap-2">
-          <GiWoodenCrate className="text-4xl drop-shadow-xl transform -rotate-6 text-kibako-white" />
-          <span className="text-3xl tracking-wider font-medium text-kibako-white">
+          <GiWoodenCrate className="text-4xl drop-shadow-xl transform -rotate-6 text-kibako-primary" />
+          <span className="text-3xl tracking-wider font-medium text-kibako-primary">
             KIBAKO
           </span>
         </div>
