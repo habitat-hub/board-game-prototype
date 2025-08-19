@@ -276,7 +276,7 @@ const ProjectList: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto py-16 relative px-4">
       {/* タイトルと作成ボタンを同じ行に表示（小さい画面では縦並び） */}
-      <div className="sticky top-0 z-40 bg-transparent backdrop-blur-sm flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 py-4 rounded-lg">
+      <div className="sticky top-20 z-30 bg-transparent backdrop-blur-sm flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 py-4 rounded-lg">
         <div className="flex items-center gap-3">
           <h1 className="text-3xl text-wood-darkest font-bold mb-0 bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
             プロジェクト一覧
