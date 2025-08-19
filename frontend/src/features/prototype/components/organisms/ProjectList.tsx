@@ -21,7 +21,7 @@ import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
  *
  * @state isCreating - プロジェクト作成中のローディング状態を管理するState。
  * @state prototypeList - プロジェクトのリストを保持するState。
- * 
+ *
  * データ取得はuseQueryで管理され、タブ切り替え時の自動再取得に対応しています。
  * 編集機能はuseInlineEditカスタムフックで管理されています。
  */
@@ -49,10 +49,11 @@ const ProjectList: React.FC = () => {
   const [isCreating, setIsCreating] = useState<boolean>(false);
 
   // データ変換処理
-  const prototypeList = projectsData?.map(({ project, prototypes }) => ({
-    project,
-    masterPrototype: prototypes.find(({ type }) => type === 'MASTER'),
-  })) || [];
+  const prototypeList =
+    projectsData?.map(({ project, prototypes }) => ({
+      project,
+      masterPrototype: prototypes.find(({ type }) => type === 'MASTER'),
+    })) || [];
 
   // コンテキストメニューの状態
   const [contextMenu, setContextMenu] = useState<{
@@ -246,7 +247,7 @@ const ProjectList: React.FC = () => {
         router.push(`/projects/${project.id}/delete`);
       },
     },
-    ];
+  ];
 
   // ローディング表示
   if (isLoading) {
@@ -265,13 +266,37 @@ const ProjectList: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto py-16 relative px-4">
-      {/* タイトル */}
-      <h1 className="text-3xl text-wood-darkest font-bold mb-8 text-center bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
-        プロジェクト一覧
-      </h1>
+      {/* タイトルと作成ボタンを同じ行に表示（小さい画面では縦並び） */}
+      <div className="sticky top-0 z-40 bg-transparent backdrop-blur-sm flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 py-4 rounded-lg">
+        <h1 className="text-3xl text-wood-darkest font-bold mb-0 bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
+          プロジェクト一覧
+        </h1>
+
+        <div className="ml-0 md:ml-4">
+          <button
+            onClick={handleCreatePrototype}
+            disabled={isCreating}
+            className={`inline-flex items-center gap-2 h-12 px-4 bg-white border-2 border-kibako-tertiary text-kibako-primary text-bold rounded-xl shadow-lg transition-all duration-300 transform z-50
+              ${isCreating ? 'opacity-80 cursor-not-allowed' : 'hover:shadow-xl hover:scale-105'}`}
+            title={isCreating ? '作成中...' : '新しいプロジェクトを作成'}
+          >
+            {isCreating ? (
+              <>
+                <RiLoaderLine className="w-5 h-5 animate-spin" />
+                <span className="text-sm font-medium">作成中...</span>
+              </>
+            ) : (
+              <>
+                <FaPlus className="w-4 h-4" />
+                <span className="text-sm font-medium">新規作成</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
 
       {/* プロジェクト一覧（カード形式） */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
         {prototypeList.map(({ masterPrototype, project }) => {
           if (!masterPrototype) return null;
           const { id } = masterPrototype;
@@ -315,25 +340,6 @@ const ProjectList: React.FC = () => {
           );
         })}
       </div>
-
-      {/* 新規プロジェクト作成ボタン（フローティングアクションボタン） */}
-      <button
-        onClick={handleCreatePrototype}
-        disabled={isCreating}
-        className={`fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-header to-header-light text-white rounded-full shadow-lg transition-all duration-300 transform z-50 flex items-center justify-center
-          ${
-            isCreating
-              ? 'opacity-80 cursor-not-allowed'
-              : 'hover:shadow-xl hover:scale-110 hover:from-header-light hover:to-header'
-          }`}
-        title={isCreating ? '作成中...' : '新しいプロジェクトを作成'}
-      >
-        {isCreating ? (
-          <RiLoaderLine className="w-6 h-6 animate-spin" />
-        ) : (
-          <FaPlus className="w-5 h-5" />
-        )}
-      </button>
 
       {/* コンテキストメニュー */}
       {contextMenu.targetProject &&
