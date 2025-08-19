@@ -292,7 +292,7 @@ const ProjectList: React.FC = () => {
             disabled={!!isFetching}
             aria-label="プロジェクト一覧を最新化"
             title="プロジェクト一覧を最新化"
-            className={`inline-flex items-center justify-center w-10 h-10 bg-white border-2 border-kibako-tertiary text-kibako-primary rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-kibako-primary transition-all duration-300 transform z-50
+            className={`inline-flex items-center justify-center w-10 h-10 bg-white text-kibako-primary rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-kibako-primary transition-all duration-300 transform z-50
               ${isFetching ? 'opacity-80 cursor-not-allowed' : 'hover:scale-105'}`}
           >
             <IoReload
@@ -320,8 +320,8 @@ const ProjectList: React.FC = () => {
           <button
             onClick={handleCreatePrototype}
             disabled={isCreating}
-            className={`inline-flex items-center gap-2 h-12 px-4 bg-white border-2 border-kibako-tertiary text-kibako-primary font-bold rounded-xl shadow-lg transition-all duration-300 transform z-50
-              ${isCreating ? 'opacity-80 cursor-not-allowed' : 'hover:shadow-xl hover:scale-105'}`}
+            className={`inline-flex items-center gap-2 h-12 px-4 bg-white text-kibako-primary font-bold rounded-xl shadow-lg transition-all duration-300 transform z-50
+          ${isCreating ? 'opacity-80 cursor-not-allowed' : 'hover:shadow-xl hover:scale-105'}`}
             title={isCreating ? '作成中...' : '新しいプロジェクトを作成'}
           >
             {isCreating ? (
