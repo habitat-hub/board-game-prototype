@@ -19,7 +19,11 @@ type ProjectCardProps = {
   setEditedName: (value: string) => void;
   // イベントハンドラー
   onCardClick: () => void;
-  onContextMenu: (e: React.MouseEvent, project: Project, masterPrototype: Prototype) => void;
+  onContextMenu: (
+    e: React.MouseEvent,
+    project: Project,
+    masterPrototype: Prototype
+  ) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   onBlur: () => Promise<void>;
   onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => Promise<void>;
@@ -53,16 +57,18 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   const getRandomIcon = (id: string) => {
     const icons = [GiWoodenCrate, GiCardAceSpades, GiPuzzle];
     // IDをもとにハッシュ値を生成して一意性を保つ
-    const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const hash = id
+      .split('')
+      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
     const iconIndex = hash % icons.length;
     const IconComponent = icons[iconIndex];
-    
-    return <IconComponent className="w-20 h-20 text-white/80" />;
+
+    return <IconComponent className="w-36 h-36 text-kibako-white" />;
   };
 
   return (
     <div
-      className="bg-content border border-wood-lightest/20 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer"
+      className="bg-content border border-wood-lightest/20 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer"
       onClick={onCardClick}
       onContextMenu={(e) => {
         e.preventDefault();
@@ -71,20 +77,17 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       title="クリックで編集 / 右クリックでメニュー表示"
     >
       {/* カード画像エリア */}
-      <div className="relative h-48 bg-gradient-to-br from-kibako-primary to-kibako-primary/85 flex items-center justify-center">
+      <div className="relative h-56 bg-gradient-to-br from-kibako-accent to-kibako-tertiary flex items-center justify-center">
         {getRandomIcon(id)}
         <div className="absolute inset-0 bg-black/10 rounded-t-xl"></div>
       </div>
 
       {/* カード内容 */}
-      <div className="p-4 space-y-4">
+      <div className="p-3">
         {/* プロトタイプ名 */}
-        <div className="min-h-[25px] flex items-center">
+        <div className="flex items-center">
           {isNameEditing ? (
-            <form
-              className="w-full"
-              onSubmit={onSubmit}
-            >
+            <form className="w-full" onSubmit={onSubmit}>
               <input
                 type="text"
                 value={editedName}
@@ -101,30 +104,29 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                     alert(error.message || 'エラーが発生しました');
                   })
                 }
-                className="w-full text-wood-darkest font-semibold bg-transparent border border-transparent rounded-md p-2 -m-2 focus:outline-none focus:bg-white focus:border-header focus:shadow-sm transition-all text-lg"
+                className="w-full text-wood-darkest font-semibold bg-transparent border border-transparent rounded-md p-1 -m-1 focus:outline-none focus:bg-white focus:border-header focus:shadow-sm transition-all text-base"
                 autoFocus
               />
             </form>
           ) : (
-            <span className="text-wood-darkest font-semibold p-2 -m-2 rounded-md text-left text-lg leading-tight">
+            <span className="text-wood-darkest font-semibold p-1 -m-1 rounded-md text-left text-base leading-tight">
               {name}
             </span>
           )}
         </div>
         {/* 詳細情報 */}
-        <div className="space-y-2">
-          <div className="flex justify-end">
-            <div className="text-right text-xs text-wood-light space-y-1">
-              <div>
-                作成者: {userContext?.user?.id === project.userId
-                  ? '自分'
-                  : '他のユーザー'}
-              </div>
-              <div>作成日時: {formatDate(createdAt, true)}</div>
+        <div className="flex justify-end">
+          <div className="text-right text-xs text-wood-light">
+            <div>
+              作成者:{' '}
+              {userContext?.user?.id === project.userId
+                ? '自分'
+                : '他のユーザー'}
             </div>
+            <div>作成日時: {formatDate(createdAt, true)}</div>
           </div>
         </div>
       </div>
     </div>
   );
-}; 
+};
