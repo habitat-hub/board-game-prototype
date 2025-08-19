@@ -11,7 +11,6 @@ import { Prototype, ProjectsDetailData } from '@/api/types';
 import { MAX_DISPLAY_USERS } from '@/features/prototype/constants';
 import { useProjectSocket } from '@/features/prototype/hooks/useProjectSocket';
 import { GameBoardMode } from '@/features/prototype/types';
-import { ConnectedUser } from '@/features/prototype/types/livePrototypeInformation';
 import { useUser } from '@/hooks/useUser';
 import formatDate from '@/utils/dateFormat';
 
@@ -31,18 +30,30 @@ export default function LeftSidebar({
   const { getProject, createPrototypeVersion, deletePrototypeVersion } =
     useProject();
 
+  // プロジェクトレベルのSocket通信設定（state 初期化前に宣言し、project 依存を排除）
+  const {
+    prototypes: socketPrototypes,
+    roomConnectedUsers,
+    updatePrototypes,
+  } = useProjectSocket({
+    projectId,
+    userId: user?.id,
+  });
+
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
   const [project, setProject] = useState<ProjectsDetailData | null>(null);
   const [isRoomCreating, setIsRoomCreating] = useState(false);
-  // ルームIDごとの接続中ユーザー一覧
-  const [roomConnectedUsers, setRoomConnectedUsers] = useState<
-    Record<string, ConnectedUser[]>
-  >({});
 
   // プロジェクトデータから必要な情報を取得
-  const instancePrototypes: Prototype[] =
-    project?.prototypes?.filter(({ type }) => type === 'INSTANCE') || [];
-  const masterPrototype: Prototype | undefined = project?.prototypes?.find(
+  // Socket通信で更新されたプロトタイプがあればそれを優先、なければプロジェクトのプロトタイプを使用
+  const prototypes: Prototype[] =
+    socketPrototypes.length > 0
+      ? socketPrototypes
+      : (project?.prototypes ?? []);
+  const instancePrototypes: Prototype[] = prototypes.filter(
+    ({ type }) => type === 'INSTANCE'
+  );
+  const masterPrototype: Prototype | undefined = prototypes.find(
     ({ type }) => type === 'MASTER'
   );
 
@@ -74,86 +85,12 @@ export default function LeftSidebar({
     try {
       const projectData = await getProject(projectId);
       setProject(projectData);
+      // Socket通信のプロトタイプ状態も更新
+      updatePrototypes(projectData.prototypes || []);
     } catch (error) {
-      console.error('Error fetching prototypes:', error);
+      console.error('プロトタイプの取得中にエラーが発生しました：', error);
     }
-  }, [getProject, projectId]);
-
-  /**
-   * ルーム作成時のコールバック（差分更新）
-   */
-  const handleRoomCreated = useCallback(
-    (version: Prototype, instance: Prototype) => {
-      setProject((prevProject) => {
-        if (!prevProject) return prevProject;
-
-        return {
-          ...prevProject,
-          prototypes: [...(prevProject.prototypes || []), version, instance],
-        };
-      });
-    },
-    []
-  );
-
-  /**
-   * ルーム削除時のコールバック（差分更新）
-   */
-  const handleRoomDeleted = useCallback(
-    (deletedVersionId: string, deletedInstanceIds: string[]) => {
-      setProject((prevProject) => {
-        if (!prevProject) return prevProject;
-
-        return {
-          ...prevProject,
-          prototypes: (prevProject.prototypes || []).filter(
-            (prototype) =>
-              prototype.id !== deletedVersionId &&
-              !deletedInstanceIds.includes(prototype.id)
-          ),
-        };
-      });
-    },
-    []
-  );
-
-  /**
-   * ルーム別接続中ユーザー初期データ取得時のコールバック
-   */
-  const handleRoomConnectedUsers = useCallback(
-    (
-      roomUsers: Record<string, Array<{ userId: string; username: string }>>
-    ) => {
-      setRoomConnectedUsers(roomUsers);
-    },
-    []
-  );
-
-  /**
-   * ルーム別接続中ユーザー更新時のコールバック
-   */
-  const handleRoomConnectedUsersUpdate = useCallback(
-    (
-      prototypeId: string,
-      users: Array<{ userId: string; username: string }>
-    ) => {
-      setRoomConnectedUsers((prevRoomUsers) => ({
-        ...prevRoomUsers,
-        [prototypeId]: users,
-      }));
-    },
-    []
-  );
-
-  // プロジェクトレベルのSocket通信設定
-  useProjectSocket({
-    projectId,
-    userId: user?.id,
-    onRoomCreated: handleRoomCreated,
-    onRoomDeleted: handleRoomDeleted,
-    onRoomConnectedUsers: handleRoomConnectedUsers,
-    onRoomConnectedUsersUpdate: handleRoomConnectedUsersUpdate,
-  });
+  }, [getProject, projectId, updatePrototypes]);
 
   // プロトタイプを取得する
   useEffect(() => {

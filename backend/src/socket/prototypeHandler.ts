@@ -12,7 +12,13 @@ import {
   ORDER_MIN_EXCLUSIVE,
   ORDER_RANGE,
   MIN_ORDER_GAP,
-} from '../constants/prototypeConstants';
+} from '../constants/prototype';
+import {
+  PROTOTYPE_SOCKET_EVENT,
+  PROJECT_SOCKET_EVENT,
+  COMMON_SOCKET_EVENT,
+} from '../constants/socket';
+import type { DisconnectReason } from 'socket.io';
 
 // カーソル情報のマップ
 const cursorMap: Record<string, Record<string, CursorInfo>> = {};
@@ -91,7 +97,7 @@ export async function fetchPartsAndProperties(prototypeId: string) {
  */
 function handleJoinPrototype(socket: Socket, io: Server): void {
   socket.on(
-    'JOIN_PROTOTYPE',
+    PROTOTYPE_SOCKET_EVENT.JOIN_PROTOTYPE,
     async ({
       prototypeId,
       userId,
@@ -114,15 +120,18 @@ function handleJoinPrototype(socket: Socket, io: Server): void {
           if (connectedUsersMap[prevPrototypeId]) {
             delete connectedUsersMap[prevPrototypeId][userId];
             // 旧ルームへ更新通知
-            io.to(prevPrototypeId).emit('CONNECTED_USERS', {
-              users: Object.values(connectedUsersMap[prevPrototypeId] || {}),
-            });
+            io.to(prevPrototypeId).emit(
+              PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS,
+              {
+                users: Object.values(connectedUsersMap[prevPrototypeId] || {}),
+              }
+            );
             // 旧プロジェクトルームへ更新通知
             try {
               const prevProto = await PrototypeModel.findByPk(prevPrototypeId);
               if (prevProto) {
                 io.to(`project:${prevProto.projectId}`).emit(
-                  'ROOM_CONNECTED_USERS_UPDATE',
+                  PROJECT_SOCKET_EVENT.ROOM_CONNECTED_USERS_UPDATE,
                   {
                     prototypeId: prevPrototypeId,
                     users: Object.values(
@@ -172,22 +181,25 @@ function handleJoinPrototype(socket: Socket, io: Server): void {
         };
 
         const partsAndProperties = await fetchPartsAndProperties(prototypeId);
-        socket.emit('INITIAL_PARTS', partsAndProperties);
-        socket.emit('UPDATE_CURSORS', {
+        socket.emit(PROTOTYPE_SOCKET_EVENT.INITIAL_PARTS, partsAndProperties);
+        socket.emit(PROTOTYPE_SOCKET_EVENT.UPDATE_CURSORS, {
           cursors: cursorMap[prototypeId] || {},
         });
 
         // 接続中ユーザーリストを全クライアントに送信
-        io.to(prototypeId).emit('CONNECTED_USERS', {
+        io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS, {
           users: Object.values(connectedUsersMap[prototypeId] || {}),
         });
 
         // プロジェクトルーム全体にルーム別接続中ユーザー更新を通知
         const projectId = prototype.projectId;
-        io.to(`project:${projectId}`).emit('ROOM_CONNECTED_USERS_UPDATE', {
-          prototypeId,
-          users: Object.values(connectedUsersMap[prototypeId] || {}),
-        });
+        io.to(`project:${projectId}`).emit(
+          PROJECT_SOCKET_EVENT.ROOM_CONNECTED_USERS_UPDATE,
+          {
+            prototypeId,
+            users: Object.values(connectedUsersMap[prototypeId] || {}),
+          }
+        );
       } catch (error) {
         console.error('プロトタイプの参加に失敗しました。', error);
       }
@@ -202,7 +214,7 @@ function handleJoinPrototype(socket: Socket, io: Server): void {
  */
 function handleAddPart(socket: Socket, io: Server): void {
   socket.on(
-    'ADD_PART',
+    PROTOTYPE_SOCKET_EVENT.ADD_PART,
     async ({
       part,
       properties,
@@ -262,7 +274,7 @@ function handleAddPart(socket: Socket, io: Server): void {
         const newPropertiesWithImages =
           await fetchPropertiesWithImagesByPartIds([newPart.id]);
 
-        io.to(prototypeId).emit('ADD_PART', {
+        io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.ADD_PART, {
           part: newPart,
           properties: newPropertiesWithImages,
         });
@@ -280,7 +292,9 @@ function handleAddPart(socket: Socket, io: Server): void {
         // これによりクライアント側で新パーツをすぐ参照できるようになる
         // emitUpdatedPartsAndPropertiesの後にemitしないと
         // パーツを正しく参照できず機能しない
-        socket.emit('ADD_PART_RESPONSE', { partId: newPart.id });
+        socket.emit(PROTOTYPE_SOCKET_EVENT.ADD_PART_RESPONSE, {
+          partId: newPart.id,
+        });
       } catch (error) {
         console.error('パーツの追加に失敗しました。', error);
       }
@@ -295,7 +309,7 @@ function handleAddPart(socket: Socket, io: Server): void {
  */
 function handleUpdatePart(socket: Socket, io: Server): void {
   socket.on(
-    'UPDATE_PART',
+    PROTOTYPE_SOCKET_EVENT.UPDATE_PART,
     async ({
       partId,
       updatePart,
@@ -352,7 +366,7 @@ function handleUpdatePart(socket: Socket, io: Server): void {
             await fetchPropertiesWithImagesByPartIds([partId]);
         }
 
-        io.to(prototypeId).emit('UPDATE_PARTS', {
+        io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS, {
           parts: updatedPart ? [updatedPart] : [],
           properties: updatedPropertiesWithImages
             ? updatedPropertiesWithImages
@@ -371,13 +385,23 @@ function handleUpdatePart(socket: Socket, io: Server): void {
  * @param io - Server
  */
 function handleDeletePart(socket: Socket, io: Server): void {
-  socket.on('DELETE_PART', async ({ partId }: { partId: number }) => {
-    const { prototypeId } = socket.data as SocketData;
+  socket.on(
+    PROTOTYPE_SOCKET_EVENT.DELETE_PART,
+    async ({ partId }: { partId: number }) => {
+      const { prototypeId } = socket.data as SocketData;
 
-    // PartPropertyは CASCADE で自動的に削除される
-    await PartModel.destroy({ where: { id: partId } });
-    io.to(prototypeId).emit('DELETE_PART', { partId });
-  });
+      // PartPropertyは CASCADE で自動的に削除される
+      try {
+        await PartModel.destroy({ where: { id: partId } });
+        io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.DELETE_PART, {
+          partId,
+        });
+      } catch (error) {
+        // サーバー側に詳細ログを残す
+        console.error('パートの削除に失敗しました。partId:', partId, error);
+      }
+    }
+  );
 }
 
 // TODO: ReverseCardという名前に変える
@@ -388,7 +412,7 @@ function handleDeletePart(socket: Socket, io: Server): void {
  */
 function handleFlipCard(socket: Socket, io: Server): void {
   socket.on(
-    'FLIP_CARD',
+    PROTOTYPE_SOCKET_EVENT.FLIP_CARD,
     async ({
       cardId,
       nextFrontSide,
@@ -404,12 +428,12 @@ function handleFlipCard(socket: Socket, io: Server): void {
           { where: { id: cardId }, returning: true }
         );
 
-        io.to(prototypeId).emit('UPDATE_PARTS', {
+        io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS, {
           parts: [result[0].dataValues],
           properties: [],
         });
 
-        io.to(prototypeId).emit('FLIP_CARD', {
+        io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.FLIP_CARD, {
           cardId,
           nextFrontSide,
         });
@@ -427,7 +451,7 @@ function handleFlipCard(socket: Socket, io: Server): void {
  */
 function handleChangeOrder(socket: Socket, io: Server): void {
   socket.on(
-    'CHANGE_ORDER',
+    PROTOTYPE_SOCKET_EVENT.CHANGE_ORDER,
     async ({
       partId,
       type,
@@ -496,7 +520,7 @@ function handleChangeOrder(socket: Socket, io: Server): void {
                 { order: newOrder },
                 { where: { id: partId }, returning: true }
               );
-              io.to(prototypeId).emit('UPDATE_PARTS', {
+              io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS, {
                 parts: [result[0].dataValues],
                 properties: [],
               });
@@ -524,7 +548,7 @@ function handleChangeOrder(socket: Socket, io: Server): void {
                 { order: newOrder },
                 { where: { id: partId }, returning: true }
               );
-              io.to(prototypeId).emit('UPDATE_PARTS', {
+              io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS, {
                 parts: [result[0].dataValues],
                 properties: [],
               });
@@ -539,7 +563,7 @@ function handleChangeOrder(socket: Socket, io: Server): void {
               { order: newOrder },
               { where: { id: partId }, returning: true }
             );
-            io.to(prototypeId).emit('UPDATE_PARTS', {
+            io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS, {
               parts: [result[0].dataValues],
               properties: [],
             });
@@ -555,7 +579,7 @@ function handleChangeOrder(socket: Socket, io: Server): void {
               { where: { id: partId }, returning: true }
             );
 
-            io.to(prototypeId).emit('UPDATE_PARTS', {
+            io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS, {
               parts: [result[0].dataValues],
               properties: [],
             });
@@ -577,38 +601,41 @@ function handleChangeOrder(socket: Socket, io: Server): void {
  * @param io - Server
  */
 function handleShuffleDeck(socket: Socket, io: Server): void {
-  socket.on('SHUFFLE_DECK', async ({ deckId }: { deckId: number }) => {
-    const { prototypeId } = socket.data as SocketData;
+  socket.on(
+    PROTOTYPE_SOCKET_EVENT.SHUFFLE_DECK,
+    async ({ deckId }: { deckId: number }) => {
+      const { prototypeId } = socket.data as SocketData;
 
-    try {
-      const deck = await PartModel.findByPk(deckId);
-      if (!deck || deck.type !== 'deck') return;
+      try {
+        const deck = await PartModel.findByPk(deckId);
+        if (!deck || deck.type !== 'deck') return;
 
-      const cards = await PartModel.findAll({
-        where: { prototypeId, type: 'card' },
-      });
-      // カードの中心がデッキパーツ内にあるカードを取得
-      const cardsOnDeck = cards.filter((card) => {
-        const cardCenter = {
-          x: card.position.x + card.width / 2,
-          y: card.position.y + card.height / 2,
-        };
-        return (
-          deck.position.x <= cardCenter.x &&
-          cardCenter.x <= deck.position.x + deck.width &&
-          deck.position.y <= cardCenter.y &&
-          cardCenter.y <= deck.position.y + deck.height
-        );
-      });
-      const updatedCards = await shuffleDeck(cardsOnDeck);
-      io.to(prototypeId).emit('UPDATE_PARTS', {
-        parts: updatedCards,
-        properties: [],
-      });
-    } catch (error) {
-      console.error('カードのシャッフルに失敗しました。', error);
+        const cards = await PartModel.findAll({
+          where: { prototypeId, type: 'card' },
+        });
+        // カードの中心がデッキパーツ内にあるカードを取得
+        const cardsOnDeck = cards.filter((card) => {
+          const cardCenter = {
+            x: card.position.x + card.width / 2,
+            y: card.position.y + card.height / 2,
+          };
+          return (
+            deck.position.x <= cardCenter.x &&
+            cardCenter.x <= deck.position.x + deck.width &&
+            deck.position.y <= cardCenter.y &&
+            cardCenter.y <= deck.position.y + deck.height
+          );
+        });
+        const updatedCards = await shuffleDeck(cardsOnDeck);
+        io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS, {
+          parts: updatedCards,
+          properties: [],
+        });
+      } catch (error) {
+        console.error('カードのシャッフルに失敗しました。', error);
+      }
     }
-  });
+  );
 }
 
 /**
@@ -617,7 +644,7 @@ function handleShuffleDeck(socket: Socket, io: Server): void {
  * @param io - Server
  */
 function handleUpdateCursor(socket: Socket, io: Server): void {
-  socket.on('UPDATE_CURSOR', (cursorInfo: CursorInfo) => {
+  socket.on(PROTOTYPE_SOCKET_EVENT.UPDATE_CURSOR, (cursorInfo: CursorInfo) => {
     const { prototypeId } = socket.data as SocketData;
 
     if (!prototypeId || !cursorInfo.userId) return;
@@ -629,7 +656,7 @@ function handleUpdateCursor(socket: Socket, io: Server): void {
 
     cursorMap[prototypeId][cursorInfo.userId] = cursorInfo;
 
-    io.to(prototypeId).emit('UPDATE_CURSORS', {
+    io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_CURSORS, {
       cursors: cursorMap[prototypeId],
     });
   });
@@ -665,7 +692,7 @@ async function rebalanceOrders(
     )
   );
 
-  io.to(prototypeId).emit('UPDATE_PARTS', {
+  io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS, {
     parts: parts.map((part) => part.dataValues),
     properties: [],
   });
@@ -700,7 +727,7 @@ export default function handlePrototype(socket: Socket, io: Server): void {
   handleShuffleDeck(socket, io);
   handleUpdateCursor(socket, io);
 
-  socket.on('disconnecting', () => {
+  socket.on(COMMON_SOCKET_EVENT.DISCONNECTING, () => {
     // ソケットが切断される直前に呼び出される
     for (const room of socket.rooms) {
       // プロトタイプルームの場合（自身の socket.id 以外 かつ 管理対象のルーム）
@@ -719,7 +746,7 @@ export default function handlePrototype(socket: Socket, io: Server): void {
           }
 
           // 残りのユーザーに更新を通知
-          io.to(prototypeId).emit('CONNECTED_USERS', {
+          io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS, {
             users: Object.values(connectedUsersMap[prototypeId] || {}),
           });
         }
@@ -727,52 +754,59 @@ export default function handlePrototype(socket: Socket, io: Server): void {
     }
   });
 
-  socket.on('disconnect', async () => {
-    // ソケットが完全に切断されたときに呼び出される
-    const { prototypeId, userId } = socket.data as SocketData;
-    if (prototypeId && userId) {
-      // カーソル情報を削除
-      delete cursorMap[prototypeId]?.[userId];
+  socket.on(
+    COMMON_SOCKET_EVENT.DISCONNECT,
+    async (reason: DisconnectReason) => {
+      console.log('ソケットが切断されました:', reason);
+      // ソケットが完全に切断されたときに呼び出される
+      const { prototypeId, userId } = socket.data as SocketData;
+      if (prototypeId && userId) {
+        // カーソル情報を削除
+        delete cursorMap[prototypeId]?.[userId];
 
-      // 接続中ユーザー情報から削除
-      if (connectedUsersMap[prototypeId]) {
-        delete connectedUsersMap[prototypeId][userId];
+        // 接続中ユーザー情報から削除
+        if (connectedUsersMap[prototypeId]) {
+          delete connectedUsersMap[prototypeId][userId];
 
-        // 更新された接続中ユーザーリストを通知
-        io.to(prototypeId).emit('CONNECTED_USERS', {
-          users: Object.values(connectedUsersMap[prototypeId] || {}),
-        });
+          // 更新された接続中ユーザーリストを通知
+          io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS, {
+            users: Object.values(connectedUsersMap[prototypeId] || {}),
+          });
 
-        // プロジェクトルームにユーザー切断を通知
-        try {
-          const prototype = await PrototypeModel.findByPk(prototypeId);
-          if (prototype) {
-            const projectId = prototype.projectId;
-            io.to(`project:${projectId}`).emit('ROOM_CONNECTED_USERS_UPDATE', {
-              prototypeId,
-              users: Object.values(connectedUsersMap[prototypeId] || {}),
-            });
+          // プロジェクトルームにユーザー切断を通知
+          try {
+            const prototype = await PrototypeModel.findByPk(prototypeId);
+            if (prototype) {
+              const projectId = prototype.projectId;
+              io.to(`project:${projectId}`).emit(
+                PROJECT_SOCKET_EVENT.ROOM_CONNECTED_USERS_UPDATE,
+                {
+                  prototypeId,
+                  users: Object.values(connectedUsersMap[prototypeId] || {}),
+                }
+              );
+            }
+          } catch (error) {
+            console.error(
+              'プロジェクトルームへのユーザー切断通知に失敗しました:',
+              error
+            );
           }
-        } catch (error) {
-          console.error(
-            'プロジェクトルームへのユーザー切断通知に失敗しました:',
-            error
-          );
+
+          // ルームが空の場合、エントリを削除
+          if (
+            connectedUsersMap[prototypeId] &&
+            Object.keys(connectedUsersMap[prototypeId]).length === 0
+          ) {
+            delete connectedUsersMap[prototypeId];
+          }
         }
 
-        // ルームが空の場合、エントリを削除
-        if (
-          connectedUsersMap[prototypeId] &&
-          Object.keys(connectedUsersMap[prototypeId]).length === 0
-        ) {
-          delete connectedUsersMap[prototypeId];
-        }
+        // カーソル情報の更新を通知
+        io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_CURSORS, {
+          cursors: cursorMap[prototypeId] || {},
+        });
       }
-
-      // カーソル情報の更新を通知
-      io.to(prototypeId).emit('UPDATE_CURSORS', {
-        cursors: cursorMap[prototypeId] || {},
-      });
     }
-  });
+  );
 }

@@ -73,11 +73,3 @@ export const SOCKET_DISCONNECT_REASON = {
   // 通信エラーによる切断
   TRANSPORT_ERROR: 'transport error',
 } as const;
-
-/**
- * 想定外の切断理由をまとめたセット
- */
-export const UNEXPECTED_DISCONNECT_REASONS = new Set<string>([
-  SOCKET_DISCONNECT_REASON.IO_SERVER_DISCONNECT,
-  SOCKET_DISCONNECT_REASON.TRANSPORT_ERROR,
-]);

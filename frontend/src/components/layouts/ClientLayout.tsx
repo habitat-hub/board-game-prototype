@@ -1,5 +1,6 @@
 'use client';
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import * as UAParser from 'ua-parser-js';
@@ -7,6 +8,18 @@ import * as UAParser from 'ua-parser-js';
 import { WoodenCrateBackground } from '@/components/atoms/WoodenCrateBackground';
 import Header from '@/components/organisms/Header';
 import { useClientPathInfo } from '@/hooks/useClientPathInfo';
+
+// QueryClientの設定
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // タブが切り替わった時に自動的にリフェッチする
+      refetchOnWindowFocus: true,
+      // 5分間キャッシュを保持
+      staleTime: 5 * 60 * 1000,
+    },
+  },
+});
 
 export default function ClientLayout({
   children,
@@ -58,10 +71,12 @@ export default function ClientLayout({
   }
 
   return (
-    <div className="bg-kibako-tertiary min-h-screen">
-      {!isGameBoardPath && <WoodenCrateBackground />}
-      {!isGameBoardPath && <Header />}
-      <main>{children}</main>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <div className="bg-kibako-tertiary min-h-screen">
+        {!isGameBoardPath && <WoodenCrateBackground />}
+        {!isGameBoardPath && <Header />}
+        <main>{children}</main>
+      </div>
+    </QueryClientProvider>
   );
 }

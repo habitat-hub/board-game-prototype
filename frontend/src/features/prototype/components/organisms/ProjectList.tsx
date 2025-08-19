@@ -1,9 +1,10 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { FaPlus } from 'react-icons/fa';
+import { IoReload } from 'react-icons/io5';
 import { RiLoaderLine } from 'react-icons/ri';
 
 import { useProject } from '@/api/hooks/useProject';
@@ -17,19 +18,28 @@ import useInlineEdit from '@/hooks/useInlineEdit';
 import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
 
 /**
- * PrototypeListコンポーネントで使用される各種Stateの説明:
+ * ProjectListコンポーネントで使用される各種Stateの説明:
  *
- * @state isLoading - データ取得中のローディング状態を管理するState。
  * @state isCreating - プロジェクト作成中のローディング状態を管理するState。
  * @state prototypeList - プロジェクトのリストを保持するState。
- * @state sort - プロトタイプのソート条件（キーと順序）を管理するState。
  *
+ * データ取得はuseQueryで管理され、タブ切り替え時の自動再取得に対応しています。
  * 編集機能はuseInlineEditカスタムフックで管理されています。
  */
 const ProjectList: React.FC = () => {
   const router = useRouter();
-  const { updatePrototype } = usePrototypes();
-  const { getProjects, createProject } = useProject();
+  const { useUpdatePrototype } = usePrototypes();
+  const { useGetProjects, createProject } = useProject();
+
+  // useQueryとuseMutationフックの使用
+  const {
+    data: projectsData,
+    isLoading,
+    error,
+    refetch,
+    isFetching,
+  } = useGetProjects();
+  const updatePrototypeMutation = useUpdatePrototype();
   // インライン編集フック
   const {
     editingId: nameEditingId,
@@ -41,17 +51,18 @@ const ProjectList: React.FC = () => {
     handleSubmit,
     handleBlur,
   } = useInlineEdit();
-  // ローディング状態を管理するState
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+
   // プロトタイプ作成中フラグ
   const [isCreating, setIsCreating] = useState<boolean>(false);
-  // 編集用プロトタイプ
-  const [prototypeList, setPrototypeList] = useState<
-    {
-      project: Project;
-      masterPrototype: Prototype | undefined;
-    }[]
-  >([]);
+  // リロードアイコンのワンショットアニメーション制御
+  const [isReloadAnimating, setIsReloadAnimating] = useState<boolean>(false);
+
+  // データ変換処理
+  const prototypeList =
+    projectsData?.map(({ project, prototypes }) => ({
+      project,
+      masterPrototype: prototypes.find(({ type }) => type === 'MASTER'),
+    })) || [];
 
   // コンテキストメニューの状態
   const [contextMenu, setContextMenu] = useState<{
@@ -165,52 +176,22 @@ const ProjectList: React.FC = () => {
       );
       if (!prototype) return;
 
-      // masterプロトタイプの名前をAPIで更新
-      await updatePrototype(nameEditingId, {
-        name: newName.trim(),
+      /**
+       * masterプロトタイプの名前をAPIで更新
+       * NOTE: ユーザーに見せるプロジェクト名はプロトタイプで管理している。
+       * プロトタイプ名を更新した際にはユーザーに見せるプロジェクト名も更新する必要があるためプロジェクトのキャッシュを削除する
+       */
+      await updatePrototypeMutation.mutateAsync({
+        prototypeId: nameEditingId,
+        data: {
+          name: newName.trim(),
+        },
       });
-
-      setPrototypeList((prevList) =>
-        prevList.map((item) => {
-          if (item.masterPrototype?.id === nameEditingId) {
-            return {
-              ...item,
-              masterPrototype: {
-                ...item.masterPrototype,
-                name: newName.trim(),
-              },
-            };
-          }
-          return item;
-        })
-      );
     } catch (error) {
       console.error('Error updating prototype name:', error);
       throw new Error('プロトタイプ名の更新中にエラーが発生しました。');
     }
   };
-
-  /**
-   * プロトタイプを取得する
-   */
-  const fetchProjects = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      const response = await getProjects();
-      const prototypeInfo = response.map(({ project, prototypes }) => {
-        return {
-          project,
-          masterPrototype: prototypes.find(({ type }) => type === 'MASTER'),
-        };
-      });
-      setPrototypeList(prototypeInfo);
-    } catch (error) {
-      console.error('Error fetching prototypes:', error);
-    } finally {
-      setIsLoading(false); // ローディング終了
-    }
-  }, [getProjects]);
 
   // プロトタイプ名のバリデーション関数
   const validatePrototypeName = (value: string): string | null => {
@@ -219,11 +200,6 @@ const ProjectList: React.FC = () => {
     }
     return null;
   };
-
-  // プロトタイプの取得
-  useEffect(() => {
-    fetchProjects();
-  }, [fetchProjects]);
 
   /**
    * 右クリック時の処理
@@ -282,11 +258,13 @@ const ProjectList: React.FC = () => {
     },
   ];
 
+  // ローディング表示
   if (isLoading) {
     return <Loading />;
   }
 
-  if (prototypeList.length === 0) {
+  // 空状態表示
+  if (prototypeList.length === 0 || error) {
     return (
       <EmptyProjectState
         isCreating={isCreating}
@@ -297,13 +275,72 @@ const ProjectList: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto py-16 relative px-4">
-      {/* タイトル */}
-      <h1 className="text-3xl text-wood-darkest font-bold mb-8 text-center bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
-        プロジェクト一覧
-      </h1>
+      {/* タイトルと作成ボタンを同じ行に表示（小さい画面では縦並び） */}
+      <div className="sticky top-20 z-30 bg-transparent backdrop-blur-sm flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 py-4 rounded-lg">
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl text-wood-darkest font-bold mb-0 bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
+            プロジェクト一覧
+          </h1>
+
+          {/* リロード（プロジェクト一覧を最新化）ボタン - タイトルの左に移動（案B） */}
+          <button
+            onClick={() => {
+              // クリック時に必ず1周アニメーションさせる（取得中は連続回転に切り替え）
+              setIsReloadAnimating(true);
+              if (refetch) refetch();
+            }}
+            disabled={!!isFetching}
+            aria-label="プロジェクト一覧を最新化"
+            title="プロジェクト一覧を最新化"
+            className={`inline-flex items-center justify-center w-10 h-10 bg-white border-2 border-kibako-tertiary text-kibako-primary rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-kibako-primary transition-all duration-300 transform z-50
+              ${isFetching ? 'opacity-80 cursor-not-allowed' : 'hover:scale-105'}`}
+          >
+            <IoReload
+              // isFetching の間は連続回転。それ以外はクリック時に1周だけ回転。
+              className={`w-5 h-5 ${isFetching ? 'animate-spin' : ''}`}
+              style={
+                !isFetching && isReloadAnimating
+                  ? {
+                      // Tailwind の keyframes "spin" を1回だけ実行
+                      animation: 'spin 1.2s linear 1',
+                      display: 'inline-block',
+                    }
+                  : { display: 'inline-block' }
+              }
+              onAnimationEnd={() => {
+                // 取得中でない時のみ、ワンショットアニメーションのフラグを戻す
+                if (!isFetching) setIsReloadAnimating(false);
+              }}
+            />
+          </button>
+        </div>
+
+        <div className="ml-0 md:ml-4 flex items-center gap-2">
+          {/** 新規作成ボタン（右側に残す） */}
+          <button
+            onClick={handleCreatePrototype}
+            disabled={isCreating}
+            className={`inline-flex items-center gap-2 h-12 px-4 bg-white border-2 border-kibako-tertiary text-kibako-primary font-bold rounded-xl shadow-lg transition-all duration-300 transform z-50
+              ${isCreating ? 'opacity-80 cursor-not-allowed' : 'hover:shadow-xl hover:scale-105'}`}
+            title={isCreating ? '作成中...' : '新しいプロジェクトを作成'}
+          >
+            {isCreating ? (
+              <>
+                <RiLoaderLine className="w-5 h-5 animate-spin" />
+                <span className="text-sm">作成中...</span>
+              </>
+            ) : (
+              <>
+                <FaPlus className="w-5 h-5" />
+                <span className="text-sm">新規作成</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
 
       {/* プロジェクト一覧（カード形式） */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
         {prototypeList.map(({ masterPrototype, project }) => {
           if (!masterPrototype) return null;
           const { id } = masterPrototype;
@@ -347,25 +384,6 @@ const ProjectList: React.FC = () => {
           );
         })}
       </div>
-
-      {/* 新規プロジェクト作成ボタン（フローティングアクションボタン） */}
-      <button
-        onClick={handleCreatePrototype}
-        disabled={isCreating}
-        className={`fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-header to-header-light text-white rounded-full shadow-lg transition-all duration-300 transform z-50 flex items-center justify-center
-          ${
-            isCreating
-              ? 'opacity-80 cursor-not-allowed'
-              : 'hover:shadow-xl hover:scale-110 hover:from-header-light hover:to-header'
-          }`}
-        title={isCreating ? '作成中...' : '新しいプロジェクトを作成'}
-      >
-        {isCreating ? (
-          <RiLoaderLine className="w-6 h-6 animate-spin" />
-        ) : (
-          <FaPlus className="w-5 h-5" />
-        )}
-      </button>
 
       {/* コンテキストメニュー */}
       {contextMenu.targetProject &&
