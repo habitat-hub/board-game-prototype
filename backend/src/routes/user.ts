@@ -63,10 +63,16 @@ router.get(
     const { username } = req.query;
 
     try {
-      // 10件まで取得
+      // allow optional limit param (default to 100) to avoid truncating search results
+      const rawLimit = req.query.limit;
+      const parsedLimit = rawLimit ? parseInt(String(rawLimit), 10) : 100;
+      const limit =
+        Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 100;
+
       const suggestedUsers = await UserModel.findAll({
         where: { username: { [Op.iLike]: `%${username}%` } },
-        limit: 10,
+        limit,
+        order: [['username', 'ASC']],
       });
 
       res.json(suggestedUsers);
