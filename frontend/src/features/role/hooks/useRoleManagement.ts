@@ -43,7 +43,7 @@ export const useRoleManagement = (projectId: string) => {
 
   // データ状態
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
-  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [fetchedUsers, setFetchedUsers] = useState<User[]>([]);
   const [projectDetail, setProjectDetail] = useState<ProjectsDetailData | null>(
     null
   );
@@ -124,14 +124,18 @@ export const useRoleManagement = (projectId: string) => {
   }, [getProject, projectId, searchUsers]);
 
   // 全ユーザーを取得（検索用）
-  const fetchAllUsers = useCallback(async () => {
-    try {
-      const response = await searchUsers({ username: '' });
-      setAllUsers(response);
-    } catch (error) {
-      console.error('Error fetching all users:', error);
-    }
-  }, [searchUsers]);
+  // username を渡すとそのクエリで検索する。渡さない場合は全件取得（""）
+  const fetchUsers = useCallback(
+    async (username: string = '') => {
+      try {
+        const response = await searchUsers({ username });
+        setFetchedUsers(response);
+      } catch (error) {
+        console.error('Error fetching all users:', error);
+      }
+    },
+    [searchUsers]
+  );
 
   // ロールを追加
   const addRole = useCallback(
@@ -140,7 +144,7 @@ export const useRoleManagement = (projectId: string) => {
         setLoading(true);
         await addRoleToProject(projectId, { userId, roleName });
         await fetchUserRoles(); // 一覧を再取得
-        await fetchAllUsers(); // ユーザー検索用リストを再取得
+        await fetchUsers(); // ユーザー検索用リストを再取得
         showToast(`ユーザーに${roleName}権限を追加しました。`, 'success');
       } catch (error) {
         console.error('Error adding role:', error);
@@ -149,7 +153,7 @@ export const useRoleManagement = (projectId: string) => {
         setLoading(false);
       }
     },
-    [addRoleToProject, projectId, fetchUserRoles, fetchAllUsers, showToast]
+    [addRoleToProject, projectId, fetchUserRoles, fetchUsers, showToast]
   );
 
   // ロール更新
@@ -224,7 +228,7 @@ export const useRoleManagement = (projectId: string) => {
         setLoading(true);
         await removeRoleFromProject(projectId, userId);
         await fetchUserRoles(); // 一覧を再取得
-        await fetchAllUsers(); // ユーザー検索用リストを再取得
+        await fetchUsers(); // ユーザー検索用リストを再取得
         showToast('ユーザーの権限を削除しました。', 'success');
       } catch (error: unknown) {
         console.error('Error removing role:', error);
@@ -234,7 +238,7 @@ export const useRoleManagement = (projectId: string) => {
         setLoading(false);
       }
     },
-    [removeRoleFromProject, projectId, fetchUserRoles, fetchAllUsers, showToast]
+    [removeRoleFromProject, projectId, fetchUserRoles, fetchUsers, showToast]
   );
 
   // ハンドラー関数群
@@ -294,12 +298,12 @@ export const useRoleManagement = (projectId: string) => {
   // 初期化時に権限一覧、全ユーザー、プロジェクト詳細を取得
   useEffect(() => {
     fetchUserRoles();
-    fetchAllUsers();
+    fetchUsers();
     fetchProjectDetail();
-  }, [fetchUserRoles, fetchAllUsers, fetchProjectDetail]);
+  }, [fetchUserRoles, fetchUsers, fetchProjectDetail]);
 
   // 権限が割り当てられていないユーザーを取得
-  const availableUsers = allUsers.filter(
+  const candidateUsers = fetchedUsers.filter(
     (user) => !userRoles.find((ur) => ur.userId === user.id)
   );
 
@@ -311,7 +315,7 @@ export const useRoleManagement = (projectId: string) => {
   return {
     // データ
     userRoles,
-    availableUsers,
+    candidateUsers,
     masterPrototypeName,
     creator,
     loading,
@@ -322,6 +326,8 @@ export const useRoleManagement = (projectId: string) => {
     updateRole,
     canRemoveUserRole,
     refetch: fetchUserRoles,
+    // ユーザー検索を呼び出すために username を受け取れる fetchAllUsers を公開
+    fetchAllUsers: fetchUsers,
 
     // UI状態
     roleForm,

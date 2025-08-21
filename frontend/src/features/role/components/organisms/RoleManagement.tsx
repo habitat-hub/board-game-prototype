@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 
 import { useRoleManagement } from '@/features/role/hooks/useRoleManagement';
@@ -39,7 +39,7 @@ const RoleManagement: React.FC = () => {
   const {
     // データ
     userRoles,
-    availableUsers,
+    candidateUsers,
     masterPrototypeName,
     creator,
     loading,
@@ -58,15 +58,44 @@ const RoleManagement: React.FC = () => {
     handleCancelRemove,
     updateRoleForm,
     closeToast,
+    fetchAllUsers,
   } = useRoleManagement(projectId);
+
+  // debounce 用の ref
+  const searchTimeoutRef = useRef<number | null>(null);
+
+  // searchTerm が変化して0.5秒操作が無ければサーバーに問い合わせる
+  useEffect(() => {
+    // 以前のタイマーをクリア
+    if (searchTimeoutRef.current) {
+      window.clearTimeout(searchTimeoutRef.current);
+    }
+
+    // 新しいタイマーを設定
+    searchTimeoutRef.current = window.setTimeout(() => {
+      // username=searchTerm で API を呼び出す
+      try {
+        fetchAllUsers(searchTerm);
+      } catch (e) {
+        // エラーは無視（フック側で処理される）
+      }
+    }, 500);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        window.clearTimeout(searchTimeoutRef.current);
+        searchTimeoutRef.current = null;
+      }
+    };
+  }, [searchTerm, fetchAllUsers]);
 
   // 検索結果をフィルタリング
   const filteredUsers = useMemo(() => {
-    if (!searchTerm) return availableUsers;
-    return availableUsers.filter((user) =>
+    if (!searchTerm) return candidateUsers;
+    return candidateUsers.filter((user) =>
       user.username.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [availableUsers, searchTerm]);
+  }, [candidateUsers, searchTerm]);
 
   // ユーザー選択ハンドラー
   const handleUserSelect = (user: { id: string; username: string }) => {
