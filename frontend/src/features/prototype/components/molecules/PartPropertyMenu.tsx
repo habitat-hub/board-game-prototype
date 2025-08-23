@@ -120,8 +120,14 @@ export default function PartPropertyMenu({
     if (!selectedPart || !selectedPartProperties) return;
 
     // 新しいパーツ
-    // デフォルトはすぐ右（x+width）。もしボード外に出るなら下、左、上の順で試す
-    const computeCopyPosition = (part: typeof selectedPart) => {
+    /**
+     * 複製パーツの配置位置を決定する
+     * - 既存パーツの右→下→左→上の順で試し、ボード外なら次候補へ
+     * - 全て収まらない場合は右候補を基準にボード内へクランプ
+     * @param part 対象パーツ
+     * @returns {{ x: number; y: number }} 配置位置
+     */
+    const computeCopyPosition = (part: Part): { x: number; y: number } => {
       const boardMaxX = GAME_BOARD_SIZE - part.width;
       const boardMaxY = GAME_BOARD_SIZE - part.height;
 
