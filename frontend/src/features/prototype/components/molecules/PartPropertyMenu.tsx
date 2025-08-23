@@ -22,7 +22,7 @@ import NumberInput from '@/components/atoms/NumberInput';
 import TextInput from '@/components/atoms/TextInput';
 import ColorPicker from '@/features/prototype/components/atoms/ColorPicker';
 import PartPropertyMenuButton from '@/features/prototype/components/atoms/PartPropertyMenuButton';
-import { COLORS } from '@/features/prototype/constants';
+import { COLORS, GAME_BOARD_SIZE } from '@/features/prototype/constants';
 import useDraggablePartPropertyMenu from '@/features/prototype/hooks/useDraggablePartPropertyMenu';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import {
@@ -120,16 +120,37 @@ export default function PartPropertyMenu({
     if (!selectedPart || !selectedPartProperties) return;
 
     // 新しいパーツ
+    // デフォルトはすぐ右（x+width）。もしボード外に出るなら下、左、上の順で試す
+    const computeCopyPosition = (part: typeof selectedPart) => {
+      const boardMaxX = GAME_BOARD_SIZE - part.width;
+      const boardMaxY = GAME_BOARD_SIZE - part.height;
+
+      const positionCandidates = [
+        { x: part.position.x + part.width, y: part.position.y },
+        { x: part.position.x, y: part.position.y + part.height },
+        { x: part.position.x - part.width, y: part.position.y },
+        { x: part.position.x, y: part.position.y - part.height },
+      ];
+
+      const fit = positionCandidates.find(
+        (c) => c.x >= 0 && c.y >= 0 && c.x <= boardMaxX && c.y <= boardMaxY
+      );
+      if (fit) return fit;
+
+      // どれも収まらない場合はクランプしてボード内に配置
+      const clamped = positionCandidates[0];
+      return {
+        x: Math.min(Math.max(0, clamped.x), boardMaxX),
+        y: Math.min(Math.max(0, clamped.y), boardMaxY),
+      };
+    };
+
     const newPart: Omit<
       Part,
       'id' | 'prototypeId' | 'order' | 'createdAt' | 'updatedAt'
     > = {
       type: selectedPart.type,
-      // NOTE： すぐ右側に配置（重ならないように）
-      position: {
-        x: selectedPart.position.x + selectedPart.width,
-        y: selectedPart.position.y,
-      },
+      position: computeCopyPosition(selectedPart),
       width: selectedPart.width,
       height: selectedPart.height,
     };
