@@ -2,7 +2,7 @@
 export const GRID_SIZE = 50;
 
 /** ボードサイズ */
-export const GAME_BOARD_SIZE = 10000;
+export const GAME_BOARD_SIZE = 5000;
 
 /** ボードの設定 */
 export const GAME_BOARD_CONFIG = {
