@@ -15,7 +15,7 @@ export const CAMERA_SCALE = {
 /** カメラの動的マージン設定 */
 export const CAMERA_MARGIN = {
   /** ベースマージンの比率（ビューポートサイズに対する） */
-  BASE_RATIO: 0.3,
+  BASE_RATIO: 0.1,
   /** マージン計算時の最小スケール */
   MIN_SCALE_FOR_MARGIN: 0.5,
 } as const;

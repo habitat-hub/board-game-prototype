@@ -8,8 +8,8 @@ import { Part } from '@/api/types';
 import {
   CAMERA_SCALE,
   CAMERA_MARGIN,
-  CANVAS_CONFIG,
-  CANVAS_CENTER_COORDS,
+  GAME_BOARD_CONFIG,
+  GAME_BOARD_CENTER,
 } from '@/features/prototype/constants';
 import { CameraPosition, ViewportSize } from '@/features/prototype/types';
 
@@ -76,9 +76,11 @@ export const useGameCamera = ({
       // カメラはキャンバスの左上(0,0)ではなく、カメラオフセットとして x,y を持つため
       // マイナスマージンを許容することでキャンバス外側への余白を確保する
       const minX = -dynamicMargin;
-      const maxX = CANVAS_CONFIG.WIDTH * scale - vpSize.width + dynamicMargin;
+      const maxX =
+        GAME_BOARD_CONFIG.WIDTH * scale - vpSize.width + dynamicMargin;
       const minY = -dynamicMargin;
-      const maxY = CANVAS_CONFIG.HEIGHT * scale - vpSize.height + dynamicMargin;
+      const maxY =
+        GAME_BOARD_CONFIG.HEIGHT * scale - vpSize.height + dynamicMargin;
 
       // 呼び出し側で x,y を範囲内に収めたり、dynamicMargin を参照したりできるよう返す
       return { minX, maxX, minY, maxY, dynamicMargin };
@@ -107,8 +109,8 @@ export const useGameCamera = ({
   // 簡易ヘルパー: 指定viewportでキャンバス中心にカメラを配置し、制約を適用する
   const computeCenteredCamera = useCallback(
     (vpSize: ViewportSize, scale = CAMERA_SCALE.DEFAULT): CameraPosition => {
-      const targetX = CANVAS_CENTER_COORDS.x * scale - vpSize.width / 2;
-      const targetY = CANVAS_CENTER_COORDS.y * scale - vpSize.height / 2;
+      const targetX = GAME_BOARD_CENTER.x * scale - vpSize.width / 2;
+      const targetY = GAME_BOARD_CENTER.y * scale - vpSize.height / 2;
       // 中心配置ターゲットが範囲外にならないようにするため、同じ制約計算を利用
       const { minX, maxX, minY, maxY } = getCameraConstraints(scale, vpSize);
 
@@ -270,8 +272,8 @@ export const useGameCamera = ({
     camera,
     viewportSize,
     canvasSize: {
-      width: CANVAS_CONFIG.WIDTH,
-      height: CANVAS_CONFIG.HEIGHT,
+      width: GAME_BOARD_CONFIG.WIDTH,
+      height: GAME_BOARD_CONFIG.HEIGHT,
     },
     handleWheel,
     handleDragMove,

@@ -16,7 +16,7 @@ import {
 import { Part, PartProperty } from '@/api/types';
 import {
   PART_DEFAULT_CONFIG,
-  CANVAS_SIZE,
+  GAME_BOARD_SIZE,
 } from '@/features/prototype/constants';
 import {
   POSITION_ATTEMPTS,
@@ -79,14 +79,14 @@ export default function PartCreateMenu({
         const x = Math.max(
           0,
           Math.min(
-            CANVAS_SIZE - partWidth,
+            GAME_BOARD_SIZE - partWidth,
             Math.round(cameraCenterX - partWidth / 2)
           )
         );
         const y = Math.max(
           0,
           Math.min(
-            CANVAS_SIZE - partHeight,
+            GAME_BOARD_SIZE - partHeight,
             Math.round(cameraCenterY - partHeight / 2)
           )
         );
@@ -97,7 +97,7 @@ export default function PartCreateMenu({
           (_, i) => baseX + OFFSET_STEP_X * i
         )
           .map((candidateX) => ({
-            x: Math.min(candidateX, CANVAS_SIZE - partWidth),
+            x: Math.min(candidateX, GAME_BOARD_SIZE - partWidth),
             y,
           }))
           .find(
