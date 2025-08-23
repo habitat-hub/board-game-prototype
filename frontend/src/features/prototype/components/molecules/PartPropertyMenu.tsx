@@ -1,5 +1,5 @@
 /**
- * @page パーツ編集ページに表示するパーツのプロパティを編集するサイドバー
+ * @page パーツ編集ページに表示するパーツのプロパティを編集するメニュー
  */
 
 'use client';
@@ -30,7 +30,7 @@ import {
 } from '@/features/prototype/types';
 import { saveImageToIndexedDb } from '@/utils/db';
 
-export default function PartPropertySidebar({
+export default function PartPropertyMenu({
   selectedPartId,
   parts,
   properties,
@@ -449,7 +449,7 @@ export default function PartPropertySidebar({
                     }
                     className="w-5 h-5"
                   />
-                  <span className="text-sm text-kibako-white">
+                  <span className="Text-sm text-kibako-white">
                     カスタムカラーを選択
                   </span>
                 </div>
