@@ -8,12 +8,12 @@ export const PART_CREATE_THROTTLE_MS = 300;
 /**
  * パーツの配置を試行する最大回数
  */
-export const POSITION_ATTEMPTS: number = 50;
+export const POSITION_ATTEMPTS: number = 100;
 
 /**
- * パーツの配置時のX方向のオフセット量
+ * パーツの配置時のオフセット量
  */
-export const OFFSET_STEP_X: number = 25;
+export const OFFSET_STEP_SIZE: number = 50;
 
 /**
  * パーツのカラー定義

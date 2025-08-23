@@ -20,7 +20,7 @@ import {
 } from '@/features/prototype/constants';
 import {
   POSITION_ATTEMPTS,
-  OFFSET_STEP_X,
+  OFFSET_STEP_SIZE,
   PART_CREATE_THROTTLE_MS,
 } from '@/features/prototype/constants/part';
 import { AddPartProps } from '@/features/prototype/types';
@@ -94,7 +94,7 @@ export default function PartCreateMenu({
         const baseX = x;
         const candidate = Array.from(
           { length: POSITION_ATTEMPTS },
-          (_, i) => baseX + OFFSET_STEP_X * i
+          (_, i) => baseX + OFFSET_STEP_SIZE * i
         )
           .map((candidateX) => ({
             x: Math.min(candidateX, GAME_BOARD_SIZE - partWidth),
