@@ -25,19 +25,20 @@ export const COLORS = {
     '#B3E5B3', // Soft Green (パステルグリーン)
     '#B3D9FF', // Soft Blue (パステルブルー)
     '#FFF5B3', // Soft Yellow (パステルイエロー)
-    '#E6B3E6', // Soft Magenta (パステルマゼンタ)
     '#B3F0F0', // Soft Cyan (パステルシアン)
     '#FFD9B3', // Soft Orange (パステルオレンジ)
     '#D9B3D9', // Soft Purple (パステルパープル)
     '#C7E6C7', // Soft Dark Green (パステルダークグリーン)
     '#F0E6F0', // Very Soft Pink (極薄ピンク)
-    '#F8F8F8', // Off White (オフホワイト)
-    '#D4D4D4', // Light Gray (ライトグレー)
+    '#FFFFFF', // White (ホワイト)
   ],
   /** テキスト色 */
   TEXT: [
-    '#FFFFFF', // White
-    '#000000', // Black
+    '#000000', // Black (黒)
+    '#404040', // Dark Gray (ダークグレー)
+    '#808080', // Gray (グレー)
+    '#BFBFBF', // Light Gray (ライトグレー)
+    '#FFFFFF', // White (白)
   ],
 };
 
