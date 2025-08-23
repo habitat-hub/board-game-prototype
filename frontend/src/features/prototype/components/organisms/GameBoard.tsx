@@ -25,6 +25,7 @@ import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
 import { GRID_SIZE } from '@/features/prototype/constants';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
+import { useDeleteShortcut } from '@/features/prototype/hooks/useDeleteShortcut';
 import { useGameCamera } from '@/features/prototype/hooks/useGameCamera';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
 import { useHandVisibility } from '@/features/prototype/hooks/useHandVisibility';
@@ -308,20 +309,8 @@ export default function GameBoard({
     dispatch,
   ]);
 
-  useEffect(() => {
-    if (gameBoardMode !== GameBoardMode.CREATE) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (isInputFieldFocused()) return;
-        e.preventDefault();
-        handleDeletePart();
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => {
-      window.removeEventListener('keydown', onKeyDown);
-    };
-  }, [handleDeletePart, gameBoardMode]);
+  // 削除処理のキーボードショートカット
+  useDeleteShortcut(handleDeletePart, gameBoardMode);
 
   // スペースキー検出とモード切り替え
   useEffect(() => {
