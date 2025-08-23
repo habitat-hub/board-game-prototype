@@ -1,5 +1,5 @@
 /**
- * @page パーツ編集ページに表示するパーツのプロパティを編集するサイドバー
+ * @page パーツ編集ページに表示するパーツのプロパティを編集するメニュー
  */
 
 'use client';
@@ -14,13 +14,16 @@ import {
   GiPokerHand,
   GiStoneBlock,
 } from 'react-icons/gi';
+import { IoMdMove } from 'react-icons/io';
 
 import { useImages } from '@/api/hooks/useImages';
 import { Part, PartProperty } from '@/api/types';
 import NumberInput from '@/components/atoms/NumberInput';
-import TextIconButton from '@/components/atoms/TextIconButton';
 import TextInput from '@/components/atoms/TextInput';
+import ColorPicker from '@/features/prototype/components/atoms/ColorPicker';
+import PartPropertyMenuButton from '@/features/prototype/components/atoms/PartPropertyMenuButton';
 import { COLORS } from '@/features/prototype/constants';
+import useDraggablePartPropertyMenu from '@/features/prototype/hooks/useDraggablePartPropertyMenu';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import {
   AddPartProps,
@@ -30,16 +33,10 @@ import {
 } from '@/features/prototype/types';
 import { saveImageToIndexedDb } from '@/utils/db';
 
-export default function PartPropertySidebar({
-  selectedPartId,
-  parts,
-  properties,
-  onAddPart,
-  onDeletePart,
-  onDeleteImage,
-}: {
+// Props type for PartPropertyMenu
+export type PartPropertyMenuProps = {
   // 選択中のパーツID
-  selectedPartId: number | null;
+  selectedPartIds: number[];
   // パーツ
   parts: Part[];
   // パーツのプロパティ
@@ -56,7 +53,19 @@ export default function PartPropertySidebar({
     side,
     emitUpdate,
   }: DeleteImageProps) => void;
-}) {
+};
+
+export default function PartPropertyMenu({
+  selectedPartIds,
+  parts,
+  properties,
+  onAddPart,
+  onDeletePart,
+  onDeleteImage,
+}: PartPropertyMenuProps) {
+  const selectedPartId = selectedPartIds[0];
+  const showMenu = selectedPartIds.length === 1;
+
   const [uploadedImage, setUploadedImage] = useState<{
     id: string;
     displayName: string;
@@ -100,6 +109,9 @@ export default function PartPropertySidebar({
       setUploadedImage(null);
     }
   }, [currentProperty]);
+
+  const { containerRef, position, isDragging, handleDragStart } =
+    useDraggablePartPropertyMenu();
   /**
    * パーツを複製する
    */
@@ -259,41 +271,60 @@ export default function PartPropertySidebar({
   return (
     <>
       {selectedPart && (
-        <div className="fixed top-20 right-4 flex w-[240px] flex-col rounded-lg shadow-lg border border-kibako-accent/70 bg-gradient-to-b from-kibako-secondary to-kibako-secondary/80 max-h-[80vh]">
+        <div
+          ref={containerRef}
+          className={`flex w-[240px] flex-col rounded-lg shadow-lg bg-kibako-secondary/70 max-h-[80vh] text-xs ${
+            isDragging ? 'opacity-95' : ''
+          } ${showMenu ? '' : 'hidden'}`}
+          style={{
+            position: 'fixed',
+            left: position ? `${position.x}px` : undefined,
+            top: position ? `${position.y}px` : undefined,
+            // keep zIndex high so it stays above canvas
+            zIndex: 50,
+          }}
+        >
           {/* 固定ヘッダー */}
-          <div className="border-b border-kibako-accent/80 rounded-t-lg bg-gradient-to-r from-kibako-primary/70 to-kibako-primary/50 py-2 px-4 flex-shrink-0">
-            <div className="flex items-center">
+          <div
+            className="relative rounded-t-lg bg-kibako-primary/70 text-kibako-white py-2 px-4 flex-shrink-0 cursor-move pr-8"
+            // mouse
+            onMouseDown={handleDragStart}
+            // touch
+            onTouchStart={handleDragStart}
+          >
+            <div className="flex items-center select-none">
               {selectedPart.type === 'card' ? (
-                <GiCard10Clubs className="h-4 w-4 text-kibako-white mr-2" />
+                <GiCard10Clubs className="h-4 w-4 mr-2" />
               ) : selectedPart.type === 'token' ? (
-                <Gi3dMeeple className="h-4 w-4 text-kibako-white mr-2" />
+                <Gi3dMeeple className="h-4 w-4 mr-2" />
               ) : selectedPart.type === 'hand' ? (
-                <GiPokerHand className="h-4 w-4 text-kibako-white mr-2" />
+                <GiPokerHand className="h-4 w-4 mr-2" />
               ) : selectedPart.type === 'deck' ? (
-                <GiStoneBlock className="h-4 w-4 text-kibako-white mr-2" />
+                <GiStoneBlock className="h-4 w-4 mr-2" />
               ) : selectedPart.type === 'area' ? (
-                <BiArea className="h-4 w-4 text-kibako-white mr-2" />
+                <BiArea className="h-4 w-4 mr-2" />
               ) : null}
-              <span className="text-[12px] font-medium text-kibako-white">
-                プロパティ編集
-              </span>
+              <span className="text-[12px] font-medium">プロパティ編集</span>
             </div>
+            {/* fixed move icon at top-right of the header */}
+            <IoMdMove
+              className="h-4 w-4 absolute right-2 top-2 opacity-80"
+              aria-hidden="true"
+            />
           </div>
           {/* スクロール可能なコンテンツエリア */}
           <div className="flex flex-col gap-2 p-4 overflow-y-auto overflow-x-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             <div className="flex items-center justify-around px-2 pb-2">
-              <TextIconButton
+              <PartPropertyMenuButton
                 text="複製"
                 icon={<FaRegCopy className="h-3 w-3" />}
-                isSelected={false}
                 onClick={() => {
                   handleCopyPart();
                 }}
               />
-              <TextIconButton
+              <PartPropertyMenuButton
                 text="削除"
                 icon={<FaRegTrashAlt className="h-3 w-3" />}
-                isSelected={false}
                 onClick={() => {
                   onDeletePart();
                 }}
@@ -315,7 +346,7 @@ export default function PartPropertySidebar({
               </div>
             )}
             <div className="flex flex-col gap-1">
-              <p className="text-[9px] font-medium text-kibako-white">位置</p>
+              <p className="text-kibako-white">位置</p>
               <div className="flex w-full gap-2 mb-2">
                 <NumberInput
                   key={`${selectedPart.id}-x-${selectedPart.position.x}`}
@@ -350,7 +381,7 @@ export default function PartPropertySidebar({
                   icon={<>Y</>}
                 />
               </div>
-              <p className="text-[9px] font-medium text-kibako-white">サイズ</p>
+              <p className="text-kibako-white">サイズ</p>
               <div className="flex w-full gap-2 mb-2">
                 <NumberInput
                   key={`${selectedPart.id}-width-${selectedPart.width}`}
@@ -381,7 +412,7 @@ export default function PartPropertySidebar({
                   icon={<>H</>}
                 />
               </div>
-              <p className="text-[9px] font-medium text-kibako-white">名前</p>
+              <p className="text-kibako-white">名前</p>
               <div className="flex w-full mb-2">
                 <TextInput
                   key={`${selectedPart.id}-name-${currentProperty?.name}`}
@@ -390,7 +421,7 @@ export default function PartPropertySidebar({
                   icon={<>T</>}
                 />
               </div>
-              <p className="text-[9px] font-medium text-kibako-white">説明</p>
+              <p className="text-kibako-white">説明</p>
               <div className="flex w-full mb-2">
                 <TextInput
                   key={`${selectedPart.id}-description-${currentProperty?.description}`}
@@ -403,65 +434,58 @@ export default function PartPropertySidebar({
                   resizable
                 />
               </div>
-              <p className="text-[9px] font-medium text-kibako-white">
-                テキスト色
-              </p>
-              <div className="w-full mb-2 px-4">
-                <div className="grid grid-cols-4 gap-2">
+              <p className="text-kibako-white">テキスト色</p>
+              <div className="w-full mb-2 px-2">
+                <div className="grid grid-cols-5 gap-1 mb-1">
                   {COLORS.TEXT.map((textColor) => (
                     <button
                       key={textColor}
                       onClick={() => handleUpdateProperty({ textColor })}
-                      className={`w-5 h-5 rounded-full border-2 ${
-                        currentProperty?.textColor === textColor
-                          ? 'border-blue-500'
-                          : 'border-gray-300'
+                      className={`w-5 h-5 rounded-full ${
+                        currentProperty?.textColor === textColor &&
+                        'border-2 border-kibako-accent'
                       }`}
                       style={{ backgroundColor: textColor }}
                       title={textColor}
                     />
                   ))}
                 </div>
+                <ColorPicker
+                  value={currentProperty?.textColor || '#000000'}
+                  palette={COLORS.TEXT}
+                  onChange={(textColor) => handleUpdateProperty({ textColor })}
+                />
               </div>
-              <p className="text-[9px] font-medium text-kibako-white">背景色</p>
-              <div className="w-full mb-2 px-4">
-                <div className="grid grid-cols-4 gap-2">
+              <p className="text-kibako-white">背景色</p>
+              <div className="w-full mb-2 px-2">
+                <div className="grid grid-cols-5 gap-1 mb-1">
                   {COLORS.BACKGROUNDS.map((color) => (
                     <button
                       key={color}
                       onClick={() => handleUpdateProperty({ color })}
-                      className={`w-5 h-5 rounded-full border-2 ${
-                        currentProperty?.color === color
-                          ? 'border-blue-500'
-                          : 'border-gray-300'
+                      className={`w-5 h-5 rounded-full ${
+                        currentProperty?.color === color &&
+                        ' border-2 border-kibako-accent'
                       }`}
                       style={{ backgroundColor: color }}
                       title={color}
                     />
                   ))}
                 </div>
-                <div className="mt-3 flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={currentProperty?.color || '#FFFFFF'}
-                    onChange={(e) =>
-                      handleUpdateProperty({ color: e.target.value })
-                    }
-                    className="w-5 h-5"
-                  />
-                  <span className="text-sm text-kibako-white">
-                    カスタムカラーを選択
-                  </span>
-                </div>
+                <ColorPicker
+                  value={currentProperty?.color || '#FFFFFF'}
+                  palette={COLORS.BACKGROUNDS}
+                  onChange={(color) => handleUpdateProperty({ color })}
+                />
               </div>
               <div className="flex flex-col gap-1">
-                <p className="text-[9px] font-medium text-kibako-white">画像</p>
+                <p className="text-kibako-white">画像</p>
                 <div className="flex items-center w-full px-2 mb-2 gap-2">
                   {uploadedImage ? (
                     <>
                       {/* アップロードした画像のdisplayNameを表示 */}
                       <span
-                        className="text-xs text-kibako-white truncate w-1/2"
+                        className="text-xs truncate w-1/2"
                         title={uploadedImage.displayName}
                       >
                         {uploadedImage.displayName}
@@ -478,7 +502,7 @@ export default function PartPropertySidebar({
                   ) : (
                     <>
                       {/* 画像アップロード */}
-                      <TextIconButton
+                      <PartPropertyMenuButton
                         text="アップロード"
                         icon={
                           isUploading ? (
@@ -487,7 +511,6 @@ export default function PartPropertySidebar({
                             <FaImage className="h-3 w-3" />
                           )
                         }
-                        isSelected={false}
                         onClick={handleFileUploadClick}
                         disabled={isUploading}
                       />

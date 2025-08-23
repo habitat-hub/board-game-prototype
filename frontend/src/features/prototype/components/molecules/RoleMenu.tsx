@@ -34,7 +34,7 @@ export default function RoleMenu({
 
   return (
     <div
-      className={`fixed top-4 right-4 z-[10000] flex flex-row items-center justify-between ${showRoleManagementButton ? 'max-w-[150px]' : 'max-w-[100px]'} h-[56px] bg-content p-2 rounded-lg`}
+      className={`fixed top-4 right-4 z-50 flex flex-row items-center justify-between ${showRoleManagementButton ? 'max-w-[150px]' : 'max-w-[100px]'} h-[56px] bg-content p-2 rounded-lg`}
     >
       {/* ユーザーアイコンリスト（左側・ホバーで全ユーザー名表示） */}
       <div className="relative group">

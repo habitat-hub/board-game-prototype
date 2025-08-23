@@ -187,3 +187,18 @@ export const getShadowOffsetY = (
   // それ以外
   return SHADOW_OFFSET_ZERO;
 };
+
+/**
+ * 選択された色がカスタムカラーかどうかを判定する
+ * @param colors - カラーパレット
+ * @param selectedColor - 選択された色
+ * @returns カスタムカラーの場合true
+ */
+export const isCustomColor = (
+  colors: string[],
+  selectedColor: string
+): boolean => {
+  const normalize = (s: string) => s.trim().toUpperCase();
+  const target = normalize(selectedColor);
+  return !colors.some((color: string) => normalize(color) === target);
+};

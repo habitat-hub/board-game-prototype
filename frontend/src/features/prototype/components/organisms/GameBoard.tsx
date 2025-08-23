@@ -18,7 +18,7 @@ import SelectionRect from '@/features/prototype/components/atoms/SelectionRect';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
 import PartOnGameBoard from '@/features/prototype/components/molecules/PartOnGameBoard';
-import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
+import PartPropertyMenu from '@/features/prototype/components/molecules/PartPropertyMenu';
 import PlaySidebar from '@/features/prototype/components/molecules/PlaySidebar';
 import RoleMenu from '@/features/prototype/components/molecules/RoleMenu';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
@@ -592,17 +592,15 @@ export default function GameBoard({
             parts={parts} // 追加
           />
 
-          {/* プロパティサイドバー */}
-          {selectedPartIds.length === 1 && (
-            <PartPropertySidebar
-              selectedPartId={selectedPartIds[0]}
-              parts={parts}
-              properties={properties}
-              onAddPart={handleAddPart}
-              onDeletePart={handleDeletePart}
-              onDeleteImage={handleDeleteImage}
-            />
-          )}
+          {/* プロパティメニュー */}
+          <PartPropertyMenu
+            selectedPartIds={selectedPartIds}
+            parts={parts}
+            properties={properties}
+            onAddPart={handleAddPart}
+            onDeletePart={handleDeletePart}
+            onDeleteImage={handleDeleteImage}
+          />
         </>
       )}
 
