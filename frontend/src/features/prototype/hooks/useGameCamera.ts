@@ -11,7 +11,11 @@ import {
   GAME_BOARD_CONFIG,
   GAME_BOARD_CENTER,
 } from '@/features/prototype/constants';
-import { CameraPosition, ViewportSize } from '@/features/prototype/types';
+import {
+  CameraPosition,
+  ViewportSize,
+  CameraConstraints,
+} from '@/features/prototype/types';
 
 interface UseGameCameraProps {
   /** パーツリスト（初期カメラ位置計算用） */
@@ -63,26 +67,32 @@ export const useGameCamera = ({
    */
   // 共通: 指定 viewport と scale に対するカメラ制約（min/max と dynamicMargin）を計算して返す
   const getCameraConstraints = useCallback(
-    (scale: number, vpSize: ViewportSize) => {
-      // ビューポートの短辺に対して基準マージンを算出
+    (scale: number, vpSize: ViewportSize): CameraConstraints => {
+      // ビューポートの短辺に対する基準マージン
       const baseMargin =
         Math.min(vpSize.width, vpSize.height) * CAMERA_MARGIN.BASE_RATIO;
+      // ズームアウト時にマージンが発散しないよう下限スケールで割る
+      const effectiveScale = Math.max(
+        scale,
+        CAMERA_MARGIN.MIN_SCALE_FOR_MARGIN
+      );
+      const dynamicMargin = baseMargin / effectiveScale;
 
-      // scale が小さいときにマージンが過度に増えないように下限を設けつつ動的マージンを算出
-      const dynamicMargin =
-        baseMargin / Math.max(scale, CAMERA_MARGIN.MIN_SCALE_FOR_MARGIN);
+      const contentW = GAME_BOARD_CONFIG.WIDTH * scale;
+      const contentH = GAME_BOARD_CONFIG.HEIGHT * scale;
+      const visibleW = vpSize.width;
+      const visibleH = vpSize.height;
 
-      // キャンバスの表示可能領域を min/max で表現（x/y）
-      // カメラはキャンバスの左上(0,0)ではなく、カメラオフセットとして x,y を持つため
-      // マイナスマージンを許容することでキャンバス外側への余白を確保する
-      const minX = -dynamicMargin;
-      const maxX =
-        GAME_BOARD_CONFIG.WIDTH * scale - vpSize.width + dynamicMargin;
-      const minY = -dynamicMargin;
-      const maxY =
-        GAME_BOARD_CONFIG.HEIGHT * scale - vpSize.height + dynamicMargin;
+      // ビューポートが広すぎる場合は中央固定
+      const [minX, maxX] =
+        contentW + 2 * dynamicMargin <= visibleW
+          ? [(contentW - visibleW) / 2, (contentW - visibleW) / 2]
+          : [-dynamicMargin, contentW - visibleW + dynamicMargin];
+      const [minY, maxY] =
+        contentH + 2 * dynamicMargin <= visibleH
+          ? [(contentH - visibleH) / 2, (contentH - visibleH) / 2]
+          : [-dynamicMargin, contentH - visibleH + dynamicMargin];
 
-      // 呼び出し側で x,y を範囲内に収めたり、dynamicMargin を参照したりできるよう返す
       return { minX, maxX, minY, maxY, dynamicMargin };
     },
     []
