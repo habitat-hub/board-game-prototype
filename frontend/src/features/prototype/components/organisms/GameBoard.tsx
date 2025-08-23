@@ -593,16 +593,14 @@ export default function GameBoard({
           />
 
           {/* プロパティメニュー */}
-          {selectedPartIds.length === 1 && (
-            <PartPropertyMenu
-              selectedPartId={selectedPartIds[0]}
-              parts={parts}
-              properties={properties}
-              onAddPart={handleAddPart}
-              onDeletePart={handleDeletePart}
-              onDeleteImage={handleDeleteImage}
-            />
-          )}
+          <PartPropertyMenu
+            selectedPartIds={selectedPartIds}
+            parts={parts}
+            properties={properties}
+            onAddPart={handleAddPart}
+            onDeletePart={handleDeletePart}
+            onDeleteImage={handleDeleteImage}
+          />
         </>
       )}
 

@@ -21,6 +21,7 @@ export const OFFSET_STEP_X: number = 25;
 export const COLORS = {
   /** 背景色 */
   BACKGROUNDS: [
+    '#FFFFFF', // White (ホワイト)
     '#FFB3B3', // Soft Red (パステルレッド)
     '#B3E5B3', // Soft Green (パステルグリーン)
     '#B3D9FF', // Soft Blue (パステルブルー)
@@ -30,7 +31,6 @@ export const COLORS = {
     '#D9B3D9', // Soft Purple (パステルパープル)
     '#C7E6C7', // Soft Dark Green (パステルダークグリーン)
     '#F0E6F0', // Very Soft Pink (極薄ピンク)
-    '#FFFFFF', // White (ホワイト)
   ],
   /** テキスト色 */
   TEXT: [
