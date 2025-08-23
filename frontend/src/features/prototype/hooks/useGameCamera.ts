@@ -2,17 +2,20 @@
  * @page ゲームボードのカメラ制御を管理するカスタムフック
  */
 import Konva from 'konva';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Part } from '@/api/types';
 import {
   CAMERA_SCALE,
   CAMERA_MARGIN,
-  CANVAS_CONFIG,
-  CANVAS_CENTER_COORDS,
+  GAME_BOARD_CONFIG,
+  GAME_BOARD_CENTER,
 } from '@/features/prototype/constants';
-import { CameraPosition, ViewportSize } from '@/features/prototype/types';
-import { calculateAveragePartsCenter } from '@/features/prototype/utils/cameraUtils';
+import {
+  CameraPosition,
+  ViewportSize,
+  CameraConstraints,
+} from '@/features/prototype/types';
 
 interface UseGameCameraProps {
   /** パーツリスト（初期カメラ位置計算用） */
@@ -46,26 +49,53 @@ interface UseGameCameraReturn {
  * ゲームボードのカメラ制御を管理するカスタムフック
  */
 export const useGameCamera = ({
-  parts,
+  parts: _parts,
   stageRef,
 }: UseGameCameraProps): UseGameCameraReturn => {
-  // ビューポートサイズの管理
-  const [viewportSize, setViewportSize] = useState<ViewportSize>({
+  // 初期ビューポートサイズ（同期的に計算して初期カメラ位置に使う）
+  const initialViewportSize: ViewportSize = {
     width: window.innerWidth,
     height: window.innerHeight,
-  });
+  };
+
+  // ビューポートサイズの管理
+  const [viewportSize, setViewportSize] =
+    useState<ViewportSize>(initialViewportSize);
 
   /**
    * 動的マージンの計算
    */
-  const calculateDynamicMargin = useCallback(
-    (scale: number) => {
+  // 共通: 指定 viewport と scale に対するカメラ制約（min/max と dynamicMargin）を計算して返す
+  const getCameraConstraints = useCallback(
+    (scale: number, vpSize: ViewportSize): CameraConstraints => {
+      // ビューポートの短辺に対する基準マージン
       const baseMargin =
-        Math.min(viewportSize.width, viewportSize.height) *
-        CAMERA_MARGIN.BASE_RATIO;
-      return baseMargin / Math.max(scale, CAMERA_MARGIN.MIN_SCALE_FOR_MARGIN);
+        Math.min(vpSize.width, vpSize.height) * CAMERA_MARGIN.BASE_RATIO;
+      // ズームアウト時にマージンが発散しないよう下限スケールで割る
+      const effectiveScale = Math.max(
+        scale,
+        CAMERA_MARGIN.MIN_SCALE_FOR_MARGIN
+      );
+      const dynamicMargin = baseMargin / effectiveScale;
+
+      const contentW = GAME_BOARD_CONFIG.WIDTH * scale;
+      const contentH = GAME_BOARD_CONFIG.HEIGHT * scale;
+      const visibleW = vpSize.width;
+      const visibleH = vpSize.height;
+
+      // ビューポートが広すぎる場合は中央固定
+      const [minX, maxX] =
+        contentW + 2 * dynamicMargin <= visibleW
+          ? [(contentW - visibleW) / 2, (contentW - visibleW) / 2]
+          : [-dynamicMargin, contentW - visibleW + dynamicMargin];
+      const [minY, maxY] =
+        contentH + 2 * dynamicMargin <= visibleH
+          ? [(contentH - visibleH) / 2, (contentH - visibleH) / 2]
+          : [-dynamicMargin, contentH - visibleH + dynamicMargin];
+
+      return { minX, maxX, minY, maxY, dynamicMargin };
     },
-    [viewportSize]
+    []
   );
 
   /**
@@ -73,87 +103,65 @@ export const useGameCamera = ({
    */
   const getConstrainedCameraPosition = useCallback(
     (x: number, y: number, scale: number): CameraPosition => {
-      const dynamicMargin = calculateDynamicMargin(scale);
-
-      const minX = -dynamicMargin;
-      const maxX =
-        CANVAS_CONFIG.WIDTH * scale - viewportSize.width + dynamicMargin;
-      const minY = -dynamicMargin;
-      const maxY =
-        CANVAS_CONFIG.HEIGHT * scale - viewportSize.height + dynamicMargin;
+      // 指定 scale と現在の viewportSize に基づいてカメラの制約を取得
+      const { minX, maxX, minY, maxY } = getCameraConstraints(
+        scale,
+        viewportSize
+      );
 
       const constrainedX = Math.max(minX, Math.min(maxX, x));
       const constrainedY = Math.max(minY, Math.min(maxY, y));
-
-      return {
-        x: constrainedX,
-        y: constrainedY,
-        scale,
-      };
+      return { x: constrainedX, y: constrainedY, scale };
     },
-    [viewportSize, calculateDynamicMargin]
+    [viewportSize, getCameraConstraints]
   );
 
-  /**
-   * 初期カメラ位置を計算
-   */
-  const calculateInitialCameraPosition = useCallback(
-    (viewportSize: ViewportSize): CameraPosition => {
-      const averageCenter = calculateAveragePartsCenter(parts);
-      // パーツがない場合はキャンバス中央を表示
-      if (!averageCenter) {
-        return {
-          x:
-            CANVAS_CENTER_COORDS.x * CAMERA_SCALE.DEFAULT -
-            viewportSize.width / 2,
-          y:
-            CANVAS_CENTER_COORDS.y * CAMERA_SCALE.DEFAULT -
-            viewportSize.height / 2,
-          scale: CAMERA_SCALE.DEFAULT,
-        };
-      }
+  // 簡易ヘルパー: 指定viewportでキャンバス中心にカメラを配置し、制約を適用する
+  const computeCenteredCamera = useCallback(
+    (vpSize: ViewportSize, scale = CAMERA_SCALE.DEFAULT): CameraPosition => {
+      const targetX = GAME_BOARD_CENTER.x * scale - vpSize.width / 2;
+      const targetY = GAME_BOARD_CENTER.y * scale - vpSize.height / 2;
+      // 中心配置ターゲットが範囲外にならないようにするため、同じ制約計算を利用
+      const { minX, maxX, minY, maxY } = getCameraConstraints(scale, vpSize);
 
-      // カメラの中央が全パーツの平均センターになるようにカメラの左上位置を計算
-      const targetX =
-        averageCenter.x * CAMERA_SCALE.DEFAULT - viewportSize.width / 2;
-      const targetY =
-        averageCenter.y * CAMERA_SCALE.DEFAULT - viewportSize.height / 2;
+      const constrainedX = Math.max(minX, Math.min(maxX, targetX));
+      const constrainedY = Math.max(minY, Math.min(maxY, targetY));
 
-      return getConstrainedCameraPosition(
-        targetX,
-        targetY,
-        CAMERA_SCALE.DEFAULT
-      );
+      return { x: constrainedX, y: constrainedY, scale };
     },
-    [getConstrainedCameraPosition, parts]
+    [getCameraConstraints]
   );
 
-  // カメラの状態管理
-  const [camera, setCamera] = useState<CameraPosition>(() => ({
-    x: 0,
-    y: 0,
-    scale: CAMERA_SCALE.DEFAULT,
-  }));
-  const hasInitializedRef = useRef(false);
+  // カメラの状態管理（初期化時に常にキャンバス中央へ）
+  const [camera, setCamera] = useState<CameraPosition>(() =>
+    computeCenteredCamera(initialViewportSize)
+  );
 
-  // カメラ位置の初期化
-  useEffect(() => {
-    // 初回のみ、パーツがある場合に初期位置に設定
-    if (!hasInitializedRef.current && parts.length > 0) {
-      hasInitializedRef.current = true;
-      setCamera(calculateInitialCameraPosition(viewportSize));
-    }
-  }, [parts.length, calculateInitialCameraPosition, viewportSize]);
-
-  // ウィンドウリサイズの処理
+  // ウィンドウリサイズ時は現在の scale を保持し、x/y を新しい viewport に合わせて範囲内に収める
   useEffect(() => {
     const handleResize = () => {
       const newViewportSize: ViewportSize = {
         width: window.innerWidth,
         height: window.innerHeight,
       };
+
+      // まず viewport を更新し、その後カメラ位置を現在の scale を維持したまま範囲内に収める
       setViewportSize(newViewportSize);
-      setCamera(calculateInitialCameraPosition(newViewportSize));
+
+      setCamera((prev) => {
+        const scale = prev.scale;
+        // リサイズ後の viewport に対して同じカメラ制約を計算して、
+        // カメラ位置が範囲外にならないように制限する
+        const { minX, maxX, minY, maxY } = getCameraConstraints(
+          scale,
+          newViewportSize
+        );
+
+        const constrainedX = Math.max(minX, Math.min(maxX, prev.x));
+        const constrainedY = Math.max(minY, Math.min(maxY, prev.y));
+
+        return { x: constrainedX, y: constrainedY, scale };
+      });
     };
 
     window.addEventListener('resize', handleResize);
@@ -161,7 +169,7 @@ export const useGameCamera = ({
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [calculateInitialCameraPosition]);
+  }, [getCameraConstraints]);
 
   /**
    * ホイールイベントハンドラー（ズーム・パン）
@@ -274,8 +282,8 @@ export const useGameCamera = ({
     camera,
     viewportSize,
     canvasSize: {
-      width: CANVAS_CONFIG.WIDTH,
-      height: CANVAS_CONFIG.HEIGHT,
+      width: GAME_BOARD_CONFIG.WIDTH,
+      height: GAME_BOARD_CONFIG.HEIGHT,
     },
     handleWheel,
     handleDragMove,

@@ -15,3 +15,12 @@ export type ViewportSize = {
   /** 高さ */
   height: number;
 };
+
+/** カメラ制約を表す型 */
+export type CameraConstraints = Readonly<{
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+  dynamicMargin: number;
+}>;
