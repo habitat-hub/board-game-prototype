@@ -237,14 +237,14 @@ const ProjectList: React.FC = () => {
   ) => [
     {
       id: 'rename',
-      text: '名前の変更',
+      text: '名前変更',
       action: () => {
         handleNameEditToggle(masterPrototype.id, masterPrototype.name);
       },
     },
     {
       id: 'permissions',
-      text: '権限',
+      text: '権限設定',
       action: () => {
         router.push(`/projects/${project.id}/roles`);
       },
