@@ -194,6 +194,11 @@ export const getShadowOffsetY = (
  * @param selectedColor - 選択された色
  * @returns カスタムカラーの場合true
  */
-export const isCustomColor = (colors: string[], selectedColor: string) => {
-  return !colors.some((color: string) => color === selectedColor);
+export const isCustomColor = (
+  colors: string[],
+  selectedColor: string
+): boolean => {
+  const normalize = (s: string) => s.trim().toUpperCase();
+  const target = normalize(selectedColor);
+  return !colors.some((color: string) => normalize(color) === target);
 };
