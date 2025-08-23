@@ -16,11 +16,11 @@ import {
 import { Part, PartProperty } from '@/api/types';
 import {
   PART_DEFAULT_CONFIG,
-  CANVAS_SIZE,
+  GAME_BOARD_SIZE,
 } from '@/features/prototype/constants';
 import {
   POSITION_ATTEMPTS,
-  OFFSET_STEP_X,
+  OFFSET_STEP_SIZE,
   PART_CREATE_THROTTLE_MS,
 } from '@/features/prototype/constants/part';
 import { AddPartProps } from '@/features/prototype/types';
@@ -76,45 +76,75 @@ export default function PartCreateMenu({
           (camera.x + viewportSize.width / 2) / camera.scale;
         const cameraCenterY =
           (camera.y + viewportSize.height / 2) / camera.scale;
-        const x = Math.max(
+        const initialX = Math.max(
           0,
           Math.min(
-            CANVAS_SIZE - partWidth,
+            GAME_BOARD_SIZE - partWidth,
             Math.round(cameraCenterX - partWidth / 2)
           )
         );
-        const y = Math.max(
+        const initialY = Math.max(
           0,
           Math.min(
-            CANVAS_SIZE - partHeight,
+            GAME_BOARD_SIZE - partHeight,
             Math.round(cameraCenterY - partHeight / 2)
           )
         );
-        // 既存パーツと重ならない位置までxのみ+OFFSET_STEP_Xずつずらす
-        const baseX = x;
-        const candidate = Array.from(
-          { length: POSITION_ATTEMPTS },
-          (_, i) => baseX + OFFSET_STEP_X * i
-        )
-          .map((candidateX) => ({
-            x: Math.min(candidateX, CANVAS_SIZE - partWidth),
-            y,
-          }))
-          .find(
-            (pos) =>
-              !parts.some((p) =>
-                isRectOverlap(
-                  { x: pos.x, y: pos.y, width: partWidth, height: partHeight },
-                  {
-                    x: p.position.x,
-                    y: p.position.y,
-                    width: p.width,
-                    height: p.height,
-                  }
-                )
-              )
+
+        const isFree = (posX: number, posY: number) =>
+          !parts.some((p) =>
+            isRectOverlap(
+              { x: posX, y: posY, width: partWidth, height: partHeight },
+              {
+                x: p.position.x,
+                y: p.position.y,
+                width: p.width,
+                height: p.height,
+              }
+            )
           );
-        return candidate ?? { x, y };
+
+        // 1) 同じ行で右方向にずらして試す
+        for (let i = 0; i < POSITION_ATTEMPTS; i++) {
+          const candidateX = Math.min(
+            initialX + OFFSET_STEP_SIZE * i,
+            GAME_BOARD_SIZE - partWidth
+          );
+          if (isFree(candidateX, initialY))
+            return { x: candidateX, y: initialY };
+        }
+
+        // 2) x方向に空きがない場合、xをリセットまたは調整して下方向（y+）の行を順にスキャンする
+        for (let row = 1; row <= POSITION_ATTEMPTS; row++) {
+          const candidateY = Math.min(
+            initialY + OFFSET_STEP_SIZE * row,
+            GAME_BOARD_SIZE - partHeight
+          );
+          for (let col = 0; col < POSITION_ATTEMPTS; col++) {
+            const candidateX = Math.min(
+              initialX + OFFSET_STEP_SIZE * col,
+              GAME_BOARD_SIZE - partWidth
+            );
+            if (isFree(candidateX, candidateY))
+              return { x: candidateX, y: candidateY };
+          }
+        }
+
+        // 3) それでも見つからない場合は、xをリセットまたは調整して上方向（y-）の行を順にスキャンする
+        for (let row = 1; row <= POSITION_ATTEMPTS; row++) {
+          const candidateY = Math.max(0, initialY - OFFSET_STEP_SIZE * row);
+          for (let col = 0; col < POSITION_ATTEMPTS; col++) {
+            const candidateX = Math.min(
+              initialX + OFFSET_STEP_SIZE * col,
+              GAME_BOARD_SIZE - partWidth
+            );
+            if (isFree(candidateX, candidateY))
+              return { x: candidateX, y: candidateY };
+          }
+        }
+
+        // フォールバック：初期の中央位置を返す
+        return { x: initialX, y: initialY };
       };
 
       const newPart: Omit<
@@ -204,7 +234,7 @@ export default function PartCreateMenu({
   ];
 
   return (
-    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-[10000] flex items-center justify-center">
+    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 flex items-center justify-center">
       {/* パーツ作成メニュー */}
       <div className="rounded-xl bg-content shadow-lg border border-wood-light/30 p-3 flex flex-col items-center min-w-[140px]">
         <div className="flex items-center gap-2">

@@ -18,13 +18,14 @@ import SelectionRect from '@/features/prototype/components/atoms/SelectionRect';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
 import PartOnGameBoard from '@/features/prototype/components/molecules/PartOnGameBoard';
-import PartPropertySidebar from '@/features/prototype/components/molecules/PartPropertySidebar';
+import PartPropertyMenu from '@/features/prototype/components/molecules/PartPropertyMenu';
 import PlaySidebar from '@/features/prototype/components/molecules/PlaySidebar';
 import RoleMenu from '@/features/prototype/components/molecules/RoleMenu';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
 import { GRID_SIZE } from '@/features/prototype/constants';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
+import { useDeleteShortcut } from '@/features/prototype/hooks/useDeleteShortcut';
 import { useGameCamera } from '@/features/prototype/hooks/useGameCamera';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
 import { useHandVisibility } from '@/features/prototype/hooks/useHandVisibility';
@@ -308,20 +309,8 @@ export default function GameBoard({
     dispatch,
   ]);
 
-  useEffect(() => {
-    if (gameBoardMode !== GameBoardMode.CREATE) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (isInputFieldFocused()) return;
-        e.preventDefault();
-        handleDeletePart();
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => {
-      window.removeEventListener('keydown', onKeyDown);
-    };
-  }, [handleDeletePart, gameBoardMode]);
+  // 削除処理のキーボードショートカット
+  useDeleteShortcut(handleDeletePart, gameBoardMode);
 
   // スペースキー検出とモード切り替え
   useEffect(() => {
@@ -603,17 +592,15 @@ export default function GameBoard({
             parts={parts} // 追加
           />
 
-          {/* プロパティサイドバー */}
-          {selectedPartIds.length === 1 && (
-            <PartPropertySidebar
-              selectedPartId={selectedPartIds[0]}
-              parts={parts}
-              properties={properties}
-              onAddPart={handleAddPart}
-              onDeletePart={handleDeletePart}
-              onDeleteImage={handleDeleteImage}
-            />
-          )}
+          {/* プロパティメニュー */}
+          <PartPropertyMenu
+            selectedPartIds={selectedPartIds}
+            parts={parts}
+            properties={properties}
+            onAddPart={handleAddPart}
+            onDeletePart={handleDeletePart}
+            onDeleteImage={handleDeleteImage}
+          />
         </>
       )}
 

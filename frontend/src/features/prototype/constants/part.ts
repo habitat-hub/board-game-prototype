@@ -8,12 +8,12 @@ export const PART_CREATE_THROTTLE_MS = 300;
 /**
  * パーツの配置を試行する最大回数
  */
-export const POSITION_ATTEMPTS: number = 50;
+export const POSITION_ATTEMPTS: number = 100;
 
 /**
- * パーツの配置時のX方向のオフセット量
+ * パーツの配置時のオフセット量
  */
-export const OFFSET_STEP_X: number = 25;
+export const OFFSET_STEP_SIZE: number = 50;
 
 /**
  * パーツのカラー定義
@@ -21,23 +21,24 @@ export const OFFSET_STEP_X: number = 25;
 export const COLORS = {
   /** 背景色 */
   BACKGROUNDS: [
+    '#FFFFFF', // White (ホワイト)
     '#FFB3B3', // Soft Red (パステルレッド)
     '#B3E5B3', // Soft Green (パステルグリーン)
     '#B3D9FF', // Soft Blue (パステルブルー)
     '#FFF5B3', // Soft Yellow (パステルイエロー)
-    '#E6B3E6', // Soft Magenta (パステルマゼンタ)
     '#B3F0F0', // Soft Cyan (パステルシアン)
     '#FFD9B3', // Soft Orange (パステルオレンジ)
     '#D9B3D9', // Soft Purple (パステルパープル)
     '#C7E6C7', // Soft Dark Green (パステルダークグリーン)
     '#F0E6F0', // Very Soft Pink (極薄ピンク)
-    '#F8F8F8', // Off White (オフホワイト)
-    '#D4D4D4', // Light Gray (ライトグレー)
   ],
   /** テキスト色 */
   TEXT: [
-    '#FFFFFF', // White
-    '#000000', // Black
+    '#000000', // Black (黒)
+    '#404040', // Dark Gray (ダークグレー)
+    '#808080', // Gray (グレー)
+    '#BFBFBF', // Light Gray (ライトグレー)
+    '#FFFFFF', // White (白)
   ],
 };
 

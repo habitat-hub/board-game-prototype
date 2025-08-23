@@ -189,7 +189,7 @@ export default function LeftSidebar({
                   <Link
                     href={`/projects/${projectId}/prototypes/${instance.id}`}
                     className="group"
-                    title={`${instance.name + '版'}のルームを開く`}
+                    title={`${instance.name}のルームを開く`}
                   >
                     <div className="flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 group-hover:bg-kibako-accent/10 group-hover:border-kibako-accent border border-transparent">
                       <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
