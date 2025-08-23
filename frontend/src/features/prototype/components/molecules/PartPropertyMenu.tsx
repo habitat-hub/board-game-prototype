@@ -259,9 +259,9 @@ export default function PartPropertyMenu({
   return (
     <>
       {selectedPart && (
-        <div className="fixed top-20 right-4 flex w-[240px] flex-col rounded-lg shadow-lg border border-kibako-accent/70 bg-gradient-to-b from-kibako-secondary to-kibako-secondary/80 max-h-[80vh]">
+        <div className="fixed top-20 right-4 flex w-[240px] flex-col rounded-lg shadow-lg bg-gradient-to-b from-kibako-secondary to-kibako-secondary/80 max-h-[80vh]">
           {/* 固定ヘッダー */}
-          <div className="border-b border-kibako-accent/80 rounded-t-lg bg-gradient-to-r from-kibako-primary/70 to-kibako-primary/50 py-2 px-4 flex-shrink-0">
+          <div className="rounded-t-lg bg-gradient-to-r from-kibako-primary/70 to-kibako-primary/50 py-2 px-4 flex-shrink-0">
             <div className="flex items-center">
               {selectedPart.type === 'card' ? (
                 <GiCard10Clubs className="h-4 w-4 text-kibako-white mr-2" />
