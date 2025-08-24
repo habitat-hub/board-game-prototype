@@ -15,3 +15,8 @@ export enum GameBoardMode {
   /** プレイモード */
   PLAY = 'play',
 }
+
+export type Position = {
+  x: number;
+  y: number;
+};
