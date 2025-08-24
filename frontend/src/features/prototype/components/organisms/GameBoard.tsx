@@ -258,6 +258,79 @@ export default function GameBoard({
     [clearSelection, dispatch, measureOperation]
   );
 
+  /**
+   * パーツを複製する（PartPropertyMenuの複製ボタンから呼ばれる）
+   */
+  const handleCopyPart = useCallback(() => {
+    if (selectedPartIds.length !== 1) return;
+    const selectedPartId = selectedPartIds[0];
+    const selectedPart = parts.find((p) => p.id === selectedPartId);
+    if (!selectedPart) return;
+
+    const selectedPartProperties = properties.filter(
+      (p) => p.partId === selectedPartId
+    );
+
+    const computeCopyPosition = (part: Part): { x: number; y: number } => {
+      const GAME_BOARD_SIZE = 2000; // safe fallback if not defined elsewhere
+      const boardMaxX = GAME_BOARD_SIZE - part.width;
+      const boardMaxY = GAME_BOARD_SIZE - part.height;
+
+      const positionCandidates = [
+        { x: part.position.x + part.width, y: part.position.y },
+        { x: part.position.x, y: part.position.y + part.height },
+        { x: part.position.x - part.width, y: part.position.y },
+        { x: part.position.x, y: part.position.y - part.height },
+      ];
+
+      const fit = positionCandidates.find(
+        (c) => c.x >= 0 && c.y >= 0 && c.x <= boardMaxX && c.y <= boardMaxY
+      );
+      if (fit) return fit;
+
+      const clamped = positionCandidates[0];
+      return {
+        x: Math.min(Math.max(0, clamped.x), boardMaxX),
+        y: Math.min(Math.max(0, clamped.y), boardMaxY),
+      };
+    };
+
+    const newPart: Omit<
+      Part,
+      'id' | 'prototypeId' | 'order' | 'createdAt' | 'updatedAt'
+    > = {
+      type: selectedPart.type,
+      position: computeCopyPosition(selectedPart),
+      width: selectedPart.width,
+      height: selectedPart.height,
+    };
+
+    if (selectedPart.type === 'card') {
+      newPart.frontSide = selectedPart.frontSide;
+    } else {
+      newPart.frontSide = 'front';
+    }
+
+    if (selectedPart.type === 'hand') {
+      newPart.ownerId = selectedPart.ownerId;
+    }
+
+    const newPartProperties = selectedPartProperties
+      .filter(({ side }) =>
+        selectedPart.type === 'card' ? true : side === 'front'
+      )
+      .map(({ side, name, description, color, imageId, textColor }) => ({
+        side,
+        name,
+        description,
+        color,
+        textColor,
+        imageId,
+      }));
+
+    handleAddPart({ part: newPart, properties: newPartProperties });
+  }, [selectedPartIds, parts, properties, handleAddPart]);
+
   const handleDeleteImage = useCallback(
     async ({
       imageId,
@@ -597,7 +670,7 @@ export default function GameBoard({
             selectedPartIds={selectedPartIds}
             parts={parts}
             properties={properties}
-            onAddPart={handleAddPart}
+            onCopyPart={handleCopyPart}
             onDeletePart={handleDeletePart}
             onDeleteImage={handleDeleteImage}
           />
