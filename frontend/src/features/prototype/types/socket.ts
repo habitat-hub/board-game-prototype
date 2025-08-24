@@ -28,7 +28,6 @@ export type UpdatePartPayload = {
   partId: number;
   updatePart?: Partial<Part>;
   updateProperties?: Partial<PartProperty>[];
-  frontSide?: 'front' | 'back';
 };
 
 /** パーツ削除のペイロード（ソケット送受信用） */
