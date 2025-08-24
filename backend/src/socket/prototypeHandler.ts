@@ -396,9 +396,28 @@ function handleDeleteParts(socket: Socket, io: Server): void {
         // 空の配列を防ぐためのガード
         if (!partIds || partIds.length === 0) return;
 
-        await PartModel.destroy({ where: { id: { [Op.in]: partIds } } });
+        // 入力の正規化・重複排除
+        const normalizedIds = Array.from(
+          new Set(partIds.filter((v) => Number.isInteger(v)))
+        ) as number[];
+
+        // 現在のプロトタイプに属するIDのみに限定
+        const partsInRoom = await PartModel.findAll({
+          attributes: ['id'],
+          where: {
+            prototypeId,
+            id: { [Op.in]: normalizedIds },
+          },
+        });
+        const targetIds = partsInRoom.map((p) => p.id);
+        if (targetIds.length === 0) return;
+
+        await PartModel.destroy({
+          where: { prototypeId, id: { [Op.in]: targetIds } },
+        });
+
         io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.DELETE_PARTS, {
-          partIds,
+          partIds: targetIds,
         });
       } catch (error) {
         console.error(
