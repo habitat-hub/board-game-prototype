@@ -546,7 +546,7 @@ export default function GameBoard({
               const isActive = selectedPartIds.includes(part.id);
 
               // カードの表示制御を判定
-              const isOtherPlayerCard =
+              const isOtherPlayerHandCard =
                 part.type === 'card' && !cardVisibilityMap.get(part.id);
 
               return (
@@ -557,7 +557,7 @@ export default function GameBoard({
                   images={filteredImages}
                   gameBoardMode={gameBoardMode}
                   isActive={isActive}
-                  isOtherPlayerCard={isOtherPlayerCard}
+                  isOtherPlayerHandCard={isOtherPlayerHandCard}
                   userRoles={userRoles}
                   onClick={(e) => handlePartClick(e, part.id)}
                   onDragStart={(e) => handlePartDragStart(e, part.id)}

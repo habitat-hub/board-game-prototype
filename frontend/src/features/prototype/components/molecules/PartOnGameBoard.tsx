@@ -36,7 +36,7 @@ interface PartOnGameBoardProps {
   part: Part;
   properties: PartProperty[];
   images: Record<string, string>[];
-  isOtherPlayerCard: boolean;
+  isOtherPlayerHandCard: boolean;
   gameBoardMode: GameBoardMode;
   onDragStart: (e: Konva.KonvaEventObject<DragEvent>) => void;
   onDragMove: (e: Konva.KonvaEventObject<DragEvent>, partId: number) => void;
@@ -58,7 +58,7 @@ interface PartOnGameBoardProps {
 export default function PartOnGameBoard({
   part,
   properties,
-  isOtherPlayerCard = false,
+  isOtherPlayerHandCard = false,
   gameBoardMode,
   images,
   onDragStart,
@@ -72,6 +72,10 @@ export default function PartOnGameBoard({
   const groupRef = useRef<Konva.Group>(null);
   const { isReversing, setIsReversing, reverseCard } = useCard(part);
   const { dispatch } = usePartReducer();
+  // 楽観的に表裏を切り替えるためのローカル状態（操作者のカードのみ使用）
+  const [optimisticFrontSide, setOptimisticFrontSide] = useState<string | null>(
+    null
+  );
   const [scaleX, setScaleX] = useState(1);
   const { showDebugInfo } = useDebugMode();
   const { eventHandlers } = useGrabbingCursor();
@@ -113,34 +117,48 @@ export default function PartOnGameBoard({
       .username;
   }, [gameBoardMode, part.type, part.ownerId, userRoles]);
 
-  // part.frontSide が外部（ソケット等）で更新されたときに
-  // 前回の値と比較して変化があればフリップアニメーションを走らせる
+  // 前回の表面を保持するref
   const prevFrontSideRef = useRef<string | undefined>(part.frontSide);
+
+  // 表面が変化したときにアニメーションを実行するエフェクト
   useEffect(() => {
-    // カード以外は無視
-    if (part.type !== 'card') {
+    // カード以外や初回レンダー時は反転アニメは不要なので prev を合わせて終了
+    const isCard = part.type === 'card';
+    const isInitialRender = prevFrontSideRef.current === undefined;
+    if (!isCard || isInitialRender) {
       prevFrontSideRef.current = part.frontSide;
       return;
     }
-    // 初回レンダー時はアニメーションしない（prev === current のはず）
-    if (prevFrontSideRef.current !== part.frontSide) {
-      // ただし、常に裏面を表示すべきカードの場合はアニメーションをスキップ
-      const shouldAlwaysDisplayBackSideLocal =
-        gameBoardMode === GameBoardMode.PLAY &&
-        part.type === 'card' &&
-        isOtherPlayerCard;
 
-      if (!shouldAlwaysDisplayBackSideLocal) {
-        setIsReversing(true);
-      }
-      prevFrontSideRef.current = part.frontSide;
+    const isServerDataChanged = prevFrontSideRef.current !== part.frontSide;
+    const isOptimisticChanged =
+      optimisticFrontSide && prevFrontSideRef.current !== optimisticFrontSide;
+    // 変化がなければ早期リターン
+    if (!isServerDataChanged && !isOptimisticChanged) return;
+
+    const shouldAlwaysDisplayBackSideLocal =
+      gameBoardMode === GameBoardMode.PLAY && isOtherPlayerHandCard;
+
+    // プレイ中の他プレイヤーの手札でない かつ 変化がある場合にアニメーション実行
+    if (
+      !shouldAlwaysDisplayBackSideLocal &&
+      (isServerDataChanged || isOptimisticChanged)
+    ) {
+      setIsReversing(true);
     }
+
+    // 楽観的状態を解除
+    if (optimisticFrontSide) {
+      setOptimisticFrontSide(null);
+    }
+    prevFrontSideRef.current = part.frontSide;
   }, [
     part.frontSide,
     part.type,
-    isOtherPlayerCard,
+    isOtherPlayerHandCard,
     gameBoardMode,
     setIsReversing,
+    optimisticFrontSide,
   ]);
 
   // アニメーション用のエフェクト
@@ -192,10 +210,13 @@ export default function PartOnGameBoard({
   const shouldAlwaysDisplayBackSide =
     gameBoardMode === GameBoardMode.PLAY &&
     part.type === 'card' &&
-    isOtherPlayerCard;
+    isOtherPlayerHandCard;
 
   // 表示する面を決定
-  const frontSide = shouldAlwaysDisplayBackSide ? 'back' : part.frontSide;
+  // 操作者の操作の場合は楽観的に画面だけ先に切り替える
+  const frontSide =
+    optimisticFrontSide ??
+    (shouldAlwaysDisplayBackSide ? 'back' : part.frontSide);
 
   // 対象面（表or裏）のプロパティを取得 (ローカルの isFlipped 状態を使用)
   const targetProperty = useMemo(() => {
@@ -228,7 +249,12 @@ export default function PartOnGameBoard({
     }
 
     if (isCard && !shouldAlwaysDisplayBackSide) {
-      reverseCard(part.frontSide === 'front' ? 'back' : 'front', true);
+      // 楽観的に先に表示を切り替え、アニメーションも開始する
+      const newSide = part.frontSide === 'front' ? 'back' : 'front';
+      setOptimisticFrontSide(newSide);
+      setIsReversing(true);
+      // サーバーへ更新を投げる（reverseCard は外部更新も行う）
+      reverseCard(newSide, true);
       return;
     }
   };
