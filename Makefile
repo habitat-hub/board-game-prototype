@@ -11,7 +11,13 @@ SHELL := $(or $(shell command -v zsh 2>/dev/null), $(shell command -v bash 2>/de
 
 # .PHONY: ターゲットをファイル名と区別して常に実行させる
 # 同名のファイルがあると Make がターゲットをスキップするのを防ぐ
-.PHONY: help dev db-up db-down db-status db-status_deprecated up up2 down down2 destroy destroy2 backend-dev frontend-dev install-backend install-frontend ci
+.PHONY: help \
+	dev dev_deprecated \
+	backend-ci frontend-ci ci \
+	db-up db-up_deprecated db-up-detached db-up-detached_deprecated \
+	db-down db-down_deprecated \
+	db-status db-status_deprecated \
+	db-destroy db-destroy_deprecated
 
 
 help:
