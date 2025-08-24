@@ -22,10 +22,10 @@ import PartPropertyMenu from '@/features/prototype/components/molecules/PartProp
 import PlaySidebar from '@/features/prototype/components/molecules/PlaySidebar';
 import RoleMenu from '@/features/prototype/components/molecules/RoleMenu';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
-import { GRID_SIZE } from '@/features/prototype/constants';
+import { GAME_BOARD_SIZE, GRID_SIZE } from '@/features/prototype/constants';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
-import { useDeleteShortcut } from '@/features/prototype/hooks/useDeleteShortcut';
+import { useGameBoardShortcuts } from '@/features/prototype/hooks/useGameBoardShortcut';
 import { useGameCamera } from '@/features/prototype/hooks/useGameCamera';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
 import { useHandVisibility } from '@/features/prototype/hooks/useHandVisibility';
@@ -244,6 +244,9 @@ export default function GameBoard({
     clearSelection();
   };
 
+  /**
+   * パーツを追加する
+   */
   const handleAddPart = useCallback(
     ({ part, properties }: AddPartProps) => {
       measureOperation('Part Addition', () => {
@@ -257,6 +260,78 @@ export default function GameBoard({
     },
     [clearSelection, dispatch, measureOperation]
   );
+
+  /**
+   * パーツを複製する
+   */
+  const handleDuplicatePart = useCallback(() => {
+    if (selectedPartIds.length !== 1) return;
+    const selectedPartId = selectedPartIds[0];
+    const selectedPart = parts.find((p) => p.id === selectedPartId);
+    if (!selectedPart) return;
+
+    const selectedPartProperties = properties.filter(
+      (p) => p.partId === selectedPartId
+    );
+
+    const computeCopyPosition = (part: Part): { x: number; y: number } => {
+      const boardMaxX = GAME_BOARD_SIZE - part.width;
+      const boardMaxY = GAME_BOARD_SIZE - part.height;
+
+      const positionCandidates = [
+        { x: part.position.x + part.width, y: part.position.y },
+        { x: part.position.x, y: part.position.y + part.height },
+        { x: part.position.x - part.width, y: part.position.y },
+        { x: part.position.x, y: part.position.y - part.height },
+      ];
+
+      const fit = positionCandidates.find(
+        (c) => c.x >= 0 && c.y >= 0 && c.x <= boardMaxX && c.y <= boardMaxY
+      );
+      if (fit) return fit;
+
+      const clamped = positionCandidates[0];
+      return {
+        x: Math.min(Math.max(0, clamped.x), boardMaxX),
+        y: Math.min(Math.max(0, clamped.y), boardMaxY),
+      };
+    };
+
+    const newPart: Omit<
+      Part,
+      'id' | 'prototypeId' | 'order' | 'createdAt' | 'updatedAt'
+    > = {
+      type: selectedPart.type,
+      position: computeCopyPosition(selectedPart),
+      width: selectedPart.width,
+      height: selectedPart.height,
+    };
+
+    if (selectedPart.type === 'card') {
+      newPart.frontSide = selectedPart.frontSide;
+    } else {
+      newPart.frontSide = 'front';
+    }
+
+    if (selectedPart.type === 'hand') {
+      newPart.ownerId = selectedPart.ownerId;
+    }
+
+    const newPartProperties = selectedPartProperties
+      .filter(({ side }) =>
+        selectedPart.type === 'card' ? true : side === 'front'
+      )
+      .map(({ side, name, description, color, imageId, textColor }) => ({
+        side,
+        name,
+        description,
+        color,
+        textColor,
+        imageId,
+      }));
+
+    handleAddPart({ part: newPart, properties: newPartProperties });
+  }, [selectedPartIds, parts, properties, handleAddPart]);
 
   const handleDeleteImage = useCallback(
     async ({
@@ -272,8 +347,13 @@ export default function GameBoard({
     [deleteImage]
   );
 
+  /**
+   * パーツを削除する
+   */
   const handleDeletePart = useCallback(async () => {
+    // 0件は何もしない。複数選択時も削除処理をスキップ
     if (selectedPartIds.length === 0) return;
+    if (selectedPartIds.length > 1) return;
 
     const deleteImagePromises = selectedPartIds
       .map((partId) => {
@@ -310,7 +390,7 @@ export default function GameBoard({
   ]);
 
   // 削除処理のキーボードショートカット
-  useDeleteShortcut(handleDeletePart, gameBoardMode);
+  useGameBoardShortcuts(handleDeletePart, handleDuplicatePart, gameBoardMode);
 
   // スペースキー検出とモード切り替え
   useEffect(() => {
@@ -597,7 +677,7 @@ export default function GameBoard({
             selectedPartIds={selectedPartIds}
             parts={parts}
             properties={properties}
-            onAddPart={handleAddPart}
+            onDuplicatePart={handleDuplicatePart}
             onDeletePart={handleDeletePart}
             onDeleteImage={handleDeleteImage}
           />
