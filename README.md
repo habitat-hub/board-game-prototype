@@ -27,88 +27,47 @@
 
 リポジトリをクローン
 
-```bash
+```zsh
 git clone https://github.com/habitat-hub/board-game-prototype.git
 cd board-game-prototype
 ```
 
-### フロントエンドのセットアップ
+### フロントエンド・バックエンドのパッケージインストール
 
-#### 環境設定
-
-```bash
-cp .env_example .env.local
+```zsh
+make ci
 ```
 
-#### パッケージのインストール
+### フロントエンドの環境変数設定
 
-```bash
-cd frontend
-npm ci
+```zsh
+cp ./frontend/.env_example ./frontend/.env.local
 ```
 
-### バックエンドのセットアップ
+### バックエンドの環境変数設定
 
-#### 環境設定
-
-```bash
-cp .env_example .env
+```zsh
+cp ./backend/.env_example ./backend/.env
 ```
 
-- Google Cloud の API キーを取得して、`.env`ファイルに設定する
-- postgres の接続情報が異なる場合は、`.env`ファイルの DATABASE_URL を変更する
-
-#### パッケージのインストール
-
-```bash
-cd ../backend
-npm ci
-```
+- Google Cloud の API キーを取得して、`./backend/.env` に設定する
+- postgres の接続情報が異なる場合は、`./backend/.env` の DATABASE_URL を変更する
 
 ## 開発サーバー起動方法
 
-### データベース
+### 一括で起動する場合
 
-PostgreSQL サーバーを起動
-
-```bash
-cd backend
-make up
+```zsh
+make dev
 ```
 
-PostgreSQL サーバーを停止
+### その他のコマンドを確認するには...
 
-```bash
-cd backend
-make down
+```zsh
+make help
 ```
 
-PostgreSQL サーバーを停止&データ削除
-
-```bash
-cd backend
-make destroy
-```
-
-補足
-
-「make down」を実行した際にエラーが発生した場合「アクティビティモニター」から postgres と検索しヒットしたものを全て強制終了させてください。
-
-### バックエンド
-
-データベースサーバー起動後に起動してください。
-
-```bash
-cd backend
-npm run dev
-```
-
-### フロントエンド
-
-```bash
-cd frontend
-npm run dev
-```
+詳しくは [Makefile](https://github.com/habitat-hub/board-game-prototype/blob/develop/Makefile) を参照してください。
 
 ## API タイプ生成
 
@@ -128,7 +87,7 @@ npm run dev
 1. バックエンドでSwagger定義を更新
 2. バックエンドディレクトリで以下のコマンドを実行：
 
-```bash
+```zsh
 cd backend
 npm run generate-swagger
 npm run generate-api-types

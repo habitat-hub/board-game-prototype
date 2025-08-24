@@ -8,13 +8,12 @@ import { MdMeetingRoom, MdDelete } from 'react-icons/md';
 
 import { useProject } from '@/api/hooks/useProject';
 import { Prototype, ProjectsDetailData } from '@/api/types';
+import GameBoardHelpPanel from '@/features/prototype/components/molecules/GameBoardHelpPanel';
 import { MAX_DISPLAY_USERS } from '@/features/prototype/constants';
 import { useProjectSocket } from '@/features/prototype/hooks/useProjectSocket';
 import { GameBoardMode } from '@/features/prototype/types';
 import { useUser } from '@/hooks/useUser';
 import formatDate from '@/utils/dateFormat';
-
-import GameBoardInstructionPanel from './GameBoardInstructionPanel';
 
 export default function LeftSidebar({
   prototypeName,
@@ -283,7 +282,7 @@ export default function LeftSidebar({
       {!isLeftSidebarMinimized &&
         gameBoardMode !== GameBoardMode.PLAY &&
         renderSidebarContent()}
-      <GameBoardInstructionPanel />
+      <GameBoardHelpPanel />
     </div>
   );
 }

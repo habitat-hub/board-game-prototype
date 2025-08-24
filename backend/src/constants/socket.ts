@@ -29,8 +29,8 @@ export const PROTOTYPE_SOCKET_EVENT = {
   UPDATE_PARTS: 'UPDATE_PARTS',
   // パーツ情報の部分更新
   UPDATE_PART: 'UPDATE_PART',
-  // パーツ削除
-  DELETE_PART: 'DELETE_PART',
+  // パーツ一括削除
+  DELETE_PARTS: 'DELETE_PARTS',
   // カーソル情報の更新
   UPDATE_CURSORS: 'UPDATE_CURSORS',
   // 単一カーソル更新

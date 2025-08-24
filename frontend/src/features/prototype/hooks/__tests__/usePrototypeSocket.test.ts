@@ -156,7 +156,7 @@ describe('usePrototypeSocket', () => {
         PROTOTYPE_SOCKET_EVENT.ADD_PART,
         PROTOTYPE_SOCKET_EVENT.ADD_PART_RESPONSE,
         PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS,
-        PROTOTYPE_SOCKET_EVENT.DELETE_PART,
+        PROTOTYPE_SOCKET_EVENT.DELETE_PARTS,
         PROTOTYPE_SOCKET_EVENT.UPDATE_CURSORS,
         PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS,
       ];
@@ -228,7 +228,7 @@ describe('usePrototypeSocket', () => {
       expect(result.current.propertiesMap.get(3)).toEqual(mockProperties);
     });
 
-    it('DELETE_PARTイベントでpartsMapとpropertiesMapから該当アイテムが削除される', () => {
+    it('DELETE_PARTSイベントでpartsMapとpropertiesMapから該当アイテムが削除される', () => {
       const { result } = renderHook(() => usePrototypeSocket(defaultProps));
 
       // 初期データを設定
@@ -236,7 +236,11 @@ describe('usePrototypeSocket', () => {
         mockSocket.on as jest.Mock,
         PROTOTYPE_SOCKET_EVENT.INITIAL_PARTS
       );
-      const mockParts = [{ id: 1, name: 'Part 1', x: 100, y: 200 }];
+      const mockParts = [
+        { id: 1, name: 'Part 1', x: 100, y: 200 },
+        { id: 2, name: 'Part 2', x: 300, y: 400 },
+        { id: 3, name: 'Part 3', x: 500, y: 600 },
+      ];
       const mockProperties = [
         createMockPartProperty({
           partId: 1,
@@ -251,15 +255,17 @@ describe('usePrototypeSocket', () => {
 
       const deletePartCallback = getEventCallback(
         mockSocket.on as jest.Mock,
-        PROTOTYPE_SOCKET_EVENT.DELETE_PART
+        PROTOTYPE_SOCKET_EVENT.DELETE_PARTS
       );
 
       act(() => {
-        deletePartCallback!({ partId: 1 });
+        deletePartCallback!({ partIds: [1, 2] });
       });
 
       expect(result.current.partsMap.has(1)).toBe(false);
+      expect(result.current.partsMap.has(2)).toBe(false);
       expect(result.current.propertiesMap.has(1)).toBe(false);
+      expect(result.current.propertiesMap.has(2)).toBe(false);
     });
 
     it('UPDATE_PARTSイベントで同じpartIdの同じsideのプロパティが上書きされる', () => {

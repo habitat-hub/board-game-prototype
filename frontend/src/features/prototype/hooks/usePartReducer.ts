@@ -3,64 +3,20 @@
  */
 import { useCallback } from 'react';
 
-import { Part, PartProperty } from '@/api/types';
 import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
-import { PartPropertyUpdate } from '@/features/prototype/types';
+import { PartDispatch } from '@/features/prototype/types/socket';
 
-// パーツのプロパティの型定義(metadataを除いた型)
-type PartPropertiesWithoutMetadata = Omit<
-  PartProperty,
-  'partId' | 'createdAt' | 'updatedAt'
->;
+export type PartReducer = {
+  dispatch: PartDispatch;
+};
 
-// アクションの型定義
-export type PartAction =
-  // パーツの追加
-  | {
-      type: 'ADD_PART';
-      payload: {
-        part: Omit<
-          Part,
-          'id' | 'prototypeId' | 'order' | 'createdAt' | 'updatedAt'
-        >;
-        properties: PartPropertiesWithoutMetadata[];
-      };
-    }
-  // カードの裏返し
-  | {
-      type: 'FLIP_CARD';
-      payload: { cardId: number; nextFrontSide: 'front' | 'back' };
-    }
-  // パーツの更新
-  | {
-      type: 'UPDATE_PART';
-      payload: {
-        partId: number;
-        updatePart?: Partial<Part>;
-        updateProperties?: Partial<PartPropertyUpdate>[];
-        frontSide?: 'front' | 'back';
-      };
-    }
-  // パーツの削除
-  | { type: 'DELETE_PART'; payload: { partId: number } }
-  // パーツの順番の変更
-  | {
-      type: 'CHANGE_ORDER';
-      payload: {
-        partId: number;
-        type: 'front' | 'back' | 'backmost' | 'frontmost';
-      };
-    }
-  // デッキのシャッフル
-  | { type: 'SHUFFLE_DECK'; payload: { deckId: number } };
-
-export const usePartReducer = () => {
+export const usePartReducer = (): PartReducer => {
   const { socket } = useSocket();
   const { measureOperation } = usePerformanceTracker();
 
-  const dispatch = useCallback(
-    (action: PartAction) => {
+  const dispatch = useCallback<PartDispatch>(
+    (action) => {
       measureOperation('Part Operation', () => {
         switch (action.type) {
           // パーツの追加
@@ -93,10 +49,10 @@ export const usePartReducer = () => {
               });
             }
             break;
-          // パーツの削除
-          case 'DELETE_PART':
-            socket.emit('DELETE_PART', {
-              partId: action.payload.partId,
+          // パーツの一括削除
+          case 'DELETE_PARTS':
+            socket.emit('DELETE_PARTS', {
+              partIds: action.payload.partIds,
             });
             break;
           // パーツの順番の変更
