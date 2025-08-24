@@ -157,9 +157,39 @@ export function useSelection(options: UseSelectionOptions = {}) {
         window.cancelAnimationFrame(requestAnimationFrameIdRef.current);
         requestAnimationFrameIdRef.current = null;
       }
+      // 最後のポインタ位置に基づいて最終矩形を確定する。
+      // これにより、予約された requestAnimationFrame 実行前にリリースしても
+      // 実際のリリース位置が使用される。
+      // selectionStartRef.current と lastPointerRef.current は
+      // どちらも（既に変換済みの）キャンバス座標を保持しているため、
+      // 利用可能ならそれらの値から最終矩形を計算する。
+      // 利用できない場合は最新の ref/state にフォールバックする。
+      const start = selectionStartRef.current;
+      const end = lastPointerRef.current;
+      const computeFinalRect = (
+        startPoint: { x: number; y: number } | null,
+        endPoint: { x: number; y: number } | null
+      ): SelectionRect | null => {
+        if (startPoint && endPoint) {
+          const finalRect: SelectionRect = {
+            x: Math.min(startPoint.x, endPoint.x),
+            y: Math.min(startPoint.y, endPoint.y),
+            width: Math.abs(endPoint.x - startPoint.x),
+            height: Math.abs(endPoint.y - startPoint.y),
+            visible: true,
+          };
+          // 最新矩形を同期的に確定して描画も行う
+          latestRectRef.current = finalRect;
+          setRectForSelection(finalRect);
+          return finalRect;
+        }
+        // start/end が揃わない場合は保持している最新矩形か state を返す
+        return latestRectRef.current ?? rectForSelection ?? null;
+      };
 
-      // state の矩形ではなく、最新の矩形(ref)を参照して判定する（state の非同期性回避）
-      const rect = latestRectRef.current ?? rectForSelection;
+      const rect = computeFinalRect(start, end);
+
+      // use the flushed rectangle (ref/state) to avoid state asynchrony
       if (rect && rect.width > 0 && rect.height > 0) {
         const selected = parts.filter((part) => {
           const partRect = {
