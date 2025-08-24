@@ -1,6 +1,8 @@
-# 使用するシェルを明示
-# CI や他環境でデフォルトが異なると Make の挙動が変わるため zsh を指定する
-SHELL := /bin/zsh
+# 使用するシェルを明示（zsh があればそれを使い、なければ bash、それも無ければ /bin/sh を使う）
+# CI や他環境でデフォルトが異なると Make の挙動が変わるため明示的に設定するが
+# /bin/zsh をハードコードせず、存在するシェルを検出して設定する。
+# `command -v` を使って zsh -> bash の順で検出し、両方見つからない場合は /bin/sh を使う。
+SHELL := $(or $(shell command -v zsh 2>/dev/null), $(shell command -v bash 2>/dev/null), /bin/sh)
 
 # .ONESHELL: 同一ターゲット内の複数行レシピを同じシェルで実行
 # 行間で cd や環境変数を共有する場合に有効
