@@ -7,7 +7,7 @@ import {
 } from 'react';
 
 import {
-  DEFAULT_MENU_WIDTH,
+  PART_PROPERTY_MENU_WIDTH,
   DEFAULT_MENU_TOP,
   DEFAULT_RIGHT_OFFSET,
   DEFAULT_MENU_HEIGHT,
@@ -32,6 +32,7 @@ export default function useDraggablePartPropertyMenu(): {
       | React.MouseEvent<HTMLDivElement, MouseEvent>
       | React.TouchEvent<HTMLDivElement>
   ) => void;
+  clampToViewport: () => void;
 } {
   const [position, setPosition] = useState<{ x: number; y: number } | null>(
     () => {
@@ -39,7 +40,7 @@ export default function useDraggablePartPropertyMenu(): {
       if (typeof window === 'undefined') return null;
       const left = Math.max(
         0,
-        window.innerWidth - DEFAULT_RIGHT_OFFSET - DEFAULT_MENU_WIDTH
+        window.innerWidth - DEFAULT_RIGHT_OFFSET - PART_PROPERTY_MENU_WIDTH
       );
       return { x: left, y: DEFAULT_MENU_TOP };
     }
@@ -58,6 +59,28 @@ export default function useDraggablePartPropertyMenu(): {
     (v: number, a: number, b: number) => Math.min(Math.max(v, a), b),
     []
   );
+
+  /** 外部から呼べるように、現在位置をビューポート内にクランプする関数を用意 */
+  const clampToViewport = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    const container = containerRef.current;
+    const width = container?.offsetWidth ?? PART_PROPERTY_MENU_WIDTH;
+    const height = container?.offsetHeight ?? DEFAULT_MENU_HEIGHT;
+    const maxX = Math.max(0, window.innerWidth - width);
+    const maxY = Math.max(0, window.innerHeight - height);
+
+    setPosition((prev) => {
+      if (!prev) {
+        const left = Math.max(
+          0,
+          window.innerWidth - DEFAULT_RIGHT_OFFSET - width
+        );
+        const top = DEFAULT_MENU_TOP;
+        return { x: clamp(left, 0, maxX), y: clamp(top, 0, maxY) };
+      }
+      return { x: clamp(prev.x, 0, maxX), y: clamp(prev.y, 0, maxY) };
+    });
+  }, [clamp]);
 
   /** イベント（マウス or タッチ）からクライアント座標を取り出す */
   const getClientCoords = (
@@ -87,7 +110,7 @@ export default function useDraggablePartPropertyMenu(): {
         startPosRef.current = position;
       } else if (typeof window !== 'undefined') {
         const container = containerRef.current;
-        const width = container?.offsetWidth ?? DEFAULT_MENU_WIDTH;
+        const width = container?.offsetWidth ?? PART_PROPERTY_MENU_WIDTH;
         const left = Math.max(
           0,
           window.innerWidth - DEFAULT_RIGHT_OFFSET - width
@@ -117,10 +140,16 @@ export default function useDraggablePartPropertyMenu(): {
       const newX = startPosRef.current.x + dx;
       const newY = startPosRef.current.y + dy;
       const container = containerRef.current;
-      const maxX =
-        window.innerWidth - (container?.offsetWidth ?? DEFAULT_MENU_WIDTH);
-      const maxY =
-        window.innerHeight - (container?.offsetHeight ?? DEFAULT_MENU_HEIGHT);
+      // ビューポートよりメニューが大きい場合にも上限を0以上にする
+      const maxX = Math.max(
+        0,
+        window.innerWidth -
+          (container?.offsetWidth ?? PART_PROPERTY_MENU_WIDTH)
+      );
+      const maxY = Math.max(
+        0,
+        window.innerHeight - (container?.offsetHeight ?? DEFAULT_MENU_HEIGHT)
+      );
       setPosition({ x: clamp(newX, 0, maxX), y: clamp(newY, 0, maxY) });
     };
 
@@ -152,7 +181,7 @@ export default function useDraggablePartPropertyMenu(): {
 
     const clampCurrentPosition = () => {
       const container = containerRef.current;
-      const width = container?.offsetWidth ?? DEFAULT_MENU_WIDTH;
+      const width = container?.offsetWidth ?? PART_PROPERTY_MENU_WIDTH;
       const height = container?.offsetHeight ?? DEFAULT_MENU_HEIGHT;
       const maxX = Math.max(0, window.innerWidth - width);
       const maxY = Math.max(0, window.innerHeight - height);
@@ -192,5 +221,11 @@ export default function useDraggablePartPropertyMenu(): {
     };
   }, [clamp]);
 
-  return { containerRef, position, isDragging, handleDragStart } as const;
+  return {
+    containerRef,
+    position,
+    isDragging,
+    handleDragStart,
+    clampToViewport,
+  } as const;
 }

@@ -110,8 +110,38 @@ export default function PartPropertyMenu({
     }
   }, [currentProperty]);
 
-  const { containerRef, position, isDragging, handleDragStart } =
-    useDraggablePartPropertyMenu();
+  const {
+    containerRef,
+    position,
+    isDragging,
+    handleDragStart,
+    clampToViewport,
+  } = useDraggablePartPropertyMenu();
+
+  // メニューが表示されるとき、または選択中パーツが変更されたときにクランプする（マージ版）
+  const prevSelectedPartIdRef = useRef<number | undefined>(undefined);
+  const prevShowMenuRef = useRef<boolean | undefined>(undefined);
+  useEffect(() => {
+    // showMenu が false の場合は履歴だけ更新して終了
+    if (!showMenu) {
+      prevSelectedPartIdRef.current = selectedPartId;
+      prevShowMenuRef.current = showMenu;
+      return;
+    }
+
+    const becameVisible = prevShowMenuRef.current !== true;
+    const selectedChanged =
+      prevSelectedPartIdRef.current !== undefined &&
+      prevSelectedPartIdRef.current !== selectedPartId;
+
+    if (becameVisible || selectedChanged) {
+      clampToViewport();
+    }
+
+    prevSelectedPartIdRef.current = selectedPartId;
+    prevShowMenuRef.current = showMenu;
+  }, [selectedPartId, showMenu, clampToViewport]);
+
   /**
    * パーツを複製する
    */
