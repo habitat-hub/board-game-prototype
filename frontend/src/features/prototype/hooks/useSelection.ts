@@ -151,9 +151,17 @@ export function useSelection(
       if (requestAnimationFrameIdRef.current == null) {
         requestAnimationFrameIdRef.current = window.requestAnimationFrame(
           () => {
-            // 最新矩形は事前計算済み
-            latestRectRef.current = rect;
-            setRectForSelection(rect);
+            const startLocal = selectionStartRef.current!;
+            const lastLocal = lastPointerRef.current ?? startLocal;
+            const nextRect: SelectionRect = {
+              x: Math.min(startLocal.x, lastLocal.x),
+              y: Math.min(startLocal.y, lastLocal.y),
+              width: Math.abs(lastLocal.x - startLocal.x),
+              height: Math.abs(lastLocal.y - startLocal.y),
+              visible: true,
+            };
+            latestRectRef.current = nextRect;
+            setRectForSelection(nextRect);
             requestAnimationFrameIdRef.current = null;
           }
         );
