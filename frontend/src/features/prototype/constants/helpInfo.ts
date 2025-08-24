@@ -30,6 +30,11 @@ export const SHORTCUTS: ShortcutInfo[] = [
     key: 'Delete / Backspace',
     description: '選択中のパーツ1つを削除する。',
   },
+  {
+    id: 'duplicate',
+    key: 'Cmd/Ctrl + D',
+    description: '選択中のパーツ1つを複製する。',
+  },
 ];
 
 // パーツ操作情報の定義
