@@ -37,8 +37,6 @@ export const PROTOTYPE_SOCKET_EVENT = {
   UPDATE_CURSOR: 'UPDATE_CURSOR',
   // 接続中ユーザーリストの更新
   CONNECTED_USERS: 'CONNECTED_USERS',
-  // カード反転
-  FLIP_CARD: 'FLIP_CARD',
   // パーツ順序変更
   CHANGE_ORDER: 'CHANGE_ORDER',
   // デッキのシャッフル

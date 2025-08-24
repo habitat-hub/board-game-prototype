@@ -17,12 +17,6 @@ export type AddPartPayload = {
   properties: Omit<PartProperty, 'partId' | 'createdAt' | 'updatedAt'>[];
 };
 
-/** カードの裏返し（ソケット送受信用） */
-export type FlipCardPayload = {
-  cardId: number;
-  nextFrontSide: 'front' | 'back';
-};
-
 /** パーツ更新のペイロード（ソケット送受信用） */
 export type UpdatePartPayload = {
   partId: number;
@@ -43,12 +37,6 @@ export type ShuffleDeckPayload = { deckId: number };
 export type AddPartAction = {
   type: 'ADD_PART';
   payload: AddPartPayload;
-};
-
-/** カードの裏返しのアクション（ソケット送受信用） */
-export type FlipCardAction = {
-  type: 'FLIP_CARD';
-  payload: FlipCardPayload;
 };
 
 /** パーツ更新のアクション（ソケット送受信用） */
@@ -78,7 +66,6 @@ export type ShuffleDeckAction = {
 /** PartAction: usePartReducer で使われるアクションの型（ソケット送受信用） */
 export type PartAction =
   | AddPartAction
-  | FlipCardAction
   | UpdatePartAction
   | DeletePartsAction
   | ChangeOrderAction

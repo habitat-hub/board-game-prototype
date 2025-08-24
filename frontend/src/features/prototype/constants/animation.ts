@@ -3,5 +3,5 @@
 /** フリップアニメーション設定 */
 export const FLIP_ANIMATION = {
   /** フリップアニメーション時間（ミリ秒） */
-  DURATION_MS: 800,
+  DURATION_MS: 400,
 } as const;
