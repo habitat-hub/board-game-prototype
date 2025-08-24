@@ -3,14 +3,7 @@
  */
 import type Konva from 'konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
-import {
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-  useEffect,
-  RefObject,
-} from 'react';
+import { useCallback, useRef, useState, useEffect, RefObject } from 'react';
 
 import { Part } from '@/api/types';
 import { isRectOverlap } from '@/features/prototype/utils/overlap';
@@ -36,7 +29,28 @@ interface UseSelectionOptions {
   onClearSelection?: () => void;
 }
 
-export function useSelection(options: UseSelectionOptions = {}) {
+export type UseSelectionReturn = {
+  isSelectionMode: boolean;
+  rectForSelection: SelectionRect;
+  isSelectionInProgress: boolean;
+  isJustFinishedSelection: boolean;
+  consumeJustFinishedSelection: () => boolean;
+  handleSelectionStart: (
+    e: KonvaEventObject<MouseEvent | PointerEvent>,
+    camera: Camera
+  ) => void;
+  handleSelectionMove: (
+    e: KonvaEventObject<MouseEvent | PointerEvent>,
+    camera: Camera
+  ) => void;
+  handleSelectionEnd: (e: KonvaEventObject<MouseEvent | PointerEvent>) => void;
+  toggleMode: () => void;
+};
+
+/** 選択状態を管理するカスタムフック */
+export function useSelection(
+  options: UseSelectionOptions = {}
+): UseSelectionReturn {
   const { stageRef, parts = [], onPartsSelected, onClearSelection } = options;
   // 複数選択可能モード
   const [isSelectionMode, setIsSelectionMode] = useState<boolean>(true);
@@ -52,6 +66,8 @@ export function useSelection(options: UseSelectionOptions = {}) {
   const selectionStartRef = useRef<{ x: number; y: number } | null>(null);
   // 選択終了フラグ
   const justFinishedSelectionRef = useRef<boolean>(false);
+  // 表示用の justFinished フラグ（ref は副作用向け、state はレンダーに反映するため）
+  const [justFinishedFlag, setJustFinishedFlag] = useState<boolean>(false);
   // 最後に処理したポインタ位置（粗くスキップ判定用）
   const lastPointerRef = useRef<{ x: number; y: number } | null>(null);
   // window.requestAnimationFrame が返すハンドル（識別子）
@@ -72,7 +88,7 @@ export function useSelection(options: UseSelectionOptions = {}) {
 
   // 選択開始
   const handleSelectionStart = useCallback(
-    (e: KonvaEventObject<MouseEvent>, camera: Camera) => {
+    (e: KonvaEventObject<MouseEvent | PointerEvent>, camera: Camera) => {
       if (!isSelectionMode) return;
 
       e.cancelBubble = true;
@@ -98,7 +114,7 @@ export function useSelection(options: UseSelectionOptions = {}) {
 
   // 選択中の移動
   const handleSelectionMove = useCallback(
-    (e: KonvaEventObject<MouseEvent>, camera: Camera) => {
+    (e: KonvaEventObject<MouseEvent | PointerEvent>, camera: Camera) => {
       if (!isSelectionMode || !selectionStartRef.current) return;
 
       const pos = e.target.getStage()?.getPointerPosition();
@@ -148,7 +164,7 @@ export function useSelection(options: UseSelectionOptions = {}) {
 
   // 選択終了
   const handleSelectionEnd = useCallback(
-    (e: KonvaEventObject<MouseEvent>) => {
+    (e: KonvaEventObject<MouseEvent | PointerEvent>) => {
       // ドラッグ開始が記録されていない場合のみ早期リターン
       if (!selectionStartRef.current) return;
 
@@ -191,9 +207,11 @@ export function useSelection(options: UseSelectionOptions = {}) {
         const newSelectedIds = selected.map((p) => p.id);
         if (onPartsSelected) onPartsSelected(newSelectedIds);
         justFinishedSelectionRef.current = true;
+        setJustFinishedFlag(true);
       } else {
         if (onClearSelection) onClearSelection();
         justFinishedSelectionRef.current = false;
+        setJustFinishedFlag(false);
       }
 
       // 後片付け
@@ -209,13 +227,17 @@ export function useSelection(options: UseSelectionOptions = {}) {
     setIsSelectionMode((prev) => !prev);
   }, []);
 
-  const isJustFinishedSelection = useMemo(() => {
-    const result = justFinishedSelectionRef.current;
+  const consumeJustFinishedSelection = useCallback(() => {
+    const result = justFinishedFlag;
     if (result) {
       justFinishedSelectionRef.current = false;
+      setJustFinishedFlag(false);
     }
     return result;
-  }, []);
+  }, [justFinishedFlag]);
+
+  // 現在の just-finished 状態（読み取り専用）
+  const isJustFinishedSelection = justFinishedFlag;
 
   // Stage外でmouseupしたときでも選択を終了させるため、
   // 選択中は window に mouseup / pointerup を張る（ライフサイクル管理）
@@ -255,6 +277,7 @@ export function useSelection(options: UseSelectionOptions = {}) {
     rectForSelection,
     isSelectionInProgress: selectionStartRef.current !== null,
     isJustFinishedSelection,
+    consumeJustFinishedSelection,
     handleSelectionStart,
     handleSelectionMove,
     handleSelectionEnd,
