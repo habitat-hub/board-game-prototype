@@ -14,7 +14,6 @@ import FlipIcon from '@/features/prototype/components/atoms/FlipIcon';
 import ShuffleIcon from '@/features/prototype/components/atoms/ShuffleIcon';
 import { FLIP_ANIMATION } from '@/features/prototype/constants/animation';
 import { TEXT_LAYOUT } from '@/features/prototype/constants/part';
-import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { useCard } from '@/features/prototype/hooks/useCard';
 import { useCursorControl } from '@/features/prototype/hooks/useCursorControl';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
@@ -75,7 +74,6 @@ export default function PartOnGameBoard({
   const { dispatch } = usePartReducer();
   const [scaleX, setScaleX] = useState(1);
   const { showDebugInfo } = useDebugMode();
-  const { socket } = useSocket();
   const { eventHandlers } = useGrabbingCursor();
 
   // プレイモードでエリアパーツの場合は移動禁止
@@ -115,27 +113,35 @@ export default function PartOnGameBoard({
       .username;
   }, [gameBoardMode, part.type, part.ownerId, userRoles]);
 
-  // カードの反転を受信する
+  // part.frontSide が外部（ソケット等）で更新されたときに
+  // 前回の値と比較して変化があればフリップアニメーションを走らせる
+  const prevFrontSideRef = useRef<string | undefined>(part.frontSide);
   useEffect(() => {
-    const handleFlipCard = ({
-      cardId,
-      nextFrontSide,
-    }: {
-      cardId: number;
-      nextFrontSide: 'front' | 'back';
-    }) => {
-      if (cardId === part.id) {
-        reverseCard(nextFrontSide, false);
+    // カード以外は無視
+    if (part.type !== 'card') {
+      prevFrontSideRef.current = part.frontSide;
+      return;
+    }
+    // 初回レンダー時はアニメーションしない（prev === current のはず）
+    if (prevFrontSideRef.current !== part.frontSide) {
+      // ただし、常に裏面を表示すべきカードの場合はアニメーションをスキップ
+      const shouldAlwaysDisplayBackSideLocal =
+        gameBoardMode === GameBoardMode.PLAY &&
+        part.type === 'card' &&
+        isOtherPlayerCard;
+
+      if (!shouldAlwaysDisplayBackSideLocal) {
+        setIsReversing(true);
       }
-    };
-
-    socket.on('FLIP_CARD', handleFlipCard);
-
-    // クリーンアップ関数を追加
-    return () => {
-      socket.off('FLIP_CARD', handleFlipCard);
-    };
-  }, [part.id, reverseCard, socket]);
+      prevFrontSideRef.current = part.frontSide;
+    }
+  }, [
+    part.frontSide,
+    part.type,
+    isOtherPlayerCard,
+    gameBoardMode,
+    setIsReversing,
+  ]);
 
   // アニメーション用のエフェクト
   useEffect(() => {
