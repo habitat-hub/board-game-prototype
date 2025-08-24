@@ -140,11 +140,16 @@ export default function useDraggablePartPropertyMenu(): {
       const newX = startPosRef.current.x + dx;
       const newY = startPosRef.current.y + dy;
       const container = containerRef.current;
-      const maxX =
+      // ビューポートよりメニューが大きい場合にも上限を0以上にする
+      const maxX = Math.max(
+        0,
         window.innerWidth -
-        (container?.offsetWidth ?? PART_PROPERTY_MENU_WIDTH);
-      const maxY =
-        window.innerHeight - (container?.offsetHeight ?? DEFAULT_MENU_HEIGHT);
+          (container?.offsetWidth ?? PART_PROPERTY_MENU_WIDTH)
+      );
+      const maxY = Math.max(
+        0,
+        window.innerHeight - (container?.offsetHeight ?? DEFAULT_MENU_HEIGHT)
+      );
       setPosition({ x: clamp(newX, 0, maxX), y: clamp(newY, 0, maxY) });
     };
 
