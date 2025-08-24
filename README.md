@@ -27,22 +27,28 @@
 
 リポジトリをクローン
 
-```bash
+```zsh
 git clone https://github.com/habitat-hub/board-game-prototype.git
 cd board-game-prototype
+```
+
+### フロントエンド、バックエンドのパッケージインストール
+
+```zsh
+make ci
 ```
 
 ### フロントエンドのセットアップ
 
 #### 環境設定
 
-```bash
+```zsh
 cp .env_example .env.local
 ```
 
 #### パッケージのインストール
 
-```bash
+```zsh
 cd frontend
 npm ci
 ```
@@ -51,7 +57,7 @@ npm ci
 
 #### 環境設定
 
-```bash
+```zsh
 cp .env_example .env
 ```
 
@@ -60,55 +66,26 @@ cp .env_example .env
 
 #### パッケージのインストール
 
-```bash
+```zsh
 cd ../backend
 npm ci
 ```
 
 ## 開発サーバー起動方法
 
-### データベース
+### 一括で起動する場合
 
-PostgreSQL サーバーを起動
-
-```bash
-cd backend
-make up
+```zsh
+make dev
 ```
 
-PostgreSQL サーバーを停止
+### その他のコマンドを確認するには...
 
-```bash
-cd backend
-make down
+```zsh
+make help
 ```
 
-PostgreSQL サーバーを停止&データ削除
-
-```bash
-cd backend
-make destroy
-```
-
-補足
-
-「make down」を実行した際にエラーが発生した場合「アクティビティモニター」から postgres と検索しヒットしたものを全て強制終了させてください。
-
-### バックエンド
-
-データベースサーバー起動後に起動してください。
-
-```bash
-cd backend
-npm run dev
-```
-
-### フロントエンド
-
-```bash
-cd frontend
-npm run dev
-```
+詳しくは [Makefile](https://github.com/habitat-hub/board-game-prototype/blob/develop/Makefile) を参照してください。
 
 ## API タイプ生成
 
@@ -128,7 +105,7 @@ npm run dev
 1. バックエンドでSwagger定義を更新
 2. バックエンドディレクトリで以下のコマンドを実行：
 
-```bash
+```zsh
 cd backend
 npm run generate-swagger
 npm run generate-api-types
