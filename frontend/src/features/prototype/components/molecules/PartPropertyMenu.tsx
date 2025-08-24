@@ -117,7 +117,7 @@ export default function PartPropertyMenu({
     clampToViewport,
   } = useDraggablePartPropertyMenu();
 
-  // メニューが表示されるとき、または選択中パーツが変更されたときにクランプする（マージ版）
+  // メニューが表示されるとき、または選択中パーツが変更されたときにクランプする
   const prevSelectedPartIdRef = useRef<number | undefined>(undefined);
   const prevShowMenuRef = useRef<boolean | undefined>(undefined);
   useEffect(() => {
