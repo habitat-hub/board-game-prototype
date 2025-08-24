@@ -264,7 +264,7 @@ export default function GameBoard({
   /**
    * パーツを複製する
    */
-  const handleCopyPart = useCallback(() => {
+  const handleDuplicatePart = useCallback(() => {
     if (selectedPartIds.length !== 1) return;
     const selectedPartId = selectedPartIds[0];
     const selectedPart = parts.find((p) => p.id === selectedPartId);
@@ -385,7 +385,7 @@ export default function GameBoard({
   ]);
 
   // 削除処理のキーボードショートカット
-  useGameBoardShortcuts(handleDeletePart, handleCopyPart, gameBoardMode);
+  useGameBoardShortcuts(handleDeletePart, handleDuplicatePart, gameBoardMode);
 
   // スペースキー検出とモード切り替え
   useEffect(() => {
@@ -672,7 +672,7 @@ export default function GameBoard({
             selectedPartIds={selectedPartIds}
             parts={parts}
             properties={properties}
-            onCopyPart={handleCopyPart}
+            onDuplicatePart={handleDuplicatePart}
             onDeletePart={handleDeletePart}
             onDeleteImage={handleDeleteImage}
           />

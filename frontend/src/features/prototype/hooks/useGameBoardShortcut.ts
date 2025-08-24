@@ -7,11 +7,11 @@ import { isInputFieldFocused } from '@/utils/inputFocus';
 /**
  * 汎用のゲームボードショートカットフック
  * - Delete / Backspace: 選択パーツを削除（CREATEモード）
- * - Cmd/Ctrl + D: 選択パーツをコピー（CREATEモード）
+ * - Cmd/Ctrl + D: 選択パーツを複製（CREATEモード）
  */
 export function useGameBoardShortcuts(
   handleDeletePart: () => Promise<void> | void,
-  handleCopyPart: () => Promise<void> | void,
+  handleDuplicatePart: () => Promise<void> | void,
   gameBoardMode: GameBoardMode
 ) {
   useEffect(() => {
@@ -53,7 +53,7 @@ export function useGameBoardShortcuts(
         return;
       }
 
-      // --- コピー処理 (Cmd/Ctrl + D) ---
+      // --- 複製処理 (Cmd/Ctrl + D) ---
       // key は小文字の 'd' になることがあるため toLowerCase で比較
       if (
         (e.metaKey || e.ctrlKey) &&
@@ -62,7 +62,7 @@ export function useGameBoardShortcuts(
         e.key.toLowerCase() === 'd'
       ) {
         // ハンドラが未定義なら無視
-        if (!handleCopyPart) return;
+        if (!handleDuplicatePart) return;
 
         e.preventDefault();
         if (isCopyingRef.current) return;
@@ -70,10 +70,10 @@ export function useGameBoardShortcuts(
         void (async () => {
           isCopyingRef.current = true;
           try {
-            await handleCopyPart();
+            await handleDuplicatePart();
           } catch (err) {
             console.error(
-              'useGameBoardShortcuts: パーツコピーに失敗しました',
+              'useGameBoardShortcuts: パーツ複製に失敗しました',
               err
             );
           } finally {
@@ -87,5 +87,5 @@ export function useGameBoardShortcuts(
     return () => {
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [handleDeletePart, handleCopyPart, gameBoardMode]);
+  }, [handleDeletePart, handleDuplicatePart, gameBoardMode]);
 }

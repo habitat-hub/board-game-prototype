@@ -51,7 +51,7 @@ export type PartPropertyMenuProps = {
     emitUpdate,
   }: DeleteImageProps) => void;
   // パーツ複製時の処理
-  onCopyPart: () => void;
+  onDuplicatePart: () => void;
 };
 
 export default function PartPropertyMenu({
@@ -60,7 +60,7 @@ export default function PartPropertyMenu({
   properties,
   onDeletePart,
   onDeleteImage,
-  onCopyPart,
+  onDuplicatePart,
 }: PartPropertyMenuProps) {
   const selectedPartId = selectedPartIds[0];
   const showMenu = selectedPartIds.length === 1;
@@ -262,7 +262,7 @@ export default function PartPropertyMenu({
               <PartPropertyMenuButton
                 text="複製"
                 icon={<FaRegCopy className="h-3 w-3" />}
-                onClick={() => onCopyPart()}
+                onClick={() => onDuplicatePart()}
               />
               <PartPropertyMenuButton
                 text="削除"
