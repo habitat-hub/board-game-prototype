@@ -22,10 +22,10 @@ import PartPropertyMenu from '@/features/prototype/components/molecules/PartProp
 import PlaySidebar from '@/features/prototype/components/molecules/PlaySidebar';
 import RoleMenu from '@/features/prototype/components/molecules/RoleMenu';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
-import { GRID_SIZE } from '@/features/prototype/constants';
+import { GAME_BOARD_SIZE, GRID_SIZE } from '@/features/prototype/constants';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
-import { useDeleteShortcut } from '@/features/prototype/hooks/useDeleteShortcut';
+import { useGameBoardShortcuts } from '@/features/prototype/hooks/useGameBoardShortcut';
 import { useGameCamera } from '@/features/prototype/hooks/useGameCamera';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
 import { useHandVisibility } from '@/features/prototype/hooks/useHandVisibility';
@@ -262,7 +262,7 @@ export default function GameBoard({
   );
 
   /**
-   * パーツを複製する（PartPropertyMenuの複製ボタンから呼ばれる）
+   * パーツを複製する
    */
   const handleCopyPart = useCallback(() => {
     if (selectedPartIds.length !== 1) return;
@@ -275,7 +275,6 @@ export default function GameBoard({
     );
 
     const computeCopyPosition = (part: Part): { x: number; y: number } => {
-      const GAME_BOARD_SIZE = 2000; // safe fallback if not defined elsewhere
       const boardMaxX = GAME_BOARD_SIZE - part.width;
       const boardMaxY = GAME_BOARD_SIZE - part.height;
 
@@ -386,7 +385,7 @@ export default function GameBoard({
   ]);
 
   // 削除処理のキーボードショートカット
-  useDeleteShortcut(handleDeletePart, gameBoardMode);
+  useGameBoardShortcuts(handleDeletePart, handleCopyPart, gameBoardMode);
 
   // スペースキー検出とモード切り替え
   useEffect(() => {
