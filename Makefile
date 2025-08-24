@@ -48,9 +48,7 @@ frontend-ci:
 
 ci:
 	@echo "Installing backend and frontend in parallel"
-	@(cd backend && npm ci) &
-	@(cd frontend && npm ci) &
-	wait
+	@./scripts/parallel-npm-ci.sh
 
 dev:
 	@echo "Starting db, backend and frontend in foreground using 'concurrently' (Ctrl+C stops all)."
