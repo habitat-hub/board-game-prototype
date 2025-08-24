@@ -34,6 +34,9 @@ export type UpdatePartPayload = {
 /** パーツ削除のペイロード（ソケット送受信用） */
 export type DeletePartPayload = { partId: number };
 
+/** パーツ一括削除のペイロード（ソケット送受信用） */
+export type DeletePartsPayload = { partIds: number[] };
+
 /** デッキのシャッフル（ソケット送受信用） */
 export type ShuffleDeckPayload = { deckId: number };
 
@@ -55,10 +58,10 @@ export type UpdatePartAction = {
   payload: UpdatePartPayload;
 };
 
-/** パーツ削除のアクション（ソケット送受信用） */
-export type DeletePartAction = {
-  type: 'DELETE_PART';
-  payload: DeletePartPayload;
+/** パーツ一括削除のアクション（ソケット送受信用） */
+export type DeletePartsAction = {
+  type: 'DELETE_PARTS';
+  payload: DeletePartsPayload;
 };
 
 /** パーツの順番の変更のアクション（ソケット送受信用） */
@@ -78,7 +81,7 @@ export type PartAction =
   | AddPartAction
   | FlipCardAction
   | UpdatePartAction
-  | DeletePartAction
+  | DeletePartsAction
   | ChangeOrderAction
   | ShuffleDeckAction;
 

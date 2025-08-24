@@ -49,10 +49,10 @@ export const usePartReducer = (): PartReducer => {
               });
             }
             break;
-          // パーツの削除
-          case 'DELETE_PART':
-            socket.emit('DELETE_PART', {
-              partId: action.payload.partId,
+          // パーツの一括削除
+          case 'DELETE_PARTS':
+            socket.emit('DELETE_PARTS', {
+              partIds: action.payload.partIds,
             });
             break;
           // パーツの順番の変更

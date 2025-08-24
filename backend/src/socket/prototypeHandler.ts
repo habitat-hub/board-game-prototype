@@ -4,6 +4,7 @@ import PartPropertyModel from '../models/PartProperty';
 import { UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import PrototypeModel from '../models/Prototype';
 import UserModel from '../models/User';
+import { Op } from 'sequelize';
 import { shuffleDeck, isOverlapping } from '../helpers/prototypeHelper';
 import type { CursorInfo } from '../types/cursor';
 import ImageModel from '../models/Image';
@@ -380,25 +381,31 @@ function handleUpdatePart(socket: Socket, io: Server): void {
 }
 
 /**
- * パーツ削除
- * @param socket - Socket
- * @param io - Server
+ * パーツ一括削除
+ * 複数のパーツを一度に削除する
+ * @socket - Socket
+ * @io - Server
  */
-function handleDeletePart(socket: Socket, io: Server): void {
+function handleDeleteParts(socket: Socket, io: Server): void {
   socket.on(
-    PROTOTYPE_SOCKET_EVENT.DELETE_PART,
-    async ({ partId }: { partId: number }) => {
+    PROTOTYPE_SOCKET_EVENT.DELETE_PARTS,
+    async ({ partIds }: { partIds: number[] }) => {
       const { prototypeId } = socket.data as SocketData;
 
-      // PartPropertyは CASCADE で自動的に削除される
       try {
-        await PartModel.destroy({ where: { id: partId } });
-        io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.DELETE_PART, {
-          partId,
+        // 空の配列を防ぐためのガード
+        if (!partIds || partIds.length === 0) return;
+
+        await PartModel.destroy({ where: { id: { [Op.in]: partIds } } });
+        io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.DELETE_PARTS, {
+          partIds,
         });
       } catch (error) {
-        // サーバー側に詳細ログを残す
-        console.error('パートの削除に失敗しました。partId:', partId, error);
+        console.error(
+          'パーツの一括削除に失敗しました。partIds:',
+          partIds,
+          error
+        );
       }
     }
   );
@@ -721,7 +728,7 @@ export default function handlePrototype(socket: Socket, io: Server): void {
   handleJoinPrototype(socket, io);
   handleAddPart(socket, io);
   handleUpdatePart(socket, io);
-  handleDeletePart(socket, io);
+  handleDeleteParts(socket, io);
   handleFlipCard(socket, io);
   handleChangeOrder(socket, io);
   handleShuffleDeck(socket, io);

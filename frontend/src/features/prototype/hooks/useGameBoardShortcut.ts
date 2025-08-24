@@ -10,7 +10,7 @@ import { isInputFieldFocused } from '@/utils/inputFocus';
  * - Cmd/Ctrl + D: 選択パーツを複製（CREATEモード）
  */
 export function useGameBoardShortcuts(
-  handleDeletePart: () => Promise<void> | void,
+  handleDeleteParts: () => Promise<void> | void,
   handleDuplicatePart: () => Promise<void> | void,
   gameBoardMode: GameBoardMode
 ) {
@@ -39,7 +39,7 @@ export function useGameBoardShortcuts(
         void (async () => {
           isDeletingRef.current = true;
           try {
-            await handleDeletePart();
+            await handleDeleteParts();
           } catch (err) {
             console.error(
               'useGameBoardShortcuts: パーツ削除に失敗しました',
@@ -87,5 +87,5 @@ export function useGameBoardShortcuts(
     return () => {
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [handleDeletePart, handleDuplicatePart, gameBoardMode]);
+  }, [handleDeleteParts, handleDuplicatePart, gameBoardMode]);
 }
