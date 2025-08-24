@@ -32,44 +32,26 @@ git clone https://github.com/habitat-hub/board-game-prototype.git
 cd board-game-prototype
 ```
 
-### フロントエンド、バックエンドのパッケージインストール
+### フロントエンド・バックエンドのパッケージインストール
 
 ```zsh
 make ci
 ```
 
-### フロントエンドのセットアップ
-
-#### 環境設定
+### フロントエンドの環境変数設定
 
 ```zsh
-cp .env_example .env.local
+cp ./frontend/.env_example ./frontend/.env.local
 ```
 
-#### パッケージのインストール
+### バックエンドの環境変数設定
 
 ```zsh
-cd frontend
-npm ci
+cp ./backend/.env_example ./backend/.env
 ```
 
-### バックエンドのセットアップ
-
-#### 環境設定
-
-```zsh
-cp .env_example .env
-```
-
-- Google Cloud の API キーを取得して、`.env`ファイルに設定する
-- postgres の接続情報が異なる場合は、`.env`ファイルの DATABASE_URL を変更する
-
-#### パッケージのインストール
-
-```zsh
-cd ../backend
-npm ci
-```
+- Google Cloud の API キーを取得して、`./backend/.env` に設定する
+- postgres の接続情報が異なる場合は、`./backend/.env` の DATABASE_URL を変更する
 
 ## 開発サーバー起動方法
 
