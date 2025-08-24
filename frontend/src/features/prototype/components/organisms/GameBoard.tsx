@@ -124,7 +124,12 @@ export default function GameBoard({
     toggleMode,
     isSelectionInProgress,
     isJustFinishedSelection,
-  } = useSelection();
+  } = useSelection({
+    stageRef,
+    parts,
+    onPartsSelected: selectMultipleParts,
+    onClearSelection: clearSelection,
+  });
   // ドラッグ機能
   const { handlePartDragStart, handlePartDragMove, handlePartDragEnd } =
     usePartDragSystem({
@@ -521,12 +526,7 @@ export default function GameBoard({
                     onMouseMove: (e: Konva.KonvaEventObject<MouseEvent>) =>
                       handleSelectionMove(e, camera),
                     onMouseUp: (e: Konva.KonvaEventObject<MouseEvent>) =>
-                      handleSelectionEnd(
-                        e,
-                        parts,
-                        selectMultipleParts,
-                        clearSelection
-                      ),
+                      handleSelectionEnd(e),
                   }
                 : {})}
             />
