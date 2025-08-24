@@ -29,6 +29,7 @@ import { useGameBoardShortcuts } from '@/features/prototype/hooks/useGameBoardSh
 import { useGameCamera } from '@/features/prototype/hooks/useGameCamera';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
 import { useHandVisibility } from '@/features/prototype/hooks/useHandVisibility';
+import { usePartContextMenu } from '@/features/prototype/hooks/usePartContextMenu';
 import { usePartDragSystem } from '@/features/prototype/hooks/usePartDragSystem';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
@@ -134,11 +135,18 @@ export default function GameBoard({
     });
 
   const [images, setImages] = useState<Record<string, string>>({});
-  const [showContextMenu, setShowContextMenu] = useState(false);
-  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
-  const [contextMenuPartId, setContextMenuPartId] = useState<number | null>(
-    null
-  );
+  const {
+    showContextMenu,
+    menuPosition,
+    contextMenuPartId,
+    handlePartContextMenu,
+    handleCloseContextMenu,
+    handleStageClickFromHook,
+    getContextMenuItems,
+  } = usePartContextMenu({
+    stageRef,
+    dispatch,
+  });
   // スペースキー押下しているか
   const [spacePressing, setSpacePressing] = useState(false);
   // 選択モードへの復帰が必要か
@@ -161,75 +169,6 @@ export default function GameBoard({
       selectMultipleParts([partId]);
     }
   };
-
-  const handlePartContextMenu = (
-    e: Konva.KonvaEventObject<PointerEvent>,
-    partId: number
-  ) => {
-    e.cancelBubble = true;
-    e.evt.preventDefault();
-
-    const stage = stageRef.current;
-    if (stage) {
-      const pointerPosition = stage.getPointerPosition();
-      if (pointerPosition) {
-        // HTML/CSSベースのメニューなので画面座標を使用
-        setMenuPosition({
-          x: pointerPosition.x + 5,
-          y: pointerPosition.y + 5,
-        });
-      }
-    }
-
-    setContextMenuPartId(partId);
-    setShowContextMenu(true);
-  };
-
-  const handleChangePartOrder = useCallback(
-    (type: 'front' | 'back' | 'frontmost' | 'backmost', partId: number) => {
-      dispatch({
-        type: 'CHANGE_ORDER',
-        payload: { partId, type },
-      });
-
-      setShowContextMenu(false);
-    },
-    [dispatch]
-  );
-
-  /**
-   * コンテキストメニューのアイテム定義
-   */
-  const getContextMenuItems = useCallback(
-    (partId: number) => [
-      {
-        id: 'frontmost',
-        text: '最前面に移動',
-        action: () => handleChangePartOrder('frontmost', partId),
-      },
-      {
-        id: 'front',
-        text: '前面に移動',
-        action: () => handleChangePartOrder('front', partId),
-      },
-      {
-        id: 'back',
-        text: '背面に移動',
-        action: () => handleChangePartOrder('back', partId),
-      },
-      {
-        id: 'backmost',
-        text: '最背面に移動',
-        action: () => handleChangePartOrder('backmost', partId),
-      },
-    ],
-    [handleChangePartOrder]
-  );
-
-  const handleCloseContextMenu = useCallback(() => {
-    setShowContextMenu(false);
-    setContextMenuPartId(null);
-  }, []);
 
   const handleBackgroundClick = () => {
     // 矩形選択中の場合は背景クリックを無効化
@@ -498,13 +437,10 @@ export default function GameBoard({
       if (isSelectionInProgress) {
         return;
       }
-      if (showContextMenu) {
-        if (!e.target.hasName('context-menu-component')) {
-          handleCloseContextMenu();
-        }
-      }
+      // delegate to hook's stage click handler which closes context menu when appropriate
+      handleStageClickFromHook(e);
     },
-    [showContextMenu, handleCloseContextMenu, isSelectionInProgress]
+    [handleStageClickFromHook, isSelectionInProgress]
   );
 
   // 画像IDからURLを取得して配列で返す関数をuseMemoで事前計算
