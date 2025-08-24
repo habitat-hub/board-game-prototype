@@ -347,8 +347,13 @@ export default function GameBoard({
     [deleteImage]
   );
 
+  /**
+   * パーツを削除する
+   */
   const handleDeletePart = useCallback(async () => {
+    // 0件は何もしない。複数選択時も削除処理をスキップ
     if (selectedPartIds.length === 0) return;
+    if (selectedPartIds.length > 1) return;
 
     const deleteImagePromises = selectedPartIds
       .map((partId) => {

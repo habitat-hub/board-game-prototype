@@ -28,7 +28,7 @@ export const SHORTCUTS: ShortcutInfo[] = [
   {
     id: 'delete',
     key: 'Delete / Backspace',
-    description: '選択中の全てのパーツを削除する。',
+    description: '選択中のパーツ1つを削除する。',
   },
 ];
 
