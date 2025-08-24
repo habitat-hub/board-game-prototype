@@ -172,20 +172,23 @@ export const usePrototypeSocket = ({
       });
     });
 
-    // パーツ削除
-    socket.on(PROTOTYPE_SOCKET_EVENT.DELETE_PART, ({ partId }) => {
-      setPartsMap((prevPartsMap) => {
-        const newPartsMap = new Map(prevPartsMap);
-        newPartsMap.delete(partId);
-        return newPartsMap;
-      });
+    // パーツ一括削除
+    socket.on(
+      PROTOTYPE_SOCKET_EVENT.DELETE_PARTS,
+      ({ partIds }: { partIds: number[] }) => {
+        setPartsMap((prevPartsMap) => {
+          const newPartsMap = new Map(prevPartsMap);
+          partIds.forEach((partId) => newPartsMap.delete(partId));
+          return newPartsMap;
+        });
 
-      setPropertiesMap((prevPropertiesMap) => {
-        const newPropertiesMap = new Map(prevPropertiesMap);
-        newPropertiesMap.delete(partId);
-        return newPropertiesMap;
-      });
-    });
+        setPropertiesMap((prevPropertiesMap) => {
+          const newPropertiesMap = new Map(prevPropertiesMap);
+          partIds.forEach((partId) => newPropertiesMap.delete(partId));
+          return newPropertiesMap;
+        });
+      }
+    );
 
     // カーソル更新
     socket.on(
@@ -215,7 +218,7 @@ export const usePrototypeSocket = ({
         PROTOTYPE_SOCKET_EVENT.ADD_PART,
         PROTOTYPE_SOCKET_EVENT.ADD_PART_RESPONSE,
         PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS,
-        PROTOTYPE_SOCKET_EVENT.DELETE_PART,
+        PROTOTYPE_SOCKET_EVENT.DELETE_PARTS,
         PROTOTYPE_SOCKET_EVENT.UPDATE_CURSORS,
         PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS,
       ];

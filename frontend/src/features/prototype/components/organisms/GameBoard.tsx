@@ -289,10 +289,9 @@ export default function GameBoard({
   /**
    * パーツを削除する
    */
-  const handleDeletePart = useCallback(async () => {
-    // 0件は何もしない。複数選択時も削除処理をスキップ
+  const handleDeleteParts = useCallback(async () => {
+    // 0件は何もしない
     if (selectedPartIds.length === 0) return;
-    if (selectedPartIds.length > 1) return;
 
     const deleteImagePromises = selectedPartIds
       .map((partId) => {
@@ -315,9 +314,8 @@ export default function GameBoard({
 
     await Promise.all(deleteImagePromises);
 
-    selectedPartIds.forEach((partId) => {
-      dispatch({ type: 'DELETE_PART', payload: { partId } });
-    });
+    // パーツ削除リクエストを送信
+    dispatch({ type: 'DELETE_PARTS', payload: { partIds: selectedPartIds } });
     clearSelection();
   }, [
     selectedPartIds,
@@ -329,7 +327,7 @@ export default function GameBoard({
   ]);
 
   // 削除処理のキーボードショートカット
-  useGameBoardShortcuts(handleDeletePart, handleDuplicatePart, gameBoardMode);
+  useGameBoardShortcuts(handleDeleteParts, handleDuplicatePart, gameBoardMode);
 
   // スペースキー検出とモード切り替え
   useEffect(() => {
@@ -614,7 +612,7 @@ export default function GameBoard({
             parts={parts}
             properties={properties}
             onDuplicatePart={handleDuplicatePart}
-            onDeletePart={handleDeletePart}
+            onDeletePart={handleDeleteParts}
             onDeleteImage={handleDeleteImage}
           />
         </>
