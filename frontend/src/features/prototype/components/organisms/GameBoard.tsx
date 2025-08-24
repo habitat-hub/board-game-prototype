@@ -244,6 +244,9 @@ export default function GameBoard({
     clearSelection();
   };
 
+  /**
+   * パーツを追加する
+   */
   const handleAddPart = useCallback(
     ({ part, properties }: AddPartProps) => {
       measureOperation('Part Addition', () => {
