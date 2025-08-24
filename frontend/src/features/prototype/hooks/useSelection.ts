@@ -149,7 +149,8 @@ export function useSelection(options: UseSelectionOptions = {}) {
   // 選択終了
   const handleSelectionEnd = useCallback(
     (e: KonvaEventObject<MouseEvent>) => {
-      if (!isSelectionMode || !selectionStartRef.current) return;
+      // ドラッグ開始が記録されていない場合のみ早期リターン
+      if (!selectionStartRef.current) return;
 
       e.cancelBubble = true;
       // requestAnimationFrame の予約が残っていればキャンセルして最新矩形を確定
@@ -214,13 +215,7 @@ export function useSelection(options: UseSelectionOptions = {}) {
       lastPointerRef.current = null;
       latestRectRef.current = null;
     },
-    [
-      isSelectionMode,
-      rectForSelection,
-      parts,
-      onPartsSelected,
-      onClearSelection,
-    ]
+    [rectForSelection, parts, onPartsSelected, onClearSelection]
   );
 
   const toggleMode = useCallback(() => {
