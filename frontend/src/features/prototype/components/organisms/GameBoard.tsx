@@ -547,7 +547,8 @@ export default function GameBoard({
 
               // カードの表示制御を判定
               const isOtherPlayerHandCard =
-                part.type === 'card' && !cardVisibilityMap.get(part.id);
+                part.type === 'card' &&
+                cardVisibilityMap.get(part.id) === false;
 
               return (
                 <PartOnGameBoard
