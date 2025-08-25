@@ -26,14 +26,6 @@ export const usePartReducer = (): PartReducer => {
               properties: action.payload.properties,
             });
             break;
-          // カードの裏返し
-          case 'FLIP_CARD':
-            socket.emit('FLIP_CARD', {
-              cardId: action.payload.cardId,
-              nextFrontSide: action.payload.nextFrontSide,
-            });
-
-            break;
           // パーツの更新
           case 'UPDATE_PART':
             socket.emit('UPDATE_PART', {
@@ -41,13 +33,6 @@ export const usePartReducer = (): PartReducer => {
               updatePart: action.payload.updatePart,
               updateProperties: action.payload.updateProperties,
             });
-
-            if (action.payload.updatePart && action.payload.frontSide) {
-              socket.emit('FLIP_CARD', {
-                cardId: action.payload.partId,
-                nextFrontSide: action.payload.frontSide,
-              });
-            }
             break;
           // パーツの一括削除
           case 'DELETE_PARTS':
