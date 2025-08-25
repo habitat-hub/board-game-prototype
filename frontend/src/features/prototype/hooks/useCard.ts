@@ -31,11 +31,14 @@ export const useCard = (part: Part) => {
         // 反転させる
         setIsReversing(true);
 
-        // ソケットをemitする場合
+        // ソケットをemitする場合は UPDATE_PART を送る（frontSide を更新）
         if (needsSocketEmit) {
           dispatch({
-            type: 'FLIP_CARD',
-            payload: { cardId: part.id, nextFrontSide },
+            type: 'UPDATE_PART',
+            payload: {
+              partId: part.id,
+              updatePart: { frontSide: nextFrontSide },
+            },
           });
         }
       });

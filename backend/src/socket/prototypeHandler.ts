@@ -430,46 +430,6 @@ function handleDeleteParts(socket: Socket, io: Server): void {
   );
 }
 
-// TODO: ReverseCardという名前に変える
-/**
- * カードを反転させる
- * @param socket - Socket
- * @param io - Server
- */
-function handleFlipCard(socket: Socket, io: Server): void {
-  socket.on(
-    PROTOTYPE_SOCKET_EVENT.FLIP_CARD,
-    async ({
-      cardId,
-      nextFrontSide,
-    }: {
-      cardId: number;
-      nextFrontSide: 'front' | 'back';
-    }) => {
-      const { prototypeId } = socket.data as SocketData;
-
-      try {
-        const [, result] = await PartModel.update(
-          { frontSide: nextFrontSide },
-          { where: { id: cardId }, returning: true }
-        );
-
-        io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS, {
-          parts: [result[0].dataValues],
-          properties: [],
-        });
-
-        io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.FLIP_CARD, {
-          cardId,
-          nextFrontSide,
-        });
-      } catch (error) {
-        console.error('カードの反転に失敗しました。', error);
-      }
-    }
-  );
-}
-
 /**
  * パーツの順番を変更
  * @param socket - Socket
@@ -748,7 +708,6 @@ export default function handlePrototype(socket: Socket, io: Server): void {
   handleAddPart(socket, io);
   handleUpdatePart(socket, io);
   handleDeleteParts(socket, io);
-  handleFlipCard(socket, io);
   handleChangeOrder(socket, io);
   handleShuffleDeck(socket, io);
   handleUpdateCursor(socket, io);
