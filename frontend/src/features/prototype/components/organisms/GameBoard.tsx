@@ -494,7 +494,22 @@ export default function GameBoard({
         onWheel={handleWheel}
         onClick={handleStageClick}
         onContextMenu={handleCloseContextMenu}
-        {...grabbingHandlers}
+        // パーツ上でもドラッグを検知できるよう Stage にハンドラを設定
+        onMouseMove={(e: Konva.KonvaEventObject<MouseEvent>) =>
+          handleSelectionMove(e, camera)
+        }
+        onPointerMove={(e: Konva.KonvaEventObject<PointerEvent>) =>
+          handleSelectionMove(e, camera)
+        }
+        onMouseUp={(e: Konva.KonvaEventObject<MouseEvent>) => {
+          handleSelectionEnd(e);
+          grabbingHandlers.onMouseUp?.();
+        }}
+        onPointerUp={(e: Konva.KonvaEventObject<PointerEvent>) =>
+          handleSelectionEnd(e)
+        }
+        onMouseDown={grabbingHandlers.onMouseDown}
+        onMouseLeave={grabbingHandlers.onMouseLeave}
         style={{
           cursor: cursorStyle,
         }}
@@ -518,15 +533,13 @@ export default function GameBoard({
               onDragMove={handleDragMove}
               onClick={handleBackgroundClick}
               hitStrokeWidth={0}
-              // 矩形選択用イベントを背景Rectに直接バインド
+              // 矩形選択の開始のみ背景Rectで検知する
               {...(isSelectionMode
                 ? {
                     onMouseDown: (e: Konva.KonvaEventObject<MouseEvent>) =>
                       handleSelectionStart(e, camera),
-                    onMouseMove: (e: Konva.KonvaEventObject<MouseEvent>) =>
-                      handleSelectionMove(e, camera),
-                    onMouseUp: (e: Konva.KonvaEventObject<MouseEvent>) =>
-                      handleSelectionEnd(e),
+                    onPointerDown: (e: Konva.KonvaEventObject<PointerEvent>) =>
+                      handleSelectionStart(e, camera),
                   }
                 : {})}
             />
