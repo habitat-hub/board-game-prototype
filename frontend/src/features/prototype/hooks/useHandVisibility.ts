@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 import { Part } from '@/api/types';
 import { GameBoardMode } from '@/features/prototype/types';
+import { isRectOverlap } from '@/features/prototype/utils/overlap';
 import { useUser } from '@/hooks/useUser';
 
 // グリッドセルのサイズ（ピクセル）
@@ -72,20 +73,23 @@ class GridManager {
   }
 
   /**
-   * カードが手札の上にあるかチェック（グリッド最適化版）
+   * カードが手札と少しでも重なっているかチェック（グリッド最適化版）
    */
   isCardOnHand(card: Part, hand: Part): boolean {
-    // カードの中心座標
-    const cardCenterX = card.position.x + card.width / 2;
-    const cardCenterY = card.position.y + card.height / 2;
+    const cardRect = {
+      x: card.position.x,
+      y: card.position.y,
+      width: card.width,
+      height: card.height,
+    };
+    const handRect = {
+      x: hand.position.x,
+      y: hand.position.y,
+      width: hand.width,
+      height: hand.height,
+    };
 
-    // 手札の範囲内にあるかチェック
-    return (
-      hand.position.x <= cardCenterX &&
-      cardCenterX <= hand.position.x + hand.width &&
-      hand.position.y <= cardCenterY &&
-      cardCenterY <= hand.position.y + hand.height
-    );
+    return isRectOverlap(cardRect, handRect);
   }
 
   /**

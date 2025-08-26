@@ -181,7 +181,7 @@ export async function seedRolesAndPermissions() {
       }
     }
 
-    console.log(`✅ Roles and permissions seeding completed successfully`);
+    console.log(`Roles and permissions seeding completed successfully`);
     console.log(`   - ${roles.size} roles processed`);
     console.log(`   - ${permissions.size} permissions processed`);
     console.log(`   - ${mappingsCreated} new mappings created`);

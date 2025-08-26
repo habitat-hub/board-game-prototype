@@ -85,7 +85,7 @@ export function setupAssociations() {
   // Project と Prototype のスコープを定義
   setupProjectScopes();
 
-  console.log('✅ Model associations setup completed');
+  console.log('Model associations setup completed');
 }
 
 /**
@@ -111,5 +111,5 @@ function setupProjectScopes() {
     ],
   });
 
-  console.log('✅ Project scopes setup completed');
+  console.log('Project scopes setup completed');
 }
