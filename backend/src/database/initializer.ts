@@ -22,18 +22,18 @@ export async function isDatabaseInitialized(): Promise<boolean> {
 
     if (isInitialized) {
       console.log(
-        `📊 Database status: ${roleCount} roles, ${permissionCount} permissions, ${mappingCount} mappings`
+        `Database status: ${roleCount} roles, ${permissionCount} permissions, ${mappingCount} mappings`
       );
     } else {
       console.log(
-        `📊 Database incomplete: ${roleCount} roles, ${permissionCount} permissions, ${mappingCount} mappings`
+        `Database incomplete: ${roleCount} roles, ${permissionCount} permissions, ${mappingCount} mappings`
       );
     }
 
     return isInitialized;
   } catch {
     // テーブルが存在しない場合はfalseを返す（これは初回起動時の正常な動作）
-    console.log('📊 Database tables not found - this is expected on first run');
+    console.log('Database tables not found - this is expected on first run');
     return false;
   }
 }
@@ -44,20 +44,20 @@ export async function isDatabaseInitialized(): Promise<boolean> {
  */
 export async function initializeDatabaseIfNeeded(): Promise<void> {
   try {
-    console.log('🔍 Checking database initialization status...');
+    console.log('Checking database initialization status...');
 
     const isInitialized = await isDatabaseInitialized();
 
     if (isInitialized) {
-      console.log('✅ Database already initialized, skipping seed');
+      console.log('Database already initialized, skipping seed');
       return;
     }
 
-    console.log('🚀 Database not initialized, running setup...');
+    console.log('Database not initialized, running setup...');
 
     // データベースを安全にsync
     await sequelize.sync({ force: false, alter: false });
-    console.log('✅ Database tables created/updated');
+    console.log('Database tables created/updated');
 
     // シードデータを実行
     const { seedRolesAndPermissions } = await import(
@@ -69,7 +69,7 @@ export async function initializeDatabaseIfNeeded(): Promise<void> {
     const finalCheck = await isDatabaseInitialized();
     if (finalCheck) {
       console.log(
-        '✅ Database initialization completed and verified successfully'
+        'Database initialization completed and verified successfully'
       );
     } else {
       throw new Error('Database initialization verification failed');

@@ -31,7 +31,7 @@ async function main() {
 
     await runSeeders(force);
 
-    console.log('✅ Database seeding completed successfully!');
+    console.log('Database seeding completed successfully!');
     process.exit(0);
   } catch (error) {
     console.error('❌ Database seeding failed:', error);

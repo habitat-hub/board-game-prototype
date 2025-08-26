@@ -39,24 +39,24 @@ const app = express();
 const server = http.createServer(app);
 const PORT = 8080;
 
-console.log('🚀 Starting Board Game Prototype Server...');
-console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+console.log('Starting Board Game Prototype Server...');
+console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 
 // 開発環境でのみSwagger UIを有効にする
 if (process.env.NODE_ENV === 'development') {
-  // Swagger定義を生成
-  try {
-    console.log('Generating Swagger schemas...');
-    execSync('npm run generate-swagger', {
-      stdio: 'inherit',
-      cwd: path.join(__dirname, '..'),
-    });
-    execSync('npm run generate-api-types', {
-      stdio: 'inherit',
-      cwd: path.join(__dirname, '..'),
-    });
-  } catch (error) {
-    console.error('Failed to generate Swagger schemas:', error);
+    // Swagger定義を生成
+    try {
+      console.log('Generating Swagger schemas...');
+      execSync('npm run generate-swagger', {
+        stdio: 'inherit',
+        cwd: path.join(__dirname, '..'),
+      });
+      execSync('npm run generate-api-types', {
+        stdio: 'inherit',
+        cwd: path.join(__dirname, '..'),
+      });
+    } catch (error) {
+      console.error('Failed to generate Swagger schemas:', error);
   }
 
   const options = {
@@ -214,11 +214,11 @@ io.on('connection', (socket: Socket) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`🌐 Server is running on port ${PORT}`);
-  console.log(`📡 Socket.IO is ready for real-time connections`);
+  console.log(`Server is running on port ${PORT}`);
+  console.log(`Socket.IO is ready for real-time connections`);
   if (process.env.NODE_ENV === 'development') {
     console.log(
-      `📚 API Documentation available at: http://localhost:${PORT}/api-docs`
+      `API Documentation available at: http://localhost:${PORT}/api-docs`
     );
   }
 });
