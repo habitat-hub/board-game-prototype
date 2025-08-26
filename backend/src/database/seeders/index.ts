@@ -12,15 +12,15 @@ export async function runSeeders(force = false) {
     await sequelize.sync({ force });
 
     if (force) {
-      console.log('✅ Database tables recreated (force mode)');
+      console.log('Database tables recreated (force mode)');
     } else {
-      console.log('✅ Database tables synced');
+      console.log('Database tables synced');
     }
 
     // シーダーを実行
     await seedRolesAndPermissions();
 
-    console.log('✅ All seeders completed successfully');
+    console.log('All seeders completed successfully');
   } catch (error) {
     console.error('❌ Error running seeders:', error);
     throw error;
