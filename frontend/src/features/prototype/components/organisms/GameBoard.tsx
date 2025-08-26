@@ -505,9 +505,10 @@ export default function GameBoard({
           handleSelectionEnd(e);
           grabbingHandlers.onMouseUp?.();
         }}
-        onPointerUp={(e: Konva.KonvaEventObject<PointerEvent>) =>
-          handleSelectionEnd(e)
-        }
+        onPointerUp={(e: Konva.KonvaEventObject<PointerEvent>) => {
+          handleSelectionEnd(e);
+          grabbingHandlers.onMouseUp?.();
+        }}
         onMouseDown={grabbingHandlers.onMouseDown}
         onMouseLeave={grabbingHandlers.onMouseLeave}
         style={{
