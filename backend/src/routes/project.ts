@@ -107,7 +107,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
 
   const { name } = req.body;
   if (!name) {
-    return next(new ValidationError('プロトタイプ名が必要です'));
+    return next(new ValidationError('プロジェクト名が必要です'));
   }
 
   const transaction = await sequelize.transaction();
@@ -550,7 +550,7 @@ router.get(
 router.post(
   '/:projectId/invite',
   checkProjectReadPermission,
-  async (req, res, next) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const projectId = req.params.projectId;
     const guestIds = req.body.guestIds;
     const roleType = req.body.roleType || ROLE_TYPE.EDITOR; // デフォルトはeditor
@@ -648,7 +648,7 @@ router.post(
 router.delete(
   '/:projectId/invite/:guestId',
   checkProjectReadPermission,
-  async (req, res, next) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const projectId = req.params.projectId;
     const guestId = req.params.guestId;
 
@@ -715,7 +715,7 @@ router.delete(
 router.post(
   '/:projectId/duplicate',
   checkProjectReadPermission,
-  async (req, res, next) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     // const projectId = req.params.projectId;
 
     try {
@@ -766,7 +766,7 @@ router.post(
 router.get(
   '/:projectId/members',
   checkProjectReadPermission,
-  async (req, res, next) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const projectId = req.params.projectId;
 
     try {
