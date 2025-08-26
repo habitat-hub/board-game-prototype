@@ -44,6 +44,8 @@ console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 
 // 開発環境でのみSwagger UIを有効にする
 if (process.env.NODE_ENV === 'development') {
+  // 一部の開発フローではSwagger生成をスキップできます
+  if (!process.env.SKIP_SWAGGER) {
     // Swagger定義を生成
     try {
       console.log('Generating Swagger schemas...');
@@ -57,6 +59,9 @@ if (process.env.NODE_ENV === 'development') {
       });
     } catch (error) {
       console.error('Failed to generate Swagger schemas:', error);
+    }
+  } else {
+    console.log('SKIP_SWAGGER set: skipping swagger generation');
   }
 
   const options = {
