@@ -18,11 +18,11 @@ async function main() {
   const force = process.argv.includes('--force');
 
   try {
-    console.log('🌱 Starting database seeding process...');
+    console.log('Starting database seeding process...');
     console.log(`Force mode: ${force ? 'ON' : 'OFF'}`);
 
     if (force) {
-      console.log('⚠️  WARNING: Force mode will drop and recreate all tables!');
+      console.log('WARNING: Force mode will drop and recreate all tables!');
       console.log('This will delete all existing data.');
 
       // 5秒待機して確認
