@@ -195,8 +195,8 @@ router.get(
     const { userId } = req.params;
 
     try {
-  const needTutorial = await getNeedTutorial({ userId });
-  res.json({ needTutorial });
+      const needTutorial = await getNeedTutorial({ userId });
+      res.json({ needTutorial });
     } catch (error) {
       next(error);
     }
