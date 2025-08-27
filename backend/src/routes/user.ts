@@ -3,6 +3,7 @@ import UserModel from '../models/User';
 import ProjectModel from '../models/Project';
 import PrototypeModel from '../models/Prototype';
 import PartModel from '../models/Part';
+import { getNeedTutorial } from '../helpers/userHelper';
 import { ensureAuthenticated } from '../middlewares/auth';
 import { Op } from 'sequelize';
 import {
@@ -194,35 +195,8 @@ router.get(
     const { userId } = req.params;
 
     try {
-      const projectCount = await ProjectModel.count({ where: { userId } });
-
-      if (projectCount === 0) {
-        res.json({ needTutorial: true });
-        return;
-      }
-
-      if (projectCount > 1) {
-        res.json({ needTutorial: false });
-        return;
-      }
-
-      const project = await ProjectModel.findOne({ where: { userId } });
-
-      if (!project) {
-        res.json({ needTutorial: false });
-        return;
-      }
-
-      const partCount = await PartModel.count({
-        include: [
-          {
-            model: PrototypeModel,
-            where: { projectId: project.id },
-          },
-        ],
-      });
-
-      res.json({ needTutorial: partCount === 20 });
+  const needTutorial = await getNeedTutorial({ userId });
+  res.json({ needTutorial });
     } catch (error) {
       next(error);
     }
