@@ -1,5 +1,8 @@
 import express, { Request, Response, NextFunction } from 'express';
 import UserModel from '../models/User';
+import ProjectModel from '../models/Project';
+import PrototypeModel from '../models/Prototype';
+import PartModel from '../models/Part';
 import { ensureAuthenticated } from '../middlewares/auth';
 import { Op } from 'sequelize';
 import {
@@ -149,6 +152,77 @@ router.put(
 
       // 更新したユーザー情報を返す
       res.json(user);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/users/{userId}/need-tutorial:
+ *   get:
+ *     tags: [Users]
+ *     summary: チュートリアル必要判定
+ *     description: 指定されたユーザーがチュートリアルを表示すべきか判定します。
+ *     parameters:
+ *       - name: userId
+ *         in: path
+ *         required: true
+ *         description: 判定するユーザーのID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: 判定結果を返します
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 needTutorial:
+ *                   type: boolean
+ *       '401':
+ *         description: アクセス権がありません
+ *       '500':
+ *         description: サーバーエラー
+ */
+router.get(
+  '/:userId/need-tutorial',
+  checkUserAccess,
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { userId } = req.params;
+
+    try {
+      const projectCount = await ProjectModel.count({ where: { userId } });
+
+      if (projectCount === 0) {
+        res.json({ needTutorial: true });
+        return;
+      }
+
+      if (projectCount > 1) {
+        res.json({ needTutorial: false });
+        return;
+      }
+
+      const project = await ProjectModel.findOne({ where: { userId } });
+
+      if (!project) {
+        res.json({ needTutorial: false });
+        return;
+      }
+
+      const partCount = await PartModel.count({
+        include: [
+          {
+            model: PrototypeModel,
+            where: { projectId: project.id },
+          },
+        ],
+      });
+
+      res.json({ needTutorial: partCount === 20 });
     } catch (error) {
       next(error);
     }

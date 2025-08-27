@@ -14,8 +14,17 @@ import {
 } from '@/features/prototype/constants/helpInfo';
 import { isInputFieldFocused } from '@/utils/inputFocus';
 
-export default function GameBoardHelpPanel() {
-  const [isExpanded, setIsExpanded] = useState(false);
+interface GameBoardHelpPanelProps {
+  defaultExpanded?: boolean;
+}
+
+export default function GameBoardHelpPanel({
+  defaultExpanded = false,
+}: GameBoardHelpPanelProps) {
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  useEffect(() => {
+    setIsExpanded(defaultExpanded);
+  }, [defaultExpanded]);
   const [activeTab, setActiveTab] = useState<
     'shortcuts' | 'parts' | 'operations'
   >('parts');
