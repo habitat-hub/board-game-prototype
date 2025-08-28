@@ -52,6 +52,7 @@ import { isInputFieldFocused } from '@/utils/inputFocus';
 
 interface GameBoardProps {
   prototypeName: string;
+  prototypeId: string;
   projectId: string;
   partsMap: Map<number, Part>;
   propertiesMap: Map<number, PartProperty[]>;
@@ -64,7 +65,8 @@ interface GameBoardProps {
 }
 
 export default function GameBoard({
-  prototypeName,
+  prototypeName: initialPrototypeName,
+  prototypeId,
   projectId,
   partsMap,
   propertiesMap,
@@ -72,6 +74,10 @@ export default function GameBoard({
   gameBoardMode,
   connectedUsers,
 }: GameBoardProps) {
+  const [prototypeName, setPrototypeName] = useState(initialPrototypeName);
+  useEffect(() => {
+    setPrototypeName(initialPrototypeName);
+  }, [initialPrototypeName]);
   const stageRef = useRef<Konva.Stage | null>(null);
   // 前回のレンダリング時の画像IDを保持するref
   const prevImageRef = useRef<string[]>([]);
@@ -596,8 +602,10 @@ export default function GameBoard({
 
       <LeftSidebar
         prototypeName={prototypeName}
+        prototypeId={prototypeId}
         gameBoardMode={gameBoardMode}
         projectId={projectId}
+        onPrototypeNameChange={setPrototypeName}
       />
 
       {/* ロールメニュー - CREATEモードとPLAYモードで表示 */}

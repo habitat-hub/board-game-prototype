@@ -34,6 +34,7 @@ const SocketGameBoard: React.FC<SocketGameBoardProps> = ({
   return (
     <GameBoard
       prototypeName={prototypeName}
+      prototypeId={prototypeId}
       partsMap={partsMap}
       propertiesMap={propertiesMap}
       cursors={cursors}

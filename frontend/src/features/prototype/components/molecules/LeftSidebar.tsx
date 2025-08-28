@@ -8,6 +8,7 @@ import { MdMeetingRoom, MdDelete } from 'react-icons/md';
 
 import { useProject } from '@/api/hooks/useProject';
 import { Prototype, ProjectsDetailData } from '@/api/types';
+import PrototypeNameEditor from '@/features/prototype/components/atoms/PrototypeNameEditor';
 import GameBoardHelpPanel from '@/features/prototype/components/molecules/GameBoardHelpPanel';
 import { MAX_DISPLAY_USERS } from '@/features/prototype/constants';
 import { useProjectSocket } from '@/features/prototype/hooks/useProjectSocket';
@@ -17,12 +18,16 @@ import formatDate from '@/utils/dateFormat';
 
 export default function LeftSidebar({
   prototypeName,
+  prototypeId,
   gameBoardMode,
   projectId,
+  onPrototypeNameChange,
 }: {
   prototypeName: string;
+  prototypeId: string;
   gameBoardMode: GameBoardMode;
   projectId: string;
+  onPrototypeNameChange: (name: string) => void;
 }) {
   const router = useRouter();
   const { user } = useUser();
@@ -148,6 +153,18 @@ export default function LeftSidebar({
     setIsLeftSidebarMinimized(!isLeftSidebarMinimized);
   };
 
+  // プロトタイプ名の更新完了時の処理
+  const handlePrototypeNameUpdated = (newName: string) => {
+    // プロトタイプリストを更新
+    updatePrototypes(
+      prototypes.map((p) =>
+        p.id === prototypeId ? { ...p, name: newName } : p
+      )
+    );
+    // 親コンポーネントに通知
+    onPrototypeNameChange(newName);
+  };
+
   // サイドバーのルームリスト部分のみを表示する
   const renderSidebarContent = () => {
     return (
@@ -258,12 +275,11 @@ export default function LeftSidebar({
           <IoArrowBack className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
         </button>
         <div className="flex items-center gap-1 flex-grow ml-1 min-w-0">
-          <h2
-            className="text-xs font-medium truncate text-wood-darkest"
-            title={prototypeName}
-          >
-            {prototypeName}
-          </h2>
+          <PrototypeNameEditor
+            prototypeId={prototypeId}
+            name={prototypeName}
+            onUpdated={handlePrototypeNameUpdated}
+          />
         </div>
         {/* ルームを開いている時は開閉ボタンを非表示 */}
         {gameBoardMode !== GameBoardMode.PLAY && (
