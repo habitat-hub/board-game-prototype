@@ -13,7 +13,7 @@ export const SHORTCUTS: ShortcutInfo[] = [
   {
     id: 'help',
     key: 'Shift + ?',
-    description: 'ショートカットヘルプを開閉する。',
+    description: 'ヘルプパネルを開閉する。',
   },
   {
     id: 'space-drag',
@@ -35,6 +35,11 @@ export const SHORTCUTS: ShortcutInfo[] = [
     key: 'Cmd/Ctrl + D',
     description: '選択中のパーツ1つを複製する。',
   },
+  {
+    id: 'zoom',
+    key: 'Cmd/Ctrl + ホイール',
+    description: 'ボードを拡大縮小する。',
+  },
 ];
 
 // パーツ操作情報の定義
@@ -43,13 +48,13 @@ export const PARTS_INFO: PartInfo[] = [
     id: 'card',
     name: 'カード',
     description:
-      'カードを表すパーツ。ダブルクリックで裏返せる。ドラッグで移動可能。ルームで移動時は自動で最前面へ。',
+      'カードを表すパーツ。ダブルクリックで裏返せる。ドラッグで移動できる。ルームで移動すると自動で最前面に表示される。',
   },
   {
     id: 'token',
     name: 'トークン',
     description:
-      'ゲーム内の駒やマーカーを表すパーツ。ドラッグで移動可能。ルームで移動時は自動で最前面へ。',
+      'ゲーム内の駒やマーカーを表すパーツ。ドラッグで移動できる。ルームで移動すると自動で最前面に表示される。',
   },
   {
     id: 'hand',
@@ -67,7 +72,7 @@ export const PARTS_INFO: PartInfo[] = [
     id: 'area',
     name: 'エリア',
     description:
-      'ゲーム盤面のエリアを表すパーツ。他のパーツを配置する領域として使用。プレイモードでは移動できない。',
+      'ゲーム盤面のエリアを表すパーツ。他のパーツを配置する領域として使用する。プレイモードでは移動できない。',
   },
 ];
 
@@ -76,11 +81,11 @@ export const OPERATIONS_INFO: OperationInfo[] = [
   {
     id: 'drag-drop-part',
     operation: 'ドラッグ&ドロップ(パーツ上)',
-    description: 'パーツを移動',
+    description: 'パーツを移動する。',
   },
   {
     id: 'drag-drop-other',
     operation: 'ドラッグ&ドロップ(パーツ以外)',
-    description: '矩形選択 or ボードを移動。左下でモードを切り替えられる。',
+    description: '矩形選択またはボードを移動する。左下でモードを切り替えられる。',
   },
 ];
