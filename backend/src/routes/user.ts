@@ -1,8 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
 import UserModel from '../models/User';
-import ProjectModel from '../models/Project';
-import PrototypeModel from '../models/Prototype';
-import PartModel from '../models/Part';
 import { getNeedTutorial } from '../helpers/userHelper';
 import { ensureAuthenticated } from '../middlewares/auth';
 import { Op } from 'sequelize';
