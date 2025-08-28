@@ -1,7 +1,11 @@
 import { useCallback } from 'react';
 
 import { usersService } from '@/api/endpoints/users';
-import { UsersSearchListParams, UsersUpdatePayload } from '@/api/types';
+import {
+  UsersSearchListParams,
+  UsersUpdatePayload,
+  UsersNeedTutorialData,
+} from '@/api/types';
 
 export const useUsers = () => {
   /**
@@ -21,8 +25,19 @@ export const useUsers = () => {
     []
   );
 
+  /**
+   * チュートリアル表示が必要かどうかを確認する
+   */
+  const checkNeedTutorial = useCallback(
+    async (userId: string): Promise<UsersNeedTutorialData> => {
+      return await usersService.checkNeedTutorial(userId);
+    },
+    []
+  );
+
   return {
     searchUsers,
     updateUser,
+    checkNeedTutorial,
   };
 };

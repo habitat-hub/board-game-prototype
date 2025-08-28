@@ -157,6 +157,10 @@ export interface UsersUpdatePayload {
 
 export type UsersUpdateData = User;
 
+export interface UsersNeedTutorialListData {
+  needTutorial?: boolean;
+}
+
 export interface PrototypesDetailData {
   prototype?: Prototype;
 }

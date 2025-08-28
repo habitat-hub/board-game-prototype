@@ -44,6 +44,7 @@ import {
   PrototypesDetailData,
   PrototypesUpdateData,
   PrototypesUpdatePayload,
+  UsersNeedTutorialListData,
   UsersSearchListData,
   UsersSearchListParams,
   UsersUpdateData,
@@ -91,6 +92,21 @@ export class Api<
       method: 'PUT',
       body: data,
       type: ContentType.Json,
+      format: 'json',
+      ...params,
+    });
+  /**
+   * @description 指定されたユーザーがチュートリアルを表示すべきか判定します。
+   *
+   * @tags Users
+   * @name UsersNeedTutorialList
+   * @summary チュートリアル必要判定
+   * @request GET:/api/users/{userId}/need-tutorial
+   */
+  usersNeedTutorialList = (userId: string, params: RequestParams = {}) =>
+    this.request<UsersNeedTutorialListData, void>({
+      path: `/api/users/${userId}/need-tutorial`,
+      method: 'GET',
       format: 'json',
       ...params,
     });

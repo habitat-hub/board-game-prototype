@@ -578,6 +578,49 @@
         }
       }
     },
+    "/api/users/{userId}/need-tutorial": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "チュートリアル必要判定",
+        "description": "指定されたユーザーがチュートリアルを表示すべきか判定します。",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "判定するユーザーのID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "判定結果を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "needTutorial": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "アクセス権がありません"
+          },
+          "500": {
+            "description": "サーバーエラー"
+          }
+        }
+      }
+    },
     "/api/prototypes/{prototypeId}": {
       "get": {
         "tags": [

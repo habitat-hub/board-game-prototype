@@ -7,6 +7,7 @@ import { IoArrowBack, IoMenu, IoAdd } from 'react-icons/io5';
 import { MdMeetingRoom, MdDelete } from 'react-icons/md';
 
 import { useProject } from '@/api/hooks/useProject';
+import { useUsers } from '@/api/hooks/useUsers';
 import { Prototype, ProjectsDetailData } from '@/api/types';
 import GameBoardHelpPanel from '@/features/prototype/components/molecules/GameBoardHelpPanel';
 import { MAX_DISPLAY_USERS } from '@/features/prototype/constants';
@@ -26,6 +27,7 @@ export default function LeftSidebar({
 }) {
   const router = useRouter();
   const { user } = useUser();
+  const { checkNeedTutorial } = useUsers();
   const { getProject, createPrototypeVersion, deletePrototypeVersion } =
     useProject();
 
@@ -42,6 +44,7 @@ export default function LeftSidebar({
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
   const [project, setProject] = useState<ProjectsDetailData | null>(null);
   const [isRoomCreating, setIsRoomCreating] = useState(false);
+  const [needTutorial, setNeedTutorial] = useState(false);
 
   // プロジェクトデータから必要な情報を取得
   // Socket通信で更新されたプロトタイプがあればそれを優先、なければプロジェクトのプロトタイプを使用
@@ -95,6 +98,23 @@ export default function LeftSidebar({
   useEffect(() => {
     getPrototypes();
   }, [getPrototypes]);
+
+  // チュートリアル表示が必要かどうかを確認
+  useEffect(() => {
+    const fetchNeedTutorialStatus = async () => {
+      if (!user?.id) return;
+      try {
+        const result = await checkNeedTutorial(user.id);
+        setNeedTutorial(result.needTutorial);
+      } catch (error) {
+        console.error(
+          'チュートリアル判定API呼び出し中にエラーが発生しました：',
+          error
+        );
+      }
+    };
+    fetchNeedTutorialStatus();
+  }, [user?.id, checkNeedTutorial]);
 
   // ルーム作成（バージョン＋インスタンス）
   const handleCreateRoom = async () => {
@@ -282,7 +302,7 @@ export default function LeftSidebar({
       {!isLeftSidebarMinimized &&
         gameBoardMode !== GameBoardMode.PLAY &&
         renderSidebarContent()}
-      <GameBoardHelpPanel />
+      <GameBoardHelpPanel defaultExpanded={needTutorial} />
     </div>
   );
 }
