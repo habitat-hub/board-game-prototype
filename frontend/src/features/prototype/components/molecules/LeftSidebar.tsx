@@ -16,19 +16,26 @@ import { GameBoardMode } from '@/features/prototype/types';
 import { useUser } from '@/hooks/useUser';
 import formatDate from '@/utils/dateFormat';
 
+type LeftSidebarProps = {
+  /** プロトタイプ名（表示用） */
+  prototypeName: string;
+  /** プロトタイプID（編集やソケット同期に使用） */
+  prototypeId: string;
+  /** ゲームボードの現在モード */
+  gameBoardMode: GameBoardMode;
+  /** プロジェクトID（APIリクエスト等で使用） */
+  projectId: string;
+  /** プロトタイプ名変更を親コンポーネントへ通知するコールバック */
+  onPrototypeNameChange: (name: string) => void;
+};
+
 export default function LeftSidebar({
   prototypeName,
   prototypeId,
   gameBoardMode,
   projectId,
   onPrototypeNameChange,
-}: {
-  prototypeName: string;
-  prototypeId: string;
-  gameBoardMode: GameBoardMode;
-  projectId: string;
-  onPrototypeNameChange: (name: string) => void;
-}) {
+}: LeftSidebarProps) {
   const router = useRouter();
   const { user } = useUser();
   const { getProject, createPrototypeVersion, deletePrototypeVersion } =

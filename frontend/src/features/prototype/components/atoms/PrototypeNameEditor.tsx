@@ -6,8 +6,11 @@ import { usePrototypes } from '@/api/hooks/usePrototypes';
 import useInlineEdit from '@/hooks/useInlineEdit';
 
 interface PrototypeNameEditorProps {
+  /** プロトタイプID */
   prototypeId: string;
+  /** 表示用のプロトタイプ名 */
   name: string;
+  /** 名前更新完了時に親へ新しい名前を通知するコールバック */
   onUpdated: (newName: string) => void;
 }
 
@@ -34,11 +37,16 @@ export default function PrototypeNameEditor({
     // 変更がない場合は何もしない
     if (newName.trim() === name) return;
 
-    await updatePrototypeMutation.mutateAsync({
-      prototypeId,
-      data: { name: newName.trim() },
-    });
-    onUpdated(newName.trim());
+    try {
+      await updatePrototypeMutation.mutateAsync({
+        prototypeId,
+        data: { name: newName.trim() },
+      });
+      onUpdated(newName.trim());
+    } catch (e) {
+      alert('名前の更新に失敗しました。時間をおいて再度お試しください。');
+      throw e;
+    }
   };
 
   const validate = (value: string): string | null => {
@@ -77,4 +85,3 @@ export default function PrototypeNameEditor({
     </div>
   );
 }
-
