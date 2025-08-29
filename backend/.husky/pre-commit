@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
-cd backend
+# Run only when backend files are staged
+if ! git diff --cached --name-only | grep -q '^backend/'; then
+  exit 0
+fi
 
-# Auto-fix formatting and lint issues before generating artifacts
-npm run format
-npm run lint:fix
+cd backend
 
 # ERDとRedocを生成
 npm run generate-erd && npm run redoc && npm run generate-api-types
