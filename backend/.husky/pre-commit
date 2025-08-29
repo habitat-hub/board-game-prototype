@@ -2,6 +2,10 @@
 
 cd backend
 
+# Auto-fix formatting and lint issues before generating artifacts
+npm run format
+npm run lint:fix
+
 # ERDとRedocを生成
 npm run generate-erd && npm run redoc && npm run generate-api-types
 
