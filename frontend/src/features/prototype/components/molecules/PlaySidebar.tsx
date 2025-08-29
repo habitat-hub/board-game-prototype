@@ -8,6 +8,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { GiPokerHand } from 'react-icons/gi';
 
 import { Part } from '@/api/types';
+import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { useUser } from '@/hooks/useUser';
 
@@ -30,6 +31,7 @@ export default function PlaySidebar({
 }: PlaySidebarProps) {
   const { dispatch } = usePartReducer();
   const { user } = useUser();
+  const { clearSelection } = useSelectedParts();
 
   // 選択中の手札ID
   const [selectedHandId, setSelectedHandId] = useState<number | null>(null);
@@ -124,6 +126,7 @@ export default function PlaySidebar({
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
                 onClick={() => {
+                  clearSelection();
                   setSelectedHandId(hand.id);
                   onSelectPart(hand.id);
                 }}
