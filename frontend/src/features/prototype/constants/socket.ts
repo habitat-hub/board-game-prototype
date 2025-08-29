@@ -31,10 +31,6 @@ export const PROTOTYPE_SOCKET_EVENT = {
   UPDATE_PART: 'UPDATE_PART',
   // パーツ一括削除
   DELETE_PARTS: 'DELETE_PARTS',
-  // カーソル情報の更新
-  UPDATE_CURSORS: 'UPDATE_CURSORS',
-  // 単一カーソル更新
-  UPDATE_CURSOR: 'UPDATE_CURSOR',
   // 接続中ユーザーリストの更新
   CONNECTED_USERS: 'CONNECTED_USERS',
   // パーツ順序変更
