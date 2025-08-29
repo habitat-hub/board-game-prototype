@@ -81,7 +81,7 @@ export default function LeftSidebar({
       router.push('/projects');
       return;
     }
-    // プレビューまたはプレイモードの場合はマスタープロトタイプに戻る
+  // プレビューまたはプレイルームの場合はマスタープロトタイプに戻る
     if (
       gameBoardMode === GameBoardMode.PLAY ||
       gameBoardMode === GameBoardMode.PREVIEW
@@ -128,7 +128,7 @@ export default function LeftSidebar({
     fetchNeedTutorialStatus();
   }, [user?.id, checkNeedTutorial]);
 
-  // ルーム作成（バージョン＋インスタンス）
+  // プレイルーム作成（バージョン＋インスタンス）
   const handleCreateRoom = async () => {
     if (isRoomCreating) return;
     setIsRoomCreating(true);
@@ -144,15 +144,15 @@ export default function LeftSidebar({
         return;
       }
     } catch (error) {
-      console.error('Error creating room:', error);
+      console.error('Error creating playroom:', error);
     } finally {
       setIsRoomCreating(false);
     }
   };
 
-  // ルーム削除
+  // プレイルーム削除
   const handleDeleteRoom = async (instanceId: string) => {
-    if (!window.confirm('本当にこのルームを削除しますか？')) return;
+    if (!window.confirm('本当にこのプレイルームを削除しますか？')) return;
 
     try {
       // インスタンスから対応するバージョンを見つける
@@ -172,7 +172,7 @@ export default function LeftSidebar({
       // バージョン削除API（バージョンIDを指定してバージョンとインスタンスを一緒に削除）
       await deletePrototypeVersion(projectId, versionId);
     } catch (error) {
-      console.error('Error deleting room:', error);
+      console.error('Error deleting playroom:', error);
     }
   };
 
@@ -192,22 +192,22 @@ export default function LeftSidebar({
     onPrototypeNameChange(newName);
   };
 
-  // サイドバーのルームリスト部分のみを表示する
+  // サイドバーのプレイルームリスト部分のみを表示する
   const renderSidebarContent = () => {
     return (
       <div className="p-2 overflow-y-auto scrollbar-hide space-y-4">
         <div className="flex flex-col gap-2 py-0.5 px-0">
-          {/* 新しいルーム作成ボタン */}
+          {/* 新しいプレイルーム作成ボタン */}
           <button
             onClick={handleCreateRoom}
             disabled={isRoomCreating}
             className="relative flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 border-2 border-dashed border-kibako-secondary hover:border-kibako-accent hover:border-solid mb-2 disabled:opacity-60 disabled:cursor-not-allowed"
-            title="新しいルームを作る"
+            title="新しいプレイルームを作る"
           >
             <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
             <div className="flex flex-col min-w-0 flex-1">
               <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[180px]">
-                新しいルームを作る
+                新しいプレイルームを作る
               </span>
               <span className="text-xs text-kibako-secondary mt-0.5 flex items-center gap-1">
                 今のボードの状態を保存して
@@ -232,7 +232,7 @@ export default function LeftSidebar({
                   <Link
                     href={`/projects/${projectId}/prototypes/${instance.id}`}
                     className="group"
-                    title={`${instance.name}のルームを開く`}
+                    title={`${instance.name}のプレイルームを開く`}
                   >
                     <div className="flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 group-hover:bg-kibako-accent/10 group-hover:border-kibako-accent border border-transparent">
                       <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
@@ -275,7 +275,7 @@ export default function LeftSidebar({
                   <button
                     onClick={() => handleDeleteRoom(instance.id)}
                     className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full group/delete hover:bg-kibako-accent/20 focus:outline-none flex items-center justify-center"
-                    title="ルームを削除"
+                    title="プレイルームを削除"
                   >
                     <MdDelete className="h-5 w-5 text-kibako-secondary transition-colors" />
                   </button>
@@ -308,7 +308,7 @@ export default function LeftSidebar({
             onUpdated={handlePrototypeNameUpdated}
           />
         </div>
-        {/* ルームを開いている時は開閉ボタンを非表示 */}
+        {/* プレイルームを開いている時は開閉ボタンを非表示 */}
         {gameBoardMode !== GameBoardMode.PLAY && (
           <button
             onClick={toggleSidebar}
@@ -321,7 +321,7 @@ export default function LeftSidebar({
           </button>
         )}
       </div>
-      {/* サイドバーの中身はルームを開いている時は非表示 */}
+      {/* サイドバーの中身はプレイルームを開いている時は非表示 */}
       {!isLeftSidebarMinimized &&
         gameBoardMode !== GameBoardMode.PLAY &&
         renderSidebarContent()}

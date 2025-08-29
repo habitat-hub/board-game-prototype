@@ -12,7 +12,7 @@ export enum GameBoardMode {
   CREATE = 'create',
   /** プレビューモード */
   PREVIEW = 'preview',
-  /** プレイモード */
+  /** プレイルームモード */
   PLAY = 'play',
 }
 
