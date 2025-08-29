@@ -38,7 +38,7 @@ export const uploadImageToS3 = async (
 
   if (!IMAGE_ALLOWED_MIME_TYPES.includes(file.mimetype)) {
     throw new ValidationError(
-      'サポートされていない画像形式です（JPEG, PNG, GIFのみ対応）'
+      'サポートされていない画像形式です（JPEG, PNGのみ対応）'
     );
   }
 
