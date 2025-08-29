@@ -145,10 +145,22 @@ export const usePartDragSystem = ({
         originalDy
       );
       // ドラッグ中のパーツの位置更新
-      e.target.position({
-        x: constrainedPos.x + offsetX,
-        y: constrainedPos.y,
-      });
+      // PLAYモードで複数選択かつ対象がareaの場合は移動させない
+      if (
+        gameBoardMode === GameBoardMode.PLAY &&
+        selectedPartIds.length > 1 &&
+        targetPart?.type === 'area'
+      ) {
+        e.target.position({
+          x: partOriginalPosition.x + offsetX,
+          y: partOriginalPosition.y,
+        });
+      } else {
+        e.target.position({
+          x: constrainedPos.x + offsetX,
+          y: constrainedPos.y,
+        });
+      }
 
       // ドラッグ中以外の他パーツ
       const otherParts = selectedPartIds
@@ -161,7 +173,12 @@ export const usePartDragSystem = ({
         }))
         .filter(({ node, origPos, part }) => {
           if (!(node && origPos && part)) return false;
-          if (gameBoardMode === GameBoardMode.PLAY && part.type === 'area')
+          // PLAYモードで複数選択時のみ area を除外
+          if (
+            gameBoardMode === GameBoardMode.PLAY &&
+            selectedPartIds.length > 1 &&
+            part.type === 'area'
+          )
             return false;
           return true;
         });
