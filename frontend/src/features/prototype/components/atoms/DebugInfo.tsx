@@ -8,7 +8,7 @@ import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { useMemoryUsage } from '@/features/prototype/hooks/useMemoryUsage';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 import { useRenderPerformance } from '@/features/prototype/hooks/useRenderPerformance';
-import { CursorInfo, GameBoardMode } from '@/features/prototype/types';
+import { GameBoardMode } from '@/features/prototype/types';
 
 // タブのラベルとID
 const TABS = [
@@ -32,8 +32,6 @@ interface DebugInfoProps {
   // パーツ
   parts: Part[];
   properties: PartProperty[];
-  // カーソル
-  cursors: Record<string, CursorInfo>;
   // モード
   mode: GameBoardMode;
 }
@@ -44,7 +42,6 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
   projectId,
   parts,
   properties,
-  cursors,
   mode,
 }) => {
   const { showDebugInfo } = useDebugMode();
@@ -113,24 +110,6 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
             <div>Name: {prototypeName}</div>
             <div>Project ID: {projectId}</div>
 
-            <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
-              <strong>Multiplayer</strong>
-            </div>
-            <div>
-              <div className="font-semibold">
-                Cursors: {Object.keys(cursors).length}
-              </div>
-              {Object.keys(cursors).length > 0 && (
-                <div className="ml-2.5 text-xs">
-                  <div>
-                    Active Users:{' '}
-                    {Object.values(cursors)
-                      .map((c) => c.userName)
-                      .join(', ')}
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
         );
 
