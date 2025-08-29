@@ -10,8 +10,9 @@ import {
  * AWS SDKのエラーをハンドリングして適切なCustomErrorをスローする
  * @param error - AWS SDKがスローしたエラー
  */
-export const handleAWSError = (error: any): never => {
-  switch (error.name) {
+export const handleAWSError = (error: unknown): never => {
+  const { name, message } = error as { name?: string; message?: string };
+  switch (name) {
     case 'NoSuchKey':
       throw new NotFoundError('指定されたリソースが存在しません');
     case 'AccessDenied':
@@ -24,7 +25,7 @@ export const handleAWSError = (error: any): never => {
       throw new ServiceUnavailableError('S3サービスが一時的に利用できません');
     default:
       throw new InternalServerError(
-        `AWS処理中にエラーが発生しました: ${error.message}`
+        `AWS処理中にエラーが発生しました: ${message ?? '不明なエラー'}`
       );
   }
 };

@@ -1,4 +1,5 @@
 declare module 'swagger-jsdoc' {
-  const swaggerJSDoc: (options: any) => any;
+  // Minimal type definition for swagger-jsdoc to satisfy linting and compilation
+  const swaggerJSDoc: (options: unknown) => Record<string, unknown>;
   export default swaggerJSDoc;
 }

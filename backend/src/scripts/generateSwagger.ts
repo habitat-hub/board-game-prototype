@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { Model, ModelStatic, DataTypes } from 'sequelize';
+import { Model, ModelStatic, DataTypes, type DataType } from 'sequelize';
 
 const modelsDir = path.join(__dirname, '../models');
 const outputPath = path.join(__dirname, '../swagger-schemas.ts');
@@ -74,18 +74,25 @@ const commonSchemas = {
   },
 };
 
-function getSwaggerType(sequelizeType: any, allowNull: boolean = false): any {
-  const type = sequelizeType.toString().toLowerCase();
+function getSwaggerType(
+  sequelizeType: DataType,
+  allowNull = false
+): Record<string, unknown> {
+  const type = String(sequelizeType).toLowerCase();
 
-  let swaggerType: any;
+  let swaggerType: Record<string, unknown>;
 
   if (sequelizeType instanceof DataTypes.ENUM) {
+    const enumType = sequelizeType as unknown as { values: string[] };
     swaggerType = {
       type: 'string',
-      enum: (sequelizeType as any).values,
+      enum: enumType.values,
     };
   } else if (sequelizeType instanceof DataTypes.ARRAY) {
-    const itemType = getSwaggerType((sequelizeType as any).type);
+    const arrayType = sequelizeType as unknown as {
+      options: { type: DataType };
+    };
+    const itemType = getSwaggerType(arrayType.options.type);
     swaggerType = {
       type: 'array',
       items: itemType,
@@ -123,11 +130,16 @@ function getSwaggerType(sequelizeType: any, allowNull: boolean = false): any {
   return swaggerType;
 }
 
-function generateSwaggerSchema(model: ModelStatic<Model>) {
+type ModelWithOptions = ModelStatic<Model> & {
+  options?: {
+    defaultScope?: { attributes?: { exclude?: string[] } };
+  };
+};
+
+function generateSwaggerSchema(model: ModelWithOptions) {
   const attributes = model.getAttributes();
-  const defaultScope =
-    (model as any).options?.defaultScope?.attributes?.exclude || [];
-  const properties: Record<string, any> = {};
+  const defaultScope = model.options?.defaultScope?.attributes?.exclude ?? [];
+  const properties: Record<string, unknown> = {};
   const required: string[] = [];
 
   for (const [key, attribute] of Object.entries(attributes)) {

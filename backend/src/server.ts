@@ -7,7 +7,7 @@ import http from 'http';
 import cors from 'cors';
 import { Server, Socket } from 'socket.io';
 import type { DisconnectReason } from 'socket.io';
-import swaggerUi from 'swagger-ui-express';
+import swaggerUi, { type JsonObject } from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import fs from 'fs';
 import pgSession from 'connect-pg-simple';
@@ -90,7 +90,11 @@ if (process.env.NODE_ENV === 'development') {
     JSON.stringify(swaggerSpec, null, 2)
   );
 
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec as JsonObject)
+  );
 }
 
 // Socket.ioの設定
