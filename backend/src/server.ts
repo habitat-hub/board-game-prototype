@@ -7,8 +7,9 @@ import http from 'http';
 import cors from 'cors';
 import { Server, Socket } from 'socket.io';
 import type { DisconnectReason } from 'socket.io';
-import swaggerUi, { type JsonObject } from 'swagger-ui-express';
+import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
+import type { OpenAPIV3 } from 'openapi-types';
 import fs from 'fs';
 import pgSession from 'connect-pg-simple';
 import { swaggerSchemas } from './swagger-schemas';
@@ -84,17 +85,13 @@ if (process.env.NODE_ENV === 'development') {
     },
     apis: ['./src/routes/*.ts'],
   };
-  const swaggerSpec = swaggerJsdoc(options);
+  const swaggerSpec: OpenAPIV3.Document = swaggerJsdoc(options);
   fs.writeFileSync(
     './swagger-output.json',
     JSON.stringify(swaggerSpec, null, 2)
   );
 
-  app.use(
-    '/api-docs',
-    swaggerUi.serve,
-    swaggerUi.setup(swaggerSpec as JsonObject)
-  );
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 }
 
 // Socket.ioの設定

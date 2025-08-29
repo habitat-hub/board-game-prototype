@@ -25,7 +25,13 @@ async function cleanUpUnusedImages() {
       await deleteImageFromS3(image.storagePath);
       await ImageModel.destroy({ where: { id: image.id } });
     } catch (error) {
-      console.error(`Failed to delete image ${image.id}`, error);
+      if (error instanceof Error) {
+        console.error(`画像 ${image.id} の削除に失敗しました`, error);
+      } else {
+        console.error(
+          `画像 ${image.id} の削除に失敗しました: ${JSON.stringify(error)}`
+        );
+      }
     }
   }
 

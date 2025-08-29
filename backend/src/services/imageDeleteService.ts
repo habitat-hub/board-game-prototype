@@ -29,5 +29,6 @@ export const deleteImageFromS3 = async (key: string): Promise<void> => {
   } catch (error: unknown) {
     // AWS SDKのエラーをハンドリング
     handleAWSError(error);
+    throw error; // ここに到達することはないが、型チェックのため
   }
 };

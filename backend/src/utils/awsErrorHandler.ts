@@ -11,7 +11,9 @@ import {
  * @param error - AWS SDKがスローしたエラー
  */
 export const handleAWSError = (error: unknown): never => {
-  const { name, message } = error as { name?: string; message?: string };
+  // Errorオブジェクトに正規化（非Errorの場合は文字列表現をメッセージにする）
+  const err = error instanceof Error ? error : new Error(String(error));
+  const { name, message } = err;
   switch (name) {
     case 'NoSuchKey':
       throw new NotFoundError('指定されたリソースが存在しません');
