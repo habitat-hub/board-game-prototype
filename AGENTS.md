@@ -42,7 +42,7 @@ This document defines project structure, workflows, and conventions for contribu
 - Commits: Prefer Conventional Commits (e.g., `feat:`, `fix:`, `refactor:`). Keep messages scoped and imperative.
 - Branching: Open PRs to `develop`; merges to `main` are automated via workflow.
 - PRs: Use the template, describe changes, link issues, and add screenshots for UI updates. Ensure local run passes.
-- CI: Lint runs for backend/frontend; frontend tests + coverage run on PRs to `develop`/`main`.
+- CI: Lint runs for backend/frontend; frontend and backend tests + coverage run on PRs to `develop`/`main`.
 
 ## Security & Configuration Tips
 - Copy env examples: `cp frontend/.env_example frontend/.env.local` and `cp backend/.env_example backend/.env`.
