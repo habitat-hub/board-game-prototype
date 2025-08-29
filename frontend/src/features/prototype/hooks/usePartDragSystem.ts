@@ -159,7 +159,12 @@ export const usePartDragSystem = ({
           origPos: originalPositions[id],
           part: parts.find((p) => p.id === id),
         }))
-        .filter(({ node, origPos, part }) => node && origPos && part);
+        .filter(({ node, origPos, part }) => {
+          if (!(node && origPos && part)) return false;
+          if (gameBoardMode === GameBoardMode.PLAY && part.type === 'area')
+            return false;
+          return true;
+        });
 
       // ドラッグ中以外の他パーツの位置更新（各パーツごとに制約を適用）
       const otherPartsWithNewPosition = otherParts.map(
@@ -191,7 +196,7 @@ export const usePartDragSystem = ({
       // 更新処理の実行
       stage.batchDraw();
     },
-    [getConstrainedPosition, parts, selectedPartIds, stageRef]
+    [gameBoardMode, getConstrainedPosition, parts, selectedPartIds, stageRef]
   );
 
   /**
@@ -231,6 +236,7 @@ export const usePartDragSystem = ({
           const id = Number(idStr);
           const part = parts.find((p) => p.id === id);
           if (!part) return;
+          if (gameBoardMode === GameBoardMode.PLAY && part.type === 'area') return;
 
           // 各パーツごとに元の移動量で制約を適用
           const newPosition = getConstrainedPosition(
