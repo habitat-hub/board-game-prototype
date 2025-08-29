@@ -42,6 +42,9 @@ export const usePartDragSystem = ({
     {}
   );
 
+  // ドラッグ量の保持用ref（対象areaをロックした場合に使用）
+  const dragDeltaRef = useRef<{ dx: number; dy: number } | null>(null);
+
   /**
    * パーツの位置をキャンバス内に制限する関数
    */
@@ -107,6 +110,7 @@ export const usePartDragSystem = ({
         newOriginalPositions[id] = { x: part.position.x, y: part.position.y };
       });
       originalPositionsRef.current = newOriginalPositions;
+      dragDeltaRef.current = { dx: 0, dy: 0 };
     },
     [gameBoardMode, selectedPartIds, selectMultipleParts, parts, dispatch]
   );
@@ -145,6 +149,8 @@ export const usePartDragSystem = ({
         originalDy
       );
       // ドラッグ中のパーツの位置更新
+      // ドラッグ量を保持（ドラッグ終了時の更新に使用）
+      dragDeltaRef.current = { dx: originalDx, dy: originalDy };
       // PLAYモードで複数選択かつ対象がareaの場合は移動させない
       if (
         gameBoardMode === GameBoardMode.PLAY &&
@@ -237,9 +243,16 @@ export const usePartDragSystem = ({
         const offsetX = targetPart.width / 2;
 
         // 元の移動量（制約前）
-        const originalDx =
-          partCurrentPosition.x - offsetX - partOriginalPosition.x;
-        const originalDy = partCurrentPosition.y - partOriginalPosition.y;
+        const isPlayMultiAreaTarget =
+          gameBoardMode === GameBoardMode.PLAY &&
+          selectedPartIds.length > 1 &&
+          targetPart?.type === 'area';
+        const originalDx = isPlayMultiAreaTarget
+          ? dragDeltaRef.current?.dx ?? 0
+          : partCurrentPosition.x - offsetX - partOriginalPosition.x;
+        const originalDy = isPlayMultiAreaTarget
+          ? dragDeltaRef.current?.dy ?? 0
+          : partCurrentPosition.y - partOriginalPosition.y;
 
         /**
          * NOTE: reduceだと手続き的な書き方にはならないが、計算量がO(n2)になるので、
@@ -253,7 +266,12 @@ export const usePartDragSystem = ({
           const id = Number(idStr);
           const part = parts.find((p) => p.id === id);
           if (!part) return;
-          if (gameBoardMode === GameBoardMode.PLAY && part.type === 'area') return;
+          if (
+            gameBoardMode === GameBoardMode.PLAY &&
+            selectedPartIds.length > 1 &&
+            part.type === 'area'
+          )
+            return;
 
           // 各パーツごとに元の移動量で制約を適用
           const newPosition = getConstrainedPosition(
@@ -284,9 +302,10 @@ export const usePartDragSystem = ({
 
         // 元位置記録をクリア
         originalPositionsRef.current = {};
+        dragDeltaRef.current = null;
       });
     },
-    [gameBoardMode, measureOperation, parts, getConstrainedPosition, dispatch]
+    [gameBoardMode, measureOperation, parts, getConstrainedPosition, dispatch, selectedPartIds]
   );
 
   return {
