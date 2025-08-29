@@ -37,7 +37,6 @@ import { useSelection } from '@/features/prototype/hooks/useSelection';
 import {
   AddPartProps,
   DeleteImageProps,
-  CursorInfo,
   GameBoardMode,
 } from '@/features/prototype/types';
 import { useRoleManagement } from '@/features/role/hooks/useRoleManagement';
@@ -56,7 +55,6 @@ interface GameBoardProps {
   projectId: string;
   partsMap: Map<number, Part>;
   propertiesMap: Map<number, PartProperty[]>;
-  cursors: Record<string, CursorInfo>;
   gameBoardMode: GameBoardMode;
   connectedUsers: Array<{
     userId: string;
@@ -70,7 +68,6 @@ export default function GameBoard({
   projectId,
   partsMap,
   propertiesMap,
-  cursors,
   gameBoardMode,
   connectedUsers,
 }: GameBoardProps) {
@@ -668,7 +665,6 @@ export default function GameBoard({
         mode={gameBoardMode}
         parts={parts}
         properties={properties}
-        cursors={cursors}
       />
 
       {/* コンテキストメニュー */}
