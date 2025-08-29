@@ -209,8 +209,11 @@ export default function PartPropertyMenu({
     const image = event.target?.files ? event.target.files[0] : null;
     if (!image) return;
 
+    // 許可されていないMIMEタイプの場合：アップロードを中止して通知し、
+    // 同じファイルを再選択できるように入力をクリアする
     if (!IMAGE_ALLOWED_MIME_TYPES.includes(image.type)) {
       window.alert('サポートされていない画像形式です（JPEG, PNGのみ対応）');
+      event.target.value = '';
       return;
     }
 
