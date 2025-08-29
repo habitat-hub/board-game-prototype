@@ -36,7 +36,7 @@ This document defines project structure, workflows, and conventions for contribu
 
 ## Testing Guidelines
 - Frontend: Jest + Testing Library (`frontend/jest.config.js`). Place specs as `*.test.ts(x)` (e.g., `src/**/__tests__/*` or alongside files). Run `npm test` in `frontend/`.
-- Backend: No formal test suite yet; add unit tests if introducing complex logic. Keep pure logic decoupled from Express handlers for testability.
+- Backend: Use Vitest/Jest + Supertest for new modules. Target: ≥1 happy-path test per new route/service and ≥60% stmt/branch coverage on touched files. Keep pure logic decoupled from Express handlers for testability.
 
 ## Commit & Pull Request Guidelines
 - Commits: Prefer Conventional Commits (e.g., `feat:`, `fix:`, `refactor:`). Keep messages scoped and imperative.
