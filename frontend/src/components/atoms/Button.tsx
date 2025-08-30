@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
-  variant?: 'primary' | 'accent' | 'outline';
+  variant?: 'primary' | 'outline';
   size?: 'sm' | 'md' | 'lg';
   type?: 'button' | 'submit' | 'reset';
   href?: string;
@@ -27,7 +27,6 @@ export default function Button({
 
   const variants = {
     primary: 'bg-kibako-primary text-kibako-white hover:bg-kibako-primary/80',
-    accent: 'bg-kibako-accent text-kibako-white hover:bg-kibako-accent/80',
     outline:
       'bg-transparent text-kibako-primary/70 hover:text-kibako-primary border border-kibako-primary/30 hover:border-kibako-primary/50',
   };

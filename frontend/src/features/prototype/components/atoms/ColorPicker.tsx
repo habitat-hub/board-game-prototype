@@ -36,7 +36,7 @@ export default function ColorPicker({
         <div
           className={`w-4 h-4 rounded ${
             isCustomColor(palette, value || '')
-              ? 'ring-2 ring-kibako-accent'
+              ? 'ring-2 ring-kibako-secondary'
               : ''
           }`}
           style={{ backgroundColor: value || '#FFFFFF' }}

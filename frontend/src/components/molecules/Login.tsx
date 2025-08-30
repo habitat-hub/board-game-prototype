@@ -49,7 +49,7 @@ function Login() {
         <div className="flex items-center justify-center gap-2 sm:gap-4 mt-8 sm:mt-12">
           <FaDice className="text-4xl sm:text-6xl text-kibako-primary/60 transform rotate-12" />
           <GiCardAceSpades className="text-4xl sm:text-6xl text-kibako-primary/60 transform -rotate-12" />
-          <GiWoodenCrate className="text-5xl sm:text-7xl drop-shadow-lg text-kibako-accent" />
+          <GiWoodenCrate className="text-5xl sm:text-7xl drop-shadow-lg text-kibako-secondary" />
           <GiPuzzle className="text-4xl sm:text-6xl text-kibako-primary/60 transform rotate-6" />
           <FaChessBoard className="text-4xl sm:text-6xl text-kibako-primary/60 transform -rotate-6" />
         </div>
@@ -57,7 +57,7 @@ function Login() {
         {/* 認証ボタン */}
         <div className="flex flex-col gap-4 items-center mt-12 sm:mt-16">
           <Button
-            variant="accent"
+            variant="primary"
             className="!px-6 !py-4 !text-lg"
             onClick={() => {
               window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;

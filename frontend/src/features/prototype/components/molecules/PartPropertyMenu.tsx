@@ -422,10 +422,10 @@ export default function PartPropertyMenu({
                     <button
                       key={textColor}
                       onClick={() => handleUpdateProperty({ textColor })}
-                      className={`w-5 h-5 rounded-full ${
-                        currentProperty?.textColor === textColor &&
-                        'border-2 border-kibako-accent'
-                      }`}
+                        className={`w-5 h-5 rounded-full ${
+                          currentProperty?.textColor === textColor &&
+                          'border-2 border-kibako-secondary'
+                        }`}
                       style={{ backgroundColor: textColor }}
                       title={textColor}
                     />
@@ -444,10 +444,10 @@ export default function PartPropertyMenu({
                     <button
                       key={color}
                       onClick={() => handleUpdateProperty({ color })}
-                      className={`w-5 h-5 rounded-full ${
-                        currentProperty?.color === color &&
-                        ' border-2 border-kibako-accent'
-                      }`}
+                        className={`w-5 h-5 rounded-full ${
+                          currentProperty?.color === color &&
+                          ' border-2 border-kibako-secondary'
+                        }`}
                       style={{ backgroundColor: color }}
                       title={color}
                     />

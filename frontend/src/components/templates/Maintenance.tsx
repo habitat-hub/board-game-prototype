@@ -34,7 +34,7 @@ const Maintenance: React.FC<MaintenanceProps> = ({
         <div className="mb-6">
           {/* KIBAKOロゴ（木箱アイコン）とタイトル */}
           <div className="flex items-center justify-center gap-4 mb-4">
-            <GiWoodenCrate className="text-5xl sm:text-7xl drop-shadow-lg text-kibako-accent" />
+            <GiWoodenCrate className="text-5xl sm:text-7xl drop-shadow-lg text-kibako-secondary" />
             <h2 className="text-3xl sm:text-4xl font-bold tracking-wider text-kibako-primary">
               KIBAKO
             </h2>
@@ -60,7 +60,7 @@ const Maintenance: React.FC<MaintenanceProps> = ({
 
         {/* ステータスインジケーター */}
         <div className="flex items-center justify-center space-x-2 text-sm text-kibako-secondary">
-          <div className="w-2 h-2 bg-kibako-accent rounded-full animate-pulse"></div>
+          <div className="w-2 h-2 bg-kibako-secondary rounded-full animate-pulse"></div>
           <span>システム復旧作業中...</span>
         </div>
 

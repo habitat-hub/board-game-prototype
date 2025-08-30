@@ -46,7 +46,7 @@ const MaintenanceReloadButton: React.FC<MaintenanceReloadButtonProps> = ({
     <div className="mt-6 pt-4 border-t border-kibako-secondary">
       <button
         onClick={handleReload}
-        className="text-kibako-accent hover:text-kibako-primary text-sm transition-colors duration-200 font-medium"
+        className="text-kibako-secondary hover:text-kibako-primary text-sm transition-colors duration-200 font-medium"
       >
         ページを再読み込み
       </button>

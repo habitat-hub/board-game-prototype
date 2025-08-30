@@ -10,7 +10,7 @@ export default function Loading() {
       className={`flex items-center justify-center ${isGameBoardPath ? 'min-h-screen' : 'min-h-[calc(100vh-80px)]'}`}
     >
       <div className="flex items-center gap-3 animate-pulse">
-        <GiWoodenCrate className="text-6xl drop-shadow-lg transform -rotate-6 text-kibako-accent" />
+        <GiWoodenCrate className="text-6xl drop-shadow-lg transform -rotate-6 text-kibako-secondary" />
         <h1 className="text-5xl font-bold tracking-wider text-kibako-primary">
           KIBAKO
         </h1>

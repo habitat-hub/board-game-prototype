@@ -8,7 +8,6 @@ export default {
         kibako: {
           primary: '#5B3A29', // ダークブラウン（ヘッダー、ボタン）
           secondary: '#A98363', // 中間色（ボタン、テキスト）
-          accent: '#C9713C', // アクセント
           tertiary: '#EFE8DE', // ベース背景色（明るめ）
           white: '#F5F0E9', // テキスト
         },

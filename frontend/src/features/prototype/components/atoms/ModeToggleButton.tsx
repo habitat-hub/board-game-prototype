@@ -16,7 +16,7 @@ export default function ModeToggleButton({
         <button
           className={`relative p-3 rounded-full shadow-md transition-all duration-300 ${
             !isSelectionMode
-              ? 'bg-kibako-primary text-kibako-white ring-2 ring-kibako-accent ring-offset-2 shadow-lg'
+              ? 'bg-kibako-primary text-kibako-white ring-2 ring-kibako-secondary ring-offset-2 shadow-lg'
               : 'bg-gray-300 text-gray-500 hover:bg-gray-400'
           }`}
           onClick={onToggle}

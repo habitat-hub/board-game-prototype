@@ -201,10 +201,10 @@ export default function LeftSidebar({
           <button
             onClick={handleCreateRoom}
             disabled={isRoomCreating}
-            className="relative flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 border-2 border-dashed border-kibako-secondary hover:border-kibako-accent hover:border-solid mb-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="relative flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 border-2 border-dashed border-kibako-secondary hover:border-kibako-secondary hover:border-solid mb-2 disabled:opacity-60 disabled:cursor-not-allowed"
             title="新しいルームを作る"
           >
-            <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
+            <MdMeetingRoom className="h-7 w-7 text-kibako-secondary flex-shrink-0 mr-1" />
             <div className="flex flex-col min-w-0 flex-1">
               <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[180px]">
                 新しいルームを作る
@@ -234,8 +234,8 @@ export default function LeftSidebar({
                     className="group"
                     title={`${instance.name}のルームを開く`}
                   >
-                    <div className="flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 group-hover:bg-kibako-accent/10 group-hover:border-kibako-accent border border-transparent">
-                      <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
+                    <div className="flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 group-hover:bg-kibako-secondary/10 group-hover:border-kibako-secondary border border-transparent">
+                      <MdMeetingRoom className="h-7 w-7 text-kibako-secondary flex-shrink-0 mr-1" />
                       <div className="flex flex-col min-w-0 flex-1">
                         <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[180px]">
                           {instance.name}
@@ -253,7 +253,7 @@ export default function LeftSidebar({
                                   .map((user, idx) => (
                                     <span
                                       key={user.userId}
-                                      className="flex items-center justify-center w-5 h-5 rounded-full bg-kibako-accent text-kibako-white font-bold text-xs border border-kibako-white"
+                                      className="flex items-center justify-center w-5 h-5 rounded-full bg-kibako-secondary text-kibako-white font-bold text-xs border border-kibako-white"
                                       style={{ zIndex: 10 - idx }}
                                       title={user.username}
                                     >
@@ -274,7 +274,7 @@ export default function LeftSidebar({
                   </Link>
                   <button
                     onClick={() => handleDeleteRoom(instance.id)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full group/delete hover:bg-kibako-accent/20 focus:outline-none flex items-center justify-center"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full group/delete hover:bg-kibako-secondary/20 focus:outline-none flex items-center justify-center"
                     title="ルームを削除"
                   >
                     <MdDelete className="h-5 w-5 text-kibako-secondary transition-colors" />
