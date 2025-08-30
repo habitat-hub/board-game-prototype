@@ -31,7 +31,12 @@ export const uploadImageToS3 = async (
 ): Promise<UploadResult> => {
   // 簡易的なMIME検出（外部ライブラリ不使用）
   const detectImageMime = (buf: Buffer): string | undefined => {
-    if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) {
+    if (
+      buf.length >= 3 &&
+      buf[0] === 0xff &&
+      buf[1] === 0xd8 &&
+      buf[2] === 0xff
+    ) {
       return 'image/jpeg';
     }
     if (
