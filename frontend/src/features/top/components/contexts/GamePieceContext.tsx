@@ -9,7 +9,10 @@ import React, {
 } from 'react';
 
 // ゲームピース要素の参照を動的に管理するためのContext
-export type GamePieceRefMap = Map<string, React.RefObject<HTMLDivElement | null>>;
+export type GamePieceRefMap = Map<
+  string,
+  React.RefObject<HTMLDivElement | null>
+>;
 
 export interface GamePieceContextType {
   refs: GamePieceRefMap;

@@ -3,9 +3,8 @@
 import React, { createContext, useContext } from 'react';
 
 // ゲームボード要素の参照を共有するためのContext
-const GameBoardContext = createContext<React.RefObject<HTMLDivElement | null> | null>(
-  null
-);
+const GameBoardContext =
+  createContext<React.RefObject<HTMLDivElement | null> | null>(null);
 
 // 使いやすいようにカスタムフックを提供
 export const useGameBoard = () => useContext(GameBoardContext);

@@ -109,7 +109,6 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
             </div>
             <div>Name: {prototypeName}</div>
             <div>Project ID: {projectId}</div>
-
           </div>
         );
 

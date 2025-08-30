@@ -64,7 +64,9 @@ export const KonvaPartContextMenu: React.FC<KonvaPartContextMenuProps> = ({
   width = 120,
   itemHeight = 25,
 }) => {
-  const [hoveredMenuItem, setHoveredMenuItem] = useState<string | number | null>(null);
+  const [hoveredMenuItem, setHoveredMenuItem] = useState<
+    string | number | null
+  >(null);
 
   if (!visible) {
     return null;
