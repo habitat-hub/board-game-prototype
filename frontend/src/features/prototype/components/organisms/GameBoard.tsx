@@ -60,6 +60,7 @@ interface GameBoardProps {
     userId: string;
     username: string;
   }>;
+  selectedUsersByPart: Record<number, { userId: string; username: string }[]>;
 }
 
 export default function GameBoard({
@@ -70,6 +71,7 @@ export default function GameBoard({
   propertiesMap,
   gameBoardMode,
   connectedUsers,
+  selectedUsersByPart,
 }: GameBoardProps) {
   const [prototypeName, setPrototypeName] = useState(initialPrototypeName);
   useEffect(() => {
@@ -561,6 +563,7 @@ export default function GameBoard({
               const partProperties = propertiesMap.get(part.id) || [];
               const filteredImages = filteredImagesMap[part.id] || [];
               const isActive = selectedPartIds.includes(part.id);
+              const selectedBy = selectedUsersByPart[part.id] || [];
 
               // カードの表示制御を判定
               const isOtherPlayerHandCard =
@@ -575,6 +578,7 @@ export default function GameBoard({
                   images={filteredImages}
                   gameBoardMode={gameBoardMode}
                   isActive={isActive}
+                  selectedBy={selectedBy}
                   isOtherPlayerHandCard={isOtherPlayerHandCard}
                   userRoles={userRoles}
                   onClick={(e) => handlePartClick(e, part.id)}

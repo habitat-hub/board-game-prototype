@@ -63,6 +63,16 @@ export type ShuffleDeckAction = {
   payload: ShuffleDeckPayload;
 };
 
+/** パーツ選択共有の送信ペイロード */
+export type SelectedPartsPayload = { selectedPartIds: number[] };
+
+/** パーツ選択共有の受信ペイロード */
+export type SelectedPartsResponse = {
+  userId: string;
+  username: string;
+  selectedPartIds: number[];
+};
+
 /** PartAction: usePartReducer で使われるアクションの型（ソケット送受信用） */
 export type PartAction =
   | AddPartAction

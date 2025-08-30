@@ -30,6 +30,7 @@ export const connectedUsersMap: Record<
 interface SocketData {
   prototypeId: string;
   userId: string;
+  username: string;
 }
 
 /**
@@ -164,6 +165,7 @@ function handleJoinPrototype(socket: Socket, io: Server): void {
           ...socket.data,
           prototypeId,
           userId,
+          username: user.username,
         } as SocketData;
 
         socket.join(prototypeId);
@@ -618,6 +620,24 @@ function handleShuffleDeck(socket: Socket, io: Server): void {
 }
 
 /**
+ * パーツ選択情報の共有を処理する
+ * @param socket - Socket
+ */
+function handleSelectedParts(socket: Socket): void {
+  socket.on(
+    PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS,
+    ({ selectedPartIds }: { selectedPartIds: number[] }) => {
+      const { prototypeId, userId, username } = socket.data as SocketData;
+      socket.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS, {
+        userId,
+        username,
+        selectedPartIds,
+      });
+    }
+  );
+}
+
+/**
  * カーソル情報の更新
  * @param socket - Socket
  * @param io - Server
@@ -685,6 +705,7 @@ export default function handlePrototype(socket: Socket, io: Server): void {
   handleDeleteParts(socket, io);
   handleChangeOrder(socket, io);
   handleShuffleDeck(socket, io);
+  handleSelectedParts(socket);
 
   socket.on(COMMON_SOCKET_EVENT.DISCONNECTING, () => {
     // ソケットが切断される直前に呼び出される
@@ -707,6 +728,13 @@ export default function handlePrototype(socket: Socket, io: Server): void {
           // 残りのユーザーに更新を通知
           io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS, {
             users: Object.values(connectedUsersMap[prototypeId] || {}),
+          });
+
+          // 選択中パーツ情報をリセット
+          io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS, {
+            userId,
+            username: (socket.data as SocketData).username,
+            selectedPartIds: [],
           });
         }
       }

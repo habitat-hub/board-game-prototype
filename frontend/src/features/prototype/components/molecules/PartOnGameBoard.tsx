@@ -31,6 +31,7 @@ import {
   getShadowOffsetX,
   getShadowOffsetY,
 } from '@/features/prototype/utils/partUtils';
+import { getUserColor } from '@/features/prototype/utils/userColor';
 
 interface PartOnGameBoardProps {
   part: Part;
@@ -47,6 +48,7 @@ interface PartOnGameBoardProps {
     partId: number
   ) => void;
   isActive: boolean;
+  selectedBy?: Array<{ userId: string; username: string }>;
   // ユーザー情報
   userRoles?: Array<{
     userId: string;
@@ -67,6 +69,7 @@ export default function PartOnGameBoard({
   onClick,
   onContextMenu,
   isActive = false,
+  selectedBy = [],
   userRoles = [],
 }: PartOnGameBoardProps) {
   const groupRef = useRef<Konva.Group>(null);
@@ -487,6 +490,25 @@ export default function PartOnGameBoard({
         {isDeck && <ShuffleIcon size={20} color="#666" />}
         {isCard && <FlipIcon size={20} color="#666" />}
       </Group>
+
+      {selectedBy.map((user, index) => {
+        const color = getUserColor(user.userId, user.username);
+        const offset = (index + 1) * 3;
+        return (
+          <Rect
+            key={user.userId}
+            x={-offset}
+            y={-offset}
+            width={part.width + offset * 2}
+            height={part.height + offset * 2}
+            stroke={color}
+            strokeWidth={2}
+            cornerRadius={getCornerRadius(part.type)}
+            listening={false}
+            hitStrokeWidth={0}
+          />
+        );
+      })}
 
       {/* デバッグ情報: ID と順序（order） - showDebugInfoがtrueの場合のみ表示 */}
       {showDebugInfo && (
