@@ -236,17 +236,17 @@ export default function PartCreateMenu({
   return (
     <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 flex items-center justify-center">
       {/* パーツ作成メニュー */}
-      <div className="rounded-xl bg-content shadow-lg border border-wood-light/30 p-3 flex flex-col items-center min-w-[140px]">
+      <div className="rounded-xl bg-kibako-white shadow-lg border border-kibako-secondary/30 p-3 flex flex-col items-center min-w-[140px]">
         <div className="flex items-center gap-2">
           {partTypes.map((partType) => (
             <button
               key={partType.type}
               onClick={() => handleCreatePart(partType.type)}
               disabled={creatingPartType !== null}
-              className={`group relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-wood to-wood-dark rounded-lg transition-all duration-200 ${
+              className={`group relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-kibako-secondary to-kibako-primary rounded-lg transition-all duration-200 ${
                 creatingPartType !== null
                   ? 'opacity-50 cursor-not-allowed scale-95'
-                  : 'hover:from-wood-dark hover:to-wood-darkest hover:scale-105 hover:shadow-md'
+                  : 'hover:from-kibako-primary hover:to-kibako-primary hover:scale-105 hover:shadow-md'
               }`}
               title={`${partType.name}を作成`}
             >
@@ -255,7 +255,7 @@ export default function PartCreateMenu({
               ) : (
                 partType.icon
               )}
-              <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-header text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+              <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-kibako-primary text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
                 {creatingPartType === partType.type
                   ? '作成中...'
                   : partType.name}

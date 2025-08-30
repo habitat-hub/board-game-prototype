@@ -43,7 +43,7 @@ const MaintenanceReloadButton: React.FC<MaintenanceReloadButtonProps> = ({
   };
 
   return (
-    <div className="mt-6 pt-4 border-t border-wood-light">
+    <div className="mt-6 pt-4 border-t border-kibako-secondary">
       <button
         onClick={handleReload}
         className="text-kibako-accent hover:text-kibako-primary text-sm transition-colors duration-200 font-medium"

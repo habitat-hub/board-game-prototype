@@ -34,7 +34,7 @@ export default function RoleMenu({
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 flex flex-row items-center justify-between ${showRoleManagementButton ? 'max-w-[150px]' : 'max-w-[100px]'} h-[56px] bg-content p-2 rounded-lg`}
+      className={`fixed top-4 right-4 z-50 flex flex-row items-center justify-between ${showRoleManagementButton ? 'max-w-[150px]' : 'max-w-[100px]'} h-[56px] bg-kibako-white p-2 rounded-lg`}
     >
       {/* ユーザーアイコンリスト（左側・ホバーで全ユーザー名表示） */}
       <div className="relative group">
@@ -48,7 +48,7 @@ export default function RoleMenu({
               return (
                 <span
                   key={user.userId || `user-${idx}`}
-                  className="flex items-center justify-center w-7 h-7 rounded-full bg-wood-light text-wood-dark font-bold text-sm select-none border-2 border-content shadow-sm"
+                  className="flex items-center justify-center w-7 h-7 rounded-full bg-kibako-secondary text-kibako-primary font-bold text-sm select-none border-2 border-kibako-white shadow-sm"
                   style={{ zIndex: 10 - idx }}
                   title={user.username}
                 >
@@ -63,7 +63,7 @@ export default function RoleMenu({
             </span>
           )}
         </button>
-        <div className="absolute right-0 mt-2 max-w-xs bg-kibako-white border border-wood-light rounded shadow z-20 px-3 py-2 text-xs text-wood-dark opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200">
+        <div className="absolute right-0 mt-2 max-w-xs bg-kibako-white border border-kibako-secondary rounded shadow z-20 px-3 py-2 text-xs text-kibako-primary opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200">
           <ul>
             {connectedUsers.map((user) => (
               <li
@@ -81,11 +81,11 @@ export default function RoleMenu({
       {showRoleManagementButton && (
         <Link
           href={`/projects/${projectId}/roles`}
-          className="group flex items-center justify-center w-10 h-10 relative hover:bg-content-secondary rounded transition-colors ml-2"
+          className="group flex items-center justify-center w-10 h-10 relative hover:bg-kibako-tertiary rounded transition-colors ml-2"
           title="権限管理ページへ"
         >
-          <FaUsers className="h-5 w-5 text-wood-dark" />
-          <span className="absolute left-1/2 bottom-[-40px] transform -translate-x-1/2 bg-header text-kibako-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+          <FaUsers className="h-5 w-5 text-kibako-primary" />
+          <span className="absolute left-1/2 bottom-[-40px] transform -translate-x-1/2 bg-kibako-primary text-kibako-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
             権限管理
           </span>
         </Link>
