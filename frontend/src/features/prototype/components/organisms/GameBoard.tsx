@@ -638,7 +638,7 @@ export default function GameBoard({
         </>
       )}
 
-      {/* プレイモード時のサイドバー */}
+      {/* プレイルーム時のサイドバー */}
       {gameBoardMode === GameBoardMode.PLAY && (
         <PlaySidebar
           parts={parts}

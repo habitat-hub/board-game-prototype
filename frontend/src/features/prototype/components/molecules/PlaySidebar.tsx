@@ -1,5 +1,5 @@
 /**
- * @page Playモード専用のサイドバー
+ * @page プレイルーム専用のサイドバー
  */
 
 'use client';
@@ -103,7 +103,7 @@ export default function PlaySidebar({
         <div className="flex items-center">
           <GiPokerHand className="h-4 w-4 text-wood-dark mr-2" />
           <span className="text-[12px] font-medium text-wood-darkest">
-            Play モード設定
+            プレイルーム設定
           </span>
         </div>
       </div>

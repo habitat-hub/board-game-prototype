@@ -93,7 +93,7 @@ export default function PartOnGameBoard({
   const { showDebugInfo } = useDebugMode();
   const { eventHandlers } = useGrabbingCursor();
 
-  // プレイモードでエリアパーツの場合は移動禁止
+  // プレイルームでエリアパーツの場合は移動禁止
   const isDraggable = !(
     gameBoardMode === GameBoardMode.PLAY && part.type === 'area'
   );
@@ -446,7 +446,7 @@ export default function PartOnGameBoard({
         listening={false}
       />
 
-      {/* 手札の持ち主表示（プレイモードのみ） */}
+      {/* 手札の持ち主表示（プレイルームのみ） */}
       {handOwnerName && (
         <Text
           text={`持ち主: ${handOwnerName}`}

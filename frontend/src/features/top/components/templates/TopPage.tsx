@@ -439,7 +439,7 @@ const TopPage: React.FC = () => {
                 ),
                 title: 'テストプレイ',
                 description:
-                  'バージョンを作成し、プレビュールームでゲームを実際にテストできます。',
+                  'バージョンを作成し、プレイルームでゲームを実際にテストできます。',
               },
             ].map((feature, i) => (
               <motion.div
