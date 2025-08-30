@@ -42,12 +42,10 @@ jobs:
         working-directory: ./backend
         run: npm ci
 
-      - name: Run backend tests
+      - name: Run backend tests with coverage
         working-directory: ./backend
-        run: npm run test
-
-      - name: Run backend test coverage
-        working-directory: ./backend
+        env:
+          CI: true
         run: npm run test -- --coverage
 
       - name: Upload coverage reports to Codecov
