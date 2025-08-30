@@ -30,12 +30,15 @@ export const useProject = () => {
   /**
    * プロジェクト作成
    */
-  const createProject = useCallback(async (data: ProjectsCreatePayload) => {
-    const result = await projectService.createProject(data);
-    // 作成成功時にキャッシュを無効化して、戻ってきた時に最新データを取得
-    queryClient.invalidateQueries({ queryKey: ['projects'] });
-    return result;
-  }, [queryClient]);
+  const createProject = useCallback(
+    async (data: ProjectsCreatePayload) => {
+      const result = await projectService.createProject(data);
+      // 作成成功時にキャッシュを無効化して、戻ってきた時に最新データを取得
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      return result;
+    },
+    [queryClient]
+  );
 
   /**
    * プロトタイプバージョン作成

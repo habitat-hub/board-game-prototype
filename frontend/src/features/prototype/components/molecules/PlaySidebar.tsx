@@ -5,7 +5,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { GiPokerHand } from 'react-icons/gi';
+import PartTypeIcon from '@/features/prototype/components/atoms/PartTypeIcon';
 
 import { Part } from '@/api/types';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
@@ -101,7 +101,7 @@ export default function PlaySidebar({
       {/* ヘッダー */}
       <div className="border-b border-wood-lightest/60 rounded-t-lg bg-gradient-to-r from-wood-light/30 to-wood-light/20 py-2 px-4">
         <div className="flex items-center">
-          <GiPokerHand className="h-4 w-4 text-wood-dark mr-2" />
+          <PartTypeIcon type="hand" className="h-4 w-4 text-wood-dark mr-2" ariaHidden />
           <span className="text-[12px] font-medium text-wood-darkest">
             Play モード設定
           </span>

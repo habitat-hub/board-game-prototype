@@ -5,6 +5,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { ReactElement } from 'react';
 
 import { Part, PartProperty } from '@/api/types';
 import PartTypeIcon from '@/features/prototype/components/atoms/PartTypeIcon';
@@ -31,8 +32,10 @@ export default function PartCreateMenu({
   camera: { x: number; y: number; scale: number };
   viewportSize: { width: number; height: number };
   parts: Part[];
-}) {
-  const [creatingPartType, setCreatingPartType] = useState<string | null>(null);
+}): ReactElement {
+  const [creatingPartType, setCreatingPartType] = useState<Part['type'] | null>(
+    null
+  );
 
   /**
    * 新しいパーツを作成し、中央に配置して追加します。
@@ -245,6 +248,7 @@ export default function PartCreateMenu({
                 <PartTypeIcon
                   type={partType.type}
                   className="h-5 w-5 text-white"
+                  ariaHidden
                 />
               )}
               <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-header text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">

@@ -34,9 +34,7 @@ export const usersService = {
   /**
    * チュートリアル表示が必要かどうかを確認する
    */
-  checkNeedTutorial: async (
-    userId: string
-  ): Promise<UsersNeedTutorialData> => {
+  checkNeedTutorial: async (userId: string): Promise<UsersNeedTutorialData> => {
     const response = await axiosInstance.get(
       `/api/users/${userId}/need-tutorial`
     );

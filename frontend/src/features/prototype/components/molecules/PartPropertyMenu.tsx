@@ -270,10 +270,7 @@ export default function PartPropertyMenu({
             onTouchStart={handleDragStart}
           >
             <div className="flex items-center select-none">
-              <PartTypeIcon
-                type={selectedPart.type}
-                className="h-4 w-4 mr-2"
-              />
+              <PartTypeIcon type={selectedPart.type} className="h-4 w-4 mr-2" />
               <span className="text-[12px] font-medium">プロパティ編集</span>
             </div>
             {/* fixed move icon at top-right of the header */}

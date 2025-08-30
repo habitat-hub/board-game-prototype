@@ -7,9 +7,7 @@
     "prettier"
   ],
   "plugins": ["import", "@typescript-eslint", "react"],
-  "ignorePatterns": [
-    "src/api/types/**/*"
-  ],
+  "ignorePatterns": ["src/api/types/**/*"],
   "rules": {
     "react/react-in-jsx-scope": "off",
     "react/prop-types": "off",

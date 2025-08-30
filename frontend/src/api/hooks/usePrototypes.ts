@@ -12,8 +12,13 @@ export const usePrototypes = () => {
    */
   const useUpdatePrototype = () => {
     return useMutation({
-      mutationFn: ({ prototypeId, data }: { prototypeId: string; data: PrototypesUpdatePayload }) =>
-        prototypesService.updatePrototype(prototypeId, data),
+      mutationFn: ({
+        prototypeId,
+        data,
+      }: {
+        prototypeId: string;
+        data: PrototypesUpdatePayload;
+      }) => prototypesService.updatePrototype(prototypeId, data),
       onSuccess: () => {
         // 成功時にプロジェクト一覧のキャッシュを無効化して再取得
         queryClient.invalidateQueries({ queryKey: ['projects'] });
@@ -27,8 +32,6 @@ export const usePrototypes = () => {
   const getPrototype = useCallback(async (prototypeId: string) => {
     return await prototypesService.getPrototype(prototypeId);
   }, []);
-
-
 
   /**
    * プロトタイプ削除

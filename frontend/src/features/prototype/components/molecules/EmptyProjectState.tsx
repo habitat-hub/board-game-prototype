@@ -48,4 +48,4 @@ export const EmptyProjectState: React.FC<EmptyProjectStateProps> = ({
       </button>
     </div>
   );
-}; 
+};
