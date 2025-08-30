@@ -51,7 +51,8 @@ jobs:
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
         with:
-          file: ./backend/coverage/lcov.info
+          files: ./backend/coverage/lcov.info
           flags: backend
           name: backend-coverage
           fail_ci_if_error: false
+          use_oidc: true
