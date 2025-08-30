@@ -136,7 +136,7 @@ export const deleteExpiredImagesFromIndexedDb = async (): Promise<void> => {
     );
 
     // 期限切れレコードのURLとキャッシュをクリーンアップ
-    const expiredIds = expiredRecords.map(record => record.id);
+    const expiredIds = expiredRecords.map((record) => record.id);
     revokeMultipleObjectURLsAndCleanCache(expiredIds);
 
     // IndexedDBからレコードを削除

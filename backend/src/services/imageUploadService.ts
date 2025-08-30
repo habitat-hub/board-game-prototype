@@ -29,6 +29,31 @@ type UploadResult = Pick<
 export const uploadImageToS3 = async (
   file: Express.Multer.File
 ): Promise<UploadResult> => {
+  // 簡易的なMIME検出（外部ライブラリ不使用）
+  const detectImageMime = (buf: Buffer): string | undefined => {
+    if (
+      buf.length >= 3 &&
+      buf[0] === 0xff &&
+      buf[1] === 0xd8 &&
+      buf[2] === 0xff
+    ) {
+      return 'image/jpeg';
+    }
+    if (
+      buf.length >= 8 &&
+      buf[0] === 0x89 &&
+      buf[1] === 0x50 &&
+      buf[2] === 0x4e &&
+      buf[3] === 0x47 &&
+      buf[4] === 0x0d &&
+      buf[5] === 0x0a &&
+      buf[6] === 0x1a &&
+      buf[7] === 0x0a
+    ) {
+      return 'image/png';
+    }
+    return undefined;
+  };
   //最低限のチェック（ファイルサイズ、MIMEタイプ）
   if (file.size > IMAGE_MAX_SIZE) {
     throw new ValidationError(
@@ -37,9 +62,8 @@ export const uploadImageToS3 = async (
   }
 
   // 実ファイル内容からMIMEタイプを判定（拡張子や宣言に依存しない）
-  const { fileTypeFromBuffer } = await import('file-type');
-  const detected = await fileTypeFromBuffer(file.buffer);
-  const mime: string | undefined = detected?.mime ?? file.mimetype;
+  const mimeFromMagic = detectImageMime(file.buffer);
+  const mime: string | undefined = mimeFromMagic ?? file.mimetype;
   if (!mime || !IMAGE_ALLOWED_MIME_TYPES.includes(mime)) {
     throw new ValidationError(
       'サポートされていない画像形式です（JPEG, PNGのみ対応）'
