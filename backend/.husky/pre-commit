@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+# Fail fast: exit on error, unset vars, and failed pipes
+set -euo pipefail
+
+# Run only when backend files are staged
+if ! git diff --cached --name-only | grep -q '^backend/'; then
+  exit 0
+fi
+
 cd backend
 
 # ERDとRedocを生成
@@ -26,5 +34,5 @@ for file in frontend/src/api/types/*; do
   fi
 done
 
-# 正常終了
-exit 0
+# Ensure a clean success status when reached (failures exit earlier)
+true

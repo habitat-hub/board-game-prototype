@@ -36,9 +36,13 @@ export const uploadImageToS3 = async (
     );
   }
 
-  if (!IMAGE_ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+  // 実ファイル内容からMIMEタイプを判定（拡張子や宣言に依存しない）
+  const { fileTypeFromBuffer } = await import('file-type');
+  const detected = await fileTypeFromBuffer(file.buffer);
+  const mime: string | undefined = detected?.mime ?? file.mimetype;
+  if (!mime || !IMAGE_ALLOWED_MIME_TYPES.includes(mime)) {
     throw new ValidationError(
-      'サポートされていない画像形式です（JPEG, PNG, GIFのみ対応）'
+      'サポートされていない画像形式です（JPEG, PNGのみ対応）'
     );
   }
 
@@ -48,7 +52,7 @@ export const uploadImageToS3 = async (
     Bucket: bucketName,
     Key: key,
     Body: file.buffer,
-    ContentType: file.mimetype,
+    ContentType: mime,
   });
   try {
     const response: PutObjectCommandOutput = await s3Client.send(command);
@@ -60,7 +64,7 @@ export const uploadImageToS3 = async (
     return {
       displayName: cleanName,
       storagePath: key,
-      contentType: file.mimetype,
+      contentType: mime,
       fileSize: file.size,
     };
   } catch (error: any) {

@@ -6,7 +6,6 @@ import PrototypeModel from '../models/Prototype';
 import UserModel from '../models/User';
 import { Op } from 'sequelize';
 import { shuffleDeck, isOverlapping } from '../helpers/prototypeHelper';
-import type { CursorInfo } from '../types/cursor';
 import ImageModel from '../models/Image';
 import {
   ORDER_MAX_EXCLUSIVE,
@@ -20,9 +19,6 @@ import {
   COMMON_SOCKET_EVENT,
 } from '../constants/socket';
 import type { DisconnectReason } from 'socket.io';
-
-// カーソル情報のマップ
-const cursorMap: Record<string, Record<string, CursorInfo>> = {};
 
 // 接続中ユーザー情報のマップ (prototypeId -> userId -> user info)
 export const connectedUsersMap: Record<
@@ -183,9 +179,6 @@ function handleJoinPrototype(socket: Socket, io: Server): void {
 
         const partsAndProperties = await fetchPartsAndProperties(prototypeId);
         socket.emit(PROTOTYPE_SOCKET_EVENT.INITIAL_PARTS, partsAndProperties);
-        socket.emit(PROTOTYPE_SOCKET_EVENT.UPDATE_CURSORS, {
-          cursors: cursorMap[prototypeId] || {},
-        });
 
         // 接続中ユーザーリストを全クライアントに送信
         io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS, {
@@ -629,24 +622,6 @@ function handleShuffleDeck(socket: Socket, io: Server): void {
  * @param socket - Socket
  * @param io - Server
  */
-function handleUpdateCursor(socket: Socket, io: Server): void {
-  socket.on(PROTOTYPE_SOCKET_EVENT.UPDATE_CURSOR, (cursorInfo: CursorInfo) => {
-    const { prototypeId } = socket.data as SocketData;
-
-    if (!prototypeId || !cursorInfo.userId) return;
-
-    // プロトタイプごとのカーソル情報を初期化
-    if (!cursorMap[prototypeId]) {
-      cursorMap[prototypeId] = {};
-    }
-
-    cursorMap[prototypeId][cursorInfo.userId] = cursorInfo;
-
-    io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_CURSORS, {
-      cursors: cursorMap[prototypeId],
-    });
-  });
-}
 
 /**
  * Ordersのリバランス
@@ -710,7 +685,6 @@ export default function handlePrototype(socket: Socket, io: Server): void {
   handleDeleteParts(socket, io);
   handleChangeOrder(socket, io);
   handleShuffleDeck(socket, io);
-  handleUpdateCursor(socket, io);
 
   socket.on(COMMON_SOCKET_EVENT.DISCONNECTING, () => {
     // ソケットが切断される直前に呼び出される
@@ -746,9 +720,6 @@ export default function handlePrototype(socket: Socket, io: Server): void {
       // ソケットが完全に切断されたときに呼び出される
       const { prototypeId, userId } = socket.data as SocketData;
       if (prototypeId && userId) {
-        // カーソル情報を削除
-        delete cursorMap[prototypeId]?.[userId];
-
         // 接続中ユーザー情報から削除
         if (connectedUsersMap[prototypeId]) {
           delete connectedUsersMap[prototypeId][userId];
@@ -786,11 +757,6 @@ export default function handlePrototype(socket: Socket, io: Server): void {
             delete connectedUsersMap[prototypeId];
           }
         }
-
-        // カーソル情報の更新を通知
-        io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_CURSORS, {
-          cursors: cursorMap[prototypeId] || {},
-        });
       }
     }
   );

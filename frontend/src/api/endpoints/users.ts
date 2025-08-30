@@ -4,6 +4,7 @@ import {
   UsersSearchListParams,
   User,
   UsersUpdatePayload,
+  UsersNeedTutorialData,
 } from '@/api/types';
 
 export const usersService = {
@@ -27,6 +28,18 @@ export const usersService = {
     data: UsersUpdatePayload
   ): Promise<User> => {
     const response = await axiosInstance.put(`/api/users/${userId}`, data);
+    return response.data;
+  },
+
+  /**
+   * チュートリアル表示が必要かどうかを確認する
+   */
+  checkNeedTutorial: async (
+    userId: string
+  ): Promise<UsersNeedTutorialData> => {
+    const response = await axiosInstance.get(
+      `/api/users/${userId}/need-tutorial`
+    );
     return response.data;
   },
 };

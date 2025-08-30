@@ -1,5 +1,5 @@
 /**
- * @page Playモード専用のサイドバー
+ * @page プレイルーム専用のサイドバー
  */
 
 'use client';
@@ -8,6 +8,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { GiPokerHand } from 'react-icons/gi';
 
 import { Part } from '@/api/types';
+import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { useUser } from '@/hooks/useUser';
 
@@ -30,6 +31,7 @@ export default function PlaySidebar({
 }: PlaySidebarProps) {
   const { dispatch } = usePartReducer();
   const { user } = useUser();
+  const { clearSelection } = useSelectedParts();
 
   // 選択中の手札ID
   const [selectedHandId, setSelectedHandId] = useState<number | null>(null);
@@ -101,7 +103,7 @@ export default function PlaySidebar({
         <div className="flex items-center">
           <GiPokerHand className="h-4 w-4 text-wood-dark mr-2" />
           <span className="text-[12px] font-medium text-wood-darkest">
-            Play モード設定
+            プレイルーム設定
           </span>
         </div>
       </div>
@@ -124,6 +126,7 @@ export default function PlaySidebar({
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
                 onClick={() => {
+                  clearSelection();
                   setSelectedHandId(hand.id);
                   onSelectPart(hand.id);
                 }}

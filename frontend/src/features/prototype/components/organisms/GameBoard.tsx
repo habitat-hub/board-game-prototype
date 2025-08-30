@@ -37,7 +37,6 @@ import { useSelection } from '@/features/prototype/hooks/useSelection';
 import {
   AddPartProps,
   DeleteImageProps,
-  CursorInfo,
   GameBoardMode,
 } from '@/features/prototype/types';
 import { useRoleManagement } from '@/features/role/hooks/useRoleManagement';
@@ -52,10 +51,10 @@ import { isInputFieldFocused } from '@/utils/inputFocus';
 
 interface GameBoardProps {
   prototypeName: string;
+  prototypeId: string;
   projectId: string;
   partsMap: Map<number, Part>;
   propertiesMap: Map<number, PartProperty[]>;
-  cursors: Record<string, CursorInfo>;
   gameBoardMode: GameBoardMode;
   connectedUsers: Array<{
     userId: string;
@@ -64,14 +63,18 @@ interface GameBoardProps {
 }
 
 export default function GameBoard({
-  prototypeName,
+  prototypeName: initialPrototypeName,
+  prototypeId,
   projectId,
   partsMap,
   propertiesMap,
-  cursors,
   gameBoardMode,
   connectedUsers,
 }: GameBoardProps) {
+  const [prototypeName, setPrototypeName] = useState(initialPrototypeName);
+  useEffect(() => {
+    setPrototypeName(initialPrototypeName);
+  }, [initialPrototypeName]);
   const stageRef = useRef<Konva.Stage | null>(null);
   // 前回のレンダリング時の画像IDを保持するref
   const prevImageRef = useRef<string[]>([]);
@@ -596,8 +599,10 @@ export default function GameBoard({
 
       <LeftSidebar
         prototypeName={prototypeName}
+        prototypeId={prototypeId}
         gameBoardMode={gameBoardMode}
         projectId={projectId}
+        onPrototypeNameChange={setPrototypeName}
       />
 
       {/* ロールメニュー - CREATEモードとPLAYモードで表示 */}
@@ -633,7 +638,7 @@ export default function GameBoard({
         </>
       )}
 
-      {/* プレイモード時のサイドバー */}
+      {/* プレイルーム時のサイドバー */}
       {gameBoardMode === GameBoardMode.PLAY && (
         <PlaySidebar
           parts={parts}
@@ -660,7 +665,6 @@ export default function GameBoard({
         mode={gameBoardMode}
         parts={parts}
         properties={properties}
-        cursors={cursors}
       />
 
       {/* コンテキストメニュー */}

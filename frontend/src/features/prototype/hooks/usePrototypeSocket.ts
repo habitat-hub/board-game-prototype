@@ -13,7 +13,6 @@ import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsCon
 import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import {
   ConnectedUser,
-  CursorInfo,
   PartsMap,
   PropertiesMap,
 } from '@/features/prototype/types';
@@ -30,8 +29,6 @@ interface UsePrototypeSocketReturn {
   partsMap: PartsMap;
   /** パーツプロパティのMap */
   propertiesMap: PropertiesMap;
-  /** カーソル情報 */
-  cursors: Record<string, CursorInfo>;
   /** 接続中ユーザーリスト */
   connectedUsers: ConnectedUser[];
 }
@@ -46,10 +43,9 @@ interface ConnectedUsersPayload {
  * プロトタイプ用ソケットを初期化し、イベントを購読して状態を同期するカスタムフック
  * @param prototypeId プロトタイプID（string）
  * @param userId ユーザーID（string）
- * @returns パーツ・プロパティ・カーソル・接続中ユーザーの状態を返す
+ * @returns パーツ・プロパティ・接続中ユーザーの状態を返す
  *   - partsMap: パーツのMap
  *   - propertiesMap: パーツプロパティのMap
- *   - cursors: ユーザーIDをキーにしたカーソル情報
  *   - connectedUsers: 接続中ユーザー配列
  */
 export const usePrototypeSocket = ({
@@ -63,8 +59,6 @@ export const usePrototypeSocket = ({
   const [partsMap, setPartsMap] = useState<PartsMap>(new Map());
   // パーツのプロパティをMap管理（O(1)アクセス）
   const [propertiesMap, setPropertiesMap] = useState<PropertiesMap>(new Map());
-  // カーソル情報
-  const [cursors, setCursors] = useState<Record<string, CursorInfo>>({});
   // 接続中ユーザーリスト
   const [connectedUsers, setConnectedUsers] = useState<ConnectedUser[]>([]);
 
@@ -190,14 +184,6 @@ export const usePrototypeSocket = ({
       }
     );
 
-    // カーソル更新
-    socket.on(
-      PROTOTYPE_SOCKET_EVENT.UPDATE_CURSORS,
-      ({ cursors }: { cursors: Record<string, CursorInfo> }) => {
-        setCursors(cursors);
-      }
-    );
-
     // 接続中ユーザーリスト更新
     socket.on(
       PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS,
@@ -219,7 +205,6 @@ export const usePrototypeSocket = ({
         PROTOTYPE_SOCKET_EVENT.ADD_PART_RESPONSE,
         PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS,
         PROTOTYPE_SOCKET_EVENT.DELETE_PARTS,
-        PROTOTYPE_SOCKET_EVENT.UPDATE_CURSORS,
         PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS,
       ];
       events.forEach((event) => socket.off(event));
@@ -229,7 +214,6 @@ export const usePrototypeSocket = ({
   return {
     partsMap,
     propertiesMap,
-    cursors,
     connectedUsers,
   };
 };

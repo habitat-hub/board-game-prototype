@@ -32,6 +32,9 @@ import {
 } from '@/features/prototype/types';
 import { saveImageToIndexedDb } from '@/utils/db';
 
+// フロントエンドで許可する画像のMIMEタイプ
+const IMAGE_ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png'];
+
 // Props type for PartPropertyMenu
 export type PartPropertyMenuProps = {
   // 選択中のパーツID
@@ -205,6 +208,14 @@ export default function PartPropertyMenu({
   ) => {
     const image = event.target?.files ? event.target.files[0] : null;
     if (!image) return;
+
+    // 許可されていないMIMEタイプの場合：アップロードを中止して通知し、
+    // 同じファイルを再選択できるように入力をクリアする
+    if (!IMAGE_ALLOWED_MIME_TYPES.includes(image.type)) {
+      window.alert('サポートされていない画像形式です（JPEG, PNGのみ対応）');
+      event.target.value = '';
+      return;
+    }
 
     const formData = new FormData();
     formData.append('image', image);
@@ -490,7 +501,7 @@ export default function PartPropertyMenu({
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept={IMAGE_ALLOWED_MIME_TYPES.join(',')}
                     style={{ display: 'none' }}
                     onChange={handleImageUpload}
                   />

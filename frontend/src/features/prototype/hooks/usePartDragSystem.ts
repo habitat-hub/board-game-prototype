@@ -79,7 +79,7 @@ export const usePartDragSystem = ({
         : [partId];
       selectMultipleParts(newSelected);
 
-      // プレイモード時の単一選択カード/トークンのfrontmost処理
+      // プレイルーム時の単一選択カード/トークンのfrontmost処理
       // 複数選択時はfrontmost処理をスキップ
       if (gameBoardMode === GameBoardMode.PLAY && newSelected.length === 1) {
         const draggedPart = parts.find((pt) => pt.id === partId);
