@@ -4,10 +4,10 @@
 
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
-import PartTypeIcon from '@/features/prototype/components/atoms/PartTypeIcon';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { Part } from '@/api/types';
+import PartTypeIcon from '@/features/prototype/components/atoms/PartTypeIcon';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { useUser } from '@/hooks/useUser';
