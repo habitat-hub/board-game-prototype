@@ -1,6 +1,11 @@
 import React from 'react';
 import { BiArea } from 'react-icons/bi';
-import { Gi3dMeeple, GiCard10Clubs, GiPokerHand, GiStoneBlock } from 'react-icons/gi';
+import {
+  Gi3dMeeple,
+  GiCard10Clubs,
+  GiPokerHand,
+  GiStoneBlock,
+} from 'react-icons/gi';
 
 import { Part } from '@/api/types';
 
@@ -18,9 +23,11 @@ export type PartTypeIconProps = {
  * パーツ種別に応じて対応するアイコンを返すコンポーネント
  * - 装飾目的の場合は ariaHidden を true にする
  */
-export default function PartTypeIcon(
-  { type, className, ariaHidden = true }: PartTypeIconProps
-): JSX.Element | null {
+export default function PartTypeIcon({
+  type,
+  className,
+  ariaHidden = true,
+}: PartTypeIconProps): React.ReactElement | null {
   switch (type) {
     case 'token':
       return <Gi3dMeeple className={className} aria-hidden={ariaHidden} />;
