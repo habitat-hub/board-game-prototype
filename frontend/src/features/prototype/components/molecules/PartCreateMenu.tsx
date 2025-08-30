@@ -5,15 +5,9 @@
 'use client';
 
 import { useState } from 'react';
-import { BiArea } from 'react-icons/bi';
-import {
-  Gi3dMeeple,
-  GiCard10Clubs,
-  GiPokerHand,
-  GiStoneBlock,
-} from 'react-icons/gi';
 
 import { Part, PartProperty } from '@/api/types';
+import PartTypeIcon from '@/features/prototype/components/atoms/PartTypeIcon';
 import {
   PART_DEFAULT_CONFIG,
   GAME_BOARD_SIZE,
@@ -209,27 +203,22 @@ export default function PartCreateMenu({
     {
       type: 'token' as const,
       name: PART_DEFAULT_CONFIG.TOKEN.name,
-      icon: <Gi3dMeeple className="h-5 w-5 text-white" />,
     },
     {
       type: 'card' as const,
       name: PART_DEFAULT_CONFIG.CARD.name,
-      icon: <GiCard10Clubs className="h-5 w-5 text-white" />,
     },
     {
       type: 'hand' as const,
       name: PART_DEFAULT_CONFIG.HAND.name,
-      icon: <GiPokerHand className="h-5 w-5 text-white" />,
     },
     {
       type: 'deck' as const,
       name: PART_DEFAULT_CONFIG.DECK.name,
-      icon: <GiStoneBlock className="h-5 w-5 text-white" />,
     },
     {
       type: 'area' as const,
       name: PART_DEFAULT_CONFIG.AREA.name,
-      icon: <BiArea className="h-5 w-5 text-white" />,
     },
   ];
 
@@ -253,7 +242,10 @@ export default function PartCreateMenu({
               {creatingPartType === partType.type ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
-                partType.icon
+                <PartTypeIcon
+                  type={partType.type}
+                  className="h-5 w-5 text-white"
+                />
               )}
               <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-header text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
                 {creatingPartType === partType.type

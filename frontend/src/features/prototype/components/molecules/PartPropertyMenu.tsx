@@ -6,14 +6,7 @@
 
 import axios from 'axios';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { BiArea } from 'react-icons/bi';
 import { FaRegCopy, FaRegTrashAlt, FaImage, FaSpinner } from 'react-icons/fa';
-import {
-  Gi3dMeeple,
-  GiCard10Clubs,
-  GiPokerHand,
-  GiStoneBlock,
-} from 'react-icons/gi';
 import { IoMdMove } from 'react-icons/io';
 
 import { useImages } from '@/api/hooks/useImages';
@@ -22,6 +15,7 @@ import NumberInput from '@/components/atoms/NumberInput';
 import TextInput from '@/components/atoms/TextInput';
 import ColorPicker from '@/features/prototype/components/atoms/ColorPicker';
 import PartPropertyMenuButton from '@/features/prototype/components/atoms/PartPropertyMenuButton';
+import PartTypeIcon from '@/features/prototype/components/atoms/PartTypeIcon';
 import { COLORS } from '@/features/prototype/constants';
 import useDraggablePartPropertyMenu from '@/features/prototype/hooks/useDraggablePartPropertyMenu';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
@@ -276,17 +270,10 @@ export default function PartPropertyMenu({
             onTouchStart={handleDragStart}
           >
             <div className="flex items-center select-none">
-              {selectedPart.type === 'card' ? (
-                <GiCard10Clubs className="h-4 w-4 mr-2" />
-              ) : selectedPart.type === 'token' ? (
-                <Gi3dMeeple className="h-4 w-4 mr-2" />
-              ) : selectedPart.type === 'hand' ? (
-                <GiPokerHand className="h-4 w-4 mr-2" />
-              ) : selectedPart.type === 'deck' ? (
-                <GiStoneBlock className="h-4 w-4 mr-2" />
-              ) : selectedPart.type === 'area' ? (
-                <BiArea className="h-4 w-4 mr-2" />
-              ) : null}
+              <PartTypeIcon
+                type={selectedPart.type}
+                className="h-4 w-4 mr-2"
+              />
               <span className="text-[12px] font-medium">プロパティ編集</span>
             </div>
             {/* fixed move icon at top-right of the header */}
