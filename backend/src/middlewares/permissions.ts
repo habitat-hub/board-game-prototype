@@ -1,8 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import ProjectModel from '../models/Project';
-import UserModel from '../models/User';
+// 型のみ利用（ランタイム依存を避ける）
+import type UserModel from '../models/User';
 import { hasPermission } from '../helpers/roleHelper';
-import { RESOURCE_TYPES, PERMISSION_ACTIONS } from '../const';
+import {
+  RESOURCE_TYPES,
+  PERMISSION_ACTIONS,
+  type ResourceType,
+  type PermissionAction,
+} from '../const';
 
 /**
  * Express の非同期ミドルウェア型
@@ -32,12 +39,14 @@ export async function checkProjectOwner(
     const projectId = req.params.projectId;
 
     if (!user || !user.id) {
-      res.status(401).json({ message: '認証が必要です' });
+      res.status(StatusCodes.UNAUTHORIZED).json({ message: '認証が必要です' });
       return;
     }
 
     if (!projectId) {
-      res.status(400).json({ message: '必要なパラメータが不足しています' });
+      res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: '必要なパラメータが不足しています' });
       return;
     }
 
@@ -49,11 +58,15 @@ export async function checkProjectOwner(
       return next();
     }
 
-    res.status(403).json({ message: 'プロジェクトの作成者ではありません' });
+    res
+      .status(StatusCodes.FORBIDDEN)
+      .json({ message: 'プロジェクトの作成者ではありません' });
     return;
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: '予期せぬエラーが発生しました' });
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: '予期せぬエラーが発生しました' });
     return;
   }
 }
@@ -71,45 +84,57 @@ export async function checkProjectOwner(
  * const checkReadPermission = checkPermission(RESOURCE_TYPES.PROTOTYPE, PERMISSION_ACTIONS.READ, 'prototypeId');
  */
 export function checkPermission(
-  resource: string,
-  action: string,
+  resource: ResourceType,
+  action: PermissionAction,
   resourceIdParam: string = 'resourceId'
-) {
-  return async (req: Request, res: Response, next: NextFunction) => {
+): AsyncMiddleware {
+  return async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     const user = req.user as UserModel;
-    const resourceId = req.params[resourceIdParam];
+    const resourceId: string | undefined = req.params[resourceIdParam];
 
+    // 未認証の場合
     if (!user || !user.id) {
-      res.status(401).json({ message: '認証が必要です' });
+      res.status(StatusCodes.UNAUTHORIZED).json({ message: '認証が必要です' });
       return;
     }
 
+    // 必須パラメータが不足している場合
     if (!resourceId) {
-      res.status(400).json({ message: '必要なパラメータが不足しています' });
+      res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: '必要なパラメータが不足しています' });
       return;
     }
 
-    const userId = user.id;
+    const userId: string = String(user.id);
 
     try {
-      const hasAccess = await hasPermission(
+      const hasAccess: boolean = await hasPermission(
         userId,
         resource,
         action,
         resourceId
       );
 
+      // 権限がある場合
       if (hasAccess) {
-        return next();
+        next();
+        return;
       }
 
-      res.status(403).json({
+      res.status(StatusCodes.FORBIDDEN).json({
         message: `${resource}への${action}権限がありません`,
       });
       return;
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: '予期せぬエラーが発生しました' });
+      res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: '予期せぬエラーが発生しました' });
       return;
     }
   };
