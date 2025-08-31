@@ -2,7 +2,6 @@ import express from 'express';
 import session from 'express-session';
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import dotenv from 'dotenv';
 import http from 'http';
 import cors from 'cors';
 import { Server, Socket } from 'socket.io';
@@ -15,7 +14,7 @@ import { swaggerSchemas } from './swagger-schemas';
 import { execSync } from 'child_process';
 import path from 'path';
 
-dotenv.config();
+import env from './config/env';
 
 import sequelize from './models';
 
@@ -40,12 +39,12 @@ const server = http.createServer(app);
 const PORT = 8080;
 
 console.log('Starting Board Game Prototype Server...');
-console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+console.log(`Environment: ${env.NODE_ENV}`);
 
 // 開発環境でのみSwagger UIを有効にする
-if (process.env.NODE_ENV === 'development') {
+if (env.NODE_ENV === 'development') {
   // 一部の開発フローではSwagger生成をスキップできます
-  if (!process.env.SKIP_SWAGGER) {
+  if (!env.SKIP_SWAGGER) {
     // Swagger定義を生成
     try {
       console.log('Generating Swagger schemas...');
@@ -96,7 +95,7 @@ if (process.env.NODE_ENV === 'development') {
 // Socket.ioの設定
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL,
+    origin: env.FRONTEND_URL,
     methods: ['GET', 'POST', 'DELETE'],
   },
 });
@@ -129,7 +128,7 @@ sequelize
 // CORS設定
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: env.FRONTEND_URL,
     credentials: true,
   })
 );
@@ -141,7 +140,7 @@ app.use(express.json());
 const PostgresStore = pgSession(session);
 const sessionStore = new PostgresStore({
   conObject: {
-    connectionString: process.env.DATABASE_URL,
+    connectionString: env.DATABASE_URL,
   },
   createTableIfMissing: true,
 });
@@ -150,13 +149,16 @@ const sessionStore = new PostgresStore({
 app.use(
   session({
     store: sessionStore,
-    secret: process.env.SESSION_SECRET!,
+    secret: env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000,
-      domain: process.env.FRONTEND_DOMAIN,
+      // 本番のみドメイン指定（ローカルでは省略）
+      ...(env.NODE_ENV === 'production' && env.FRONTEND_DOMAIN
+        ? { domain: env.FRONTEND_DOMAIN }
+        : {}),
     },
   })
 );
@@ -169,9 +171,9 @@ app.use(passport.session());
 passport.use(
   new GoogleStrategy(
     {
-      clientID: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL!,
+      clientID: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+      callbackURL: env.GOOGLE_CALLBACK_URL,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -221,7 +223,7 @@ io.on('connection', (socket: Socket) => {
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`Socket.IO is ready for real-time connections`);
-  if (process.env.NODE_ENV === 'development') {
+  if (env.NODE_ENV === 'development') {
     console.log(
       `API Documentation available at: http://localhost:${PORT}/api-docs`
     );

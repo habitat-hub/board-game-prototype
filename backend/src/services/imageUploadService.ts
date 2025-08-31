@@ -12,8 +12,9 @@ import {
 } from '../constants/file';
 import ImageModel from '../models/Image';
 import { handleAWSError } from '../utils/awsErrorHandler';
+import env from '../config/env';
 
-const bucketName = process.env.AWS_S3_BUCKET_NAME!;
+const bucketName = env.AWS_S3_BUCKET_NAME;
 
 // 戻り値型を定義（ImageModelから必要なプロパティを抽出）
 type UploadResult = Pick<
