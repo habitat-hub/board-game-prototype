@@ -5,8 +5,9 @@ import {
 import s3Client from '../config/s3Client';
 import { InternalServerError } from '../errors/CustomError';
 import { handleAWSError } from '../utils/awsErrorHandler';
+import env from '../config/env';
 
-const bucketName = process.env.AWS_S3_BUCKET_NAME!;
+const bucketName = env.AWS_S3_BUCKET_NAME;
 
 /**
  * S3から画像を削除するサービス

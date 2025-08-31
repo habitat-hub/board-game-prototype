@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import passport from 'passport';
 import UserModel from '../models/User';
+import env from '../config/env';
 
 const router = Router();
 
@@ -55,10 +56,10 @@ router.get(
 router.get(
   '/google/callback',
   passport.authenticate('google', {
-    failureRedirect: process.env.FRONTEND_URL,
+    failureRedirect: env.FRONTEND_URL,
   }),
   (req, res) => {
-    res.redirect(`${process.env.FRONTEND_URL}/projects`);
+    res.redirect(`${env.FRONTEND_URL}/projects`);
   }
 );
 
