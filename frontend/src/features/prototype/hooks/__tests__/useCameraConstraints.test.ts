@@ -1,8 +1,7 @@
 import { renderHook } from '@testing-library/react';
 
 import { CAMERA_SCALE, GAME_BOARD_CENTER } from '@/features/prototype/constants';
-
-import { useCameraConstraints } from '../useCameraConstraints';
+import { useCameraConstraints } from '@/features/prototype/hooks/useCameraConstraints';
 
 describe('useCameraConstraints', () => {
   test('getConstrainedCameraPosition clamps position within bounds', () => {
