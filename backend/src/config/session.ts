@@ -69,8 +69,13 @@ export function setupSession(app: Express) {
     done(null, (user as UserModel).id);
   });
   passport.deserializeUser((id: number, done) => {
-    UserModel.findByPk(id).then((user) => {
-      done(null, user);
-    });
+    UserModel.findByPk(id)
+      .then((user) => {
+        done(null, user);
+      })
+      .catch((err) => {
+        console.error('ユーザーの復元に失敗しました', err);
+        done(err);
+      });
   });
 }
