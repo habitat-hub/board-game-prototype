@@ -197,20 +197,33 @@ export const usePrototypeSocket = ({
       }
     );
 
-    socket.on(
-      PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS,
-      ({ userId, username, selectedPartIds }) => {
-        setOtherSelections((prev) => {
-          const next = { ...prev };
-          if (selectedPartIds.length === 0) {
-            delete next[userId];
-          } else {
-            next[userId] = { username, selectedPartIds };
-          }
-          return next;
-        });
-      }
-    );
+    type SelectedPartsIncoming = {
+      userId?: string;
+      username?: string;
+      selectedPartIds?: unknown;
+    };
+    const onSelectedParts = ({
+      userId: fromUserId,
+      username,
+      selectedPartIds,
+    }: SelectedPartsIncoming) => {
+      if (!fromUserId) return;
+      // 自分自身のイベントは無視（サーバーの挙動変更に備えて冪等に）
+      if (fromUserId === userId) return;
+      const ids = Array.isArray(selectedPartIds)
+        ? (selectedPartIds.filter((v) => typeof v === 'number') as number[])
+        : [];
+      setOtherSelections((prev) => {
+        const next = { ...prev };
+        if (ids.length === 0) {
+          delete next[fromUserId];
+        } else {
+          next[fromUserId] = { username: username ?? '', selectedPartIds: ids };
+        }
+        return next;
+      });
+    };
+    socket.on(PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS, onSelectedParts);
 
     return () => {
       // イベントリスナーを削除
