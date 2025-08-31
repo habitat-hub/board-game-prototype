@@ -104,7 +104,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                     alert(error.message || 'エラーが発生しました');
                   })
                 }
-                className="w-full text-kibako-primary font-semibold bg-transparent border border-transparent rounded-md p-1 -m-1 focus:outline-none focus:bg-white focus:border-kibako-primary focus:shadow-sm transition-all text-base"
+                className="w-full text-kibako-primary font-semibold bg-transparent border border-transparent rounded-md p-1 -m-1 focus:outline-none focus:bg-kibako-white focus:border-kibako-primary focus:shadow-sm transition-all text-base"
                 autoFocus
               />
             </form>

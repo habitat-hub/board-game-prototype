@@ -60,7 +60,7 @@ export default function GameBoardHelpPanel({
           aria-label={isExpanded ? 'ヘルプを閉じる' : 'ヘルプを開く'}
           title="操作ヘルプ (Shift+?)"
         >
-          <IoInformationCircleOutline className="h-4 w-4 text-white" />
+          <IoInformationCircleOutline className="h-4 w-4 text-kibako-white" />
         </button>
 
         {isExpanded && (

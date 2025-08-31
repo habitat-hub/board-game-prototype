@@ -17,29 +17,29 @@ const RoleBadge: React.FC<RoleBadgeProps> = ({
       case 'admin':
         return {
           icon: <FaUserShield className="h-3 w-3" />,
-          bgColor: 'bg-red-100',
-          textColor: 'text-red-700',
+          bgColor: 'bg-kibako-danger/10',
+          textColor: 'text-kibako-danger/80',
           label: 'Admin',
         };
       case 'editor':
         return {
           icon: <FaEdit className="h-3 w-3" />,
-          bgColor: 'bg-blue-100',
-          textColor: 'text-blue-700',
+          bgColor: 'bg-kibako-info/10',
+          textColor: 'text-kibako-info/80',
           label: 'Editor',
         };
       case 'viewer':
         return {
           icon: <FaEye className="h-3 w-3" />,
-          bgColor: 'bg-gray-100',
-          textColor: 'text-gray-700',
+          bgColor: 'bg-kibako-tertiary/20',
+          textColor: 'text-kibako-primary/80',
           label: 'Viewer',
         };
       default:
         return {
           icon: <FaEye className="h-3 w-3" />,
-          bgColor: 'bg-gray-100',
-          textColor: 'text-gray-700',
+          bgColor: 'bg-kibako-tertiary/20',
+          textColor: 'text-kibako-primary/80',
           label: role.charAt(0).toUpperCase() + role.slice(1),
         };
     }

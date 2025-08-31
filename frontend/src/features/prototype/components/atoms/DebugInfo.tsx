@@ -63,14 +63,14 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
       case 'info':
         return (
           <div className="text-sm h-[50vh] overflow-y-auto">
-            <div className="border-b border-white border-opacity-20 mb-2 pb-1">
+            <div className="border-b border-kibako-white border-opacity-20 mb-2 pb-1">
               <strong>Current Status</strong>
             </div>
             <div className="mb-1.5">
               <span className="font-bold">Mode:</span> {mode}
             </div>
             <div
-              className={`font-bold mb-1.5 ${selectedPartIds.length ? 'text-yellow-400' : 'text-white'}`}
+              className={`font-bold mb-1.5 ${selectedPartIds.length ? 'text-yellow-400' : 'text-kibako-white'}`}
             >
               Selected Parts: {selectedPartIds.length}
             </div>
@@ -80,7 +80,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
               </div>
             )}
 
-            <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
+            <div className="border-b border-kibako-white border-opacity-20 mt-3 mb-2 pb-1">
               <strong>Camera</strong>
             </div>
             <div className="mb-1">
@@ -104,7 +104,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
             </div>
             <div>Zoom: {camera.scale.toFixed(2)}x</div>
 
-            <div className="border-b border-white border-opacity-20 mt-3 mb-2 pb-1">
+            <div className="border-b border-kibako-white border-opacity-20 mt-3 mb-2 pb-1">
               <strong>Prototype</strong>
             </div>
             <div>Name: {prototypeName}</div>
@@ -115,7 +115,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
       case 'perf':
         return (
           <div className="text-sm h-[50vh] overflow-y-auto">
-            <div className="border-b border-white border-opacity-20 mb-2 pb-1">
+            <div className="border-b border-kibako-white border-opacity-20 mb-2 pb-1">
               <strong>Performance</strong>
             </div>
 
@@ -179,7 +179,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
                   {Object.entries(performanceMetrics).map(([op, metric]) => (
                     <div
                       key={op}
-                      className="mb-1 border border-white border-opacity-10 p-0.5 rounded-sm"
+                      className="mb-1 border border-kibako-white border-opacity-10 p-0.5 rounded-sm"
                     >
                       <div className="font-bold">{op}</div>
                       <div className="ml-2">
@@ -196,7 +196,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
                 </div>
                 <button
                   onClick={resetMetrics}
-                  className="bg-white bg-opacity-20 border border-white border-opacity-30 text-white px-1.5 py-0.5 rounded text-[10px] cursor-pointer mt-1 hover:bg-opacity-30 transition-colors"
+                  className="bg-kibako-white bg-opacity-20 border border-kibako-white border-opacity-30 text-kibako-white px-1.5 py-0.5 rounded text-[10px] cursor-pointer mt-1 hover:bg-opacity-30 transition-colors"
                 >
                   Reset Metrics
                 </button>
@@ -208,7 +208,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
       case 'data':
         return (
           <div className="text-sm h-[50vh] overflow-y-auto">
-            <div className="border-b border-white border-opacity-20 mb-2 pb-1">
+            <div className="border-b border-kibako-white border-opacity-20 mb-2 pb-1">
               <strong>Data Overview</strong>
             </div>
             <div className="mb-2">
@@ -270,7 +270,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
                     return (
                       <div
                         key={`part-${index}`}
-                        className="mb-2 border border-white border-opacity-10 p-1 rounded-sm"
+                        className="mb-2 border border-kibako-white border-opacity-10 p-1 rounded-sm"
                       >
                         <div className="font-bold text-blue-300">
                           ID: {part.id} | Type: {part.type}
@@ -303,14 +303,14 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
 
                         {/* このパーツのプロパティ */}
                         {partProperties.length > 0 && (
-                          <div className="mt-2 border-t border-white border-opacity-10 pt-1">
+                          <div className="mt-2 border-t border-kibako-white border-opacity-10 pt-1">
                             <div className="text-yellow-300 font-bold text-[10px]">
                               Properties ({partProperties.length}):
                             </div>
                             {partProperties.map((prop, propIndex) => (
                               <div
                                 key={`prop-${propIndex}`}
-                                className="ml-2 mt-1 text-[10px] border-l border-white border-opacity-10 pl-1"
+                                className="ml-2 mt-1 text-[10px] border-l border-kibako-white border-opacity-10 pl-1"
                               >
                                 <div className="text-green-300">
                                   Side: {prop.side}
@@ -347,9 +347,9 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
   };
 
   return (
-    <div className="fixed bottom-4 left-4 bg-black bg-opacity-80 text-white p-2.5 rounded-md font-mono text-sm z-[1000] w-96 max-h-[80vh] flex flex-col">
+    <div className="fixed bottom-4 left-4 bg-kibako-black/80 text-kibako-white p-2.5 rounded-md font-mono text-sm z-[1000] w-96 max-h-[80vh] flex flex-col">
       {/* タブヘッダー */}
-      <div className="flex border-b border-white border-opacity-20 mb-2">
+      <div className="flex border-b border-kibako-white border-opacity-20 mb-2">
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -357,7 +357,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
             className={`flex-1 px-1 py-1 text-[11px] cursor-pointer transition-colors text-center ${
               activeTab === tab.id
                 ? 'text-blue-400 border-b-2 border-blue-400'
-                : 'text-white text-opacity-70 hover:text-opacity-100'
+                : 'text-kibako-white text-opacity-70 hover:text-opacity-100'
             }`}
           >
             {tab.label}
@@ -368,7 +368,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
       {/* タブコンテンツ */}
       <div className="flex-1 overflow-y-auto">{renderTabContent()}</div>
 
-      <div className="text-[11px] mt-2 pt-2 border-t border-white border-opacity-20">
+      <div className="text-[11px] mt-2 pt-2 border-t border-kibako-white border-opacity-20">
         Press Cmd+i (Mac) or Ctrl+i (Windows) to toggle debug panel
       </div>
     </div>
