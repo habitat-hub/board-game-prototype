@@ -49,6 +49,8 @@ server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`Socket.IO is ready for real-time connections`);
   if (env.NODE_ENV === 'development') {
-    console.log(`API Documentation available at: http://localhost:${PORT}/api-docs`);
+    console.log(
+      `API Documentation available at: http://localhost:${PORT}/api-docs`
+    );
   }
 });

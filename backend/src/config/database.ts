@@ -10,7 +10,9 @@ export function connectDatabase() {
       console.log('✅ Database connected successfully');
 
       try {
-        const { initializeDatabaseIfNeeded } = await import('../database/initializer');
+        const { initializeDatabaseIfNeeded } = await import(
+          '../database/initializer'
+        );
         await initializeDatabaseIfNeeded();
         console.log('🚀 Server is ready to accept connections');
       } catch (error) {

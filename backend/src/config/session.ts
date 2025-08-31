@@ -44,7 +44,9 @@ export function setupSession(app: Express) {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          let user = await UserModel.findOne({ where: { googleId: profile.id } });
+          let user = await UserModel.findOne({
+            where: { googleId: profile.id },
+          });
           if (!user) {
             user = await UserModel.create({
               googleId: profile.id,
