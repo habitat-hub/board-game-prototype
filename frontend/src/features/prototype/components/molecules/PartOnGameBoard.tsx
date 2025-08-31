@@ -49,6 +49,7 @@ interface PartOnGameBoardProps {
   ) => void;
   isActive: boolean;
   selectedBy?: Array<{ userId: string; username: string }>;
+  selfUser?: { userId: string; username: string };
   // ユーザー情報
   userRoles?: Array<{
     userId: string;
@@ -70,6 +71,7 @@ export default function PartOnGameBoard({
   onContextMenu,
   isActive = false,
   selectedBy = [],
+  selfUser,
   userRoles = [],
 }: PartOnGameBoardProps) {
   const groupRef = useRef<Konva.Group>(null);
@@ -118,6 +120,12 @@ export default function PartOnGameBoard({
 
   const isCard = part.type === 'card';
   const isDeck = part.type === 'deck';
+
+  // 自分の選択色（自分が選択中のときに枠・影色に使用）
+  const selfSelectedColor = useMemo(() => {
+    if (!selfUser) return null;
+    return getUserColor(selfUser.userId, selfUser.username);
+  }, [selfUser]);
 
   // 手札の持ち主
   const handOwnerName = useMemo(() => {
@@ -408,12 +416,19 @@ export default function PartOnGameBoard({
         width={part.width}
         height={part.height}
         fill={imageLoaded ? 'white' : targetProperty?.color || 'white'}
-        stroke={'grey'}
+        stroke={isActive && selfSelectedColor ? selfSelectedColor : 'grey'}
         strokeWidth={getStrokeWidth(part.type)}
         cornerRadius={getCornerRadius(part.type)}
         dash={getDashPattern(part.type)}
-        shadowColor={getShadowColor(part.type, isActive)}
-        shadowBlur={getShadowBlur(part.type, isActive)}
+        shadowColor={
+          isActive && selfSelectedColor
+            ? selfSelectedColor
+            : getShadowColor(part.type, isActive)
+        }
+        shadowBlur={
+          isActive && selfSelectedColor ? 20 : getShadowBlur(part.type, isActive)
+        }
+        shadowOpacity={isActive && selfSelectedColor ? 0.9 : 1}
         shadowOffsetX={getShadowOffsetX(part.type, isActive)}
         shadowOffsetY={getShadowOffsetY(part.type, isActive)}
         perfectDrawEnabled={false}
@@ -507,6 +522,42 @@ export default function PartOnGameBoard({
             listening={false}
             hitStrokeWidth={0}
           />
+        );
+      })}
+
+      {/* 選択中ユーザー名をパーツ右側に表示 */}
+      {selectedBy.map((user, index) => {
+        const color = getUserColor(user.userId, user.username);
+        const itemHeight = 32; // ラベル高さ（フォント拡大に合わせて余白も拡大）
+        return (
+          <Group
+            key={`label-${user.userId}`}
+            x={part.width + 6}
+            y={index * itemHeight}
+            listening={false}
+          >
+            {/* 色付きのマーカー（拡大） */}
+            <Rect
+              x={0}
+              y={8}
+              width={16}
+              height={16}
+              cornerRadius={4}
+              fill={color}
+              listening={false}
+              hitStrokeWidth={0}
+            />
+            <Text
+              x={22}
+              y={0}
+              text={user.username}
+              fontSize={24}
+              fill={color}
+              listening={false}
+              perfectDrawEnabled={false}
+              hitStrokeWidth={0}
+            />
+          </Group>
         );
       })}
 

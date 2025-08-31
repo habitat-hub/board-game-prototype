@@ -40,6 +40,7 @@ const SocketGameBoard: React.FC<SocketGameBoardProps> = ({
       projectId={projectId}
       gameBoardMode={gameBoardMode}
       connectedUsers={connectedUsers}
+      currentUserId={userId}
       selectedUsersByPart={selectedUsersByPart}
     />
   );

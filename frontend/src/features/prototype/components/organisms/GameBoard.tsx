@@ -61,6 +61,7 @@ interface GameBoardProps {
     username: string;
   }>;
   selectedUsersByPart: Record<number, { userId: string; username: string }[]>;
+  currentUserId: string;
 }
 
 export default function GameBoard({
@@ -72,6 +73,7 @@ export default function GameBoard({
   gameBoardMode,
   connectedUsers,
   selectedUsersByPart,
+  currentUserId,
 }: GameBoardProps) {
   const [prototypeName, setPrototypeName] = useState(initialPrototypeName);
   useEffect(() => {
@@ -94,6 +96,11 @@ export default function GameBoard({
   const { cardVisibilityMap } = useHandVisibility(parts, gameBoardMode);
   // ロール管理情報を取得
   const { userRoles } = useRoleManagement(projectId);
+
+  // 自分のユーザー情報（色付けに使用）
+  const selfUser = useMemo(() => {
+    return connectedUsers.find((u) => u.userId === currentUserId) || null;
+  }, [connectedUsers, currentUserId]);
 
   // 選択中のパーツ、および選択処理
   const {
@@ -579,6 +586,7 @@ export default function GameBoard({
                   gameBoardMode={gameBoardMode}
                   isActive={isActive}
                   selectedBy={selectedBy}
+                  selfUser={selfUser ?? undefined}
                   isOtherPlayerHandCard={isOtherPlayerHandCard}
                   userRoles={userRoles}
                   onClick={(e) => handlePartClick(e, part.id)}
