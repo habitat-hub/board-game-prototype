@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { useState } from 'react';
 
 import { CAMERA_SCALE } from '@/features/prototype/constants';
+
 import { useCameraConstraints } from '../useCameraConstraints';
 import { useCameraHandlers } from '../useCameraHandlers';
 

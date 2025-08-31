@@ -5,10 +5,10 @@ import type Konva from 'konva';
 import { useEffect, useState } from 'react';
 
 import { Part } from '@/api/types';
-import { CAMERA_SCALE, GAME_BOARD_CONFIG } from '@/features/prototype/constants';
-import { CameraPosition, ViewportSize } from '@/features/prototype/types';
+import { GAME_BOARD_CONFIG } from '@/features/prototype/constants';
 import { useCameraConstraints } from '@/features/prototype/hooks/useCameraConstraints';
 import { useCameraHandlers } from '@/features/prototype/hooks/useCameraHandlers';
+import { CameraPosition, ViewportSize } from '@/features/prototype/types';
 
 interface UseGameCameraProps {
   /** パーツリスト（初期カメラ位置計算用） */

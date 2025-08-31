@@ -1,6 +1,7 @@
 import { renderHook } from '@testing-library/react';
 
 import { CAMERA_SCALE, GAME_BOARD_CENTER } from '@/features/prototype/constants';
+
 import { useCameraConstraints } from '../useCameraConstraints';
 
 describe('useCameraConstraints', () => {
