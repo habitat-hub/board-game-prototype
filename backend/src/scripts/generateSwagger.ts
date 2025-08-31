@@ -74,18 +74,25 @@ const commonSchemas = {
   },
 };
 
-function getSwaggerType(sequelizeType: any, allowNull: boolean = false): any {
-  const type = sequelizeType.toString().toLowerCase();
+type SwaggerType = Record<string, unknown>;
 
-  let swaggerType: any;
+function getSwaggerType(
+  sequelizeType: unknown,
+  allowNull: boolean = false
+): SwaggerType | { oneOf: [SwaggerType, { type: 'null' }] } {
+  const type = String(sequelizeType).toLowerCase();
+
+  let swaggerType: SwaggerType;
 
   if (sequelizeType instanceof DataTypes.ENUM) {
     swaggerType = {
       type: 'string',
-      enum: (sequelizeType as any).values,
+      enum: (sequelizeType as DataTypes.EnumDataType<string>).values,
     };
   } else if (sequelizeType instanceof DataTypes.ARRAY) {
-    const itemType = getSwaggerType((sequelizeType as any).type);
+    const itemType = getSwaggerType(
+      (sequelizeType as { options: { type: unknown } }).options.type
+    );
     swaggerType = {
       type: 'array',
       items: itemType,
@@ -123,11 +130,22 @@ function getSwaggerType(sequelizeType: any, allowNull: boolean = false): any {
   return swaggerType;
 }
 
+type ModelWithDefaultScope = ModelStatic<Model> & {
+  options?: {
+    defaultScope?: {
+      attributes?: {
+        exclude?: string[];
+      };
+    };
+  };
+};
+
 function generateSwaggerSchema(model: ModelStatic<Model>) {
   const attributes = model.getAttributes();
   const defaultScope =
-    (model as any).options?.defaultScope?.attributes?.exclude || [];
-  const properties: Record<string, any> = {};
+    (model as ModelWithDefaultScope).options?.defaultScope?.attributes
+      ?.exclude || [];
+  const properties: Record<string, unknown> = {};
   const required: string[] = [];
 
   for (const [key, attribute] of Object.entries(attributes)) {

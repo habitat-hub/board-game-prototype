@@ -27,9 +27,8 @@ export const fetchImageFromS3 = async (key: string): Promise<Readable> => {
     }
 
     return response.Body as Readable;
-  } catch (error: any) {
+  } catch (error: unknown) {
     // AWS SDKのエラーをハンドリング
-    handleAWSError(error);
-    throw error; // ここに到達することはないが、TypeScriptの型チェックを通すために必要
+    return handleAWSError(error);
   }
 };

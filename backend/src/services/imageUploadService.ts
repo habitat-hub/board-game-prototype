@@ -68,9 +68,8 @@ export const uploadImageToS3 = async (
       contentType: mime,
       fileSize: file.size,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     // AWS SDKのエラーをハンドリング
-    handleAWSError(error);
-    throw error; // ここに到達することはないが、TypeScriptの型チェックを通すために必要
+    return handleAWSError(error);
   }
 };
