@@ -147,7 +147,7 @@ export default function PartOnGameBoard({
   const selfSelectedColor = useMemo<string | null>(() => {
     if (!selfUser) return null;
     return getUserColor(selfUser.userId, selfUser.username);
-  }, [selfUser?.userId, selfUser?.username]);
+  }, [selfUser]);
 
   // 選択装飾用の計算結果をメモ化
   const selectedByWithColors = useMemo(
