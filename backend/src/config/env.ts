@@ -21,6 +21,8 @@ const envSchema = z.object({
   SKIP_SWAGGER: z.string().optional(),
 });
 
-const env = envSchema.parse(process.env);
+export type Env = z.infer<typeof envSchema>;
+
+const env: Env = envSchema.parse(process.env);
 
 export default env;
