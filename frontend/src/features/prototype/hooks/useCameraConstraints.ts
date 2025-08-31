@@ -16,11 +16,11 @@ import {
  * カメラ制約の計算と関連ユーティリティを提供するカスタムフック
  */
 export const useCameraConstraints = () => {
-  // ビューポートサイズを管理
-  const [viewportSize, setViewportSize] = useState<ViewportSize>({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
+  // ビューポートサイズを管理（SSR対応: lazy initializer で window 参照をガード）
+  const [viewportSize, setViewportSize] = useState<ViewportSize>(() => ({
+    width: typeof window !== 'undefined' ? window.innerWidth : 0,
+    height: typeof window !== 'undefined' ? window.innerHeight : 0,
+  }));
 
   /**
    * 指定したスケールとビューポートサイズからカメラの制約を計算
