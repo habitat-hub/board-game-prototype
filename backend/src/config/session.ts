@@ -57,7 +57,9 @@ export function setupSession(app: Express) {
           }
           done(null, user);
         } catch (err) {
-          done(err, undefined);
+          // Google 認証時の予期しないエラーをログに記録
+          console.error('Google 認証処理でエラーが発生しました', err);
+          done(err as Error);
         }
       }
     )
