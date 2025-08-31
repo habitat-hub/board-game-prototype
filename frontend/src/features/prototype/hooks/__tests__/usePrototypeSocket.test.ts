@@ -399,5 +399,32 @@ describe('usePrototypeSocket', () => {
         { userId: 'other', username: 'Other User' },
       ]);
     });
+
+    it('一定時間更新が無い選択は自動的にクリアされる', () => {
+      jest.useFakeTimers();
+      const { result } = renderHook(() => usePrototypeSocket(defaultProps));
+
+      const selectedPartsCallback = getEventCallback(
+        mockSocket.on as jest.Mock,
+        PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS
+      );
+
+      act(() => {
+        selectedPartsCallback!({
+          userId: 'other',
+          username: 'Other User',
+          selectedPartIds: [5],
+        });
+      });
+
+      expect(result.current.selectedUsersByPart[5]).toBeDefined();
+
+      act(() => {
+        jest.advanceTimersByTime(1600);
+      });
+
+      expect(result.current.selectedUsersByPart[5]).toBeUndefined();
+      jest.useRealTimers();
+    });
   });
 });

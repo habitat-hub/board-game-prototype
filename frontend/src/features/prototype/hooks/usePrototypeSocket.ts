@@ -57,6 +57,9 @@ export const usePrototypeSocket = ({
   const { socket } = useSocket();
   const { selectMultipleParts, selectedPartIds } = useSelectedParts();
 
+  const SELECTION_TTL_MS = 1500;
+  const SELECTION_BROADCAST_INTERVAL_MS = 1000;
+
   // パーツをMap管理（O(1)アクセス）
   const [partsMap, setPartsMap] = useState<PartsMap>(new Map());
   // パーツのプロパティをMap管理（O(1)アクセス）
@@ -64,7 +67,10 @@ export const usePrototypeSocket = ({
   // 接続中ユーザーリスト
   const [connectedUsers, setConnectedUsers] = useState<ConnectedUser[]>([]);
   const [otherSelections, setOtherSelections] = useState<
-    Record<string, { username: string; selectedPartIds: number[] }>
+    Record<
+      string,
+      { username: string; selectedPartIds: number[]; timestamp: number }
+    >
   >({});
 
   // パーツとプロパティをMapに変換する関数
@@ -218,7 +224,11 @@ export const usePrototypeSocket = ({
         if (ids.length === 0) {
           delete next[fromUserId];
         } else {
-          next[fromUserId] = { username: username ?? '', selectedPartIds: ids };
+          next[fromUserId] = {
+            username: username ?? '',
+            selectedPartIds: ids,
+            timestamp: Date.now(),
+          };
         }
         return next;
       });
@@ -249,6 +259,31 @@ export const usePrototypeSocket = ({
     if (!socket) return;
     socket.emit(PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS, { selectedPartIds });
   }, [selectedPartIds, socket]);
+
+  useEffect(() => {
+    if (!socket) return;
+    if (selectedPartIds.length === 0) return;
+    const timer = setInterval(() => {
+      socket.emit(PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS, { selectedPartIds });
+    }, SELECTION_BROADCAST_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [socket, selectedPartIds]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      setOtherSelections((prev) => {
+        const next = { ...prev };
+        Object.entries(prev).forEach(([uid, data]) => {
+          if (now - data.timestamp >= SELECTION_TTL_MS) {
+            delete next[uid];
+          }
+        });
+        return next;
+      });
+    }, SELECTION_TTL_MS);
+    return () => clearInterval(interval);
+  }, []);
 
   const selectedUsersByPart = useMemo(() => {
     const map: Record<number, ConnectedUser[]> = {};
