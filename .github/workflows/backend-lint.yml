@@ -18,27 +18,7 @@ on:
 
 jobs:
   backend-lint:
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [20.x]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-          cache-dependency-path: './backend/package-lock.json'
-
-      - name: Install backend dependencies
-        working-directory: ./backend
-        run: npm ci
-
-      - name: Run backend lint
-        working-directory: ./backend
-        run: npm run lint
+    uses: ./.github/workflows/npm-run.yml
+    with:
+      working-directory: ./backend
+      run: npm run lint
