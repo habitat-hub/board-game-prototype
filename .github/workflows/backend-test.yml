@@ -19,6 +19,10 @@ on:
 jobs:
   backend-test:
     uses: ./.github/workflows/npm-run.yml
+    permissions:
+      contents: read
+      id-token: write
+    secrets: inherit
     with:
       working-directory: ./backend
       run: CI=true npm run test -- --coverage

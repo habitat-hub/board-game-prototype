@@ -19,6 +19,10 @@ on:
 jobs:
   frontend-test:
     uses: ./.github/workflows/npm-run.yml
+    permissions:
+      contents: read
+      id-token: write
+    secrets: inherit
     with:
       working-directory: ./frontend
       run: |

@@ -19,6 +19,8 @@ on:
 jobs:
   frontend-lint:
     uses: ./.github/workflows/npm-run.yml
+    permissions:
+      contents: read
     with:
       working-directory: ./frontend
       run: npm run lint
