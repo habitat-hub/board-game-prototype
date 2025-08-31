@@ -10,6 +10,19 @@ import { Group, Rect, Text, Image } from 'react-konva';
 import useImage from 'use-image';
 
 import { Part, PartProperty } from '@/api/types';
+import {
+  DEFAULT_STROKE_COLOR,
+  SELECTED_SHADOW_OPACITY,
+  SELECT_OUTLINE_STEP_PX,
+  SELECT_OUTLINE_STROKE_WIDTH,
+  LABEL_ITEM_HEIGHT,
+  LABEL_X_OFFSET,
+  LABEL_MARKER_SIZE,
+  LABEL_MARKER_RADIUS,
+  LABEL_MARKER_Y,
+  LABEL_TEXT_X,
+  LABEL_FONT_SIZE,
+} from '@/constants/gameBoardUi';
 import FlipIcon from '@/features/prototype/components/atoms/FlipIcon';
 import ShuffleIcon from '@/features/prototype/components/atoms/ShuffleIcon';
 import { FLIP_ANIMATION } from '@/features/prototype/constants/animation';
@@ -32,19 +45,6 @@ import {
   getShadowOffsetY,
 } from '@/features/prototype/utils/partUtils';
 import { getUserColor } from '@/features/prototype/utils/userColor';
-import {
-  DEFAULT_STROKE_COLOR,
-  SELECTED_SHADOW_OPACITY,
-  SELECT_OUTLINE_STEP_PX,
-  SELECT_OUTLINE_STROKE_WIDTH,
-  LABEL_ITEM_HEIGHT,
-  LABEL_X_OFFSET,
-  LABEL_MARKER_SIZE,
-  LABEL_MARKER_RADIUS,
-  LABEL_MARKER_Y,
-  LABEL_TEXT_X,
-  LABEL_FONT_SIZE,
-} from '@/constants/gameBoardUi';
 
 // 選択表示用の軽量ユーザー型
 type SelectedUser = { userId: string; username: string };
@@ -92,7 +92,7 @@ export default function PartOnGameBoard({
   selectedBy = [],
   selfUser,
   userRoles = [],
-}: PartOnGameBoardProps): JSX.Element {
+}: PartOnGameBoardProps): React.ReactElement {
   const groupRef = useRef<Konva.Group>(null);
   const { isReversing, setIsReversing, reverseCard } = useCard(part);
   const { dispatch } = usePartReducer();
