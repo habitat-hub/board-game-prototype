@@ -56,7 +56,7 @@ export default function GameBoardHelpPanel({
       <div className="relative">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center justify-center rounded-full bg-wood-dark p-1.5 shadow-md hover:bg-wood-darkest transition-all"
+          className="flex items-center justify-center rounded-full bg-kibako-primary p-1.5 shadow-md hover:bg-kibako-accent transition-all"
           aria-label={isExpanded ? 'ヘルプを閉じる' : 'ヘルプを開く'}
           title="操作ヘルプ (Shift+?)"
         >
@@ -64,19 +64,19 @@ export default function GameBoardHelpPanel({
         </button>
 
         {isExpanded && (
-          <div className="absolute left-0 top-9 w-96 rounded-xl border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary shadow-md z-50">
+          <div className="absolute left-0 top-9 w-96 rounded-xl border border-kibako-tertiary/40 bg-gradient-to-r from-kibako-tertiary to-kibako-white shadow-md z-50">
             <div className="relative px-3 py-2">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xs font-semibold text-wood-darkest">
+                <h3 className="text-xs font-semibold text-kibako-primary">
                   ヘルプ
                 </h3>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => setIsExpanded(false)}
-                    className="rounded-md p-1 hover:bg-wood-lightest/20 transition-colors"
+                    className="rounded-md p-1 hover:bg-kibako-tertiary/20 transition-colors"
                     aria-label="ヘルプを閉じる"
                   >
-                    <IoClose className="h-3.5 w-3.5 text-wood-dark hover:text-header transition-colors" />
+                    <IoClose className="h-3.5 w-3.5 text-kibako-primary hover:text-kibako-accent transition-colors" />
                   </button>
                 </div>
               </div>
@@ -85,8 +85,8 @@ export default function GameBoardHelpPanel({
                   onClick={() => setActiveTab('parts')}
                   className={`flex-1 rounded-md py-1 text-center text-xs font-medium transition-all ${
                     activeTab === 'parts'
-                      ? 'bg-wood-lightest text-wood-dark'
-                      : 'text-wood-darkest hover:bg-wood-lightest/20'
+                      ? 'bg-kibako-tertiary text-kibako-primary'
+                      : 'text-kibako-primary hover:bg-kibako-tertiary/20'
                   }`}
                   aria-label="パーツタブを開く"
                 >
@@ -96,8 +96,8 @@ export default function GameBoardHelpPanel({
                   onClick={() => setActiveTab('operations')}
                   className={`flex-1 rounded-md py-1 text-center text-xs font-medium transition-all ${
                     activeTab === 'operations'
-                      ? 'bg-wood-lightest text-wood-dark'
-                      : 'text-wood-darkest hover:bg-wood-lightest/20'
+                      ? 'bg-kibako-tertiary text-kibako-primary'
+                      : 'text-kibako-primary hover:bg-kibako-tertiary/20'
                   }`}
                   aria-label="操作方法タブを開く"
                 >
@@ -107,8 +107,8 @@ export default function GameBoardHelpPanel({
                   onClick={() => setActiveTab('shortcuts')}
                   className={`flex-1 rounded-md py-1 text-center text-xs font-medium transition-all ${
                     activeTab === 'shortcuts'
-                      ? 'bg-wood-lightest text-wood-dark'
-                      : 'text-wood-darkest hover:bg-wood-lightest/20'
+                      ? 'bg-kibako-tertiary text-kibako-primary'
+                      : 'text-kibako-primary hover:bg-kibako-tertiary/20'
                   }`}
                   aria-label="ショートカットタブを開く"
                 >
@@ -117,12 +117,12 @@ export default function GameBoardHelpPanel({
               </div>
               {activeTab === 'parts' && (
                 <table className="w-full text-xs">
-                  <thead className="border-b border-wood-light/30">
+                  <thead className="border-b border-kibako-secondary/30">
                     <tr>
-                      <th className="py-1 px-2 text-left font-medium text-wood-dark w-1/4">
+                      <th className="py-1 px-2 text-left font-medium text-kibako-primary w-1/4">
                         パーツ
                       </th>
-                      <th className="py-1 px-2 text-left font-medium text-wood-dark">
+                      <th className="py-1 px-2 text-left font-medium text-kibako-primary">
                         説明
                       </th>
                     </tr>
@@ -131,12 +131,12 @@ export default function GameBoardHelpPanel({
                     {PARTS_INFO.map((part) => (
                       <tr
                         key={part.id}
-                        className="border-b border-wood-light/10 last:border-b-0"
+                        className="border-b border-kibako-secondary/10 last:border-b-0"
                       >
-                        <td className="py-1.5 px-2 font-medium text-wood-dark">
+                        <td className="py-1.5 px-2 font-medium text-kibako-primary">
                           {part.name}
                         </td>
-                        <td className="py-1.5 px-2 text-wood-darkest">
+                        <td className="py-1.5 px-2 text-kibako-primary">
                           {part.description}
                         </td>
                       </tr>
@@ -146,12 +146,12 @@ export default function GameBoardHelpPanel({
               )}
               {activeTab === 'operations' && (
                 <table className="w-full text-xs">
-                  <thead className="border-b border-wood-light/30">
+                  <thead className="border-b border-kibako-secondary/30">
                     <tr>
-                      <th className="py-1 px-2 text-left font-medium text-wood-dark w-1/3">
+                      <th className="py-1 px-2 text-left font-medium text-kibako-primary w-1/3">
                         操作
                       </th>
-                      <th className="py-1 px-2 text-left font-medium text-wood-dark">
+                      <th className="py-1 px-2 text-left font-medium text-kibako-primary">
                         説明
                       </th>
                     </tr>
@@ -160,12 +160,12 @@ export default function GameBoardHelpPanel({
                     {OPERATIONS_INFO.map((operation) => (
                       <tr
                         key={operation.id}
-                        className="border-b border-wood-light/10 last:border-b-0"
+                        className="border-b border-kibako-secondary/10 last:border-b-0"
                       >
-                        <td className="py-1.5 px-2 font-medium text-wood-dark">
+                        <td className="py-1.5 px-2 font-medium text-kibako-primary">
                           {operation.operation}
                         </td>
-                        <td className="py-1.5 px-2 text-wood-darkest">
+                        <td className="py-1.5 px-2 text-kibako-primary">
                           {operation.description}
                         </td>
                       </tr>
@@ -175,12 +175,12 @@ export default function GameBoardHelpPanel({
               )}
               {activeTab === 'shortcuts' && (
                 <table className="w-full text-xs">
-                  <thead className="border-b border-wood-light/30">
+                  <thead className="border-b border-kibako-secondary/30">
                     <tr>
-                      <th className="py-1 px-2 text-left font-medium text-wood-dark w-1/3">
+                      <th className="py-1 px-2 text-left font-medium text-kibako-primary w-1/3">
                         操作
                       </th>
-                      <th className="py-1 px-2 text-left font-medium text-wood-dark">
+                      <th className="py-1 px-2 text-left font-medium text-kibako-primary">
                         説明
                       </th>
                     </tr>
@@ -189,12 +189,12 @@ export default function GameBoardHelpPanel({
                     {SHORTCUTS.map((shortcut) => (
                       <tr
                         key={shortcut.id}
-                        className="border-b border-wood-light/10 last:border-b-0"
+                        className="border-b border-kibako-secondary/10 last:border-b-0"
                       >
-                        <td className="py-1.5 px-2 font-medium text-wood-dark">
+                        <td className="py-1.5 px-2 font-medium text-kibako-primary">
                           {shortcut.key}
                         </td>
-                        <td className="py-1.5 px-2 text-wood-darkest">
+                        <td className="py-1.5 px-2 text-kibako-primary">
                           {shortcut.description}
                         </td>
                       </tr>

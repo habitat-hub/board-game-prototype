@@ -69,13 +69,13 @@ export default function PrototypeNameEditor({
             onChange={(e) => setEditedValue(e.target.value)}
             onBlur={() => handleBlur(handleComplete, validate)}
             onKeyDown={(e) => handleKeyDown(e, handleComplete, validate)}
-            className="w-full text-wood-darkest font-medium bg-transparent border border-transparent rounded-md px-1 -mx-1 focus:outline-none focus:bg-white focus:border-header focus:shadow-sm transition-all text-xs"
+            className="w-full text-kibako-primary font-medium bg-transparent border border-transparent rounded-md px-1 -mx-1 focus:outline-none focus:bg-kibako-white focus:border-kibako-primary focus:shadow-sm transition-all text-xs"
             autoFocus
           />
         </form>
       ) : (
         <h2
-          className="text-xs font-medium truncate text-wood-darkest cursor-pointer px-1 -mx-1 rounded-md hover:bg-wood-lightest transition-colors"
+          className="text-xs font-medium truncate text-kibako-primary cursor-pointer px-1 -mx-1 rounded-md hover:bg-kibako-tertiary transition-colors"
           title={name}
           onClick={() => startEditing(prototypeId, name)}
         >

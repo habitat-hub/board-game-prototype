@@ -94,13 +94,13 @@ export const usePartTooltip = ({
     try {
       tooltip.id = `tooltip-${part.id}`;
       tooltip.className =
-        'fixed z-[9999] pointer-events-none max-w-xs rounded-lg border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary shadow-lg p-3';
+        'fixed z-[9999] pointer-events-none max-w-xs rounded-lg border border-kibako-tertiary/40 bg-gradient-to-r from-kibako-tertiary to-kibako-white shadow-lg p-3';
       tooltip.style.left = `${tooltipPosition.x + 10}px`;
       tooltip.style.top = `${tooltipPosition.y - 10}px`;
 
       tooltip.innerHTML = `
-        <div class="text-xs font-semibold text-wood-darkest mb-1">${partInfo.name}</div>
-        <div class="text-xs text-wood-dark leading-relaxed">${partInfo.description}</div>
+        <div class="text-xs font-semibold text-kibako-primary mb-1">${partInfo.name}</div>
+        <div class="text-xs text-kibako-secondary leading-relaxed">${partInfo.description}</div>
       `;
 
       tooltipContainer.appendChild(tooltip);

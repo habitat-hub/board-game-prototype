@@ -32,17 +32,17 @@ const UserSearchDropdown: React.FC<UserSearchDropdownProps> = ({
 }) => {
   return (
     <div>
-      <label className="block text-sm font-medium text-wood-dark mb-1">
+      <label className="block text-sm font-medium text-kibako-primary mb-1">
         ユーザー検索
       </label>
       <div className="relative">
         {/* 選択されたユーザー表示 */}
         {selectedUser ? (
-          <div className="w-full p-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-wood-light flex items-center justify-between">
+          <div className="w-full p-2 border border-gray-300 rounded-md bg-kibako-white focus:outline-none focus:ring-2 focus:ring-kibako-secondary flex items-center justify-between">
             <div className="flex items-center gap-2">
               <UserAvatar username={selectedUser.username} size="sm" />
               <div>
-                <div className="text-sm font-medium text-wood-dark">
+                <div className="text-sm font-medium text-kibako-primary">
                   {selectedUser.username}
                 </div>
               </div>
@@ -69,7 +69,7 @@ const UserSearchDropdown: React.FC<UserSearchDropdownProps> = ({
                 }}
                 onFocus={() => onToggleDropdown(true)}
                 placeholder="ユーザー名を入力..."
-                className="w-full p-2 pl-8 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wood-light focus:border-transparent"
+                className="w-full p-2 pl-8 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-kibako-secondary focus:border-transparent"
                 disabled={loading}
               />
               <FaSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3" />
@@ -99,14 +99,14 @@ const UserSearchDropdown: React.FC<UserSearchDropdownProps> = ({
                             size="sm"
                             className="group-hover:shadow-md transition-shadow"
                           />
-                          <div className="text-sm font-medium text-wood-dark">
+                          <div className="text-sm font-medium text-kibako-primary">
                             {user.username}
                           </div>
                         </button>
                       ))}
                     </div>
                   ) : (
-                    <div className="px-3 py-4 text-center text-wood">
+                    <div className="px-3 py-4 text-center text-kibako-secondary">
                       <FaUser className="h-6 w-6 text-gray-300 mx-auto mb-1" />
                       <div className="text-xs">
                         {searchTerm

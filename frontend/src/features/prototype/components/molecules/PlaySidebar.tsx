@@ -97,12 +97,12 @@ export default function PlaySidebar({
   }, [selectedPartId, parts]);
 
   return (
-    <div className="fixed top-20 left-4 flex w-[240px] flex-col rounded-lg shadow-lg border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary max-h-[calc(100vh-32px)] overflow-y-auto">
+    <div className="fixed top-20 left-4 flex w-[240px] flex-col rounded-lg shadow-lg border border-kibako-tertiary/40 bg-gradient-to-r from-kibako-tertiary to-kibako-white max-h-[calc(100vh-32px)] overflow-y-auto">
       {/* ヘッダー */}
-      <div className="border-b border-wood-lightest/60 rounded-t-lg bg-gradient-to-r from-wood-light/30 to-wood-light/20 py-2 px-4">
+      <div className="border-b border-kibako-tertiary/60 rounded-t-lg bg-gradient-to-r from-kibako-secondary/30 to-kibako-secondary/20 py-2 px-4">
         <div className="flex items-center">
-          <GiPokerHand className="h-4 w-4 text-wood-dark mr-2" />
-          <span className="text-[12px] font-medium text-wood-darkest">
+          <GiPokerHand className="h-4 w-4 text-kibako-primary mr-2" />
+          <span className="text-[12px] font-medium text-kibako-primary">
             プレイルーム設定
           </span>
         </div>

@@ -81,7 +81,7 @@ export default function LeftSidebar({
       router.push('/projects');
       return;
     }
-  // プレビューまたはプレイルームの場合はマスタープロトタイプに戻る
+    // プレビューまたはプレイルームの場合はマスタープロトタイプに戻る
     if (
       gameBoardMode === GameBoardMode.PLAY ||
       gameBoardMode === GameBoardMode.PREVIEW
@@ -289,17 +289,17 @@ export default function LeftSidebar({
 
   return (
     <div
-      className={`fixed left-4 top-4 flex flex-col rounded-xl border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary shadow-md w-[18rem] ${
+      className={`fixed left-4 top-4 flex flex-col rounded-xl border border-kibako-tertiary/40 bg-gradient-to-r from-kibako-tertiary to-kibako-white shadow-md w-[18rem] ${
         !isLeftSidebarMinimized ? 'overflow-auto max-h-[90vh]' : 'h-[48px]'
       }`}
     >
       <div className="flex h-[48px] items-center justify-between p-2">
         <button
           onClick={handleBack}
-          className="p-1 hover:bg-wood-lightest/20 rounded-full transition-colors flex-shrink-0"
+          className="p-1 hover:bg-kibako-tertiary/20 rounded-full transition-colors flex-shrink-0"
           title="戻る"
         >
-          <IoArrowBack className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
+          <IoArrowBack className="h-5 w-5 text-kibako-primary hover:text-kibako-accent transition-colors" />
         </button>
         <div className="flex items-center gap-1 flex-grow ml-1 min-w-0">
           <PrototypeNameEditor
@@ -317,7 +317,7 @@ export default function LeftSidebar({
             }
             className="p-1 rounded-full transition-transform hover:scale-110"
           >
-            <IoMenu className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
+            <IoMenu className="h-5 w-5 text-kibako-primary hover:text-kibako-accent transition-colors" />
           </button>
         )}
       </div>

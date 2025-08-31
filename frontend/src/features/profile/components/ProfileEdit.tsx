@@ -98,20 +98,20 @@ const ProfileEdit: React.FC = () => {
       <div className="flex items-center gap-4 mb-8">
         <button
           onClick={handleBack}
-          className="p-2 hover:bg-content-secondary rounded-full transition-colors"
+          className="p-2 hover:bg-kibako-tertiary rounded-full transition-colors"
           title="前のページに戻る"
         >
-          <IoArrowBack className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
+          <IoArrowBack className="h-5 w-5 text-kibako-primary hover:text-kibako-accent transition-colors" />
         </button>
         <div className="flex-grow flex items-center justify-center">
-          <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
+          <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-kibako-primary via-kibako-secondary to-kibako-primary text-transparent bg-clip-text">
             プロフィール編集
           </h1>
         </div>
       </div>
 
-      <div className="mb-6 p-6 overflow-visible rounded-xl bg-gradient-to-r from-content via-content to-content-secondary shadow-lg border border-wood-lightest/30">
-        <h2 className="text-xl font-bold text-wood-darkest mb-4 border-b border-wood-light/30 pb-2">
+      <div className="mb-6 p-6 overflow-visible rounded-xl bg-gradient-to-r from-kibako-tertiary via-kibako-tertiary to-kibako-white shadow-lg border border-kibako-tertiary/30">
+        <h2 className="text-xl font-bold text-kibako-primary mb-4 border-b border-kibako-secondary/30 pb-2">
           ユーザー情報
         </h2>
 
@@ -119,7 +119,7 @@ const ProfileEdit: React.FC = () => {
           <div>
             <label
               htmlFor="username"
-              className="block text-sm uppercase tracking-wide text-wood-dark/70 mb-2 font-medium"
+              className="block text-sm uppercase tracking-wide text-kibako-primary/70 mb-2 font-medium"
             >
               ユーザー名
             </label>
@@ -129,7 +129,7 @@ const ProfileEdit: React.FC = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="ユーザー名を入力"
-              className="py-2 px-3 border border-wood-light/30 rounded-lg bg-white w-full"
+              className="py-2 px-3 border border-kibako-secondary/30 rounded-lg bg-kibako-white w-full"
               maxLength={50}
               autoFocus
             />
@@ -138,7 +138,7 @@ const ProfileEdit: React.FC = () => {
           <div className="flex justify-end">
             <button
               type="submit"
-              className="flex items-center gap-1 px-4 py-2 rounded-md bg-wood hover:bg-wood-dark text-white hover:shadow-md transition-all font-medium"
+              className="flex items-center gap-1 px-4 py-2 rounded-md bg-kibako-secondary hover:bg-kibako-primary text-kibako-white hover:shadow-md transition-all font-medium"
             >
               <FaCheck className="w-4 h-4" />
               更新する

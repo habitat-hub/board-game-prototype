@@ -64,7 +64,7 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
           <div className="flex items-center gap-2">
             {editMode.isEditing ? (
               <>
-                <h3 className="text-lg font-medium text-wood-dark">
+                <h3 className="text-lg font-medium text-kibako-primary">
                   {editMode.username} の権限を変更
                 </h3>
                 <button
@@ -76,7 +76,7 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
                 </button>
               </>
             ) : (
-              <h3 className="text-lg font-medium text-wood-dark">
+              <h3 className="text-lg font-medium text-kibako-primary">
                 新しいユーザーを追加
               </h3>
             )}
@@ -120,11 +120,11 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
                 <button
                   onClick={onUpdateRole}
                   disabled={loading}
-                  className="px-6 py-2 bg-wood-light hover:bg-wood text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-6 py-2 bg-kibako-secondary hover:bg-kibako-primary text-kibako-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {loading ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-kibako-white"></div>
                       <span className="text-sm">更新中...</span>
                     </>
                   ) : (
@@ -136,11 +136,11 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
               <button
                 onClick={onAddRole}
                 disabled={!selectedUser || loading}
-                className="px-6 py-2 bg-wood-light hover:bg-wood text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-6 py-2 bg-kibako-secondary hover:bg-kibako-primary text-kibako-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {loading ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-kibako-white"></div>
                     <span className="text-sm">追加中...</span>
                   </>
                 ) : (
