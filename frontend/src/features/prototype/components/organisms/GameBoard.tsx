@@ -10,7 +10,7 @@ import { Stage, Layer, Group, Rect } from 'react-konva';
 
 import { useImages } from '@/api/hooks/useImages';
 import { Part, PartProperty } from '@/api/types';
-import DebugInfo from '@/features/prototype/components/atoms/DebugInfo';
+import DebugInfo from '@/features/prototype/debug-info/DebugInfo';
 import GridLines from '@/features/prototype/components/atoms/GridLines';
 import ModeToggleButton from '@/features/prototype/components/atoms/ModeToggleButton';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
