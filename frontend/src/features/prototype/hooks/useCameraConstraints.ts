@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
 
 import {
   CAMERA_SCALE,
@@ -15,7 +15,31 @@ import {
 /**
  * カメラ制約の計算と関連ユーティリティを提供するカスタムフック
  */
-export const useCameraConstraints = () => {
+/**
+ * useCameraConstraints の戻り値の型
+ */
+export type UseCameraConstraintsReturn = Readonly<{
+  viewportSize: ViewportSize;
+  setViewportSize: Dispatch<SetStateAction<ViewportSize>>;
+  getCameraConstraints: (
+    scale: number,
+    vpSize: ViewportSize
+  ) => CameraConstraints;
+  getConstrainedCameraPosition: (
+    x: number,
+    y: number,
+    scale: number
+  ) => CameraPosition;
+  computeCenteredCamera: (
+    vpSize?: ViewportSize,
+    scale?: number
+  ) => CameraPosition;
+}>;
+
+/**
+ * カメラ制約の計算と関連ユーティリティを提供するカスタムフック
+ */
+export const useCameraConstraints = (): UseCameraConstraintsReturn => {
   // ビューポートサイズを管理（SSR対応: lazy initializer で window 参照をガード）
   const [viewportSize, setViewportSize] = useState<ViewportSize>(() => ({
     width: typeof window !== 'undefined' ? window.innerWidth : 0,
@@ -99,5 +123,4 @@ export const useCameraConstraints = () => {
     computeCenteredCamera,
   };
 };
-
-export type UseCameraConstraintsReturn = ReturnType<typeof useCameraConstraints>;
+// 型は上部で明示
