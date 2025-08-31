@@ -25,6 +25,8 @@ export function setupSession(app: Express) {
       cookie: {
         httpOnly: true,
         maxAge: 30 * 24 * 60 * 60 * 1000,
+        secure: env.NODE_ENV === 'production',
+        sameSite: 'lax',
         ...(env.NODE_ENV === 'production' && env.FRONTEND_DOMAIN
           ? { domain: env.FRONTEND_DOMAIN }
           : {}),
