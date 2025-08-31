@@ -10,7 +10,6 @@ import { Stage, Layer, Group, Rect } from 'react-konva';
 
 import { useImages } from '@/api/hooks/useImages';
 import { Part, PartProperty } from '@/api/types';
-import DebugInfo from '@/features/prototype/debug-info/DebugInfo';
 import GridLines from '@/features/prototype/components/atoms/GridLines';
 import ModeToggleButton from '@/features/prototype/components/atoms/ModeToggleButton';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
@@ -25,6 +24,7 @@ import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
 import { GAME_BOARD_SIZE, GRID_SIZE } from '@/features/prototype/constants';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
+import DebugInfo from '@/features/prototype/debug-info/DebugInfo';
 import { useGameBoardShortcuts } from '@/features/prototype/hooks/useGameBoardShortcut';
 import { useGameCamera } from '@/features/prototype/hooks/useGameCamera';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';

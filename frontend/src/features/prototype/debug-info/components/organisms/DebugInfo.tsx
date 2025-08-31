@@ -6,10 +6,10 @@ import { Part, PartProperty } from '@/api/types';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { GameBoardMode } from '@/features/prototype/types';
 
-import InfoTab from '../molecules/InfoTab';
-import PerfTab from '../molecules/PerfTab';
 import DataTab from '../molecules/DataTab';
+import InfoTab from '../molecules/InfoTab';
 import PartsTab from '../molecules/PartsTab';
+import PerfTab from '../molecules/PerfTab';
 
 const TABS = [
   { id: 'info' as const, label: 'Info' },
