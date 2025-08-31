@@ -243,15 +243,15 @@ export default function PartCreateMenu({
               title={`${partType.name}を作成`}
             >
               {creatingPartType === partType.type ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-kibako-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <PartTypeIcon
                   type={partType.type}
-                  className="h-5 w-5 text-white"
+                  className="h-5 w-5 text-kibako-white"
                   ariaHidden
                 />
               )}
-              <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-kibako-primary text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+              <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-kibako-primary text-kibako-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
                 {creatingPartType === partType.type
                   ? '作成中...'
                   : partType.name}

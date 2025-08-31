@@ -43,7 +43,7 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
 
   return (
     <div
-      className={`bg-white border border-gray-200 rounded-lg p-4 transition-all ${
+      className={`bg-kibako-white border border-kibako-secondary/20 rounded-lg p-4 transition-all ${
         !editMode ? 'hover:shadow-md' : ''
       } ${loading ? 'opacity-60' : ''}`}
     >
@@ -71,7 +71,7 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
             onClick={() => {
               // 現在は無効化されているため何もしない
             }}
-            className="p-2 rounded transition-colors text-gray-300 cursor-not-allowed"
+            className="p-2 rounded transition-colors text-kibako-secondary/50 cursor-not-allowed"
             title={
               isCreator
                 ? 'プロジェクト作成者の権限は変更できません'
@@ -87,8 +87,8 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
             onClick={() => onRemove(userRole.userId)}
             className={`p-2 rounded transition-colors ${
               canRemove && !loading && !editMode
-                ? 'text-gray-400 hover:text-red-500 hover:bg-red-50'
-                : 'text-gray-300 cursor-not-allowed'
+                ? 'text-kibako-primary/60 hover:text-kibako-danger hover:bg-kibako-danger/10'
+                : 'text-kibako-secondary/50 cursor-not-allowed'
             }`}
             title={
               loading
@@ -112,8 +112,8 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
 
       {/* 複数権限がある場合の表示 */}
       {userRole.roles.length > 1 && (
-        <div className="mt-3 pt-3 border-t border-gray-100">
-          <div className="text-xs text-gray-500">
+        <div className="mt-3 pt-3 border-t border-kibako-secondary/10">
+          <div className="text-xs text-kibako-primary/70">
             その他の権限:{' '}
             {userRole.roles
               .slice(1)
@@ -125,10 +125,10 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
 
       {/* 制限の説明 */}
       {isCreator && (
-        <div className="mt-3 pt-3 border-t border-gray-100">
-          <div className="text-xs text-gray-500 flex items-center gap-1">
+        <div className="mt-3 pt-3 border-t border-kibako-secondary/10">
+          <div className="text-xs text-kibako-primary/70 flex items-center gap-1">
             <div>
-              <div className="text-yellow-600 font-medium">
+              <div className="text-kibako-accent font-medium">
                 プロジェクト作成者
               </div>
               <div className="flex items-center gap-1">

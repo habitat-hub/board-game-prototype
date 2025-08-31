@@ -19,7 +19,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
 
   return (
     <div
-      className={`bg-gradient-to-br from-kibako-primary to-kibako-secondary rounded-full flex items-center justify-center text-white font-medium ${sizeClasses[size]} ${className}`}
+      className={`bg-gradient-to-br from-kibako-primary to-kibako-secondary rounded-full flex items-center justify-center text-kibako-white font-medium ${sizeClasses[size]} ${className}`}
     >
       {username.charAt(0).toUpperCase()}
     </div>

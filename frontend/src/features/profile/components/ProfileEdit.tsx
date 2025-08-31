@@ -129,7 +129,7 @@ const ProfileEdit: React.FC = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="ユーザー名を入力"
-              className="py-2 px-3 border border-kibako-secondary/30 rounded-lg bg-white w-full"
+              className="py-2 px-3 border border-kibako-secondary/30 rounded-lg bg-kibako-white w-full"
               maxLength={50}
               autoFocus
             />
@@ -138,20 +138,20 @@ const ProfileEdit: React.FC = () => {
           <div className="flex justify-end">
             <button
               type="submit"
-              className="flex items-center gap-1 px-4 py-2 rounded-md bg-kibako-secondary hover:bg-kibako-primary text-white hover:shadow-md transition-all font-medium"
+              className="flex items-center gap-1 px-4 py-2 rounded-md bg-kibako-secondary hover:bg-kibako-primary text-kibako-white hover:shadow-md transition-all font-medium"
             >
               <FaCheck className="w-4 h-4" />
               更新する
             </button>
           </div>
           {error && (
-            <div className="text-red-600 text-sm bg-red-50 p-2 rounded-md border border-red-100">
+            <div className="text-kibako-danger text-sm bg-kibako-danger/10 p-2 rounded-md border border-kibako-danger/10">
               {error}
             </div>
           )}
 
           {success && (
-            <div className="text-green-600 text-sm bg-green-50 p-2 rounded-md border border-green-100">
+            <div className="text-kibako-success text-sm bg-kibako-success/10 p-2 rounded-md border border-kibako-success/10">
               {success}
             </div>
           )}

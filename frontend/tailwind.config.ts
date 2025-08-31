@@ -11,6 +11,10 @@ export default {
           accent: '#C9713C', // アクセント
           tertiary: '#EFE8DE', // ベース背景色（明るめ）
           white: '#F5F0E9', // テキスト
+          black: '#000000', // オーバーレイなど
+          danger: '#DC2626', // エラーメッセージ
+          success: '#16A34A', // 成功メッセージ
+          info: '#2563EB', // 情報メッセージ
         },
       },
       // 木箱のグラデーション

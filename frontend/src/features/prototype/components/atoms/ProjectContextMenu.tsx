@@ -80,7 +80,7 @@ export const ProjectContextMenu: React.FC<ProjectContextMenuProps> = ({
   return (
     <div
       ref={menuRef}
-      className="absolute bg-white border border-gray-200 rounded-lg shadow-lg py-1"
+      className="absolute bg-kibako-white border border-kibako-secondary/20 rounded-lg shadow-lg py-1"
       style={{
         left: position.x + window.scrollX,
         top: position.y + window.scrollY,
@@ -93,11 +93,11 @@ export const ProjectContextMenu: React.FC<ProjectContextMenuProps> = ({
         <button
           key={item.id}
           className={`w-full px-4 text-left flex items-center gap-2 transition-colors ${
-            hoveredMenuItem === item.id ? 'bg-gray-100' : 'hover:bg-gray-100'
+            hoveredMenuItem === item.id ? 'bg-kibako-tertiary/20' : 'hover:bg-kibako-tertiary/20'
           } ${
             item.danger
-              ? 'text-red-600 hover:text-red-700'
-              : 'text-gray-700 hover:text-gray-900'
+              ? 'text-kibako-danger hover:text-kibako-danger/80'
+              : 'text-kibako-primary hover:text-kibako-primary/80'
           }`}
           style={{
             height: `${itemHeight}px`,

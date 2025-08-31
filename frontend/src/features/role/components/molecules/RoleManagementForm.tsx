@@ -58,7 +58,7 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
 }) => {
   return (
     <div className="mb-4">
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+      <div className="bg-kibako-tertiary/20 border border-kibako-secondary/20 rounded-lg p-3">
         {/* ヘッダー */}
         <div className="mb-3">
           <div className="flex items-center gap-2">
@@ -69,7 +69,7 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
                 </h3>
                 <button
                   onClick={onCancelEdit}
-                  className="ml-auto p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded transition-colors"
+                  className="ml-auto p-1 text-kibako-primary/60 hover:text-kibako-primary hover:bg-kibako-tertiary/20 rounded transition-colors"
                   title="編集をキャンセル"
                 >
                   <FaTimes className="h-4 w-4" />
@@ -113,18 +113,18 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
                 <button
                   onClick={onCancelEdit}
                   disabled={loading}
-                  className="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-6 py-2 text-kibako-primary/70 border border-kibako-secondary/30 rounded-lg hover:bg-kibako-tertiary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   <span className="text-sm">キャンセル</span>
                 </button>
                 <button
                   onClick={onUpdateRole}
                   disabled={loading}
-                  className="px-6 py-2 bg-kibako-secondary hover:bg-kibako-secondary text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-6 py-2 bg-kibako-secondary hover:bg-kibako-secondary text-kibako-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {loading ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-kibako-white"></div>
                       <span className="text-sm">更新中...</span>
                     </>
                   ) : (
@@ -136,11 +136,11 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
               <button
                 onClick={onAddRole}
                 disabled={!selectedUser || loading}
-                className="px-6 py-2 bg-kibako-secondary hover:bg-kibako-secondary text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-6 py-2 bg-kibako-secondary hover:bg-kibako-secondary text-kibako-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {loading ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-kibako-white"></div>
                     <span className="text-sm">追加中...</span>
                   </>
                 ) : (
