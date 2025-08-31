@@ -27,10 +27,7 @@ on:
 jobs:
   npm-run:
     runs-on: ubuntu-latest
-    # Note: Do not request OIDC here. Callers should grant permissions
-    # (e.g., id-token: write) only when needed, such as for Codecov.
-    permissions:
-      contents: read
+    # Permissions are controlled by the caller workflow.
     strategy:
       matrix:
         node-version: [20.x]
