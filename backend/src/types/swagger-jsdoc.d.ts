@@ -1,4 +1,9 @@
 declare module 'swagger-jsdoc' {
-  const swaggerJSDoc: (options: any) => any;
-  export default swaggerJSDoc;
+  interface SwaggerJSDocOptions {
+    definition: Record<string, unknown>;
+    apis: string[];
+  }
+  export default function swaggerJSDoc(
+    options: SwaggerJSDocOptions
+  ): Record<string, unknown>;
 }
