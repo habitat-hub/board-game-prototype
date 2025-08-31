@@ -3,6 +3,10 @@ import { usePathname } from 'next/navigation';
 const UUID_PATTERN =
   '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}';
 
+const GAME_BOARD_PATH_REGEX = new RegExp(
+  `^/projects/${UUID_PATTERN}/prototypes/${UUID_PATTERN}/?$`
+);
+
 /**
  * パス情報をまとめて返すカスタムフック
  * - pathname: 現在のパス
@@ -11,9 +15,7 @@ const UUID_PATTERN =
  */
 export function useClientPathInfo() {
   const pathname = usePathname();
-  const isGameBoardPath = new RegExp(
-    `^/projects/${UUID_PATTERN}/prototypes/${UUID_PATTERN}/?$`
-  ).test(pathname);
+  const isGameBoardPath = GAME_BOARD_PATH_REGEX.test(pathname);
   const isUnsupportedDevicePath = pathname === '/unsupported-device';
 
   return { pathname, isGameBoardPath, isUnsupportedDevicePath };
