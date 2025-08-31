@@ -104,7 +104,7 @@ const ProfileEdit: React.FC = () => {
           <IoArrowBack className="h-5 w-5 text-kibako-primary hover:text-kibako-primary transition-colors" />
         </button>
         <div className="flex-grow flex items-center justify-center">
-          <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-kibako-primary via-kibako-secondary to-kibako-primary text-transparent bg-clip-text">
+          <h1 className="text-4xl font-bold text-center text-kibako-primary">
             プロフィール編集
           </h1>
         </div>
