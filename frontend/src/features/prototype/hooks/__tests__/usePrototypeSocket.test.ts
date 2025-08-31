@@ -31,6 +31,7 @@ const mockSocket = {
 } as unknown as Socket;
 
 const mockSelectMultipleParts = jest.fn();
+let mockSelectedPartIds: number[] = [];
 
 // useSocketのモック
 jest.mock('@/features/prototype/contexts/SocketContext', () => ({
@@ -39,7 +40,10 @@ jest.mock('@/features/prototype/contexts/SocketContext', () => ({
 
 // useSelectedPartsのモック
 jest.mock('@/features/prototype/contexts/SelectedPartsContext', () => ({
-  useSelectedParts: () => ({ selectMultipleParts: mockSelectMultipleParts }),
+  useSelectedParts: () => ({
+    selectMultipleParts: mockSelectMultipleParts,
+    selectedPartIds: mockSelectedPartIds,
+  }),
 }));
 
 // テスト用のPartPropertyを作成するヘルパー関数
@@ -67,6 +71,7 @@ describe('usePrototypeSocket', () => {
     (mockSocket.emit as jest.Mock).mockClear();
     (mockSocket.connect as jest.Mock).mockClear();
     mockSelectMultipleParts.mockClear();
+    mockSelectedPartIds = [];
   });
 
   const defaultProps = {
@@ -158,11 +163,23 @@ describe('usePrototypeSocket', () => {
         PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS,
         PROTOTYPE_SOCKET_EVENT.DELETE_PARTS,
         PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS,
+        PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS,
       ];
 
       expectedOffEvents.forEach((eventName) => {
         expect(mockSocket.off).toHaveBeenCalledWith(eventName);
       });
+    });
+
+    it('selectedPartIds変更時にSELECTED_PARTSイベントが送信される', () => {
+      const { rerender } = renderHook(() => usePrototypeSocket(defaultProps));
+      (mockSocket.emit as jest.Mock).mockClear();
+      mockSelectedPartIds = [1, 2];
+      rerender();
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS,
+        { selectedPartIds: [1, 2] }
+      );
     });
   });
 
@@ -360,6 +377,27 @@ describe('usePrototypeSocket', () => {
       });
 
       expect(result.current.connectedUsers).toEqual(mockUsers);
+    });
+
+    it('SELECTED_PARTSイベントでselectedUsersByPartが更新される', () => {
+      const { result } = renderHook(() => usePrototypeSocket(defaultProps));
+
+      const selectedPartsCallback = getEventCallback(
+        mockSocket.on as jest.Mock,
+        PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS
+      );
+
+      act(() => {
+        selectedPartsCallback!({
+          userId: 'other',
+          username: 'Other User',
+          selectedPartIds: [5],
+        });
+      });
+
+      expect(result.current.selectedUsersByPart[5]).toEqual([
+        { userId: 'other', username: 'Other User' },
+      ]);
     });
   });
 });

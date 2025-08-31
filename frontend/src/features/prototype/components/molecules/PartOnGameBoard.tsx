@@ -10,6 +10,19 @@ import { Group, Rect, Text, Image } from 'react-konva';
 import useImage from 'use-image';
 
 import { Part, PartProperty } from '@/api/types';
+import {
+  DEFAULT_STROKE_COLOR,
+  SELECTED_SHADOW_OPACITY,
+  SELECT_OUTLINE_STEP_PX,
+  SELECT_OUTLINE_STROKE_WIDTH,
+  LABEL_ITEM_HEIGHT,
+  LABEL_X_OFFSET,
+  LABEL_MARKER_SIZE,
+  LABEL_MARKER_RADIUS,
+  LABEL_MARKER_Y,
+  LABEL_TEXT_X,
+  LABEL_FONT_SIZE,
+} from '@/constants/gameBoardUi';
 import FlipIcon from '@/features/prototype/components/atoms/FlipIcon';
 import ShuffleIcon from '@/features/prototype/components/atoms/ShuffleIcon';
 import { FLIP_ANIMATION } from '@/features/prototype/constants/animation';
@@ -31,6 +44,10 @@ import {
   getShadowOffsetX,
   getShadowOffsetY,
 } from '@/features/prototype/utils/partUtils';
+import { getUserColor } from '@/features/prototype/utils/userColor';
+
+// 選択表示用の軽量ユーザー型
+type SelectedUser = { userId: string; username: string };
 
 interface PartOnGameBoardProps {
   part: Part;
@@ -47,6 +64,10 @@ interface PartOnGameBoardProps {
     partId: number
   ) => void;
   isActive: boolean;
+  /** 選択中のユーザー一覧（UI 表示用） */
+  selectedBy?: ReadonlyArray<SelectedUser>;
+  /** 自ユーザー（自身の選択色の決定に使用） */
+  selfUser?: SelectedUser;
   // ユーザー情報
   userRoles?: Array<{
     userId: string;
@@ -55,6 +76,7 @@ interface PartOnGameBoardProps {
   }>;
 }
 
+/** ゲーム盤上のパーツ描画コンポーネント */
 export default function PartOnGameBoard({
   part,
   properties,
@@ -67,8 +89,10 @@ export default function PartOnGameBoard({
   onClick,
   onContextMenu,
   isActive = false,
+  selectedBy = [],
+  selfUser,
   userRoles = [],
-}: PartOnGameBoardProps) {
+}: PartOnGameBoardProps): React.ReactElement {
   const groupRef = useRef<Konva.Group>(null);
   const { isReversing, setIsReversing, reverseCard } = useCard(part);
   const { dispatch } = usePartReducer();
@@ -115,6 +139,18 @@ export default function PartOnGameBoard({
 
   const isCard = part.type === 'card';
   const isDeck = part.type === 'deck';
+
+  // 自分の選択色（自分が選択中のときに枠・影色に使用）
+  const selfSelectedColor = useMemo<string | null>(() => {
+    if (!selfUser) return null;
+    return getUserColor(selfUser.userId, selfUser.username);
+  }, [selfUser?.userId, selfUser?.username]);
+
+  // 選択装飾用の計算結果をメモ化
+  const selectedByWithColors = useMemo(
+    () => selectedBy.map((u) => ({ ...u, color: getUserColor(u.userId, u.username) })),
+    [selectedBy]
+  );
 
   // 手札の持ち主
   const handOwnerName = useMemo(() => {
@@ -405,12 +441,25 @@ export default function PartOnGameBoard({
         width={part.width}
         height={part.height}
         fill={imageLoaded ? 'white' : targetProperty?.color || 'white'}
-        stroke={'grey'}
+        stroke={
+          isActive && selfSelectedColor ? selfSelectedColor : DEFAULT_STROKE_COLOR
+        }
         strokeWidth={getStrokeWidth(part.type)}
         cornerRadius={getCornerRadius(part.type)}
         dash={getDashPattern(part.type)}
-        shadowColor={getShadowColor(part.type, isActive)}
-        shadowBlur={getShadowBlur(part.type, isActive)}
+        shadowColor={
+          isActive && selfSelectedColor
+            ? selfSelectedColor
+            : getShadowColor(part.type, isActive)
+        }
+        shadowBlur={
+          isActive && selfSelectedColor
+            ? getShadowBlur(part.type, true)
+            : getShadowBlur(part.type, isActive)
+        }
+        shadowOpacity={
+          isActive && selfSelectedColor ? SELECTED_SHADOW_OPACITY : 1
+        }
         shadowOffsetX={getShadowOffsetX(part.type, isActive)}
         shadowOffsetY={getShadowOffsetY(part.type, isActive)}
         perfectDrawEnabled={false}
@@ -487,6 +536,59 @@ export default function PartOnGameBoard({
         {isDeck && <ShuffleIcon size={20} color="#666" />}
         {isCard && <FlipIcon size={20} color="#666" />}
       </Group>
+
+      {selectedByWithColors.map((user, index) => {
+        const offset = (index + 1) * SELECT_OUTLINE_STEP_PX;
+        return (
+          <Rect
+            key={user.userId}
+            x={-offset}
+            y={-offset}
+            width={part.width + offset * 2}
+            height={part.height + offset * 2}
+            stroke={user.color}
+            strokeWidth={SELECT_OUTLINE_STROKE_WIDTH}
+            cornerRadius={getCornerRadius(part.type)}
+            listening={false}
+            hitStrokeWidth={0}
+          />
+        );
+      })}
+
+      {/* 選択中ユーザー名をパーツ右側に表示 */}
+      {selectedByWithColors.map((user, index) => {
+        const itemHeight = LABEL_ITEM_HEIGHT; // ラベル高さ
+        return (
+          <Group
+            key={`label-${user.userId}`}
+            x={part.width + LABEL_X_OFFSET}
+            y={index * itemHeight}
+            listening={false}
+          >
+            {/* 色付きのマーカー（拡大） */}
+            <Rect
+              x={0}
+              y={LABEL_MARKER_Y}
+              width={LABEL_MARKER_SIZE}
+              height={LABEL_MARKER_SIZE}
+              cornerRadius={LABEL_MARKER_RADIUS}
+              fill={user.color}
+              listening={false}
+              hitStrokeWidth={0}
+            />
+            <Text
+              x={LABEL_TEXT_X}
+              y={0}
+              text={user.username}
+              fontSize={LABEL_FONT_SIZE}
+              fill={user.color}
+              listening={false}
+              perfectDrawEnabled={false}
+              hitStrokeWidth={0}
+            />
+          </Group>
+        );
+      })}
 
       {/* デバッグ情報: ID と順序（order） - showDebugInfoがtrueの場合のみ表示 */}
       {showDebugInfo && (

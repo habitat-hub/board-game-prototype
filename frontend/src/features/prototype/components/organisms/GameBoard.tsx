@@ -60,6 +60,8 @@ interface GameBoardProps {
     userId: string;
     username: string;
   }>;
+  selectedUsersByPart: Record<number, { userId: string; username: string }[]>;
+  currentUserId: string;
 }
 
 export default function GameBoard({
@@ -70,6 +72,8 @@ export default function GameBoard({
   propertiesMap,
   gameBoardMode,
   connectedUsers,
+  selectedUsersByPart,
+  currentUserId,
 }: GameBoardProps) {
   const [prototypeName, setPrototypeName] = useState(initialPrototypeName);
   useEffect(() => {
@@ -92,6 +96,11 @@ export default function GameBoard({
   const { cardVisibilityMap } = useHandVisibility(parts, gameBoardMode);
   // ロール管理情報を取得
   const { userRoles } = useRoleManagement(projectId);
+
+  // 自分のユーザー情報（色付けに使用）
+  const selfUser = useMemo(() => {
+    return connectedUsers.find((u) => u.userId === currentUserId) || null;
+  }, [connectedUsers, currentUserId]);
 
   // 選択中のパーツ、および選択処理
   const {
@@ -561,6 +570,7 @@ export default function GameBoard({
               const partProperties = propertiesMap.get(part.id) || [];
               const filteredImages = filteredImagesMap[part.id] || [];
               const isActive = selectedPartIds.includes(part.id);
+              const selectedBy = selectedUsersByPart[part.id] || [];
 
               // カードの表示制御を判定
               const isOtherPlayerHandCard =
@@ -575,6 +585,8 @@ export default function GameBoard({
                   images={filteredImages}
                   gameBoardMode={gameBoardMode}
                   isActive={isActive}
+                  selectedBy={selectedBy}
+                  selfUser={selfUser ?? undefined}
                   isOtherPlayerHandCard={isOtherPlayerHandCard}
                   userRoles={userRoles}
                   onClick={(e) => handlePartClick(e, part.id)}
