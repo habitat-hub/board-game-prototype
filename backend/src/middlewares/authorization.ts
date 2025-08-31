@@ -48,7 +48,6 @@ export async function checkProjectOwner(
     return;
   }
 }
-
 /**
  * 特定の権限をチェックするミドルウェアファクトリー（RBAC対応）
  * このファクトリー関数は、指定されたリソースタイプとアクションに対する権限をチェックする
@@ -111,15 +110,6 @@ export function checkPermission(
  * プロジェクトへの読み取り権限をチェック
  */
 export const checkProjectReadPermission = checkPermission(
-  RESOURCE_TYPES.PROJECT,
-  PERMISSION_ACTIONS.READ,
-  'projectId'
-);
-
-/**
- * グループの読み取り権限をチェック
- */
-export const checkGroupReadPermission = checkPermission(
   RESOURCE_TYPES.PROJECT,
   PERMISSION_ACTIONS.READ,
   'projectId'
