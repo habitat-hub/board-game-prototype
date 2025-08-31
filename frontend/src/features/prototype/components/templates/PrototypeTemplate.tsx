@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
+import { getApiUrl } from '@/api/client';
 import { useProject } from '@/api/hooks/useProject';
 import { Prototype } from '@/api/types';
 import SocketGameBoard from '@/features/prototype/components/organisms/SocketGameBoard';
@@ -55,7 +56,7 @@ export default function PrototypeTemplate() {
   // socket通信の設定
   useEffect(() => {
     // Socket接続を作成
-    socketRef.current = io(process.env.NEXT_PUBLIC_API_URL);
+    socketRef.current = io(getApiUrl());
 
     return () => {
       socketRef.current?.disconnect();
