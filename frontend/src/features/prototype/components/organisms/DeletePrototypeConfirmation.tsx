@@ -114,7 +114,7 @@ const DeletePrototypeConfirmation = () => {
           className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           title="戻る"
         >
-          <IoArrowBack className="h-5 w-5 text-wood-dark hover:text-header transition-colors" />
+          <IoArrowBack className="h-5 w-5 text-kibako-primary hover:text-kibako-primary transition-colors" />
         </button>
       </div>
 

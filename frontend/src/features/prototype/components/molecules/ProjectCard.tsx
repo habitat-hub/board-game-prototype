@@ -68,7 +68,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
   return (
     <div
-      className="bg-content border border-wood-lightest/20 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer"
+      className="bg-kibako-white border border-kibako-tertiary/20 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer"
       onClick={onCardClick}
       onContextMenu={(e) => {
         e.preventDefault();
@@ -104,19 +104,19 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                     alert(error.message || 'エラーが発生しました');
                   })
                 }
-                className="w-full text-wood-darkest font-semibold bg-transparent border border-transparent rounded-md p-1 -m-1 focus:outline-none focus:bg-white focus:border-header focus:shadow-sm transition-all text-base"
+                className="w-full text-kibako-primary font-semibold bg-transparent border border-transparent rounded-md p-1 -m-1 focus:outline-none focus:bg-white focus:border-kibako-primary focus:shadow-sm transition-all text-base"
                 autoFocus
               />
             </form>
           ) : (
-            <span className="text-wood-darkest font-semibold p-1 -m-1 rounded-md text-left text-base leading-tight">
+            <span className="text-kibako-primary font-semibold p-1 -m-1 rounded-md text-left text-base leading-tight">
               {name}
             </span>
           )}
         </div>
         {/* 詳細情報 */}
         <div className="flex justify-end">
-          <div className="text-right text-xs text-wood-light">
+          <div className="text-right text-xs text-kibako-secondary">
             <div>
               作成者:{' '}
               {userContext?.user?.id === project.userId

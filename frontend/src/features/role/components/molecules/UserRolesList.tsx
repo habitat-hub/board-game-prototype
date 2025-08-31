@@ -38,7 +38,7 @@ const UserRolesList: React.FC<UserRolesListProps> = ({
 }) => {
   if (userRoles.length === 0 && !loading) {
     return (
-      <div className="col-span-full flex flex-col items-center justify-center py-12 text-wood">
+      <div className="col-span-full flex flex-col items-center justify-center py-12 text-kibako-secondary">
         <FaUserShield className="h-12 w-12 text-gray-300 mb-4" />
         <p className="text-lg font-medium mb-2">
           ユーザー権限が設定されていません

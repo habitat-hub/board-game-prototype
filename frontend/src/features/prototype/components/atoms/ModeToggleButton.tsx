@@ -31,7 +31,7 @@ export default function ModeToggleButton({
           />
         </button>
         {/* ツールチップ */}
-        <div className="absolute left-0 bottom-full mb-1 bg-header text-kibako-white text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[200]">
+        <div className="absolute left-0 bottom-full mb-1 bg-kibako-primary text-kibako-white text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[200]">
           {!isSelectionMode
             ? 'ボードをドラッグ&ドロップで移動できるモードをオフにする'
             : 'ボードをドラッグ&ドロップで移動できるモードをオンにする'}

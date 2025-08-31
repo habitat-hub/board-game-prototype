@@ -44,7 +44,7 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-wood-dark mb-1">
+      <label className="block text-sm font-medium text-kibako-primary mb-1">
         権限選択
       </label>
       <div className="flex gap-3">
@@ -55,7 +55,7 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
               role.disabled
                 ? 'cursor-not-allowed opacity-50 border-gray-200 bg-gray-50'
                 : selectedRole === role.value
-                  ? 'border-wood-light bg-blue-50 shadow-sm cursor-pointer'
+                  ? 'border-kibako-secondary bg-blue-50 shadow-sm cursor-pointer'
                   : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 cursor-pointer'
             } ${loading ? 'opacity-60 cursor-not-allowed' : ''}`}
           >
@@ -73,16 +73,16 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
             {/* 上部：アイコンとロール名 */}
             <div className="flex items-center gap-2 justify-center">
               <div className={`${role.color} flex-shrink-0`}>{role.icon}</div>
-              <div className="text-base font-bold text-wood-dark">
+              <div className="text-base font-bold text-kibako-primary">
                 {role.name}
               </div>
             </div>
             {/* 下部：説明 */}
             <div className="text-center">
-              <div className="text-xs font-medium text-wood-dark mb-1">
+              <div className="text-xs font-medium text-kibako-primary mb-1">
                 {role.description}
               </div>
-              <div className="text-[10px] text-wood leading-tight">
+              <div className="text-[10px] text-kibako-secondary leading-tight">
                 {role.detailDescription}
               </div>
             </div>
