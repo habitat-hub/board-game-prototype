@@ -32,6 +32,22 @@ import {
   getShadowOffsetY,
 } from '@/features/prototype/utils/partUtils';
 import { getUserColor } from '@/features/prototype/utils/userColor';
+import {
+  DEFAULT_STROKE_COLOR,
+  SELECTED_SHADOW_OPACITY,
+  SELECT_OUTLINE_STEP_PX,
+  SELECT_OUTLINE_STROKE_WIDTH,
+  LABEL_ITEM_HEIGHT,
+  LABEL_X_OFFSET,
+  LABEL_MARKER_SIZE,
+  LABEL_MARKER_RADIUS,
+  LABEL_MARKER_Y,
+  LABEL_TEXT_X,
+  LABEL_FONT_SIZE,
+} from '@/constants/gameBoardUi';
+
+// 選択表示用の軽量ユーザー型
+type SelectedUser = { userId: string; username: string };
 
 interface PartOnGameBoardProps {
   part: Part;
@@ -48,8 +64,10 @@ interface PartOnGameBoardProps {
     partId: number
   ) => void;
   isActive: boolean;
-  selectedBy?: Array<{ userId: string; username: string }>;
-  selfUser?: { userId: string; username: string };
+  /** 選択中のユーザー一覧（UI 表示用） */
+  selectedBy?: ReadonlyArray<SelectedUser>;
+  /** 自ユーザー（自身の選択色の決定に使用） */
+  selfUser?: SelectedUser;
   // ユーザー情報
   userRoles?: Array<{
     userId: string;
@@ -58,6 +76,7 @@ interface PartOnGameBoardProps {
   }>;
 }
 
+/** ゲーム盤上のパーツ描画コンポーネント */
 export default function PartOnGameBoard({
   part,
   properties,
@@ -73,7 +92,7 @@ export default function PartOnGameBoard({
   selectedBy = [],
   selfUser,
   userRoles = [],
-}: PartOnGameBoardProps) {
+}: PartOnGameBoardProps): JSX.Element {
   const groupRef = useRef<Konva.Group>(null);
   const { isReversing, setIsReversing, reverseCard } = useCard(part);
   const { dispatch } = usePartReducer();
@@ -122,10 +141,16 @@ export default function PartOnGameBoard({
   const isDeck = part.type === 'deck';
 
   // 自分の選択色（自分が選択中のときに枠・影色に使用）
-  const selfSelectedColor = useMemo(() => {
+  const selfSelectedColor = useMemo<string | null>(() => {
     if (!selfUser) return null;
     return getUserColor(selfUser.userId, selfUser.username);
-  }, [selfUser]);
+  }, [selfUser?.userId, selfUser?.username]);
+
+  // 選択装飾用の計算結果をメモ化
+  const selectedByWithColors = useMemo(
+    () => selectedBy.map((u) => ({ ...u, color: getUserColor(u.userId, u.username) })),
+    [selectedBy]
+  );
 
   // 手札の持ち主
   const handOwnerName = useMemo(() => {
@@ -416,7 +441,9 @@ export default function PartOnGameBoard({
         width={part.width}
         height={part.height}
         fill={imageLoaded ? 'white' : targetProperty?.color || 'white'}
-        stroke={isActive && selfSelectedColor ? selfSelectedColor : 'grey'}
+        stroke={
+          isActive && selfSelectedColor ? selfSelectedColor : DEFAULT_STROKE_COLOR
+        }
         strokeWidth={getStrokeWidth(part.type)}
         cornerRadius={getCornerRadius(part.type)}
         dash={getDashPattern(part.type)}
@@ -426,9 +453,13 @@ export default function PartOnGameBoard({
             : getShadowColor(part.type, isActive)
         }
         shadowBlur={
-          isActive && selfSelectedColor ? 20 : getShadowBlur(part.type, isActive)
+          isActive && selfSelectedColor
+            ? getShadowBlur(part.type, true)
+            : getShadowBlur(part.type, isActive)
         }
-        shadowOpacity={isActive && selfSelectedColor ? 0.9 : 1}
+        shadowOpacity={
+          isActive && selfSelectedColor ? SELECTED_SHADOW_OPACITY : 1
+        }
         shadowOffsetX={getShadowOffsetX(part.type, isActive)}
         shadowOffsetY={getShadowOffsetY(part.type, isActive)}
         perfectDrawEnabled={false}
@@ -506,9 +537,8 @@ export default function PartOnGameBoard({
         {isCard && <FlipIcon size={20} color="#666" />}
       </Group>
 
-      {selectedBy.map((user, index) => {
-        const color = getUserColor(user.userId, user.username);
-        const offset = (index + 1) * 3;
+      {selectedByWithColors.map((user, index) => {
+        const offset = (index + 1) * SELECT_OUTLINE_STEP_PX;
         return (
           <Rect
             key={user.userId}
@@ -516,8 +546,8 @@ export default function PartOnGameBoard({
             y={-offset}
             width={part.width + offset * 2}
             height={part.height + offset * 2}
-            stroke={color}
-            strokeWidth={2}
+            stroke={user.color}
+            strokeWidth={SELECT_OUTLINE_STROKE_WIDTH}
             cornerRadius={getCornerRadius(part.type)}
             listening={false}
             hitStrokeWidth={0}
@@ -526,33 +556,32 @@ export default function PartOnGameBoard({
       })}
 
       {/* 選択中ユーザー名をパーツ右側に表示 */}
-      {selectedBy.map((user, index) => {
-        const color = getUserColor(user.userId, user.username);
-        const itemHeight = 32; // ラベル高さ（フォント拡大に合わせて余白も拡大）
+      {selectedByWithColors.map((user, index) => {
+        const itemHeight = LABEL_ITEM_HEIGHT; // ラベル高さ
         return (
           <Group
             key={`label-${user.userId}`}
-            x={part.width + 6}
+            x={part.width + LABEL_X_OFFSET}
             y={index * itemHeight}
             listening={false}
           >
             {/* 色付きのマーカー（拡大） */}
             <Rect
               x={0}
-              y={8}
-              width={16}
-              height={16}
-              cornerRadius={4}
-              fill={color}
+              y={LABEL_MARKER_Y}
+              width={LABEL_MARKER_SIZE}
+              height={LABEL_MARKER_SIZE}
+              cornerRadius={LABEL_MARKER_RADIUS}
+              fill={user.color}
               listening={false}
               hitStrokeWidth={0}
             />
             <Text
-              x={22}
+              x={LABEL_TEXT_X}
               y={0}
               text={user.username}
-              fontSize={24}
-              fill={color}
+              fontSize={LABEL_FONT_SIZE}
+              fill={user.color}
               listening={false}
               perfectDrawEnabled={false}
               hitStrokeWidth={0}
