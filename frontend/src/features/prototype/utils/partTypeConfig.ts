@@ -33,7 +33,7 @@ const DEFAULT_STYLE: PartStyle = {
   shadowOffset: 0,
 };
 
-export const partTypeConfig: Record<PartType, Partial<PartStyle>> = {
+export const partTypeConfig = {
   card: {
     cornerRadius: 10,
     imageCornerRadius: 10,
@@ -58,10 +58,9 @@ export const partTypeConfig: Record<PartType, Partial<PartStyle>> = {
     strokeWidth: 3,
     dashPattern: DASH_PATTERN_DASHED,
   },
-};
+} satisfies Partial<Record<PartType, Partial<PartStyle>>>;
 
 export const getPartStyle = (partType: PartType): PartStyle => ({
   ...DEFAULT_STYLE,
   ...(partTypeConfig[partType] ?? {}),
 });
-
