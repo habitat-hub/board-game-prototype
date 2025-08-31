@@ -74,20 +74,17 @@ export default function PrototypeNameEditor({
           />
         </form>
       ) : (
-        <h2
-          className="text-xs font-medium truncate text-wood-darkest cursor-pointer px-1 -mx-1 rounded-md hover:bg-wood-lightest transition-colors"
-          title={name}
-          role="button"
-          tabIndex={0}
-          onClick={() => startEditing(prototypeId, name)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              startEditing(prototypeId, name);
-            }
-          }}
-        >
-          {name}
+        <h2 className="text-xs font-medium text-wood-darkest">
+          {/* 表示モード（ボタンで編集開始） */}
+          <button
+            type="button"
+            className="w-full text-left truncate cursor-pointer px-1 -mx-1 rounded-md hover:bg-wood-lightest transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-header focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            title={name}
+            aria-label={`「${name}」を編集`}
+            onClick={() => startEditing(prototypeId, name)}
+          >
+            {name}
+          </button>
         </h2>
       )}
     </div>
