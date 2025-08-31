@@ -50,159 +50,6 @@ export async function checkProjectOwner(
 }
 
 /**
- * プロジェクトへの読み取り権限を確認する（RBAC対応）
- * @param req - リクエスト
- * @param res - レスポンス
- * @param next - 次のミドルウェアを呼び出す
- * @returns
- */
-export async function checkProjectReadPermission(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const user = req.user as UserModel;
-  const projectId = req.params.projectId;
-
-  if (!user || !user.id) {
-    res.status(401).json({ message: '認証が必要です' });
-    return;
-  }
-
-  if (!projectId) {
-    res.status(400).json({ message: '必要なパラメータが不足しています' });
-    return;
-  }
-
-  const userId = user.id;
-
-  try {
-    // RBACシステムで読み取り権限をチェック
-    const hasAccess = await hasPermission(
-      userId,
-      RESOURCE_TYPES.PROJECT,
-      PERMISSION_ACTIONS.READ,
-      projectId
-    );
-
-    if (hasAccess) {
-      return next();
-    }
-
-    res
-      .status(403)
-      .json({ message: 'プロジェクトへの読み取り権限がありません' });
-    return;
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: '予期せぬエラーが発生しました' });
-    return;
-  }
-}
-
-/**
- * プロトタイプへの読み取り権限を確認する（RBAC対応）
- * @param req - リクエスト
- * @param res - レスポンス
- * @param next - 次のミドルウェアを呼び出す
- * @returns
- */
-export async function checkPrototypeReadPermission(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const user = req.user as UserModel;
-  const prototypeId = req.params.prototypeId;
-
-  if (!user || !user.id) {
-    res.status(401).json({ message: '認証が必要です' });
-    return;
-  }
-
-  if (!prototypeId) {
-    res.status(400).json({ message: '必要なパラメータが不足しています' });
-    return;
-  }
-
-  const userId = user.id;
-
-  try {
-    // RBACシステムで読み取り権限をチェック
-    const hasAccess = await hasPermission(
-      userId,
-      RESOURCE_TYPES.PROTOTYPE,
-      PERMISSION_ACTIONS.READ,
-      prototypeId
-    );
-
-    if (hasAccess) {
-      return next();
-    }
-
-    res
-      .status(403)
-      .json({ message: 'プロトタイプへの読み取り権限がありません' });
-    return;
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: '予期せぬエラーが発生しました' });
-    return;
-  }
-}
-
-/**
- * プロジェクトへの読み取り権限を確認する（RBAC対応）
- * @param req - リクエスト
- * @param res - レスポンス
- * @param next - 次のミドルウェアを呼び出す
- * @returns
- */
-export async function checkGroupReadPermission(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const user = req.user as UserModel;
-  const projectId = req.params.projectId;
-
-  if (!user || !user.id) {
-    res.status(401).json({ message: '認証が必要です' });
-    return;
-  }
-
-  if (!projectId) {
-    res.status(400).json({ message: '必要なパラメータが不足しています' });
-    return;
-  }
-
-  const userId = user.id;
-
-  try {
-    // RBACシステムでプロジェクトへの読み取り権限をチェック
-    const hasAccess = await hasPermission(
-      userId,
-      RESOURCE_TYPES.PROJECT,
-      PERMISSION_ACTIONS.READ,
-      projectId
-    );
-
-    if (hasAccess) {
-      return next();
-    }
-
-    res
-      .status(403)
-      .json({ message: 'プロジェクトへの読み取り権限がありません' });
-    return;
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: '予期せぬエラーが発生しました' });
-    return;
-  }
-}
-
-/**
  * 特定の権限をチェックするミドルウェアファクトリー（RBAC対応）
  * このファクトリー関数は、指定されたリソースタイプとアクションに対する権限をチェックする
  * ミドルウェア関数を動的に生成します。
@@ -259,6 +106,33 @@ export function checkPermission(
     }
   };
 }
+
+/**
+ * プロジェクトへの読み取り権限をチェック
+ */
+export const checkProjectReadPermission = checkPermission(
+  RESOURCE_TYPES.PROJECT,
+  PERMISSION_ACTIONS.READ,
+  'projectId'
+);
+
+/**
+ * グループの読み取り権限をチェック
+ */
+export const checkGroupReadPermission = checkPermission(
+  RESOURCE_TYPES.PROJECT,
+  PERMISSION_ACTIONS.READ,
+  'projectId'
+);
+
+/**
+ * プロトタイプへの読み取り権限をチェック
+ */
+export const checkPrototypeReadPermission = checkPermission(
+  RESOURCE_TYPES.PROTOTYPE,
+  PERMISSION_ACTIONS.READ,
+  'prototypeId'
+);
 
 /**
  * プロジェクトの管理権限をチェック
