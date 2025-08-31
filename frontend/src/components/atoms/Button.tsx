@@ -1,12 +1,36 @@
+import { cva, type VariantProps } from 'class-variance-authority';
 import Link from 'next/link';
 import { ButtonHTMLAttributes, ReactNode } from 'react';
 import { twMerge } from 'tailwind-merge';
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+const buttonStyles = cva(
+  'inline-block rounded-full font-semibold transition-colors',
+  {
+    variants: {
+      variant: {
+        primary:
+          'bg-kibako-primary text-kibako-white hover:bg-kibako-primary/80',
+        accent: 'bg-kibako-accent text-kibako-white hover:bg-kibako-accent/80',
+        outline:
+          'bg-transparent text-kibako-primary/70 hover:text-kibako-primary border border-kibako-primary/30 hover:border-kibako-primary/50',
+      },
+      size: {
+        sm: 'px-6 py-3 text-base',
+        md: 'px-8 py-4 text-lg',
+        lg: 'px-10 py-5 text-xl',
+      },
+    },
+    defaultVariants: {
+      variant: 'primary',
+      size: 'md',
+    },
+  },
+);
+
+interface ButtonProps
+  extends ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonStyles> {
   children: ReactNode;
-  variant?: 'primary' | 'accent' | 'outline';
-  size?: 'sm' | 'md' | 'lg';
-  type?: 'button' | 'submit' | 'reset';
   href?: string;
   className?: string;
   isLoading?: boolean;
@@ -14,32 +38,17 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export default function Button({
   children,
-  variant = 'primary',
-  size = 'md',
+  variant,
+  size,
   type = 'button',
   href,
   className = '',
   isLoading = false,
   ...props
 }: ButtonProps) {
-  const baseStyles =
-    'inline-block rounded-full font-semibold transition-colors';
-
-  const variants = {
-    primary: 'bg-kibako-primary text-kibako-white hover:bg-kibako-primary/80',
-    accent: 'bg-kibako-accent text-kibako-white hover:bg-kibako-accent/80',
-    outline:
-      'bg-transparent text-kibako-primary/70 hover:text-kibako-primary border border-kibako-primary/30 hover:border-kibako-primary/50',
-  };
-
-  const sizes = {
-    sm: 'px-6 py-3 text-base',
-    md: 'px-8 py-4 text-lg',
-    lg: 'px-10 py-5 text-xl',
-  };
-
   const buttonClasses = twMerge(
-    [baseStyles, variants[variant], sizes[size], className].join(' ')
+    buttonStyles({ variant, size }),
+    className,
   );
 
   return isLoading ? (
