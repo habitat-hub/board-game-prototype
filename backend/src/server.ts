@@ -155,7 +155,10 @@ app.use(
     cookie: {
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000,
-      domain: env.FRONTEND_DOMAIN,
+      // 本番のみドメイン指定（ローカルでは省略）
+      ...(env.NODE_ENV === 'production' && env.FRONTEND_DOMAIN
+        ? { domain: env.FRONTEND_DOMAIN }
+        : {}),
     },
   })
 );
