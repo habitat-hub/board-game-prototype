@@ -55,11 +55,14 @@ export function trimMaxLength({ baseName, extension }: FileNameParts): string {
  */
 export function splitNameAndExtension(fileName: string): FileNameParts {
   const lastDotIndex = fileName.lastIndexOf('.');
-  const baseName =
-    lastDotIndex !== -1 ? fileName.slice(0, lastDotIndex) : fileName;
-  const extension =
-    lastDotIndex !== -1 ? fileName.slice(lastDotIndex).toLowerCase() : '';
-  return { baseName, extension };
+  if (lastDotIndex === -1) {
+    return { baseName: fileName, extension: '' };
+  }
+
+  return {
+    baseName: fileName.slice(0, lastDotIndex),
+    extension: fileName.slice(lastDotIndex).toLowerCase(),
+  };
 }
 
 /**
