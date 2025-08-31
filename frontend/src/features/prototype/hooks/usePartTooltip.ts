@@ -98,10 +98,18 @@ export const usePartTooltip = ({
       tooltip.style.left = `${tooltipPosition.x + 10}px`;
       tooltip.style.top = `${tooltipPosition.y - 10}px`;
 
-      tooltip.innerHTML = `
-        <div class="text-xs font-semibold text-wood-darkest mb-1">${partInfo.name}</div>
-        <div class="text-xs text-wood-dark leading-relaxed">${partInfo.description}</div>
-      `;
+      // パーツ名をテキストノードで設定
+      const nameEl = document.createElement('div');
+      nameEl.className = 'text-xs font-semibold text-wood-darkest mb-1';
+      nameEl.textContent = partInfo.name;
+
+      // パーツ説明をテキストノードで設定
+      const descEl = document.createElement('div');
+      descEl.className = 'text-xs text-wood-dark leading-relaxed';
+      descEl.textContent = partInfo.description;
+
+      tooltip.appendChild(nameEl);
+      tooltip.appendChild(descEl);
 
       tooltipContainer.appendChild(tooltip);
     } catch (error) {
