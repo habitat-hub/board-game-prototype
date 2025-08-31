@@ -139,7 +139,12 @@ export default function GameBoard({
   } = useSelection({
     stageRef,
     parts,
-    onPartsSelected: selectMultipleParts,
+    onPartsSelected: (ids) => {
+      const selectable = ids.filter((id) => !selectedUsersByPart[id]);
+      if (selectable.length > 0) {
+        selectMultipleParts(selectable);
+      }
+    },
     onClearSelection: clearSelection,
   });
   // ドラッグ機能
@@ -178,6 +183,9 @@ export default function GameBoard({
     // 左クリックのみContextMenuを閉じる
     if ((e.evt as MouseEvent).button === 0) {
       handleCloseContextMenu();
+    }
+    if (selectedUsersByPart[partId] && !selectedPartIds.includes(partId)) {
+      return;
     }
     const isShift = (e.evt as MouseEvent).shiftKey;
     if (isShift) {

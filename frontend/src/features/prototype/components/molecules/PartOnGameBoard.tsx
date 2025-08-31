@@ -117,9 +117,12 @@ export default function PartOnGameBoard({
   const { showDebugInfo } = useDebugMode();
   const { eventHandlers } = useGrabbingCursor();
 
-  // プレイルームでエリアパーツの場合は移動禁止
+  // 他ユーザーによるロック（自分が選択していないのに他人が選択中）
+  const isLockedByOthers = selectedBy.length > 0 && !isActive;
+  // プレイルームでエリアパーツ、またはロック中は移動禁止
   const isDraggable = !(
-    gameBoardMode === GameBoardMode.PLAY && part.type === 'area'
+    (gameBoardMode === GameBoardMode.PLAY && part.type === 'area') ||
+    isLockedByOthers
   );
 
   // カーソル制御hooks
@@ -358,6 +361,16 @@ export default function PartOnGameBoard({
 
     // ドラッグ中のカーソルを設定
     const stage = e.target.getStage();
+    // ロック中や非ドラッグ対象はここで停止
+    if (!isDraggable) {
+      e.cancelBubble = true;
+      // 既にドラッグが開始された場合は停止（Konva 型で安全に扱う）
+      const node = e.target as Konva.Node;
+      if (node.isDragging()) {
+        node.stopDrag();
+      }
+      return;
+    }
     if (isDraggable) {
       setGrabbingCursor(stage);
     }
