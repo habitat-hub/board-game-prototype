@@ -6,7 +6,7 @@ import { ensureAuthenticated } from '../middlewares/auth';
 import {
   checkProjectReadPermission,
   checkProjectManagePermission,
-} from '../middlewares/authorization';
+} from '../middlewares/permissions';
 import { getAccessiblePrototypes } from '../helpers/prototypeHelper';
 import sequelize from '../models';
 import {

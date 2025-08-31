@@ -164,3 +164,4 @@ export const checkPrototypeDeletePermission: AsyncMiddleware = checkPermission(
   PERMISSION_ACTIONS.DELETE,
   'prototypeId'
 );
+

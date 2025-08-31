@@ -4,7 +4,7 @@ import {
   checkPrototypeReadPermission,
   checkPrototypeWritePermission,
   checkPrototypeDeletePermission,
-} from '../middlewares/authorization';
+} from '../middlewares/permissions';
 import { UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import PrototypeModel from '../models/Prototype';
 
