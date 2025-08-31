@@ -26,7 +26,7 @@ export const deleteImageFromS3 = async (key: string): Promise<void> => {
     }
     // S3からの削除が成功した場合、何も返さない
     return;
-  } catch (error: any) {
+  } catch (error) {
     // AWS SDKのエラーをハンドリング
     handleAWSError(error);
   }
