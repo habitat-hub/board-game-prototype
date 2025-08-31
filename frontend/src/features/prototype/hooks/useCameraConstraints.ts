@@ -101,7 +101,7 @@ export const useCameraConstraints = (): UseCameraConstraintsReturn => {
   const computeCenteredCamera = useCallback(
     (
       vpSize: ViewportSize = viewportSize,
-      scale = CAMERA_SCALE.DEFAULT
+      scale: number = CAMERA_SCALE.DEFAULT
     ): CameraPosition => {
       const targetX = GAME_BOARD_CENTER.x * scale - vpSize.width / 2;
       const targetY = GAME_BOARD_CENTER.y * scale - vpSize.height / 2;
