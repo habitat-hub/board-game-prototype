@@ -5,6 +5,15 @@ import { hasPermission } from '../helpers/roleHelper';
 import { RESOURCE_TYPES, PERMISSION_ACTIONS } from '../const';
 
 /**
+ * Express の非同期ミドルウェア型
+ */
+export type AsyncMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => Promise<void> | void;
+
+/**
  * プロジェクトの作成者（所有者）かどうかを確認する
  * 注意: このミドルウェアはレガシー機能として残しています。
  * 新しいRBACシステムでは、admin権限でより細かい制御が可能です。
@@ -107,45 +116,50 @@ export function checkPermission(
 }
 
 /**
- * プロジェクトへの読み取り権限をチェック
+ * プロジェクトの読み取り権限ミドルウェア
+ * @returns Express ミドルウェア
  */
-export const checkProjectReadPermission = checkPermission(
+export const checkProjectReadPermission: AsyncMiddleware = checkPermission(
   RESOURCE_TYPES.PROJECT,
   PERMISSION_ACTIONS.READ,
   'projectId'
 );
 
 /**
- * プロトタイプへの読み取り権限をチェック
+ * プロトタイプの読み取り権限ミドルウェア
+ * @returns Express ミドルウェア
  */
-export const checkPrototypeReadPermission = checkPermission(
+export const checkPrototypeReadPermission: AsyncMiddleware = checkPermission(
   RESOURCE_TYPES.PROTOTYPE,
   PERMISSION_ACTIONS.READ,
   'prototypeId'
 );
 
 /**
- * プロジェクトの管理権限をチェック
+ * プロジェクトの管理権限ミドルウェア
+ * @returns Express ミドルウェア
  */
-export const checkProjectManagePermission = checkPermission(
+export const checkProjectManagePermission: AsyncMiddleware = checkPermission(
   RESOURCE_TYPES.PROJECT,
   PERMISSION_ACTIONS.MANAGE,
   'projectId'
 );
 
 /**
- * プロトタイプの編集権限をチェック
+ * プロトタイプの編集権限ミドルウェア
+ * @returns Express ミドルウェア
  */
-export const checkPrototypeWritePermission = checkPermission(
+export const checkPrototypeWritePermission: AsyncMiddleware = checkPermission(
   RESOURCE_TYPES.PROTOTYPE,
   PERMISSION_ACTIONS.WRITE,
   'prototypeId'
 );
 
 /**
- * プロトタイプの削除権限をチェック
+ * プロトタイプの削除権限ミドルウェア
+ * @returns Express ミドルウェア
  */
-export const checkPrototypeDeletePermission = checkPermission(
+export const checkPrototypeDeletePermission: AsyncMiddleware = checkPermission(
   RESOURCE_TYPES.PROTOTYPE,
   PERMISSION_ACTIONS.DELETE,
   'prototypeId'
