@@ -15,6 +15,10 @@ reviews:
     - '!frontend/src/api/types/Auth.ts'
     - '!frontend/src/api/types/data-contracts.ts'
     - '!frontend/src/api/types/http-client.ts'
+    # 自動生成されるSwagger関連ファイル
+    - '!backend/src/swagger-schemas.ts'
+    - '!backend/swagger-output.json'
+    - '!docs/index.html'
 
   # ツール設定
   tools:
