@@ -2,9 +2,8 @@ import { act, renderHook } from '@testing-library/react';
 import { useState } from 'react';
 
 import { CAMERA_SCALE } from '@/features/prototype/constants';
-
-import { useCameraConstraints } from '../useCameraConstraints';
-import { useCameraHandlers } from '../useCameraHandlers';
+import { useCameraConstraints } from '@/features/prototype/hooks/useCameraConstraints';
+import { useCameraHandlers } from '@/features/prototype/hooks/useCameraHandlers';
 
 describe('useCameraHandlers', () => {
   test('handleZoomIn and handleZoomOut adjust camera scale', () => {
