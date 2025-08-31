@@ -77,7 +77,15 @@ export default function PrototypeNameEditor({
         <h2
           className="text-xs font-medium truncate text-wood-darkest cursor-pointer px-1 -mx-1 rounded-md hover:bg-wood-lightest transition-colors"
           title={name}
+          role="button"
+          tabIndex={0}
           onClick={() => startEditing(prototypeId, name)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              startEditing(prototypeId, name);
+            }
+          }}
         >
           {name}
         </h2>
