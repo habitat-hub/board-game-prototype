@@ -364,12 +364,10 @@ export default function PartOnGameBoard({
     // ロック中や非ドラッグ対象はここで停止
     if (!isDraggable) {
       e.cancelBubble = true;
-      // 既にドラッグが開始された場合は停止
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (e.target as any).stopDrag?.();
-      } catch (_) {
-        // noop
+      // 既にドラッグが開始された場合は停止（Konva 型で安全に扱う）
+      const node = e.target as Konva.Node;
+      if (node.isDragging()) {
+        node.stopDrag();
       }
       return;
     }
