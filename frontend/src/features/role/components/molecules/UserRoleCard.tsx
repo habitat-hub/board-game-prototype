@@ -53,7 +53,7 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
 
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <div className="font-medium text-wood-dark">
+            <div className="font-medium text-kibako-primary">
               {userRole.user.username}
             </div>
           </div>
@@ -102,7 +102,7 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
             disabled={loading || !canRemove || editMode}
           >
             {loading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-wood-light"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-kibako-secondary"></div>
             ) : (
               <FaTrash className="h-4 w-4" />
             )}
