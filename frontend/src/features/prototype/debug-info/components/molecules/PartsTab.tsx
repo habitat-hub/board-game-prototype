@@ -30,7 +30,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ parts, properties }) => {
 
               return (
                 <div
-                  key={`part-${index}`}
+                  key={part.id}
                   className="mb-2 border border-kibako-white border-opacity-10 p-1 rounded-sm"
                 >
                   <div className="font-bold text-blue-300">
@@ -66,7 +66,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ parts, properties }) => {
                       </div>
                       {partProperties.map((prop, propIndex) => (
                         <div
-                          key={`prop-${propIndex}`}
+                          key={`${part.id}-${prop.side}-${prop.name}-${propIndex}`}
                           className="ml-2 mt-1 text-[10px] border-l border-kibako-white border-opacity-10 pl-1"
                         >
                           <div className="text-green-300">Side: {prop.side}</div>
