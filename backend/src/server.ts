@@ -22,6 +22,8 @@ const PORT = 8080;
 console.log('Starting Board Game Prototype Server...');
 console.log(`Environment: ${env.NODE_ENV}`);
 
+app.set('trust proxy', 1);
+
 setupSwagger(app);
 setupSocket(server, app);
 connectDatabase();
