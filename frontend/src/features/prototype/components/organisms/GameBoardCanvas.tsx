@@ -1,5 +1,6 @@
 import Konva from 'konva';
 import React, { useMemo } from 'react';
+import type { CSSProperties } from 'react';
 import { Stage, Layer, Group, Rect } from 'react-konva';
 
 import { Part, PartProperty } from '@/api/types';
@@ -9,6 +10,11 @@ import PartOnGameBoard from '@/features/prototype/components/molecules/PartOnGam
 import { GRID_SIZE } from '@/features/prototype/constants';
 import { GameBoardMode } from '@/features/prototype/types';
 
+/**
+ * GameBoardCanvas
+ * Stage/Layer/Group を描画するプレゼンテーション層。カメラ変換・背景・グリッド・
+ * パーツ描画・選択矩形の表示と、各種イベントの委譲のみを担当する。
+ */
 interface GameBoardCanvasProps {
   stageRef: React.RefObject<Konva.Stage | null>;
   viewportSize: { width: number; height: number };
@@ -16,15 +22,24 @@ interface GameBoardCanvasProps {
   camera: { x: number; y: number; scale: number };
   gameBoardMode: GameBoardMode;
   isSelectionMode: boolean;
-  cursorStyle: string;
+  // CSS の cursor 型を使用して厳密化
+  cursorStyle: CSSProperties['cursor'];
   grabbingHandlers: {
-    onMouseDown?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
-    onMouseUp?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
-    onMouseLeave?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
+    // Pointer/Mouse 双方を許容
+    onMouseDown?: (
+      e: Konva.KonvaEventObject<MouseEvent | PointerEvent>
+    ) => void;
+    onMouseUp?: (
+      e: Konva.KonvaEventObject<MouseEvent | PointerEvent>
+    ) => void;
+    onMouseLeave?: (
+      e: Konva.KonvaEventObject<MouseEvent | PointerEvent>
+    ) => void;
   };
   handleWheel: (e: Konva.KonvaEventObject<WheelEvent>) => void;
   handleStageClick: (e: Konva.KonvaEventObject<MouseEvent>) => void;
-  handleCloseContextMenu: (e: Konva.KonvaEventObject<MouseEvent>) => void;
+  // 外部からイベント無しでも呼べるようにオプショナルに
+  handleCloseContextMenu: (e?: Konva.KonvaEventObject<MouseEvent>) => void;
   handleSelectionMove: (
     e: Konva.KonvaEventObject<MouseEvent | PointerEvent>,
     camera: { x: number; y: number; scale: number }
