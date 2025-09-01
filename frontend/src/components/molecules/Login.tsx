@@ -7,7 +7,7 @@ import { GiWoodenCrate, GiCardAceSpades, GiPuzzle } from 'react-icons/gi';
 
 import { getApiUrl } from '@/api/client';
 import { useAuth } from '@/api/hooks/useAuth';
-import Button from '@/components/atoms/Button';
+import LinkButton from '@/components/atoms/LinkButton';
 import Loading from '@/components/organisms/Loading';
 
 function Login() {
@@ -57,18 +57,16 @@ function Login() {
 
         {/* 認証ボタン */}
         <div className="flex flex-col gap-4 items-center mt-12 sm:mt-16">
-          <Button
+          <LinkButton
             variant="accent"
             className="!px-6 !py-4 !text-lg"
-            onClick={() => {
-              router.push(getApiUrl('/auth/google'));
-            }}
+            href={getApiUrl('/auth/google')}
           >
             <div className="flex items-center gap-3">
               <FaGoogle className="text-2xl" />
               <span>Googleで続ける</span>
             </div>
-          </Button>
+          </LinkButton>
         </div>
 
         {/* サブタイトル */}
