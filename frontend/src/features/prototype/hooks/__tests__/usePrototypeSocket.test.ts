@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { Socket } from 'socket.io-client';
-import { vi, type Mock, type SpyInstance } from 'vitest';
+import { vi, type Mock } from 'vitest';
 
 import { PartProperty } from '@/api/types';
 import {
@@ -78,7 +78,7 @@ describe('usePrototypeSocket', () => {
   };
 
   describe('エラーハンドリング', () => {
-    let consoleSpy: SpyInstance;
+    let consoleSpy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
       consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
