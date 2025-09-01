@@ -94,6 +94,11 @@ interface GameBoardCanvasProps {
   };
 }
 
+/**
+ * キャンバスの描画とイベント委譲を行うコンポーネント。
+ * 主要な責務は、カメラ変換、背景・グリッド表示、
+ * パーツ描画、選択矩形の表示、および各種イベントの親への委譲。
+ */
 export default function GameBoardCanvas({
   stageRef,
   viewportSize,
@@ -125,7 +130,7 @@ export default function GameBoardCanvas({
   handlePartDragEnd,
   handlePartContextMenu,
   rectForSelection,
-}: GameBoardCanvasProps) {
+}: GameBoardCanvasProps): JSX.Element {
   const sortedParts = useMemo(() => {
     return [...parts].sort((a, b) => a.order - b.order);
   }, [parts]);
