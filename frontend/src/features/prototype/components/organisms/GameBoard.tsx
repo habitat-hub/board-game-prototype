@@ -6,22 +6,18 @@ import React, {
   useCallback,
   useMemo,
 } from 'react';
-import { Stage, Layer, Group, Rect } from 'react-konva';
 
 import { useImages } from '@/api/hooks/useImages';
 import { Part, PartProperty } from '@/api/types';
-import GridLines from '@/features/prototype/components/atoms/GridLines';
 import ModeToggleButton from '@/features/prototype/components/atoms/ModeToggleButton';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
-import SelectionRect from '@/features/prototype/components/atoms/SelectionRect';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
-import PartOnGameBoard from '@/features/prototype/components/molecules/PartOnGameBoard';
 import PartPropertyMenu from '@/features/prototype/components/molecules/PartPropertyMenu';
 import PlaySidebar from '@/features/prototype/components/molecules/PlaySidebar';
 import RoleMenu from '@/features/prototype/components/molecules/RoleMenu';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
-import { GAME_BOARD_SIZE, GRID_SIZE } from '@/features/prototype/constants';
+import { GAME_BOARD_SIZE } from '@/features/prototype/constants';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
 import DebugInfo from '@/features/prototype/debug-info/DebugInfo';
@@ -48,6 +44,8 @@ import {
   updateImageParamsInIndexedDb,
 } from '@/utils/db';
 import { isInputFieldFocused } from '@/utils/inputFocus';
+
+import GameBoardCanvas from './GameBoardCanvas';
 
 interface GameBoardProps {
   prototypeName: string;
@@ -466,32 +464,6 @@ export default function GameBoard({
     [handleStageClickFromHook, isSelectionInProgress]
   );
 
-  // 画像IDからURLを取得して配列で返す関数をuseMemoで事前計算
-  const filteredImagesMap = useMemo(() => {
-    const map: Record<number, Record<string, string>[]> = {};
-    parts.forEach((part) => {
-      const partProperties = properties.filter((p) => p.partId === part.id);
-      map[part.id] = partProperties.reduce<Record<string, string>[]>(
-        (acc, filteredProperty) => {
-          const imageId = filteredProperty.imageId;
-          if (!imageId) return acc;
-          const url = images[imageId];
-          if (url) {
-            acc.push({ [imageId]: url });
-          }
-          return acc;
-        },
-        []
-      );
-    });
-    return map;
-  }, [parts, properties, images]);
-
-  // パーツの表示用データをメモ化
-  const sortedParts = useMemo(() => {
-    return [...parts].sort((a, b) => a.order - b.order);
-  }, [parts]);
-
   // カーソルのスタイル
   const cursorStyle = useMemo(() => {
     // スペース押下状態、または選択モードでない場合
@@ -507,115 +479,38 @@ export default function GameBoard({
         isSelectionMode={isSelectionMode}
         onToggle={toggleMode}
       />
-      <Stage
-        width={viewportSize.width}
-        height={viewportSize.height}
-        ref={stageRef}
-        onWheel={handleWheel}
-        onClick={handleStageClick}
-        onContextMenu={handleCloseContextMenu}
-        // パーツ上でもドラッグを検知できるよう Stage にハンドラを設定
-        onMouseMove={(e: Konva.KonvaEventObject<MouseEvent>) =>
-          handleSelectionMove(e, camera)
-        }
-        onPointerMove={(e: Konva.KonvaEventObject<PointerEvent>) =>
-          handleSelectionMove(e, camera)
-        }
-        onMouseUp={(e: Konva.KonvaEventObject<MouseEvent>) => {
-          handleSelectionEnd(e);
-          grabbingHandlers.onMouseUp?.();
-        }}
-        onPointerUp={(e: Konva.KonvaEventObject<PointerEvent>) => {
-          handleSelectionEnd(e);
-          grabbingHandlers.onMouseUp?.();
-        }}
-        onMouseDown={grabbingHandlers.onMouseDown}
-        onMouseLeave={grabbingHandlers.onMouseLeave}
-        style={{
-          cursor: cursorStyle,
-        }}
-      >
-        <Layer>
-          <Group
-            id="camera"
-            x={-camera.x}
-            y={-camera.y}
-            scaleX={camera.scale}
-            scaleY={camera.scale}
-          >
-            {/* 背景パンエリア */}
-            <Rect
-              x={0}
-              y={0}
-              width={canvasSize.width}
-              height={canvasSize.height}
-              fill={gameBoardMode === GameBoardMode.PLAY ? '#fff' : '#f5f5f5'}
-              draggable={!isSelectionMode}
-              onDragMove={handleDragMove}
-              onClick={handleBackgroundClick}
-              hitStrokeWidth={0}
-              // 矩形選択の開始のみ背景Rectで検知する
-              {...(isSelectionMode
-                ? {
-                    onMouseDown: (e: Konva.KonvaEventObject<MouseEvent>) =>
-                      handleSelectionStart(e, camera),
-                    onPointerDown: (e: Konva.KonvaEventObject<PointerEvent>) =>
-                      handleSelectionStart(e, camera),
-                  }
-                : {})}
-            />
-            {/* 背景グリッド */}
-            {gameBoardMode === GameBoardMode.CREATE && (
-              <GridLines
-                camera={camera}
-                viewportSize={viewportSize}
-                gridSize={GRID_SIZE}
-              />
-            )}
-
-            {/* パーツの表示 */}
-            {sortedParts.map((part) => {
-              const partProperties = propertiesMap.get(part.id) || [];
-              const filteredImages = filteredImagesMap[part.id] || [];
-              const isActive = selectedPartIds.includes(part.id);
-              const selectedBy = selectedUsersByPart[part.id] || [];
-
-              // カードの表示制御を判定
-              const isOtherPlayerHandCard =
-                part.type === 'card' &&
-                cardVisibilityMap.get(part.id) === false;
-
-              return (
-                <PartOnGameBoard
-                  key={part.id}
-                  part={part}
-                  properties={partProperties}
-                  images={filteredImages}
-                  gameBoardMode={gameBoardMode}
-                  isActive={isActive}
-                  selectedBy={selectedBy}
-                  selfUser={selfUser ?? undefined}
-                  isOtherPlayerHandCard={isOtherPlayerHandCard}
-                  userRoles={userRoles}
-                  onClick={(e) => handlePartClick(e, part.id)}
-                  onDragStart={(e) => handlePartDragStart(e, part.id)}
-                  onDragMove={(e) => handlePartDragMove(e, part.id)}
-                  onDragEnd={(e, partId) => handlePartDragEnd(e, partId)}
-                  onContextMenu={(e) => handlePartContextMenu(e, part.id)}
-                />
-              );
-            })}
-            {/* 選択モード時の矩形選択表示 */}
-            <SelectionRect
-              x={rectForSelection.x}
-              y={rectForSelection.y}
-              width={rectForSelection.width}
-              height={rectForSelection.height}
-              visible={isSelectionMode && rectForSelection.visible}
-            />
-          </Group>
-        </Layer>
-      </Stage>
+      <GameBoardCanvas
+        stageRef={stageRef}
+        viewportSize={viewportSize}
+        canvasSize={canvasSize}
+        camera={camera}
+        gameBoardMode={gameBoardMode}
+        isSelectionMode={isSelectionMode}
+        cursorStyle={cursorStyle}
+        grabbingHandlers={grabbingHandlers}
+        handleWheel={handleWheel}
+        handleStageClick={handleStageClick}
+        handleCloseContextMenu={handleCloseContextMenu}
+        handleSelectionMove={handleSelectionMove}
+        handleSelectionEnd={handleSelectionEnd}
+        handleDragMove={handleDragMove}
+        handleSelectionStart={handleSelectionStart}
+        handleBackgroundClick={handleBackgroundClick}
+        parts={parts}
+        propertiesMap={propertiesMap}
+        images={images}
+        selectedPartIds={selectedPartIds}
+        selectedUsersByPart={selectedUsersByPart}
+        cardVisibilityMap={cardVisibilityMap}
+        selfUser={selfUser}
+        userRoles={userRoles}
+        handlePartClick={handlePartClick}
+        handlePartDragStart={handlePartDragStart}
+        handlePartDragMove={handlePartDragMove}
+        handlePartDragEnd={handlePartDragEnd}
+        handlePartContextMenu={handlePartContextMenu}
+        rectForSelection={rectForSelection}
+      />
 
       <LeftSidebar
         prototypeName={prototypeName}
