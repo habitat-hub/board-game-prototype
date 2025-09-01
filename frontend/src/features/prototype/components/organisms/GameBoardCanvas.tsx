@@ -7,7 +7,7 @@ import { Part, PartProperty } from '@/api/types';
 import GridLines from '@/features/prototype/components/atoms/GridLines';
 import SelectionRect from '@/features/prototype/components/atoms/SelectionRect';
 import PartOnGameBoard from '@/features/prototype/components/molecules/PartOnGameBoard';
-import { GRID_SIZE } from '@/features/prototype/constants';
+import { GRID_SIZE } from '@/features/prototype/constants/gameBoard';
 import { GameBoardMode } from '@/features/prototype/types';
 
 /**
