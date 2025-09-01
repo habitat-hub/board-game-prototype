@@ -3,7 +3,7 @@
   "info": {
     "title": "Board Game Prototype API",
     "version": "1.0.0",
-    "description": "\n## 概要\nこのAPIは、ボードゲームプロトタイプの作成と管理を行うためのものです。\n\n## 認証\n- 基本的にAPIエンドポイントは認証が必要です\n- アプリケーションを起動し、Google OAuth2.0を使用した認証を行なってください（Swagger UIでは認証ができません）\n- 認証後、Cookieにセッション情報が保存されます\n"
+    "description": "## 概要\nこのAPIは、ボードゲームプロトタイプの作成と管理を行うためのものです。\n\n## 認証\n- 基本的にAPIエンドポイントは認証が必要です\n- アプリケーションを起動し、Google OAuth2.0を使用した認証を行なってください（Swagger UIでは認証ができません）\n- 認証後、Cookieにセッション情報が保存されます\n"
   },
   "components": {
     "schemas": {
