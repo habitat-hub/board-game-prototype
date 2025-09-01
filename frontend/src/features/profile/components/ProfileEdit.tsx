@@ -9,6 +9,7 @@ import { useUsers } from '@/api/hooks/useUsers';
 import { useUser } from '@/hooks/useUser';
 
 import ProfileEditSkeleton from './ProfileEditSkeleton';
+import Button from '@/components/atoms/Button';
 
 const ProfileEdit: React.FC = () => {
   const router = useRouter();
@@ -136,13 +137,10 @@ const ProfileEdit: React.FC = () => {
           </div>
 
           <div className="flex justify-end">
-            <button
-              type="submit"
-              className="flex items-center gap-1 px-4 py-2 rounded-md bg-kibako-secondary hover:bg-kibako-primary text-kibako-white hover:shadow-md transition-all font-medium"
-            >
+            <Button type="submit" size="sm" className="flex items-center gap-1 !px-4 !py-2 !text-base">
               <FaCheck className="w-4 h-4" />
               更新する
-            </button>
+            </Button>
           </div>
           {error && (
             <div className="text-kibako-danger text-sm bg-kibako-danger/10 p-2 rounded-md border border-kibako-danger/10">
