@@ -6,10 +6,10 @@ import { FaCheck } from 'react-icons/fa6';
 import { IoArrowBack } from 'react-icons/io5';
 
 import { useUsers } from '@/api/hooks/useUsers';
+import Button from '@/components/atoms/Button';
 import { useUser } from '@/hooks/useUser';
 
 import ProfileEditSkeleton from './ProfileEditSkeleton';
-import Button from '@/components/atoms/Button';
 
 const ProfileEdit: React.FC = () => {
   const router = useRouter();
