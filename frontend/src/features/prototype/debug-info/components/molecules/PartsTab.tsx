@@ -18,7 +18,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ parts, properties }) => {
           Parts with Properties ({parts.length})
         </div>
         <div className="text-[11px]">
-          {parts
+          {[...parts]
             .sort(
               (a, b) =>
                 new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
@@ -98,4 +98,3 @@ const PartsTab: React.FC<PartsTabProps> = ({ parts, properties }) => {
 };
 
 export default PartsTab;
-
