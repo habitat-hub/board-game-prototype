@@ -11,26 +11,10 @@ export default {
           accent: '#C9713C', // アクセント
           tertiary: '#EFE8DE', // ベース背景色（明るめ）
           white: '#F5F0E9', // テキスト
-        },
-        background: 'var(--background)',
-        foreground: 'var(--foreground)',
-        // 木箱の色
-        wood: {
-          lightest: '#E6CCB2', // 最も明るい木目色
-          light: '#C8A887', // 明るい木目色
-          DEFAULT: '#B08968', // 標準的な木目色
-          dark: '#946B4D', // 濃い木目色
-          darkest: '#7D4B33', // 最も濃い木目色
-        },
-        // ヘッダーの色
-        header: {
-          DEFAULT: '#2C1810', // 深い茶色の背景
-          light: '#3D261C', // ホバー時などに使用する少し明るい色
-        },
-        // メインコンテンツの色
-        content: {
-          DEFAULT: '#FDF8F3', // 明るいベージュ（メイン背景）
-          secondary: '#F5E6D3', // やや暗いベージュ（セカンダリ背景）
+          black: '#000000', // オーバーレイなど
+          danger: '#DC2626', // エラーメッセージ
+          success: '#16A34A', // 成功メッセージ
+          info: '#2563EB', // 情報メッセージ
         },
       },
       // 木箱のグラデーション

@@ -25,13 +25,18 @@ export const PERMISSION_ACTIONS = {
   WRITE: 'write',
   DELETE: 'delete',
   MANAGE: 'manage',
-};
+} as const;
+
+export type PermissionAction =
+  (typeof PERMISSION_ACTIONS)[keyof typeof PERMISSION_ACTIONS];
 
 export const RESOURCE_TYPES = {
   PROJECT: 'project',
   PROTOTYPE: 'prototype',
   USER: 'user',
-};
+} as const;
+
+export type ResourceType = (typeof RESOURCE_TYPES)[keyof typeof RESOURCE_TYPES];
 
 export const UPDATABLE_PROTOTYPE_FIELDS = {
   PROTOTYPE: ['name'],

@@ -1,8 +1,6 @@
-/**
- * @jest-environment jsdom
- */
 import { renderHook, act } from '@testing-library/react';
 import { Socket } from 'socket.io-client';
+import { vi, type Mock } from 'vitest';
 
 import { PartProperty } from '@/api/types';
 import {
@@ -16,7 +14,7 @@ import { ConnectedUser } from '@/features/prototype/types/livePrototypeInformati
 type SocketEventCall = [string, (...args: unknown[]) => void];
 
 // モック関数の呼び出し履歴からイベントコールバックを取得するヘルパー
-const getEventCallback = (mockOn: jest.Mock, eventName: string) => {
+const getEventCallback = (mockOn: Mock, eventName: string) => {
   const calls = mockOn.mock.calls as SocketEventCall[];
   const call = calls.find((call) => call[0] === eventName);
   return call?.[1];
@@ -24,22 +22,26 @@ const getEventCallback = (mockOn: jest.Mock, eventName: string) => {
 
 // モック設定
 const mockSocket = {
-  on: jest.fn(),
-  off: jest.fn(),
-  emit: jest.fn(),
-  connect: jest.fn(),
+  on: vi.fn(),
+  off: vi.fn(),
+  emit: vi.fn(),
+  connect: vi.fn(),
 } as unknown as Socket;
 
-const mockSelectMultipleParts = jest.fn();
+const mockSelectMultipleParts = vi.fn();
+let mockSelectedPartIds: number[] = [];
 
 // useSocketのモック
-jest.mock('@/features/prototype/contexts/SocketContext', () => ({
+vi.mock('@/features/prototype/contexts/SocketContext', () => ({
   useSocket: () => ({ socket: mockSocket }),
 }));
 
 // useSelectedPartsのモック
-jest.mock('@/features/prototype/contexts/SelectedPartsContext', () => ({
-  useSelectedParts: () => ({ selectMultipleParts: mockSelectMultipleParts }),
+vi.mock('@/features/prototype/contexts/SelectedPartsContext', () => ({
+  useSelectedParts: () => ({
+    selectMultipleParts: mockSelectMultipleParts,
+    selectedPartIds: mockSelectedPartIds,
+  }),
 }));
 
 // テスト用のPartPropertyを作成するヘルパー関数
@@ -60,13 +62,14 @@ const createMockPartProperty = (
 
 describe('usePrototypeSocket', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     // モック関数の呼び出し履歴をクリア
-    (mockSocket.on as jest.Mock).mockClear();
-    (mockSocket.off as jest.Mock).mockClear();
-    (mockSocket.emit as jest.Mock).mockClear();
-    (mockSocket.connect as jest.Mock).mockClear();
+    (mockSocket.on as Mock).mockClear();
+    (mockSocket.off as Mock).mockClear();
+    (mockSocket.emit as Mock).mockClear();
+    (mockSocket.connect as Mock).mockClear();
     mockSelectMultipleParts.mockClear();
+    mockSelectedPartIds = [];
   });
 
   const defaultProps = {
@@ -75,10 +78,10 @@ describe('usePrototypeSocket', () => {
   };
 
   describe('エラーハンドリング', () => {
-    let consoleSpy: jest.SpyInstance;
+    let consoleSpy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
-      consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     });
 
     afterEach(() => {
@@ -89,7 +92,7 @@ describe('usePrototypeSocket', () => {
       renderHook(() => usePrototypeSocket(defaultProps));
 
       const connectErrorCallback = getEventCallback(
-        mockSocket.on as jest.Mock,
+        mockSocket.on as Mock,
         COMMON_SOCKET_EVENT.CONNECT_ERROR
       );
 
@@ -107,7 +110,7 @@ describe('usePrototypeSocket', () => {
       renderHook(() => usePrototypeSocket(defaultProps));
 
       const disconnectCallback = getEventCallback(
-        mockSocket.on as jest.Mock,
+        mockSocket.on as Mock,
         COMMON_SOCKET_EVENT.DISCONNECT
       );
 
@@ -122,7 +125,7 @@ describe('usePrototypeSocket', () => {
       expect(mockSocket.connect).toHaveBeenCalledTimes(1);
 
       // クライアント側の切断では再接続しない
-      jest.clearAllMocks();
+      vi.clearAllMocks();
       consoleSpy.mockClear();
       disconnectCallback!('io client disconnect');
       expect(consoleSpy).not.toHaveBeenCalled();
@@ -158,11 +161,23 @@ describe('usePrototypeSocket', () => {
         PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS,
         PROTOTYPE_SOCKET_EVENT.DELETE_PARTS,
         PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS,
+        PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS,
       ];
 
       expectedOffEvents.forEach((eventName) => {
         expect(mockSocket.off).toHaveBeenCalledWith(eventName);
       });
+    });
+
+    it('selectedPartIds変更時にSELECTED_PARTSイベントが送信される', () => {
+      const { rerender } = renderHook(() => usePrototypeSocket(defaultProps));
+      (mockSocket.emit as Mock).mockClear();
+      mockSelectedPartIds = [1, 2];
+      rerender();
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS,
+        { selectedPartIds: [1, 2] }
+      );
     });
   });
 
@@ -171,7 +186,7 @@ describe('usePrototypeSocket', () => {
       const { result } = renderHook(() => usePrototypeSocket(defaultProps));
 
       const initialPartsCallback = getEventCallback(
-        mockSocket.on as jest.Mock,
+        mockSocket.on as Mock,
         PROTOTYPE_SOCKET_EVENT.INITIAL_PARTS
       );
 
@@ -206,7 +221,7 @@ describe('usePrototypeSocket', () => {
       const { result } = renderHook(() => usePrototypeSocket(defaultProps));
 
       const addPartCallback = getEventCallback(
-        mockSocket.on as jest.Mock,
+        mockSocket.on as Mock,
         PROTOTYPE_SOCKET_EVENT.ADD_PART
       );
 
@@ -232,7 +247,7 @@ describe('usePrototypeSocket', () => {
 
       // 初期データを設定
       const initialPartsCallback = getEventCallback(
-        mockSocket.on as jest.Mock,
+        mockSocket.on as Mock,
         PROTOTYPE_SOCKET_EVENT.INITIAL_PARTS
       );
       const mockParts = [
@@ -253,7 +268,7 @@ describe('usePrototypeSocket', () => {
       });
 
       const deletePartCallback = getEventCallback(
-        mockSocket.on as jest.Mock,
+        mockSocket.on as Mock,
         PROTOTYPE_SOCKET_EVENT.DELETE_PARTS
       );
 
@@ -272,7 +287,7 @@ describe('usePrototypeSocket', () => {
 
       // 初期データを設定（front, backの両方があるパーツ）
       const initialPartsCallback = getEventCallback(
-        mockSocket.on as jest.Mock,
+        mockSocket.on as Mock,
         PROTOTYPE_SOCKET_EVENT.INITIAL_PARTS
       );
       const initialParts = [{ id: 1, name: 'Part 1', x: 100, y: 200 }];
@@ -297,7 +312,7 @@ describe('usePrototypeSocket', () => {
       });
 
       const updatePartsCallback = getEventCallback(
-        mockSocket.on as jest.Mock,
+        mockSocket.on as Mock,
         PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS
       );
 
@@ -333,7 +348,7 @@ describe('usePrototypeSocket', () => {
       renderHook(() => usePrototypeSocket(defaultProps));
 
       const addPartResponseCallback = getEventCallback(
-        mockSocket.on as jest.Mock,
+        mockSocket.on as Mock,
         PROTOTYPE_SOCKET_EVENT.ADD_PART_RESPONSE
       );
 
@@ -346,7 +361,7 @@ describe('usePrototypeSocket', () => {
       const { result } = renderHook(() => usePrototypeSocket(defaultProps));
 
       const connectedUsersCallback = getEventCallback(
-        mockSocket.on as jest.Mock,
+        mockSocket.on as Mock,
         PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS
       );
 
@@ -360,6 +375,54 @@ describe('usePrototypeSocket', () => {
       });
 
       expect(result.current.connectedUsers).toEqual(mockUsers);
+    });
+
+    it('SELECTED_PARTSイベントでselectedUsersByPartが更新される', () => {
+      const { result } = renderHook(() => usePrototypeSocket(defaultProps));
+
+      const selectedPartsCallback = getEventCallback(
+        mockSocket.on as Mock,
+        PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS
+      );
+
+      act(() => {
+        selectedPartsCallback!({
+          userId: 'other',
+          username: 'Other User',
+          selectedPartIds: [5],
+        });
+      });
+
+      expect(result.current.selectedUsersByPart[5]).toEqual([
+        { userId: 'other', username: 'Other User' },
+      ]);
+    });
+
+    it('一定時間更新が無い選択は自動的にクリアされる', () => {
+      vi.useFakeTimers();
+      const { result } = renderHook(() => usePrototypeSocket(defaultProps));
+
+      const selectedPartsCallback = getEventCallback(
+        mockSocket.on as Mock,
+        PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS
+      );
+
+      act(() => {
+        selectedPartsCallback!({
+          userId: 'other',
+          username: 'Other User',
+          selectedPartIds: [5],
+        });
+      });
+
+      expect(result.current.selectedUsersByPart[5]).toBeDefined();
+
+      act(() => {
+        vi.advanceTimersByTime(1600);
+      });
+
+      expect(result.current.selectedUsersByPart[5]).toBeUndefined();
+      vi.useRealTimers();
     });
   });
 });

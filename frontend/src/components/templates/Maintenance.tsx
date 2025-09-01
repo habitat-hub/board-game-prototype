@@ -27,9 +27,9 @@ const Maintenance: React.FC<MaintenanceProps> = ({
   const endTime = getMaintenanceEndTime();
 
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-content-secondary to-content-DEFAULT flex items-center justify-center p-4">
+      <div className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-kibako-tertiary to-kibako-white flex items-center justify-center p-4">
       {/* メンテナンス情報カード */}
-      <div className="max-w-md w-full bg-kibako-white rounded-lg shadow-xl p-8 text-center border border-wood-light">
+      <div className="max-w-md w-full bg-kibako-white rounded-lg shadow-xl p-8 text-center border border-kibako-secondary">
         {/* ヘッダー部分：ロゴとタイトル */}
         <div className="mb-6">
           {/* KIBAKOロゴ（木箱アイコン）とタイトル */}
@@ -50,7 +50,7 @@ const Maintenance: React.FC<MaintenanceProps> = ({
         </div>
 
         {/* メンテナンス詳細情報 */}
-        <div className="bg-kibako-tertiary rounded-lg p-4 mb-6 border border-wood-light">
+        <div className="bg-kibako-tertiary rounded-lg p-4 mb-6 border border-kibako-secondary">
           <p className="text-sm text-kibako-primary mb-2">{message}</p>
           {/* 終了予定時刻が設定されている場合 */}
           {endTime && (

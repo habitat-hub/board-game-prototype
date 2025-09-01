@@ -10,9 +10,9 @@ const ProfileEditSkeleton: React.FC = () => {
         </div>
       </div>
 
-      <div className="mb-6 p-6 overflow-visible rounded-xl bg-gradient-to-r from-content via-content to-content-secondary shadow-lg border border-wood-lightest/30">
+      <div className="mb-6 p-6 overflow-visible rounded-xl bg-gradient-to-r from-kibako-white via-kibako-white to-kibako-tertiary shadow-lg border border-kibako-tertiary/30">
         <div className="h-8 bg-slate-200 rounded w-1/4 mb-4 animate-pulse"></div>
-        <div className="border-b border-wood-light/30 pb-2 mb-4"></div>
+        <div className="border-b border-kibako-secondary/30 pb-2 mb-4"></div>
 
         <div className="space-y-6">
           <div>

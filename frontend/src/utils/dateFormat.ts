@@ -12,7 +12,7 @@ export default function formatDate(
   date: string | Date,
   withTime = false
 ): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
+  const d = new Date(date);
   return d.toLocaleDateString('ja-JP', {
     year: 'numeric',
     month: '2-digit',

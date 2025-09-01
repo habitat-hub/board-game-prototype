@@ -97,12 +97,12 @@ export default function PlaySidebar({
   }, [selectedPartId, parts]);
 
   return (
-    <div className="fixed top-20 left-4 flex w-[240px] flex-col rounded-lg shadow-lg border border-wood-lightest/40 bg-gradient-to-r from-content to-content-secondary max-h-[calc(100vh-32px)] overflow-y-auto">
+    <div className="fixed top-20 left-4 flex w-[240px] flex-col rounded-lg shadow-lg border border-kibako-tertiary/40 bg-gradient-to-r from-kibako-white to-kibako-tertiary max-h-[calc(100vh-32px)] overflow-y-auto">
       {/* ヘッダー */}
-      <div className="border-b border-wood-lightest/60 rounded-t-lg bg-gradient-to-r from-wood-light/30 to-wood-light/20 py-2 px-4">
+      <div className="border-b border-kibako-tertiary/60 rounded-t-lg bg-gradient-to-r from-kibako-secondary/30 to-kibako-secondary/20 py-2 px-4">
         <div className="flex items-center">
-          <PartTypeIcon type="hand" className="h-4 w-4 text-wood-dark mr-2" ariaHidden />
-          <span className="text-[12px] font-medium text-wood-darkest">
+          <PartTypeIcon type="hand" className="h-4 w-4 text-kibako-primary mr-2" ariaHidden />
+          <span className="text-[12px] font-medium text-kibako-primary">
             プレイルーム設定
           </span>
         </div>
@@ -122,8 +122,8 @@ export default function PlaySidebar({
                 key={hand.id}
                 className={`p-2 rounded border cursor-pointer transition-colors ${
                   selectedHandId === hand.id
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-kibako-info bg-kibako-info/10'
+                    : 'border-kibako-secondary/20 hover:border-kibako-secondary/30'
                 }`}
                 onClick={() => {
                   clearSelection();
@@ -137,8 +137,8 @@ export default function PlaySidebar({
                     <span
                       className={`text-xs ${
                         isOwnHand
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-blue-100 text-blue-800'
+                          ? 'bg-kibako-success/10 text-kibako-success/80'
+                          : 'bg-kibako-info/10 text-kibako-info/80'
                       } px-1 rounded`}
                     >
                       {hand.ownerName}の手札
@@ -152,10 +152,10 @@ export default function PlaySidebar({
 
         {/* 手札設定情報 */}
         {selectedHand && (
-          <div className="border-t border-gray-200 pt-4 mt-4">
+          <div className="border-t border-kibako-secondary/20 pt-4 mt-4">
             <span className="mb-2 text-xs font-bold">手札設定</span>
             <div className="space-y-3">
-              <div className="text-xs text-gray-600">
+              <div className="text-xs text-kibako-primary/70">
                 <div>所有者: {selectedHand.ownerName || '未設定'}</div>
                 <div>上のカード: {selectedHandCardCount}枚</div>
               </div>
@@ -173,7 +173,7 @@ export default function PlaySidebar({
                       },
                     });
                   }}
-                  className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                  className="px-3 py-1 text-xs bg-kibako-info text-kibako-white rounded hover:bg-kibako-info/80"
                 >
                   自分を設定
                 </button>
@@ -187,7 +187,7 @@ export default function PlaySidebar({
                       },
                     });
                   }}
-                  className="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600"
+                  className="px-3 py-1 text-xs bg-kibako-secondary text-kibako-white rounded hover:bg-kibako-secondary/80"
                 >
                   クリア
                 </button>

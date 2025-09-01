@@ -69,17 +69,22 @@ export default function PrototypeNameEditor({
             onChange={(e) => setEditedValue(e.target.value)}
             onBlur={() => handleBlur(handleComplete, validate)}
             onKeyDown={(e) => handleKeyDown(e, handleComplete, validate)}
-            className="w-full text-wood-darkest font-medium bg-transparent border border-transparent rounded-md px-1 -mx-1 focus:outline-none focus:bg-white focus:border-header focus:shadow-sm transition-all text-xs"
+            className="w-full text-kibako-primary font-medium bg-transparent border border-transparent rounded-md px-1 -mx-1 focus:outline-none focus:bg-kibako-white focus:border-kibako-primary focus:shadow-sm transition-all text-xs"
             autoFocus
           />
         </form>
       ) : (
-        <h2
-          className="text-xs font-medium truncate text-wood-darkest cursor-pointer px-1 -mx-1 rounded-md hover:bg-wood-lightest transition-colors"
-          title={name}
-          onClick={() => startEditing(prototypeId, name)}
-        >
-          {name}
+        <h2 className="text-xs font-medium text-kibako-primary">
+          {/* 表示モード（ボタンで編集開始） */}
+          <button
+            type="button"
+            className="w-full text-left truncate cursor-pointer px-1 -mx-1 rounded-md hover:bg-kibako-tertiary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-kibako-primary focus-visible:ring-offset-2 focus-visible:ring-offset-kibako-white"
+            title={name}
+            aria-label={`「${name}」を編集`}
+            onClick={() => startEditing(prototypeId, name)}
+          >
+            {name}
+          </button>
         </h2>
       )}
     </div>

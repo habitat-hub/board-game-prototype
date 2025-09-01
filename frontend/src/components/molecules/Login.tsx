@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { FaGoogle, FaDice, FaChessBoard } from 'react-icons/fa';
 import { GiWoodenCrate, GiCardAceSpades, GiPuzzle } from 'react-icons/gi';
 
+import { getApiUrl } from '@/api/client';
 import { useAuth } from '@/api/hooks/useAuth';
 import Button from '@/components/atoms/Button';
 import Loading from '@/components/organisms/Loading';
@@ -60,7 +61,7 @@ function Login() {
             variant="accent"
             className="!px-6 !py-4 !text-lg"
             onClick={() => {
-              window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+              router.push(getApiUrl('/auth/google'));
             }}
           >
             <div className="flex items-center gap-3">

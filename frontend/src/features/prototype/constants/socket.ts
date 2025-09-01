@@ -33,6 +33,8 @@ export const PROTOTYPE_SOCKET_EVENT = {
   DELETE_PARTS: 'DELETE_PARTS',
   // 接続中ユーザーリストの更新
   CONNECTED_USERS: 'CONNECTED_USERS',
+  // 他ユーザーのパーツ選択
+  SELECTED_PARTS: 'SELECTED_PARTS',
   // パーツ順序変更
   CHANGE_ORDER: 'CHANGE_ORDER',
   // デッキのシャッフル

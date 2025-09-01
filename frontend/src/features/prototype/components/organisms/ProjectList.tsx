@@ -278,7 +278,7 @@ const ProjectList: React.FC = () => {
       {/* タイトルと作成ボタンを同じ行に表示（小さい画面では縦並び） */}
       <div className="sticky top-20 z-30 bg-transparent backdrop-blur-sm flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 py-4 rounded-lg">
         <div className="flex items-center gap-3">
-          <h1 className="text-3xl text-wood-darkest font-bold mb-0 bg-gradient-to-r from-header via-header-light to-header text-transparent bg-clip-text">
+          <h1 className="text-3xl text-kibako-primary font-bold mb-0">
             プロジェクト一覧
           </h1>
 
@@ -292,7 +292,7 @@ const ProjectList: React.FC = () => {
             disabled={!!isFetching}
             aria-label="プロジェクト一覧を最新化"
             title="プロジェクト一覧を最新化"
-            className={`inline-flex items-center justify-center w-10 h-10 bg-white text-kibako-primary rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-kibako-primary transition-all duration-300 transform z-50
+            className={`inline-flex items-center justify-center w-10 h-10 bg-kibako-white text-kibako-primary rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-kibako-primary transition-all duration-300 transform z-50
               ${isFetching ? 'opacity-80 cursor-not-allowed' : 'hover:scale-105'}`}
           >
             <IoReload
@@ -320,7 +320,7 @@ const ProjectList: React.FC = () => {
           <button
             onClick={handleCreatePrototype}
             disabled={isCreating}
-            className={`inline-flex items-center gap-2 h-12 px-4 bg-white text-kibako-primary font-bold rounded-xl shadow-lg transition-all duration-300 transform z-50
+            className={`inline-flex items-center gap-2 h-12 px-4 bg-kibako-white text-kibako-primary font-bold rounded-xl shadow-lg transition-all duration-300 transform z-50
           ${isCreating ? 'opacity-80 cursor-not-allowed' : 'hover:shadow-xl hover:scale-105'}`}
             title={isCreating ? '作成中...' : '新しいプロジェクトを作成'}
           >

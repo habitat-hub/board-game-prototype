@@ -1,7 +1,7 @@
 /**
  * @page ソケット通信の設定を行うカスタムフック
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Part, PartProperty } from '@/api/types';
 import {
@@ -31,6 +31,8 @@ interface UsePrototypeSocketReturn {
   propertiesMap: PropertiesMap;
   /** 接続中ユーザーリスト */
   connectedUsers: ConnectedUser[];
+  /** 他ユーザーのパーツ選択 */
+  selectedUsersByPart: Record<number, ConnectedUser[]>;
 }
 
 /*
@@ -53,7 +55,10 @@ export const usePrototypeSocket = ({
   userId,
 }: UsePrototypeSocketProps): UsePrototypeSocketReturn => {
   const { socket } = useSocket();
-  const { selectMultipleParts } = useSelectedParts();
+  const { selectMultipleParts, selectedPartIds } = useSelectedParts();
+
+  const SELECTION_TTL_MS = 1500;
+  const SELECTION_BROADCAST_INTERVAL_MS = 1000;
 
   // パーツをMap管理（O(1)アクセス）
   const [partsMap, setPartsMap] = useState<PartsMap>(new Map());
@@ -61,6 +66,12 @@ export const usePrototypeSocket = ({
   const [propertiesMap, setPropertiesMap] = useState<PropertiesMap>(new Map());
   // 接続中ユーザーリスト
   const [connectedUsers, setConnectedUsers] = useState<ConnectedUser[]>([]);
+  const [otherSelections, setOtherSelections] = useState<
+    Record<
+      string,
+      { username: string; selectedPartIds: number[]; timestamp: number }
+    >
+  >({});
 
   // パーツとプロパティをMapに変換する関数
   const convertToMaps = useCallback(
@@ -192,6 +203,38 @@ export const usePrototypeSocket = ({
       }
     );
 
+    type SelectedPartsIncoming = {
+      userId?: string;
+      username?: string;
+      selectedPartIds?: unknown;
+    };
+    const onSelectedParts = ({
+      userId: fromUserId,
+      username,
+      selectedPartIds,
+    }: SelectedPartsIncoming) => {
+      if (!fromUserId) return;
+      // 自分自身のイベントは無視（サーバーの挙動変更に備えて冪等に）
+      if (fromUserId === userId) return;
+      const ids = Array.isArray(selectedPartIds)
+        ? (selectedPartIds.filter((v) => typeof v === 'number') as number[])
+        : [];
+      setOtherSelections((prev) => {
+        const next = { ...prev };
+        if (ids.length === 0) {
+          delete next[fromUserId];
+        } else {
+          next[fromUserId] = {
+            username: username ?? '',
+            selectedPartIds: ids,
+            timestamp: Date.now(),
+          };
+        }
+        return next;
+      });
+    };
+    socket.on(PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS, onSelectedParts);
+
     return () => {
       // イベントリスナーを削除
       // JOIN_PROTOTYPEはemitリスナーを登録しないため、削除不要
@@ -206,14 +249,57 @@ export const usePrototypeSocket = ({
         PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS,
         PROTOTYPE_SOCKET_EVENT.DELETE_PARTS,
         PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS,
+        PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS,
       ];
       events.forEach((event) => socket.off(event));
     };
   }, [prototypeId, userId, convertToMaps, selectMultipleParts, socket]);
 
+  useEffect(() => {
+    if (!socket) return;
+    socket.emit(PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS, { selectedPartIds });
+  }, [selectedPartIds, socket]);
+
+  useEffect(() => {
+    if (!socket) return;
+    if (selectedPartIds.length === 0) return;
+    const timer = setInterval(() => {
+      socket.emit(PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS, { selectedPartIds });
+    }, SELECTION_BROADCAST_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [socket, selectedPartIds]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      setOtherSelections((prev) => {
+        const next = { ...prev };
+        Object.entries(prev).forEach(([uid, data]) => {
+          if (now - data.timestamp >= SELECTION_TTL_MS) {
+            delete next[uid];
+          }
+        });
+        return next;
+      });
+    }, SELECTION_TTL_MS);
+    return () => clearInterval(interval);
+  }, []);
+
+  const selectedUsersByPart = useMemo(() => {
+    const map: Record<number, ConnectedUser[]> = {};
+    Object.entries(otherSelections).forEach(([uid, { username, selectedPartIds }]) => {
+      selectedPartIds.forEach((id) => {
+        if (!map[id]) map[id] = [];
+        map[id].push({ userId: uid, username });
+      });
+    });
+    return map;
+  }, [otherSelections]);
+
   return {
     partsMap,
     propertiesMap,
     connectedUsers,
+    selectedUsersByPart,
   };
 };

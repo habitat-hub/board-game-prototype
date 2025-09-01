@@ -32,17 +32,17 @@ const UserSearchDropdown: React.FC<UserSearchDropdownProps> = ({
 }) => {
   return (
     <div>
-      <label className="block text-sm font-medium text-wood-dark mb-1">
+      <label className="block text-sm font-medium text-kibako-primary mb-1">
         ユーザー検索
       </label>
       <div className="relative">
         {/* 選択されたユーザー表示 */}
         {selectedUser ? (
-          <div className="w-full p-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-wood-light flex items-center justify-between">
+          <div className="w-full p-2 border border-kibako-secondary/30 rounded-md bg-kibako-white focus:outline-none focus:ring-2 focus:ring-kibako-secondary flex items-center justify-between">
             <div className="flex items-center gap-2">
               <UserAvatar username={selectedUser.username} size="sm" />
               <div>
-                <div className="text-sm font-medium text-wood-dark">
+                <div className="text-sm font-medium text-kibako-primary">
                   {selectedUser.username}
                 </div>
               </div>
@@ -50,7 +50,7 @@ const UserSearchDropdown: React.FC<UserSearchDropdownProps> = ({
             <button
               onClick={onClearUser}
               disabled={loading}
-              className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+              className="p-1 text-kibako-primary/60 hover:text-kibako-danger hover:bg-kibako-danger/10 rounded transition-colors"
               title="選択を解除"
             >
               <FaTimes className="h-3 w-3" />
@@ -69,10 +69,10 @@ const UserSearchDropdown: React.FC<UserSearchDropdownProps> = ({
                 }}
                 onFocus={() => onToggleDropdown(true)}
                 placeholder="ユーザー名を入力..."
-                className="w-full p-2 pl-8 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wood-light focus:border-transparent"
+                className="w-full p-2 pl-8 text-sm border border-kibako-secondary/30 rounded-md focus:outline-none focus:ring-2 focus:ring-kibako-secondary focus:border-transparent"
                 disabled={loading}
               />
-              <FaSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3" />
+              <FaSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-kibako-primary/60 h-3 w-3" />
             </div>
 
             {/* 検索結果ドロップダウン */}
@@ -85,29 +85,29 @@ const UserSearchDropdown: React.FC<UserSearchDropdownProps> = ({
                 />
 
                 {/* ドロップダウンメニュー */}
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-20 max-h-48 overflow-auto">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-kibako-white border border-kibako-secondary/20 rounded-md shadow-lg z-20 max-h-48 overflow-auto">
                   {filteredUsers.length > 0 ? (
                     <div className="py-1">
                       {filteredUsers.map((user) => (
                         <button
                           key={user.id}
                           onClick={() => onUserSelect(user)}
-                          className="w-full px-3 py-2 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 group"
+                          className="w-full px-3 py-2 text-left hover:bg-kibako-tertiary/20 transition-colors flex items-center gap-2 group"
                         >
                           <UserAvatar
                             username={user.username}
                             size="sm"
                             className="group-hover:shadow-md transition-shadow"
                           />
-                          <div className="text-sm font-medium text-wood-dark">
+                          <div className="text-sm font-medium text-kibako-primary">
                             {user.username}
                           </div>
                         </button>
                       ))}
                     </div>
                   ) : (
-                    <div className="px-3 py-4 text-center text-wood">
-                      <FaUser className="h-6 w-6 text-gray-300 mx-auto mb-1" />
+                    <div className="px-3 py-4 text-center text-kibako-secondary">
+                      <FaUser className="h-6 w-6 text-kibako-secondary/50 mx-auto mb-1" />
                       <div className="text-xs">
                         {searchTerm
                           ? `"${searchTerm}" に一致するユーザーが見つかりません`

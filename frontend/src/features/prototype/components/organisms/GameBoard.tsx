@@ -10,7 +10,6 @@ import { Stage, Layer, Group, Rect } from 'react-konva';
 
 import { useImages } from '@/api/hooks/useImages';
 import { Part, PartProperty } from '@/api/types';
-import DebugInfo from '@/features/prototype/components/atoms/DebugInfo';
 import GridLines from '@/features/prototype/components/atoms/GridLines';
 import ModeToggleButton from '@/features/prototype/components/atoms/ModeToggleButton';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
@@ -25,6 +24,7 @@ import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
 import { GAME_BOARD_SIZE, GRID_SIZE } from '@/features/prototype/constants';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
+import DebugInfo from '@/features/prototype/debug-info/DebugInfo';
 import { useGameBoardShortcuts } from '@/features/prototype/hooks/useGameBoardShortcut';
 import { useGameCamera } from '@/features/prototype/hooks/useGameCamera';
 import { useGrabbingCursor } from '@/features/prototype/hooks/useGrabbingCursor';
@@ -60,6 +60,8 @@ interface GameBoardProps {
     userId: string;
     username: string;
   }>;
+  selectedUsersByPart: Record<number, { userId: string; username: string }[]>;
+  currentUserId: string;
 }
 
 export default function GameBoard({
@@ -70,6 +72,8 @@ export default function GameBoard({
   propertiesMap,
   gameBoardMode,
   connectedUsers,
+  selectedUsersByPart,
+  currentUserId,
 }: GameBoardProps) {
   const [prototypeName, setPrototypeName] = useState(initialPrototypeName);
   useEffect(() => {
@@ -92,6 +96,11 @@ export default function GameBoard({
   const { cardVisibilityMap } = useHandVisibility(parts, gameBoardMode);
   // ロール管理情報を取得
   const { userRoles } = useRoleManagement(projectId);
+
+  // 自分のユーザー情報（色付けに使用）
+  const selfUser = useMemo(() => {
+    return connectedUsers.find((u) => u.userId === currentUserId) || null;
+  }, [connectedUsers, currentUserId]);
 
   // 選択中のパーツ、および選択処理
   const {
@@ -130,7 +139,12 @@ export default function GameBoard({
   } = useSelection({
     stageRef,
     parts,
-    onPartsSelected: selectMultipleParts,
+    onPartsSelected: (ids) => {
+      const selectable = ids.filter((id) => !selectedUsersByPart[id]);
+      if (selectable.length > 0) {
+        selectMultipleParts(selectable);
+      }
+    },
     onClearSelection: clearSelection,
   });
   // ドラッグ機能
@@ -169,6 +183,9 @@ export default function GameBoard({
     // 左クリックのみContextMenuを閉じる
     if ((e.evt as MouseEvent).button === 0) {
       handleCloseContextMenu();
+    }
+    if (selectedUsersByPart[partId] && !selectedPartIds.includes(partId)) {
+      return;
     }
     const isShift = (e.evt as MouseEvent).shiftKey;
     if (isShift) {
@@ -561,6 +578,7 @@ export default function GameBoard({
               const partProperties = propertiesMap.get(part.id) || [];
               const filteredImages = filteredImagesMap[part.id] || [];
               const isActive = selectedPartIds.includes(part.id);
+              const selectedBy = selectedUsersByPart[part.id] || [];
 
               // カードの表示制御を判定
               const isOtherPlayerHandCard =
@@ -575,6 +593,8 @@ export default function GameBoard({
                   images={filteredImages}
                   gameBoardMode={gameBoardMode}
                   isActive={isActive}
+                  selectedBy={selectedBy}
+                  selfUser={selfUser ?? undefined}
                   isOtherPlayerHandCard={isOtherPlayerHandCard}
                   userRoles={userRoles}
                   onClick={(e) => handlePartClick(e, part.id)}
