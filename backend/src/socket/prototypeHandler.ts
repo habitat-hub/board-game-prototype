@@ -5,7 +5,11 @@ import { UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import PrototypeModel from '../models/Prototype';
 import UserModel from '../models/User';
 import { Op } from 'sequelize';
-import { shuffleDeck, isOverlapping } from '../helpers/prototypeHelper';
+import {
+  shuffleDeck,
+  persistDeckOrder,
+  isOverlapping,
+} from '../helpers/prototypeHelper';
 import ImageModel from '../models/Image';
 import {
   ORDER_MAX_EXCLUSIVE,
@@ -607,7 +611,8 @@ function handleShuffleDeck(socket: Socket, io: Server): void {
             cardCenter.y <= deck.position.y + deck.height
           );
         });
-        const updatedCards = await shuffleDeck(cardsOnDeck);
+        const shuffledCards = shuffleDeck(cardsOnDeck);
+        const updatedCards = await persistDeckOrder(shuffledCards);
         io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS, {
           parts: updatedCards,
           properties: [],
