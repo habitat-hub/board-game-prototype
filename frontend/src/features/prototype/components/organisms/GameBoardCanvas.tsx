@@ -159,7 +159,10 @@ export default function GameBoardCanvas({
       ref={stageRef}
       onWheel={handleWheel}
       onClick={handleStageClick}
-      onContextMenu={handleCloseContextMenu}
+      onContextMenu={(e: Konva.KonvaEventObject<MouseEvent>) => {
+        e.evt.preventDefault();
+        handleCloseContextMenu(e);
+      }}
       onMouseMove={(e: Konva.KonvaEventObject<MouseEvent>) =>
         handleSelectionMove(e, camera)
       }
