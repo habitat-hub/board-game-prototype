@@ -130,7 +130,7 @@ export default function GameBoardCanvas({
   handlePartDragEnd,
   handlePartContextMenu,
   rectForSelection,
-}: GameBoardCanvasProps): JSX.Element {
+}: GameBoardCanvasProps): React.ReactElement {
   const sortedParts = useMemo(() => {
     return [...parts].sort((a, b) => a.order - b.order);
   }, [parts]);
