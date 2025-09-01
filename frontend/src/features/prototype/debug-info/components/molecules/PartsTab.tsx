@@ -23,7 +23,7 @@ const PartsTab: React.FC<PartsTabProps> = ({ parts, properties }) => {
               (a, b) =>
                 new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
             )
-            .map((part, index) => {
+            .map((part) => {
               const partProperties = properties.filter(
                 (prop) => prop.partId === part.id
               );
