@@ -57,16 +57,16 @@ ci:
 dev:
 	@echo "Starting db, backend and frontend in foreground using 'concurrently' (Ctrl+C stops all)."
 	@cd "$(CURDIR)" && npx -y concurrently --kill-others-on-fail --names "db,backend,frontend" -c "magenta,green,cyan" \
-		"docker compose -f backend/docker-compose.yml up" \
-		"cd backend && npm run dev-without-swagger" \
-		"cd frontend && npm run dev"
+                "docker compose -f backend/docker-compose.yml up" \
+                "cd backend && npm run wait-for-db && npm run dev-without-swagger" \
+                "cd frontend && npm run dev"
 
 dev_deprecated:
 	@echo "Starting db, backend and frontend in foreground using 'concurrently' (Ctrl+C stops all)."
 	@cd "$(CURDIR)" && npx -y concurrently --kill-others-on-fail --names "db,backend,frontend" -c "magenta,green,cyan" \
-		"docker-compose -f backend/docker-compose.yml up" \
-		"cd backend && npm run dev-without-swagger" \
-		"cd frontend && npm run dev"
+                "docker-compose -f backend/docker-compose.yml up" \
+                "cd backend && npm run wait-for-db && npm run dev-without-swagger" \
+                "cd frontend && npm run dev"
 
 db-up:
 	docker compose -f backend/docker-compose.yml up

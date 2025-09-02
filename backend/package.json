@@ -21,7 +21,8 @@
     "clean-up-unused-images": "ts-node src/scripts/cleanUpUnusedImages.ts",
     "seed": "ts-node src/database/seed.ts",
     "seed:force": "ts-node src/database/seed.ts --force",
-    "seed:verify": "ts-node src/database/verify-seed.ts"
+    "seed:verify": "ts-node src/database/verify-seed.ts",
+    "wait-for-db": "ts-node src/scripts/waitForDb.ts"
   },
   "keywords": [],
   "author": "",
