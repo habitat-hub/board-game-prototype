@@ -39,10 +39,10 @@ import { useRoleManagement } from '@/features/role/hooks/useRoleManagement';
 import {
   getImageFromIndexedDb,
   resetImageParamsInIndexedDb,
-  revokeMultipleObjectURLsAndCleanCache,
   saveImageToIndexedDb,
   updateImageParamsInIndexedDb,
 } from '@/utils/db';
+import { revokeMultipleObjectURLsAndCleanCache } from '@/utils/imageCache';
 import { isInputFieldFocused } from '@/utils/inputFocus';
 
 import GameBoardCanvas from './GameBoardCanvas';
