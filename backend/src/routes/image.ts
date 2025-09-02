@@ -7,12 +7,9 @@ import { pipeline } from 'stream/promises';
 
 import ImageModel from '../models/Image';
 import UserModel from '../models/User'; // Import UserModel
-import {
-  ValidationError,
-  UnauthorizedError,
-  NotFoundError,
-} from '../errors/CustomError';
+import { ValidationError, UnauthorizedError } from '../errors/CustomError';
 import { fetchPartsAndProperties } from '../socket/prototypeHandler';
+import { checkImageAccess } from '../middlewares/checkImageAccess';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() }); // バッファとして読み込み
@@ -147,26 +144,12 @@ router.post(
  */
 router.get(
   '/:imageId',
+  checkImageAccess,
   async (req: Request, res: Response, next: NextFunction) => {
-    const { imageId } = req.params;
     try {
-      if (!imageId) {
-        throw new ValidationError('Image ID が指定されていません');
-      }
-      // TODO: 画像のアクセス権を確認するロジックを追加(例: ユーザーがその画像にアクセスできるかどうか)
-      // ここでは単純にユーザーが認証されているかどうかを確認
-      if (!req.user) {
-        throw new UnauthorizedError('認証されていないユーザーです');
-      }
-
-      const image = await ImageModel.findByPk(imageId);
-      if (!image) {
-        throw new NotFoundError('指定された画像が存在しません');
-      }
+      const image = res.locals.image as ImageModel;
       const imageData = await fetchImageFromS3(image.storagePath);
       res.set('Content-Type', image.contentType);
-
-      // pipelineでストリームを処理
       await pipeline(imageData, res);
     } catch (error) {
       next(error);
@@ -245,25 +228,13 @@ router.get(
  */
 router.delete(
   '/:imageId',
+  checkImageAccess,
   async (req: Request, res: Response, next: NextFunction) => {
     const { imageId } = req.params;
     const { prototypeId, partId, side, emitUpdate } = req.query; // クエリパラメータから取得
     try {
-      if (!imageId) {
-        throw new ValidationError('Image ID が指定されていません');
-      }
-
       if (!prototypeId || !partId || !side) {
         throw new ValidationError('prototypeId、partId、sideの指定が必要です');
-      }
-      // TODO: 画像のアクセス権を確認するロジックを追加(例: ユーザーがその画像にアクセスできるかどうか)
-      // ここでは単純にユーザーが認証されているかどうかを確認
-      if (!req.user) {
-        throw new UnauthorizedError('認証されていないユーザーです');
-      }
-      const image = await ImageModel.findByPk(imageId);
-      if (!image) {
-        throw new NotFoundError('指定された画像が存在しません');
       }
       const result = await cleanupImageIfUnused(
         imageId,
