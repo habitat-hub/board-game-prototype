@@ -216,7 +216,7 @@ export default function PartPropertyMenu({
 
     setIsUploading(true); // ローディング開始
     try {
-      const response = await uploadImage(formData);
+      const response = await uploadImage.mutateAsync(formData);
       if (response.id) {
         // IndexedDBに画像を保存
         await saveImageToIndexedDb(response.id, image);

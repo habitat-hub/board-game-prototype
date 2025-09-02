@@ -1,22 +1,16 @@
-import { useCallback } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { authService } from '@/api/endpoints/auth';
 
 export const useAuth = () => {
-  /**
-   * ログアウトする
-   */
-  const logout = useCallback(async () => {
-    await authService.logout();
-  }, []);
+  const logout = useMutation({
+    mutationFn: authService.logout,
+  });
 
-  /**
-   * ユーザーを取得する
-   */
-  const getUser = useCallback(async () => {
-    const user = await authService.getUser();
-    return user;
-  }, []);
+  const getUser = useQuery({
+    queryKey: ['auth', 'user'],
+    queryFn: authService.getUser,
+  });
 
   return { logout, getUser };
 };

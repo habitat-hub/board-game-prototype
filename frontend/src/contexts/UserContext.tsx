@@ -28,31 +28,25 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   // ユーザー情報
   const [user, setUser] = useState<UserListData | null>(null);
-  // ローディング状態
-  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // ユーザー情報チェック、存在しない場合はユーザー情報取得
   useEffect(() => {
-    getUser()
-      .then((response) => {
-        const data = response;
-        // ユーザーが存在しない、またはidが存在しない場合
-        if (!data || !data.id) {
-          throw new Error('ユーザーが存在しません');
-        }
-
-        setUser(data);
-      })
-      .catch(() => {
+    if (getUser.isSuccess) {
+      const data = getUser.data;
+      if (!data || !data.id) {
         router.replace('/');
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, [getUser, router]);
+        return;
+      }
+      setUser(data);
+    }
+    if (getUser.isError) {
+      router.replace('/');
+    }
+  }, [getUser.data, getUser.isError, getUser.isSuccess, router]);
 
   return (
-    <UserContext.Provider value={{ user, setUser, isLoading }}>
+    <UserContext.Provider
+      value={{ user, setUser, isLoading: getUser.isLoading }}
+    >
       {children}
     </UserContext.Provider>
   );

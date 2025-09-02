@@ -304,7 +304,13 @@ export default function GameBoard({
       emitUpdate,
     }: DeleteImageProps) => {
       updateImageParamsInIndexedDb(imageId, true, new Date());
-      await deleteImage(imageId, { prototypeId, partId, side, emitUpdate });
+      await deleteImage.mutateAsync({
+        imageId,
+        prototypeId,
+        partId,
+        side,
+        emitUpdate,
+      });
     },
     [deleteImage]
   );
@@ -417,7 +423,7 @@ export default function GameBoard({
             return { imageId, url: cachedImageResult.objectURL };
           }
           try {
-            const s3ImageBlob = await fetchImage(imageId);
+            const s3ImageBlob = await fetchImage.mutateAsync(imageId);
             const imageResult = await saveImageToIndexedDb(imageId, s3ImageBlob);
             if (imageResult) {
               return { imageId, url: imageResult.objectURL };

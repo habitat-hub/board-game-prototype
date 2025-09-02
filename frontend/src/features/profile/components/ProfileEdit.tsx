@@ -69,20 +69,19 @@ const ProfileEdit: React.FC = () => {
     }
 
     try {
-      const updatedUser = await updateUser(user.id, {
-        username: username.trim(),
+      const updatedUser = await updateUser.mutateAsync({
+        userId: user.id,
+        data: {
+          username: username.trim(),
+        },
       });
 
-      // ユーザーコンテキストを更新
       setUser(updatedUser);
-
-      // 更新成功メッセージを表示
       setSuccess('ユーザー名を更新しました');
       setError('');
     } catch (error) {
       console.error('Error updating username:', error);
       setError('ユーザー名の更新に失敗しました');
-      // エラー時は元のユーザー名に戻す
       if (user?.username) {
         setUsername(user.username);
       }

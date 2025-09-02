@@ -116,7 +116,7 @@ export default function LeftSidebar({
     const fetchNeedTutorialStatus = async () => {
       if (!user?.id) return;
       try {
-        const result = await checkNeedTutorial(user.id);
+        const result = await checkNeedTutorial.mutateAsync(user.id);
         setNeedTutorial(result.needTutorial);
       } catch (error) {
         console.error(

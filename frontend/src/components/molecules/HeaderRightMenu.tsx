@@ -51,13 +51,14 @@ const HeaderRightMenu: React.FC<HeaderRightMenuProps> = ({ pathname }) => {
   /**
    * ログアウトする
    */
-  const handleLogout = () => {
-    logout()
-      .then(() => {
-        setUser(null);
-        router.replace('/');
-      })
-      .catch((error) => console.error('Logout error:', error));
+  const handleLogout = async () => {
+    try {
+      await logout.mutateAsync();
+      setUser(null);
+      router.replace('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   // ローディング時はnullを返す

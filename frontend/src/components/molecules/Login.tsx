@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { FaGoogle, FaDice, FaChessBoard } from 'react-icons/fa';
 import { GiWoodenCrate, GiCardAceSpades, GiPuzzle } from 'react-icons/gi';
 
@@ -13,28 +13,17 @@ import Loading from '@/components/organisms/Loading';
 function Login() {
   const router = useRouter();
   const { getUser } = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // ユーザーがログイン済みか確認
-    getUser()
-      .then((user) => {
-        // ユーザーデータが存在する場合
-        if (user && user.id) {
-          // /projects にリダイレクト
-          router.replace('/projects');
-        }
+    if (getUser.isSuccess && getUser.data?.id) {
+      router.replace('/projects');
+    }
+    if (getUser.isError) {
+      console.error('Login check error:', getUser.error);
+    }
+  }, [getUser.data, getUser.isError, getUser.isSuccess, getUser.error, router]);
 
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        // エラーがあった場合はログイン画面を表示する
-        console.error('Login check error:', error);
-        setIsLoading(false);
-      });
-  }, [getUser, router]);
-
-  if (isLoading) {
+  if (getUser.isLoading) {
     return <Loading />;
   }
 

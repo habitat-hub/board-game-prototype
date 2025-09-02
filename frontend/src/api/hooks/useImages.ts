@@ -1,33 +1,22 @@
-import { useCallback } from 'react';
+import { useMutation } from '@tanstack/react-query';
 
 import { imagesService } from '@/api/endpoints/images';
 
 import { ImagesDeleteParams } from '../types';
 
 export const useImages = () => {
-  /**
-   * 画像取得
-   */
-  const fetchImage = useCallback(async (imageId: string) => {
-    return await imagesService.fetchImage(imageId);
-  }, []);
+  const fetchImage = useMutation({
+    mutationFn: (imageId: string) => imagesService.fetchImage(imageId),
+  });
 
-  /**
-   * 画像アップロード
-   */
-  const uploadImage = useCallback(async (data: FormData) => {
-    return await imagesService.uploadImage(data);
-  }, []);
+  const uploadImage = useMutation({
+    mutationFn: (data: FormData) => imagesService.uploadImage(data),
+  });
 
-  /**
-   * 画像削除
-   */
-  const deleteImage = useCallback(
-    async (imageId: string, params: Omit<ImagesDeleteParams, 'imageId'>) => {
-      return await imagesService.deleteImage(imageId, params);
-    },
-    []
-  );
+  const deleteImage = useMutation({
+    mutationFn: ({ imageId, ...params }: ImagesDeleteParams) =>
+      imagesService.deleteImage(imageId, params),
+  });
 
   return {
     fetchImage,

@@ -107,7 +107,7 @@ export const useRoleManagement = (projectId: string) => {
       // 作成者の情報を取得
       if (project.userId) {
         try {
-          const usersResponse = await searchUsers({ username: '' });
+          const usersResponse = await searchUsers.mutateAsync({ username: '' });
           const creatorUser = usersResponse.find(
             (user) => user.id === project.userId
           );
@@ -128,7 +128,7 @@ export const useRoleManagement = (projectId: string) => {
   const fetchUsers = useCallback(
     async (username: string = '') => {
       try {
-        const response = await searchUsers({ username });
+        const response = await searchUsers.mutateAsync({ username });
         setFetchedUsers(response);
       } catch (error) {
         console.error('Error fetching all users:', error);

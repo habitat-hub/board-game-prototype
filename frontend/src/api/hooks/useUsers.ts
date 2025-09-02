@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useMutation } from '@tanstack/react-query';
 
 import { usersService } from '@/api/endpoints/users';
 import {
@@ -8,32 +8,25 @@ import {
 } from '@/api/types';
 
 export const useUsers = () => {
-  /**
-   * ユーザーを検索する
-   */
-  const searchUsers = useCallback(async (query: UsersSearchListParams) => {
-    return await usersService.searchUsers(query);
-  }, []);
+  const searchUsers = useMutation({
+    mutationFn: (query: UsersSearchListParams) =>
+      usersService.searchUsers(query),
+  });
 
-  /**
-   * ユーザー情報を更新する
-   */
-  const updateUser = useCallback(
-    async (userId: string, data: UsersUpdatePayload) => {
-      return await usersService.updateUser(userId, data);
-    },
-    []
-  );
+  const updateUser = useMutation({
+    mutationFn: ({
+      userId,
+      data,
+    }: {
+      userId: string;
+      data: UsersUpdatePayload;
+    }) => usersService.updateUser(userId, data),
+  });
 
-  /**
-   * チュートリアル表示が必要かどうかを確認する
-   */
-  const checkNeedTutorial = useCallback(
-    async (userId: string): Promise<UsersNeedTutorialData> => {
-      return await usersService.checkNeedTutorial(userId);
-    },
-    []
-  );
+  const checkNeedTutorial = useMutation({
+    mutationFn: (userId: string): Promise<UsersNeedTutorialData> =>
+      usersService.checkNeedTutorial(userId),
+  });
 
   return {
     searchUsers,
