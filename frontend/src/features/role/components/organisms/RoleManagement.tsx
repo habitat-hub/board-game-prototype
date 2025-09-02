@@ -77,7 +77,7 @@ const RoleManagement: React.FC = () => {
       try {
         fetchAllUsers(searchTerm);
       } catch (e) {
-        // エラーは無視（フック側で処理される）
+        console.error('RoleManagement: fetchAllUsers failed', e);
       }
     }, 500);
 

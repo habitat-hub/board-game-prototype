@@ -21,7 +21,8 @@
     "clean-up-unused-images": "ts-node src/scripts/cleanUpUnusedImages.ts",
     "seed": "ts-node src/database/seed.ts",
     "seed:force": "ts-node src/database/seed.ts --force",
-    "seed:verify": "ts-node src/database/verify-seed.ts"
+    "seed:verify": "ts-node src/database/verify-seed.ts",
+    "wait-for-db": "ts-node src/scripts/waitForDb.ts"
   },
   "keywords": [],
   "author": "",
@@ -39,7 +40,6 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "express-session": "^1.18.1",
-    "file-type": "^18.0.0",
     "http-status-codes": "^2.3.0",
     "multer": "^1.4.5-lts.2",
     "passport": "^0.7.0",
