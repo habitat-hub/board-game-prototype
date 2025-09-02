@@ -13,6 +13,7 @@ import {
 import ImageModel from '../models/Image';
 import { handleAWSError } from '../utils/awsErrorHandler';
 import env from '../config/env';
+import path from 'path';
 
 const bucketName = env.AWS_S3_BUCKET_NAME;
 
@@ -37,10 +38,14 @@ export const uploadImageToS3 = async (
     );
   }
 
-  // 実ファイル内容からMIMEタイプを判定（拡張子や宣言に依存しない）
-  const { fileTypeFromBuffer } = await import('file-type');
-  const detected = await fileTypeFromBuffer(file.buffer);
-  const mime: string | undefined = detected?.mime ?? file.mimetype;
+  // 拡張子ベースの簡易的なMIMEタイプ判定
+  const extension = path.extname(file.originalname).toLowerCase();
+  let mime: string | undefined;
+  if (extension === '.jpg' || extension === '.jpeg') {
+    mime = 'image/jpeg';
+  } else if (extension === '.png') {
+    mime = 'image/png';
+  }
   if (!mime || !IMAGE_ALLOWED_MIME_TYPES.includes(mime)) {
     throw new ValidationError(
       'サポートされていない画像形式です（JPEG, PNGのみ対応）'
