@@ -62,9 +62,11 @@ jobs:
           echo "- Frontend test: ${{ steps.frontend_test.outcome }}" >> $GITHUB_STEP_SUMMARY
           echo "- Backend lint: ${{ steps.backend_lint.outcome }}" >> $GITHUB_STEP_SUMMARY
           echo "- Backend test: ${{ steps.backend_test.outcome }}" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ steps.frontend_lint.outcome }}" != "success" ] || \
-             [ "${{ steps.frontend_test.outcome }}" != "success" ] || \
-             [ "${{ steps.backend_lint.outcome }}" != "success" ] || \
-             [ "${{ steps.backend_test.outcome }}" != "success" ]; then
-            exit 1
-          fi
+
+      - name: Fail if any step failed
+        if: >
+          steps.frontend_lint.outcome != 'success' ||
+          steps.frontend_test.outcome != 'success' ||
+          steps.backend_lint.outcome != 'success' ||
+          steps.backend_test.outcome != 'success'
+        run: exit 1
