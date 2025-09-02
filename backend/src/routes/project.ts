@@ -20,6 +20,8 @@ import { RESOURCE_TYPES, ROLE_TYPE } from '../const';
 import RoleModel from '../models/Role';
 import UserRoleModel from '../models/UserRole';
 import { getProjectMembers } from '../helpers/userRoleHelper';
+import { validate } from '../middlewares/validators/validate';
+import { projectCreationSchema } from '../middlewares/validators/project';
 
 const router = express.Router();
 
@@ -97,31 +99,31 @@ router.get('/', async (req: Request, res: Response) => {
  *             schema:
  *               $ref: '#/components/schemas/Error500Response'
  */
-router.post('/', async (req: Request, res: Response) => {
-  const user = req.user as UserModel;
+router.post(
+  '/',
+  validate(projectCreationSchema),
+  async (req: Request, res: Response) => {
+    const user = req.user as UserModel;
 
-  const { name } = req.body;
-  if (!name) {
-    res.status(400).json({ error: 'プロトタイプ名が必要です' });
-    return;
+    const { name } = req.body;
+
+    const transaction = await sequelize.transaction();
+    try {
+      const project = await createProject({
+        userId: user.id,
+        name,
+        transaction,
+      });
+
+      await transaction.commit();
+      res.status(201).json(project);
+    } catch (error) {
+      await transaction.rollback();
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+    }
   }
-
-  const transaction = await sequelize.transaction();
-  try {
-    const project = await createProject({
-      userId: user.id,
-      name,
-      transaction,
-    });
-
-    await transaction.commit();
-    res.status(201).json(project);
-  } catch (error) {
-    await transaction.rollback();
-    console.error(error);
-    res.status(500).json({ error: '予期せぬエラーが発生しました' });
-  }
-});
+);
 
 /**
  * @swagger
@@ -183,25 +185,20 @@ router.post('/', async (req: Request, res: Response) => {
 router.post(
   '/:projectId/versions',
   checkProjectReadPermission,
+  validate(projectCreationSchema),
   async (req: Request, res: Response) => {
     const { name } = req.body;
-    if (!name) {
-      res.status(400).json({
-        error: 'プロトタイプ名が必要です',
-      });
-      return;
-    }
 
-    const transaction = await sequelize.transaction();
     try {
       // VERSION作成（MASTERコピー＋INSTANCEも同時作成）
       const { versionPrototype, instancePrototype } =
-        await createPrototypeVersion({
-          projectId: req.params.projectId,
-          name,
-          transaction,
-        });
-      await transaction.commit();
+        await sequelize.transaction(async (t) =>
+          createPrototypeVersion({
+            projectId: req.params.projectId,
+            name,
+            transaction: t,
+          })
+        );
 
       // Socket.IOでルーム作成を全ユーザーに通知
       try {
@@ -219,7 +216,6 @@ router.post(
         .status(201)
         .json({ version: versionPrototype, instance: instancePrototype });
     } catch (error) {
-      await transaction.rollback();
       console.error(error);
       res.status(500).json({ error: '予期せぬエラーが発生しました' });
     }
@@ -272,58 +268,56 @@ router.delete(
   async (req: Request, res: Response) => {
     const { projectId, prototypeId } = req.params;
 
-    const transaction = await sequelize.transaction();
     try {
-      // 指定されたIDのVERSIONプロトタイプを取得
-      const versionPrototype = await PrototypeModel.findOne({
-        where: {
-          id: prototypeId,
-          projectId,
-          type: 'VERSION',
-        },
-        transaction,
-      });
+      const { versionPrototype, deletedInstanceIds } =
+        await sequelize.transaction(async (t) => {
+          // 指定されたIDのVERSIONプロトタイプを取得
+          const versionPrototype = await PrototypeModel.findOne({
+            where: {
+              id: prototypeId,
+              projectId,
+              type: 'VERSION',
+            },
+            transaction: t,
+          });
 
-      if (!versionPrototype) {
-        await transaction.rollback();
-        res.status(404).json({
-          error: 'プロトタイプルームが見つかりません',
+          if (!versionPrototype) {
+            throw new Error('NOT_FOUND');
+          }
+
+          // 関連するINSTANCEプロトタイプを取得（削除前にIDを記録）
+          const instancePrototypes = await PrototypeModel.findAll({
+            where: {
+              projectId,
+              type: 'INSTANCE',
+              sourceVersionPrototypeId: versionPrototype.id,
+            },
+            attributes: ['id'], // IDのみ取得で軽量化
+            transaction: t,
+          });
+
+          const deletedInstanceIds = instancePrototypes.map(
+            (p: PrototypeModel) => p.id
+          );
+
+          // INSTANCEプロトタイプを一括削除（CASCADE により Part → PartProperty も自動削除される）
+          if (instancePrototypes.length > 0) {
+            await PrototypeModel.destroy({
+              where: {
+                id: deletedInstanceIds,
+              },
+              transaction: t,
+            });
+          }
+
+          // VERSIONプロトタイプを削除（CASCADE により Part → PartProperty も自動削除される）
+          await PrototypeModel.destroy({
+            where: { id: versionPrototype.id },
+            transaction: t,
+          });
+
+          return { versionPrototype, deletedInstanceIds };
         });
-        return;
-      }
-
-      // 関連するINSTANCEプロトタイプを取得（削除前にIDを記録）
-      const instancePrototypes = await PrototypeModel.findAll({
-        where: {
-          projectId,
-          type: 'INSTANCE',
-          sourceVersionPrototypeId: versionPrototype.id,
-        },
-        attributes: ['id'], // IDのみ取得で軽量化
-        transaction,
-      });
-
-      const deletedInstanceIds = instancePrototypes.map(
-        (p: PrototypeModel) => p.id
-      );
-
-      // INSTANCEプロトタイプを一括削除（CASCADE により Part → PartProperty も自動削除される）
-      if (instancePrototypes.length > 0) {
-        await PrototypeModel.destroy({
-          where: {
-            id: deletedInstanceIds,
-          },
-          transaction,
-        });
-      }
-
-      // VERSIONプロトタイプを削除（CASCADE により Part → PartProperty も自動削除される）
-      await PrototypeModel.destroy({
-        where: { id: versionPrototype.id },
-        transaction,
-      });
-
-      await transaction.commit();
 
       // Socket.IOでルーム削除を全ユーザーに通知
       try {
@@ -343,7 +337,10 @@ router.delete(
         deletedInstances: deletedInstanceIds,
       });
     } catch (error) {
-      await transaction.rollback();
+      if (error instanceof Error && error.message === 'NOT_FOUND') {
+        res.status(404).json({ error: 'プロトタイプルームが見つかりません' });
+        return;
+      }
       console.error(error);
       res.status(500).json({ error: '予期せぬエラーが発生しました' });
     }

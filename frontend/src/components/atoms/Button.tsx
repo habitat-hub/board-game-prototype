@@ -1,9 +1,8 @@
 import { cva, type VariantProps } from 'class-variance-authority';
-import Link from 'next/link';
 import { ButtonHTMLAttributes, ReactNode } from 'react';
 import { twMerge } from 'tailwind-merge';
 
-const buttonStyles = cva(
+export const buttonStyles = cva(
   'inline-block rounded-full font-semibold transition-colors',
   {
     variants: {
@@ -31,7 +30,6 @@ interface ButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonStyles> {
   children: ReactNode;
-  href?: string;
   className?: string;
   isLoading?: boolean;
 }
@@ -41,7 +39,6 @@ export default function Button({
   variant,
   size,
   type = 'button',
-  href,
   className = '',
   isLoading = false,
   ...props
@@ -62,11 +59,6 @@ export default function Button({
         <span className="animate-pulse text-lg">・</span>
       </div>
     </button>
-  ) : href ? (
-    // リンク
-    <Link href={href} className={buttonClasses}>
-      {children}
-    </Link>
   ) : (
     // ボタン
     <button type={type} className={buttonClasses} {...props}>

@@ -1,5 +1,7 @@
 import { openDB } from 'idb';
 
+import { getCachedObjectURL, setCachedObjectURL, hasCachedObjectURL, revokeObjectURLAndCleanCache, revokeMultipleObjectURLsAndCleanCache } from './imageCache';
+
 const DB_NAME = 'BoardGamePrototype';
 const STORE_NAME = 'images';
 const IMAGE_DELETE_GRACE_DAYS = 3;
@@ -9,8 +11,6 @@ type IndexedDbImageResult = {
   objectURL: string;
 };
 
-// メモリ上でobjectURLを管理するためのキャッシュを定義
-const objectUrlCache = new Map<string, string>();
 
 // IndexedDBの初期化関数
 export const getIndexedDb = async () => {
@@ -47,13 +47,13 @@ export const saveImageToIndexedDb = async (
     });
 
     // 既存のオブジェクトURLがある場合はクリーンアップ
-    if (objectUrlCache.has(id)) {
+    if (hasCachedObjectURL(id)) {
       revokeObjectURLAndCleanCache(id);
     }
 
     // 新しいオブジェクトURLを作成してキャッシュに保存
     const objectURL = URL.createObjectURL(imageBlob);
-    objectUrlCache.set(id, objectURL);
+    setCachedObjectURL(id, objectURL);
 
     return {
       imageBlob,
@@ -78,12 +78,12 @@ export const getImageFromIndexedDb = async (
     const db = await getIndexedDb();
     const record = await db.get(STORE_NAME, id);
     if (record && record.imageBlob) {
-      const objectURL = objectUrlCache.get(id);
+      const objectURL = getCachedObjectURL(id);
       if (objectURL) {
         return { imageBlob: record.imageBlob, objectURL };
       }
       const newObjectURL = URL.createObjectURL(record.imageBlob);
-      objectUrlCache.set(id, newObjectURL);
+      setCachedObjectURL(id, newObjectURL);
       return { imageBlob: record.imageBlob, objectURL: newObjectURL };
     }
 
@@ -169,16 +169,3 @@ export const resetImageParamsInIndexedDb = async (
   }
 };
 
-// オブジェクトURLとキャッシュをクリーンアップする関数
-export const revokeObjectURLAndCleanCache = (id: string): void => {
-  const objectURL = objectUrlCache.get(id);
-  if (objectURL) {
-    URL.revokeObjectURL(objectURL); // オブジェクトURLを解放
-    objectUrlCache.delete(id); // キャッシュを削除
-  }
-};
-
-// 複数のIDに対してオブジェクトURLとキャッシュをクリーンアップする関数
-export const revokeMultipleObjectURLsAndCleanCache = (ids: string[]): void => {
-  ids.forEach((id) => revokeObjectURLAndCleanCache(id));
-};
