@@ -20,6 +20,8 @@ import { RESOURCE_TYPES, ROLE_TYPE } from '../const';
 import RoleModel from '../models/Role';
 import UserRoleModel from '../models/UserRole';
 import { getProjectMembers } from '../helpers/userRoleHelper';
+import { validate } from '../middlewares/validators/validate';
+import { projectCreationSchema } from '../middlewares/validators/project';
 
 const router = express.Router();
 
@@ -97,30 +99,31 @@ router.get('/', async (req: Request, res: Response) => {
  *             schema:
  *               $ref: '#/components/schemas/Error500Response'
  */
-router.post('/', async (req: Request, res: Response) => {
-  const user = req.user as UserModel;
+router.post(
+  '/',
+  validate(projectCreationSchema),
+  async (req: Request, res: Response) => {
+    const user = req.user as UserModel;
 
-  const { name } = req.body;
-  if (!name) {
-    res.status(400).json({ error: 'プロトタイプ名が必要です' });
-    return;
-  }
+    const { name } = req.body;
 
-  try {
-    const project = await sequelize.transaction(async (t) =>
-      createProject({
+    const transaction = await sequelize.transaction();
+    try {
+      const project = await createProject({
         userId: user.id,
         name,
-        transaction: t,
-      })
-    );
+        transaction,
+      });
 
-    res.status(201).json(project);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: '予期せぬエラーが発生しました' });
+      await transaction.commit();
+      res.status(201).json(project);
+    } catch (error) {
+      await transaction.rollback();
+      console.error(error);
+      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+    }
   }
-});
+);
 
 /**
  * @swagger
@@ -182,14 +185,9 @@ router.post('/', async (req: Request, res: Response) => {
 router.post(
   '/:projectId/versions',
   checkProjectReadPermission,
+  validate(projectCreationSchema),
   async (req: Request, res: Response) => {
     const { name } = req.body;
-    if (!name) {
-      res.status(400).json({
-        error: 'プロトタイプ名が必要です',
-      });
-      return;
-    }
 
     try {
       // VERSION作成（MASTERコピー＋INSTANCEも同時作成）
