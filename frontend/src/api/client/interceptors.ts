@@ -28,7 +28,11 @@ export const setupAuthErrorInterceptor = (instance: AxiosInstance) => {
           window.location.href = REDIRECT_URLS.UNAUTHORIZED;
         }
       } else if (status === 403) {
-        if (typeof window !== 'undefined') {
+        const requestUrl: string = error.config?.url ?? '';
+        if (
+          typeof window !== 'undefined' &&
+          !requestUrl.includes('/api/images')
+        ) {
           window.location.href = REDIRECT_URLS.FORBIDDEN;
         }
       }
