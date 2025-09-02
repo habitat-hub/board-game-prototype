@@ -56,17 +56,17 @@ ci:
 # 必要に応じてnpm run generate-api-typesを適宜実行すること (backend/package.json内のscripts参照)
 dev:
 	@echo "Starting db, backend and frontend in foreground using 'concurrently' (Ctrl+C stops all)."
-	@cd "$(CURDIR)" && npx -y concurrently --kill-others-on-fail --names "db,backend,frontend" -c "magenta,green,cyan" \
-		"docker compose -f backend/docker-compose.yml up" \
-		"cd backend && npm run dev-without-swagger" \
-		"cd frontend && npm run dev"
+        @cd "$(CURDIR)" && npx -y concurrently --kill-others-on-fail --names "db,backend,frontend" -c "magenta,green,cyan" \
+                "docker compose -f backend/docker-compose.yml up" \
+                "cd backend && npm run wait-for-db && npm run dev-without-swagger" \
+                "cd frontend && npm run dev"
 
 dev_deprecated:
 	@echo "Starting db, backend and frontend in foreground using 'concurrently' (Ctrl+C stops all)."
-	@cd "$(CURDIR)" && npx -y concurrently --kill-others-on-fail --names "db,backend,frontend" -c "magenta,green,cyan" \
-		"docker-compose -f backend/docker-compose.yml up" \
-		"cd backend && npm run dev-without-swagger" \
-		"cd frontend && npm run dev"
+        @cd "$(CURDIR)" && npx -y concurrently --kill-others-on-fail --names "db,backend,frontend" -c "magenta,green,cyan" \
+                "docker-compose -f backend/docker-compose.yml up" \
+                "cd backend && npm run wait-for-db && npm run dev-without-swagger" \
+                "cd frontend && npm run dev"
 
 db-up:
 	docker compose -f backend/docker-compose.yml up
