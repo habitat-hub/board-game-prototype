@@ -416,10 +416,14 @@ export default function GameBoard({
           if (cachedImageResult) {
             return { imageId, url: cachedImageResult.objectURL };
           }
-          const s3ImageBlob = await fetchImage(imageId);
-          const imageResult = await saveImageToIndexedDb(imageId, s3ImageBlob);
-          if (imageResult) {
-            return { imageId, url: imageResult.objectURL };
+          try {
+            const s3ImageBlob = await fetchImage(imageId);
+            const imageResult = await saveImageToIndexedDb(imageId, s3ImageBlob);
+            if (imageResult) {
+              return { imageId, url: imageResult.objectURL };
+            }
+          } catch (error) {
+            console.warn(`Image with ID ${imageId} could not be loaded.`, error);
           }
           return null;
         })
