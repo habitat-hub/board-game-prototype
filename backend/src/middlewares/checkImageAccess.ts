@@ -49,24 +49,23 @@ export const checkImageAccess = async (
         ],
       });
 
-      let hasProjectAccess = false;
-      for (const prop of partProperties) {
-        const projectId = (prop as any).part?.Prototype?.projectId as
-          | string
-          | undefined;
-        if (
-          projectId &&
-          (await hasPermission(
-            String(user.id),
-            RESOURCE_TYPES.PROJECT,
-            PERMISSION_ACTIONS.READ,
-            projectId
-          ))
-        ) {
-          hasProjectAccess = true;
-          break;
+      const hasProjectAccess = await (async () => {
+        for (const prop of partProperties) {
+          const projectId = (prop as any).part?.Prototype?.projectId as
+            | string
+            | undefined;
+          if (projectId) {
+            const allowed = await hasPermission(
+              String(user.id),
+              RESOURCE_TYPES.PROJECT,
+              PERMISSION_ACTIONS.READ,
+              projectId
+            );
+            if (allowed) return true;
+          }
         }
-      }
+        return false;
+      })();
 
       if (!hasProjectAccess) {
         throw new ForbiddenError('この画像にアクセスする権限がありません');
