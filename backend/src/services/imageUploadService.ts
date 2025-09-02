@@ -34,7 +34,7 @@ export const uploadImageToS3 = async (
   //最低限のチェック（ファイルサイズ、MIMEタイプ）
   if (file.size > IMAGE_MAX_SIZE) {
     throw new ValidationError(
-      `ファイルサイズが大きすぎます（最大$${IMAGE_MAX_SIZE_MB}MBまで）`
+      `ファイルサイズが大きすぎます（最大${IMAGE_MAX_SIZE_MB}MBまで）`
     );
   }
 
