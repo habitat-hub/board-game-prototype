@@ -71,26 +71,49 @@ export function isOverlapping(selfPart: PartModel, part: PartModel) {
 }
 
 /**
- * デッキをシャッフルする
- * @param cards - シャッフルするパーツ
+ * 配列をシャッフルする（純粋関数）
+ * @param array - シャッフルする配列
+ * @returns シャッフルされた新しい配列
  */
-export async function shuffleDeck(cards: PartModel[]) {
-  // シャッフル前の順番
-  const originalOrders = cards.map((card) => card.order);
-  // シャッフル
-  for (let i = cards.length - 1; i > 0; i--) {
+export function shuffleArray<T>(array: T[]): T[] {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [cards[i], cards[j]] = [cards[j], cards[i]];
+    [result[i], result[j]] = [result[j], result[i]];
   }
+  return result;
+}
 
-  // シャッフル後の順番に更新
+/**
+ * デッキをシャッフルする（DB更新は含まない）
+ * @param cards - シャッフルするパーツ
+ * @returns シャッフル後のカードIDと順番の配列
+ */
+export function shuffleDeck(
+  cards: PartModel[]
+): { id: number; order: number }[] {
+  const originalOrders = cards.map((card) => card.order);
+  const shuffledCards = shuffleArray(cards);
+  return shuffledCards.map((card, index) => ({
+    id: card.id,
+    order: originalOrders[index],
+  }));
+}
+
+/**
+ * シャッフルされたデッキの順番をDBに永続化する
+ * @param cards - カードIDと順番の配列
+ */
+export async function persistDeckOrder(
+  cards: { id: number; order: number }[]
+): Promise<PartModel[]> {
   const updatedCards = await Promise.all(
-    cards.map(async (card, index) => {
+    cards.map(async (card) => {
       const [, result] = await PartModel.update(
-        { order: originalOrders[index] },
+        { order: card.order },
         { where: { id: card.id }, returning: true }
       );
-      return result[0].dataValues;
+      return result[0].dataValues as PartModel;
     })
   );
   return updatedCards;
