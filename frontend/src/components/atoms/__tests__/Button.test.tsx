@@ -13,8 +13,11 @@ describe('Button', () => {
 
   it('shows loading state', () => {
     render(<Button isLoading>Loading</Button>);
-    // three dots are rendered when loading
-    const dots = screen.getAllByText('・');
+    const button = screen.getByRole('button');
+    expect(button).toHaveAttribute('aria-busy', 'true');
+
+    const status = screen.getByRole('status');
+    const dots = status.querySelectorAll('span');
     expect(dots).toHaveLength(3);
   });
 });

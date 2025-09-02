@@ -2,6 +2,8 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { ButtonHTMLAttributes, ReactNode } from 'react';
 import { twMerge } from 'tailwind-merge';
 
+import LoadingDots from './LoadingDots';
+
 export const buttonStyles = cva(
   'inline-block rounded-full font-semibold transition-colors',
   {
@@ -48,21 +50,22 @@ export default function Button({
     className,
   );
 
-  return isLoading ? (
-    // ローディング中(3つのドットを点滅表示)
-    <button type={type} className={buttonClasses} {...props}>
-      {/* NOTE: ローディング中は子要素を非表示にする(ボタンの横幅を維持するためinvisibleを使用) */}
-      <div className="invisible h-0">{children}</div>
-      <div className="flex items-center justify-center gap-2">
-        <span className="animate-pulse text-lg">・</span>
-        <span className="animate-pulse text-lg">・</span>
-        <span className="animate-pulse text-lg">・</span>
-      </div>
-    </button>
-  ) : (
-    // ボタン
-    <button type={type} className={buttonClasses} {...props}>
-      {children}
+  return (
+    <button
+      type={type}
+      className={buttonClasses}
+      aria-busy={isLoading}
+      {...props}
+    >
+      {isLoading ? (
+        <>
+          {/* NOTE: ローディング中は子要素を非表示にする(ボタンの横幅を維持するためinvisibleを使用) */}
+          <div className="invisible h-0">{children}</div>
+          <LoadingDots />
+        </>
+      ) : (
+        children
+      )}
     </button>
   );
 }
