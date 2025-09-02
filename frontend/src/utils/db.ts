@@ -165,7 +165,6 @@ export const resetImageParamsInIndexedDb = async (
       await db.put(STORE_NAME, record);
     }
   } catch (error) {
-    // エラー時は何もしない
+    console.error('resetImageParamsInIndexedDb failed', error);
   }
 };
-

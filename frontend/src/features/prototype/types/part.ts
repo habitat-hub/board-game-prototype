@@ -27,8 +27,10 @@ export interface PartDefaultConfig {
 /**
  * パーツの共通プロパティ型
  */
-export interface CommonPartProperties
-  extends Pick<PartProperty, 'name' | 'description' | 'color' | 'textColor'> {}
+export type CommonPartProperties = Pick<
+  PartProperty,
+  'name' | 'description' | 'color' | 'textColor'
+>;
 
 /**
  * パーツを追加時のprops

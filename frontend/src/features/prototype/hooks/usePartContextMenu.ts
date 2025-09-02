@@ -55,7 +55,7 @@ export function usePartContextMenu({
         // evt が存在しないケースがあるため保護
         e.evt.preventDefault();
       } catch (err) {
-        // evt が無い、または preventDefault に失敗した場合は無視する
+        console.error('usePartContextMenu: preventDefault failed', err);
       }
 
       // ステージからマウス位置を取得してメニュー位置を設定
