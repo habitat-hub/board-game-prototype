@@ -17,39 +17,17 @@ const baseSchema = z.object({
 
 // Strict schema (dev/prod): require all variables
 const strictSchema = baseSchema.extend({
-  DATABASE_URL: z
-    .string()
-    .min(1),
-  FRONTEND_URL: z
-    .string()
-    .url(),
-  FRONTEND_DOMAIN: z
-    .string()
-    .min(1),
-  SESSION_SECRET: z
-    .string()
-    .min(1),
-  GOOGLE_CLIENT_ID: z
-    .string()
-    .min(1),
-  GOOGLE_CLIENT_SECRET: z
-    .string()
-    .min(1),
-  GOOGLE_CALLBACK_URL: z
-    .string()
-    .url(),
-  AWS_REGION: z
-    .string()
-    .min(1),
-  AWS_ACCESS_KEY_ID: z
-    .string()
-    .min(1),
-  AWS_SECRET_ACCESS_KEY: z
-    .string()
-    .min(1),
-  AWS_S3_BUCKET_NAME: z
-    .string()
-    .min(1),
+  DATABASE_URL: z.string().min(1),
+  FRONTEND_URL: z.string().url(),
+  FRONTEND_DOMAIN: z.string().min(1),
+  SESSION_SECRET: z.string().min(1),
+  GOOGLE_CLIENT_ID: z.string().min(1),
+  GOOGLE_CLIENT_SECRET: z.string().min(1),
+  GOOGLE_CALLBACK_URL: z.string().url(),
+  AWS_REGION: z.string().min(1),
+  AWS_ACCESS_KEY_ID: z.string().min(1),
+  AWS_SECRET_ACCESS_KEY: z.string().min(1),
+  AWS_S3_BUCKET_NAME: z.string().min(1),
 });
 
 // Relaxed schema (test): provide safe defaults to avoid failing on import
@@ -57,38 +35,19 @@ const relaxedSchema = baseSchema.extend({
   DATABASE_URL: z
     .string()
     .default('postgres://user:pass@localhost:5432/testdb'),
-  FRONTEND_URL: z
-    .string()
-    .url()
-    .default('http://localhost:3000'),
-  FRONTEND_DOMAIN: z
-    .string()
-    .default('localhost'),
-  SESSION_SECRET: z
-    .string()
-    .default('test-secret'),
-  GOOGLE_CLIENT_ID: z
-    .string()
-    .default('test'),
-  GOOGLE_CLIENT_SECRET: z
-    .string()
-    .default('test'),
+  FRONTEND_URL: z.string().url().default('http://localhost:3000'),
+  FRONTEND_DOMAIN: z.string().default('localhost'),
+  SESSION_SECRET: z.string().default('test-secret'),
+  GOOGLE_CLIENT_ID: z.string().default('test'),
+  GOOGLE_CLIENT_SECRET: z.string().default('test'),
   GOOGLE_CALLBACK_URL: z
     .string()
     .url()
     .default('http://localhost:8080/auth/google/callback'),
-  AWS_REGION: z
-    .string()
-    .default('us-east-1'),
-  AWS_ACCESS_KEY_ID: z
-    .string()
-    .default('test'),
-  AWS_SECRET_ACCESS_KEY: z
-    .string()
-    .default('test'),
-  AWS_S3_BUCKET_NAME: z
-    .string()
-    .default('test-bucket'),
+  AWS_REGION: z.string().default('us-east-1'),
+  AWS_ACCESS_KEY_ID: z.string().default('test'),
+  AWS_SECRET_ACCESS_KEY: z.string().default('test'),
+  AWS_S3_BUCKET_NAME: z.string().default('test-bucket'),
 });
 
 const envSchema = isTest ? relaxedSchema : strictSchema;
