@@ -20,6 +20,30 @@ export type AsyncMiddleware = (
   next: NextFunction
 ) => Promise<void> | void;
 
+function validateUser(req: Request, res: Response): UserModel | undefined {
+  const user = req.user as UserModel;
+  if (!user || !user.id) {
+    res.status(StatusCodes.UNAUTHORIZED).json({ message: '認証が必要です' });
+    return undefined;
+  }
+  return user;
+}
+
+function validateParam(
+  req: Request,
+  res: Response,
+  paramName: string
+): string | undefined {
+  const value = req.params[paramName];
+  if (!value) {
+    res.status(StatusCodes.BAD_REQUEST).json({
+      message: '必要なパラメータが不足しています',
+    });
+    return undefined;
+  }
+  return value;
+}
+
 /**
  * プロジェクトの作成者（所有者）かどうかを確認する
  * 注意: このミドルウェアはレガシー機能として残しています。
@@ -35,18 +59,13 @@ export async function checkProjectOwner(
   next: NextFunction
 ) {
   try {
-    const user = req.user as UserModel;
-    const projectId = req.params.projectId;
-
-    if (!user || !user.id) {
-      res.status(StatusCodes.UNAUTHORIZED).json({ message: '認証が必要です' });
+    const user = validateUser(req, res);
+    if (!user) {
       return;
     }
 
+    const projectId = validateParam(req, res, 'projectId');
     if (!projectId) {
-      res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: '必要なパラメータが不足しています' });
       return;
     }
 
@@ -93,20 +112,13 @@ export function checkPermission(
     res: Response,
     next: NextFunction
   ): Promise<void> => {
-    const user = req.user as UserModel;
-    const resourceId: string | undefined = req.params[resourceIdParam];
-
-    // 未認証の場合
-    if (!user || !user.id) {
-      res.status(StatusCodes.UNAUTHORIZED).json({ message: '認証が必要です' });
+    const user = validateUser(req, res);
+    if (!user) {
       return;
     }
 
-    // 必須パラメータが不足している場合
+    const resourceId = validateParam(req, res, resourceIdParam);
     if (!resourceId) {
-      res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: '必要なパラメータが不足しています' });
       return;
     }
 
