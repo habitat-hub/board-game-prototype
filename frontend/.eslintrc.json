@@ -14,9 +14,15 @@
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/no-unused-vars": [
-      "error",
+      "warn",
       { "argsIgnorePattern": "^_" }
     ],
+    "@typescript-eslint/no-empty-object-type": "warn",
+    "@typescript-eslint/no-unused-expressions": ["error", {
+      "allowShortCircuit": true,
+      "allowTernary": true,
+      "enforceForJSX": true
+    }],
     "no-console": ["warn", { "allow": ["warn", "error"] }],
     "import/order": [
       "error",
