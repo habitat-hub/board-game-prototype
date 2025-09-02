@@ -10,7 +10,7 @@ export const validate =
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const message = error.errors.map((e) => e.message).join(', ');
+        const message = error.issues.map((e) => e.message).join(', ');
         next(new ValidationError(message));
       } else {
         next(error);
