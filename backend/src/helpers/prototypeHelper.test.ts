@@ -8,10 +8,11 @@ vi.mock('../models/Project', () => ({ default: {} }));
 vi.mock('./roleHelper', () => ({ getAccessibleResourceIds: vi.fn() }));
 vi.mock('../const', () => ({ RESOURCE_TYPES: {}, PERMISSION_ACTIONS: {} }));
 
-let PartModel: any;
-let shuffleArray: any;
-let shuffleDeck: any;
-let persistDeckOrder: any;
+type PartModelType = typeof import('../models/Part').default;
+let PartModel: PartModelType;
+let shuffleArray: typeof import('./prototypeHelper').shuffleArray;
+let shuffleDeck: typeof import('./prototypeHelper').shuffleDeck;
+let persistDeckOrder: typeof import('./prototypeHelper').persistDeckOrder;
 
 beforeAll(async () => {
   process.env.DATABASE_URL = 'postgres://test';
@@ -63,7 +64,9 @@ describe('shuffleDeck and persistDeckOrder', () => {
       { id: 3, order: 3 },
     ];
 
-    const shuffled = shuffleDeck(cards);
+    const shuffled = shuffleDeck(
+      cards as unknown as InstanceType<PartModelType>[]
+    );
     expect(shuffled).toEqual([
       { id: 3, order: 1 },
       { id: 1, order: 2 },
@@ -72,14 +75,22 @@ describe('shuffleDeck and persistDeckOrder', () => {
 
     expect(cards.map((c) => c.order)).toEqual([1, 2, 3]);
 
-    const updateSpy = vi
-      .spyOn(PartModel, 'update')
-      .mockImplementation(async (values: any, options: any) => {
-        return [
-          1,
-          [{ dataValues: { id: options.where.id, order: values.order } }],
-        ] as any;
-      });
+    const updateSpy = vi.spyOn(PartModel, 'update').mockImplementation((async (
+      values: { order: number },
+      options: { where: { id: number } }
+    ): Promise<[number, { dataValues: { id: number; order: number } }[]]> => {
+      return [
+        1,
+        [
+          {
+            dataValues: {
+              id: options.where.id,
+              order: values.order,
+            },
+          },
+        ],
+      ];
+    }) as unknown as PartModelType['update']);
 
     const updated = await persistDeckOrder(shuffled);
     expect(updated).toEqual([
