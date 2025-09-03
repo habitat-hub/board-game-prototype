@@ -281,19 +281,31 @@ function handleUpdateParts(socket: Socket, io: Server): void {
               }
             }
 
-            // プロパティ更新：side が必須
+            // プロパティ更新：side が必須（WHERE句のキー）
             if (updateProperties && updateProperties.length > 0) {
               const updatePromises = updateProperties
                 .filter((property) => property.side !== undefined)
-                .map((property) =>
-                  PartPropertyModel.update(
-                    { ...property, partId },
-                    {
-                      where: { partId, side: property.side },
-                      transaction: t,
-                    }
-                  )
-                );
+                .map((property) => {
+                  // mass-assignment防止: id / partId / side は更新しない
+                  const propertyUpdateData = Object.entries(property).reduce(
+                    (acc, [key, value]) => {
+                      if (value === undefined) return acc;
+                      if (key === 'id' || key === 'partId' || key === 'side')
+                        return acc;
+                      // @ts-expect-error 動的キーの代入
+                      acc[key] = value;
+                      return acc;
+                    },
+                    {} as Partial<PartPropertyModel>
+                  );
+                  if (Object.keys(propertyUpdateData).length === 0) {
+                    return Promise.resolve();
+                  }
+                  return PartPropertyModel.update(propertyUpdateData, {
+                    where: { partId, side: property.side },
+                    transaction: t,
+                  });
+                });
               await Promise.all(updatePromises);
               propertyPartIds.add(partId);
             }
