@@ -35,7 +35,7 @@ export default function RoleMenu({
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 flex flex-row items-center justify-between ${showRoleManagementButton ? 'max-w-[150px]' : 'max-w-[100px]'} h-[56px] bg-kibako-white p-2 rounded-lg`}
+      className={`fixed top-4 right-4 z-overlay flex flex-row items-center justify-between ${showRoleManagementButton ? 'max-w-[150px]' : 'max-w-[100px]'} h-[56px] bg-kibako-white p-2 rounded-lg`}
     >
       {/* ユーザーアイコンリスト（左側・ホバーで全ユーザー名表示） */}
       <div className="relative group">
@@ -65,7 +65,7 @@ export default function RoleMenu({
             </span>
           )}
         </button>
-        <div className="absolute right-0 mt-2 max-w-xs bg-kibako-white border border-kibako-secondary rounded shadow z-20 px-3 py-2 text-xs text-kibako-primary opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200">
+        <div className="absolute right-0 mt-2 max-w-xs bg-kibako-white border border-kibako-secondary rounded shadow z-tooltip px-3 py-2 text-xs text-kibako-primary opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200">
           <ul>
             {connectedUsers.map((user) => (
               <li

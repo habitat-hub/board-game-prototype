@@ -52,7 +52,7 @@ export default function GameBoardHelpPanel({
   }, []);
 
   return (
-    <div className="fixed left-[20rem] top-[1.75rem] z-50">
+    <div className="fixed left-[20rem] top-[1.75rem] z-overlay">
       <div className="relative">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
@@ -64,7 +64,7 @@ export default function GameBoardHelpPanel({
         </button>
 
         {isExpanded && (
-          <div className="absolute left-0 top-9 w-96 rounded-xl border border-kibako-tertiary/40 bg-gradient-to-r from-kibako-white to-kibako-tertiary shadow-md z-50">
+          <div className="absolute left-0 top-9 w-96 rounded-xl border border-kibako-tertiary/40 bg-gradient-to-r from-kibako-white to-kibako-tertiary shadow-md z-overlay">
             <div className="relative px-3 py-2">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-xs font-semibold text-kibako-primary">

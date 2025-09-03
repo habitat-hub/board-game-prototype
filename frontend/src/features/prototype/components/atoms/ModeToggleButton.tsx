@@ -11,7 +11,7 @@ export default function ModeToggleButton({
   onToggle,
 }: ModeToggleButtonProps) {
   return (
-    <div className="absolute bottom-4 left-4 z-50 flex flex-col gap-2">
+    <div className="absolute bottom-4 left-4 z-overlay flex flex-col gap-2">
       <div className="relative group">
         <button
           className={`relative p-3 rounded-full shadow-md transition-all duration-300 ${
@@ -31,7 +31,7 @@ export default function ModeToggleButton({
           />
         </button>
         {/* ツールチップ */}
-        <div className="absolute left-0 bottom-full mb-1 bg-kibako-primary text-kibako-white text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[200]">
+        <div className="absolute left-0 bottom-full mb-1 bg-kibako-primary text-kibako-white text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-tooltip">
           {!isSelectionMode
             ? 'ボードをドラッグ&ドロップで移動できるモードをオフにする'
             : 'ボードをドラッグ&ドロップで移動できるモードをオンにする'}

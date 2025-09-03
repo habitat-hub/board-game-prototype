@@ -20,7 +20,7 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-kibako-primary/80 px-8 flex justify-between items-center h-20 backdrop-blur-sm">
+    <header className="sticky top-0 z-sticky bg-kibako-primary/80 px-8 flex justify-between items-center h-20 backdrop-blur-sm">
       <button onClick={goToTop}>
         <div className="flex gap-2">
           <GiWoodenCrate className="text-4xl drop-shadow-xl transform -rotate-6 text-kibako-white" />

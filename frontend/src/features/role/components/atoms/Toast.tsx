@@ -45,7 +45,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, show, onClose }) => {
   const config = getToastConfig();
 
   return (
-    <div className="fixed top-4 right-4 z-50">
+    <div className="fixed top-4 right-4 z-toast">
       <div className={`rounded-lg p-4 shadow-lg max-w-sm ${config.bgColor}`}>
         <div className="flex items-center">
           {config.icon}
