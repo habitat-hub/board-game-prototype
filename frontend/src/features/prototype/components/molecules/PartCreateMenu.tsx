@@ -226,7 +226,7 @@ export default function PartCreateMenu({
   ];
 
   return (
-    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 flex items-center justify-center">
+    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-dropdown flex items-center justify-center">
       {/* パーツ作成メニュー */}
       <div className="rounded-xl bg-kibako-white shadow-lg border border-kibako-secondary/30 p-3 flex flex-col items-center min-w-[140px]">
         <div className="flex items-center gap-2">

@@ -24,7 +24,8 @@ export default {
       },
       zIndex: {
         base: '0',
-        dropdown: '100',
+        // Ensure dropdowns render above sticky headers but below overlays/modals
+        dropdown: '250',
         sticky: '200',
         overlay: '300',
         modal: '400',
