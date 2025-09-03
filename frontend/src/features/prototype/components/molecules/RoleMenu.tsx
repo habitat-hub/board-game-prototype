@@ -9,6 +9,7 @@ import { FaUsers } from 'react-icons/fa';
 
 import { MAX_DISPLAY_USERS } from '@/features/prototype/constants/presence';
 import { ConnectedUser } from '@/features/prototype/types';
+import { getUserColor } from '@/features/prototype/utils/userColor';
 
 interface RoleMenuProps {
   projectId: string;
@@ -45,11 +46,12 @@ export default function RoleMenu({
         >
           <div className="flex -space-x-3">
             {displayUsers.map((user, idx) => {
+              const color = getUserColor(user.userId, user.username);
               return (
                 <span
                   key={user.userId || `user-${idx}`}
-                  className="flex items-center justify-center w-7 h-7 rounded-full bg-kibako-secondary text-kibako-primary font-bold text-sm select-none border-2 border-kibako-white shadow-sm"
-                  style={{ zIndex: 10 - idx }}
+                  className="flex items-center justify-center w-7 h-7 rounded-full bg-kibako-white text-kibako-primary font-bold text-sm select-none border-2 shadow-sm"
+                  style={{ zIndex: 10 - idx, borderColor: color }}
                   title={user.username}
                 >
                   {user.username.charAt(0).toUpperCase()}
