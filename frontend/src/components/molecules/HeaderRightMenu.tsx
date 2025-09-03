@@ -84,7 +84,7 @@ const HeaderRightMenu: React.FC<HeaderRightMenuProps> = ({ pathname }) => {
   }
 
   return (
-    <div className="relative z-50" ref={menuRef}>
+    <div className="relative z-dropdown" ref={menuRef}>
       <button onClick={() => setShowMenu(!showMenu)}>
         <UserAvatar username={user.username} size="lg" />
       </button>

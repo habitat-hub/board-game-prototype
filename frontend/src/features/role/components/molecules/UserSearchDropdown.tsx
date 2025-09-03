@@ -80,12 +80,12 @@ const UserSearchDropdown: React.FC<UserSearchDropdownProps> = ({
               <>
                 {/* 背景オーバーレイ */}
                 <div
-                  className="fixed inset-0 z-10"
+                  className="fixed inset-0 z-sticky"
                   onClick={() => onToggleDropdown(false)}
                 />
 
                 {/* ドロップダウンメニュー */}
-                <div className="absolute top-full left-0 right-0 mt-1 bg-kibako-white border border-kibako-secondary/20 rounded-md shadow-lg z-20 max-h-48 overflow-auto">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-kibako-white border border-kibako-secondary/20 rounded-md shadow-lg z-dropdown max-h-48 overflow-auto">
                   {filteredUsers.length > 0 ? (
                     <div className="py-1">
                       {filteredUsers.map((user) => (

@@ -94,7 +94,7 @@ export const usePartTooltip = ({
     try {
       tooltip.id = `tooltip-${part.id}`;
       tooltip.className =
-        'fixed z-[9999] pointer-events-none max-w-xs rounded-lg border border-kibako-tertiary/40 bg-gradient-to-r from-kibako-white to-kibako-tertiary shadow-lg p-3';
+        'fixed z-tooltip pointer-events-none max-w-xs rounded-lg border border-kibako-tertiary/40 bg-gradient-to-r from-kibako-white to-kibako-tertiary shadow-lg p-3';
       tooltip.style.left = `${tooltipPosition.x + 10}px`;
       tooltip.style.top = `${tooltipPosition.y - 10}px`;
 

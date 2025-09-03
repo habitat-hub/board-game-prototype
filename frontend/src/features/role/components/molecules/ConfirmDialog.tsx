@@ -25,7 +25,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 bg-kibako-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-kibako-black/50 flex items-center justify-center z-modal">
       <div className="bg-kibako-white rounded-lg p-6 max-w-md w-full mx-4">
         <div className="flex items-center mb-4">
           <FaExclamationTriangle className="h-6 w-6 text-kibako-accent mr-3" />

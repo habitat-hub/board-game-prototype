@@ -20,7 +20,7 @@ export const EmptyProjectState: React.FC<EmptyProjectStateProps> = ({
   onCreatePrototype,
 }) => {
   return (
-    <div className="fixed inset-0 z-10">
+    <div className="fixed inset-0 z-overlay">
       <button
         onClick={onCreatePrototype}
         disabled={isCreating}
