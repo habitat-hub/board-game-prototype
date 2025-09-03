@@ -712,7 +712,7 @@ export default function handlePrototype(socket: Socket, io: Server): void {
   handleShuffleDeck(socket, io);
   handleSelectedParts(socket);
 
-  socket.on(COMMON_SOCKET_EVENT.DISCONNECTING, () => {
+  socket.on(COMMON_SOCKET_EVENT.DISCONNECTING, async () => {
     // ソケットが切断される直前に呼び出される
     for (const room of socket.rooms) {
       // プロトタイプルームの場合（自身の socket.id 以外 かつ 管理対象のルーム）
@@ -725,15 +725,34 @@ export default function handlePrototype(socket: Socket, io: Server): void {
           // 接続中ユーザー情報から削除
           delete connectedUsersMap[prototypeId][userId];
 
-          // ルームが空の場合、エントリを削除
-          if (Object.keys(connectedUsersMap[prototypeId]).length === 0) {
-            delete connectedUsersMap[prototypeId];
-          }
-
           // 残りのユーザーに更新を通知
           io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS, {
             users: Object.values(connectedUsersMap[prototypeId] || {}),
           });
+
+          // プロジェクトルームに更新を通知
+          try {
+            const prototype = await PrototypeModel.findByPk(prototypeId);
+            if (prototype) {
+              io.to(`project:${prototype.projectId}`).emit(
+                PROJECT_SOCKET_EVENT.ROOM_CONNECTED_USERS_UPDATE,
+                {
+                  prototypeId,
+                  users: Object.values(connectedUsersMap[prototypeId] || {}),
+                }
+              );
+            }
+          } catch (e) {
+            console.error('プロジェクトルームへの通知に失敗しました:', e);
+          }
+
+          // ルームが空の場合、エントリを削除
+          if (
+            connectedUsersMap[prototypeId] &&
+            Object.keys(connectedUsersMap[prototypeId]).length === 0
+          ) {
+            delete connectedUsersMap[prototypeId];
+          }
 
           // 選択中パーツ情報をリセット
           io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS, {
@@ -756,39 +775,39 @@ export default function handlePrototype(socket: Socket, io: Server): void {
         // 接続中ユーザー情報から削除
         if (connectedUsersMap[prototypeId]) {
           delete connectedUsersMap[prototypeId][userId];
+        }
 
-          // 更新された接続中ユーザーリストを通知
-          io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS, {
-            users: Object.values(connectedUsersMap[prototypeId] || {}),
-          });
+        // 更新された接続中ユーザーリストを通知
+        io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS, {
+          users: Object.values(connectedUsersMap[prototypeId] || {}),
+        });
 
-          // プロジェクトルームにユーザー切断を通知
-          try {
-            const prototype = await PrototypeModel.findByPk(prototypeId);
-            if (prototype) {
-              const projectId = prototype.projectId;
-              io.to(`project:${projectId}`).emit(
-                PROJECT_SOCKET_EVENT.ROOM_CONNECTED_USERS_UPDATE,
-                {
-                  prototypeId,
-                  users: Object.values(connectedUsersMap[prototypeId] || {}),
-                }
-              );
-            }
-          } catch (error) {
-            console.error(
-              'プロジェクトルームへのユーザー切断通知に失敗しました:',
-              error
+        // プロジェクトルームにユーザー切断を通知
+        try {
+          const prototype = await PrototypeModel.findByPk(prototypeId);
+          if (prototype) {
+            const projectId = prototype.projectId;
+            io.to(`project:${projectId}`).emit(
+              PROJECT_SOCKET_EVENT.ROOM_CONNECTED_USERS_UPDATE,
+              {
+                prototypeId,
+                users: Object.values(connectedUsersMap[prototypeId] || {}),
+              }
             );
           }
+        } catch (error) {
+          console.error(
+            'プロジェクトルームへのユーザー切断通知に失敗しました:',
+            error
+          );
+        }
 
-          // ルームが空の場合、エントリを削除
-          if (
-            connectedUsersMap[prototypeId] &&
-            Object.keys(connectedUsersMap[prototypeId]).length === 0
-          ) {
-            delete connectedUsersMap[prototypeId];
-          }
+        // ルームが空の場合、エントリを削除
+        if (
+          connectedUsersMap[prototypeId] &&
+          Object.keys(connectedUsersMap[prototypeId]).length === 0
+        ) {
+          delete connectedUsersMap[prototypeId];
         }
       }
     }
