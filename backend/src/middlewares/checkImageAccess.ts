@@ -66,7 +66,7 @@ export const checkImageAccess = async (
               String(user.id),
               RESOURCE_TYPES.PROJECT,
               PERMISSION_ACTIONS.READ,
-              projectId
+              String(projectId)
             );
             if (allowed) return true;
           }
