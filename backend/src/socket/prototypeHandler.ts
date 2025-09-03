@@ -233,30 +233,76 @@ function handleUpdateParts(socket: Socket, io: Server): void {
         const updatedParts: PartModel[] = [];
         const propertyPartIds = new Set<number>();
 
-        for (const { partId, updatePart, updateProperties } of updates) {
-          if (updatePart && Object.keys(updatePart).length > 0) {
-            const [, result] = await PartModel.update(updatePart, {
-              where: { id: partId },
-              returning: true,
-            });
-            if (result[0]) {
-              updatedParts.push(result[0].dataValues);
+        // 入力IDの正規化とルーム制約
+        const normalizedIds = Array.from(
+          new Set(
+            updates.map((u) => u.partId).filter((v) => Number.isInteger(v))
+          )
+        ) as number[];
+
+        const t = await PartModel.sequelize!.transaction();
+        try {
+          // 同じ prototype のパーツID のみ有効とする
+          const partsInRoom = await PartModel.findAll({
+            attributes: ['id'],
+            where: { prototypeId, id: { [Op.in]: normalizedIds } },
+            transaction: t,
+          });
+          const validIds = new Set(partsInRoom.map((p) => p.id));
+
+          for (const { partId, updatePart, updateProperties } of updates) {
+            if (!validIds.has(partId)) continue;
+
+            // 更新対象フィールドはホワイトリストから選択
+            if (updatePart && Object.keys(updatePart).length > 0) {
+              const updateData = Object.entries(updatePart).reduce(
+                (acc, [key, value]) => {
+                  if (
+                    value !== undefined &&
+                    UPDATABLE_PROTOTYPE_FIELDS.PART.includes(key)
+                  ) {
+                    // @ts-expect-error 動的キー
+                    acc[key] = value;
+                  }
+                  return acc;
+                },
+                {} as Partial<PartModel>
+              );
+
+              if (Object.keys(updateData).length > 0) {
+                const [, result] = await PartModel.update(updateData, {
+                  where: { id: partId, prototypeId },
+                  returning: true,
+                  transaction: t,
+                });
+                if (result[0]) {
+                  updatedParts.push(result[0].dataValues);
+                }
+              }
+            }
+
+            // プロパティ更新：side が必須
+            if (updateProperties && updateProperties.length > 0) {
+              const updatePromises = updateProperties
+                .filter((property) => property.side !== undefined)
+                .map((property) =>
+                  PartPropertyModel.update(
+                    { ...property, partId },
+                    {
+                      where: { partId, side: property.side },
+                      transaction: t,
+                    }
+                  )
+                );
+              await Promise.all(updatePromises);
+              propertyPartIds.add(partId);
             }
           }
 
-          if (updateProperties && updateProperties.length > 0) {
-            const updatePromises = updateProperties.map((property) =>
-              PartPropertyModel.update(
-                { ...property, partId },
-                {
-                  where: { partId, side: property.side },
-                }
-              )
-            );
-
-            await Promise.all(updatePromises);
-            propertyPartIds.add(partId);
-          }
+          await t.commit();
+        } catch (e) {
+          await t.rollback();
+          throw e;
         }
 
         const updatedPropertiesWithImages =
