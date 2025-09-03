@@ -252,11 +252,9 @@ export const usePartDragSystem = ({
         });
 
         // 副作用：状態更新をまとめて実行
-        updatePartsData.forEach((updateData) => {
-          dispatch({
-            type: 'UPDATE_PART',
-            payload: updateData,
-          });
+        dispatch({
+          type: 'UPDATE_PARTS',
+          payload: { updates: updatePartsData },
         });
 
         // 元位置記録をクリア
