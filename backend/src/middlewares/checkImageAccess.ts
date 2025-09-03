@@ -13,6 +13,15 @@ import {
 import { hasPermission } from '../helpers/roleHelper';
 import { PERMISSION_ACTIONS, RESOURCE_TYPES } from '../const';
 
+/** PartProperty に紐づく Part/Prototype の最小限の型（アクセス判定に必要な項目のみ） */
+type PartPropertyWithPartAndPrototype = {
+  part?: {
+    Prototype?: {
+      projectId: string | number;
+    };
+  };
+};
+
 export const checkImageAccess = async (
   req: Request,
   res: Response,
@@ -38,7 +47,7 @@ export const checkImageAccess = async (
     // アップロードしたユーザーは常にアクセス可能
     if (image.uploaderUserId !== String(user.id)) {
       // 画像を利用しているプロジェクトを取得
-      const partProperties = await PartPropertyModel.findAll({
+      const partProperties = (await PartPropertyModel.findAll({
         where: { imageId },
         include: [
           {
@@ -47,19 +56,17 @@ export const checkImageAccess = async (
             include: [PrototypeModel],
           },
         ],
-      });
+      })) as PartPropertyWithPartAndPrototype[];
 
       const hasProjectAccess = await (async () => {
         for (const prop of partProperties) {
-          const projectId = (prop as any).part?.Prototype?.projectId as
-            | string
-            | undefined;
+          const projectId = prop.part?.Prototype?.projectId;
           if (projectId) {
             const allowed = await hasPermission(
               String(user.id),
               RESOURCE_TYPES.PROJECT,
               PERMISSION_ACTIONS.READ,
-              projectId
+              String(projectId)
             );
             if (allowed) return true;
           }
