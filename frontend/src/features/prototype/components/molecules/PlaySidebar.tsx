@@ -11,8 +11,8 @@ import Button from '@/components/atoms/Button';
 import PartTypeIcon from '@/features/prototype/components/atoms/PartTypeIcon';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
-import { useUser } from '@/hooks/useUser';
 import { getUserColor } from '@/features/prototype/utils/userColor';
+import { useUser } from '@/hooks/useUser';
 
 interface PlaySidebarProps {
   parts: Part[];
@@ -53,7 +53,12 @@ export default function PlaySidebar({
   }, [userRoles]);
 
   // 手札
-  const hands = useMemo(() => {
+  type HandWithOwnerMeta = Part & {
+    ownerName: string | null;
+    ownerColor: string | null;
+  };
+
+  const hands: HandWithOwnerMeta[] = useMemo(() => {
     return parts
       .filter((part) => part.type === 'hand')
       .map((hand) => {
@@ -62,7 +67,7 @@ export default function PlaySidebar({
           ...hand,
           ownerName: meta?.username ?? null,
           ownerColor: meta?.color ?? null,
-        } as Part & { ownerName: string | null; ownerColor: string | null };
+        } as HandWithOwnerMeta;
       });
   }, [parts, userMetaMap]);
 
@@ -122,8 +127,6 @@ export default function PlaySidebar({
         {/* 手札一覧 */}
         <div className="space-y-2">
           {hands.map((hand, index) => {
-            const isOwnHand = hand.ownerId === user?.id;
-
             return (
               <div
                 key={hand.id}
@@ -169,14 +172,11 @@ export default function PlaySidebar({
                   {selectedHand.ownerName ? (
                     <span
                       className="inline-flex items-center gap-1 px-1 rounded border"
-                      style={{ borderColor: (selectedHand as any).ownerColor || undefined }}
+                      style={{ borderColor: selectedHand.ownerColor || undefined }}
                     >
                       <span
                         className="inline-block w-2 h-2"
-                        style={{
-                          backgroundColor:
-                            (selectedHand as any).ownerColor || undefined,
-                        }}
+                        style={{ backgroundColor: selectedHand.ownerColor || undefined }}
                       />
                       {selectedHand.ownerName}
                     </span>
