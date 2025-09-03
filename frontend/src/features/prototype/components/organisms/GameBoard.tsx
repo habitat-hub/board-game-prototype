@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import Konva from 'konva';
 import React, {
   useRef,
@@ -47,6 +48,36 @@ import { isInputFieldFocused } from '@/utils/inputFocus';
 
 import GameBoardCanvas from './GameBoardCanvas';
 
+interface DeckShuffleAnimationProps {
+  onComplete: () => void;
+}
+
+const DeckShuffleAnimation = ({ onComplete }: DeckShuffleAnimationProps) => {
+  const cards = Array.from({ length: 5 }).map((_, i) => {
+    const dx = (Math.random() - 0.5) * 120;
+    const dy = (Math.random() - 0.5) * 120;
+    const rot = (Math.random() - 0.5) * 180;
+    return (
+      <motion.div
+        key={i}
+        className="absolute h-12 w-8 rounded border border-gray-400 bg-white"
+        initial={{ x: 0, y: 0, rotate: 0, opacity: 1 }}
+        animate={{ x: [0, dx, 0], y: [0, dy, 0], rotate: [0, rot, 0] }}
+        transition={{ duration: 0.6, ease: 'easeInOut' }}
+      />
+    );
+  });
+
+  return (
+    <motion.div
+      className="pointer-events-none absolute inset-0 flex items-center justify-center"
+      onAnimationComplete={onComplete}
+    >
+      <div className="relative h-12 w-8">{cards}</div>
+    </motion.div>
+  );
+};
+
 interface GameBoardProps {
   prototypeName: string;
   prototypeId: string;
@@ -84,6 +115,8 @@ export default function GameBoard({
   const { dispatch } = usePartReducer();
   const { measureOperation } = usePerformanceTracker();
   const { isGrabbing, eventHandlers: grabbingHandlers } = useGrabbingCursor();
+  // デッキシャッフルアニメーション用状態
+  const [isDeckShuffling, setIsDeckShuffling] = useState(false);
 
   const parts = useMemo(() => Array.from(partsMap.values()), [partsMap]);
   const properties = useMemo(
@@ -94,6 +127,14 @@ export default function GameBoard({
   const { cardVisibilityMap } = useHandVisibility(parts, gameBoardMode);
   // ロール管理情報を取得
   const { userRoles } = useRoleManagement(projectId);
+
+  const handleShuffleDeck = useCallback(() => {
+    setIsDeckShuffling(true);
+  }, []);
+
+  const handleShuffleAnimationComplete = () => {
+    setIsDeckShuffling(false);
+  };
 
   // 自分のユーザー情報（色付けに使用）
   const selfUser = useMemo(() => {
@@ -483,38 +524,46 @@ export default function GameBoard({
         isSelectionMode={isSelectionMode}
         onToggle={toggleMode}
       />
-      <GameBoardCanvas
-        stageRef={stageRef}
-        viewportSize={viewportSize}
-        canvasSize={canvasSize}
-        camera={camera}
-        gameBoardMode={gameBoardMode}
-        isSelectionMode={isSelectionMode}
-        cursorStyle={cursorStyle}
-        grabbingHandlers={grabbingHandlers}
-        handleWheel={handleWheel}
-        handleStageClick={handleStageClick}
-        handleCloseContextMenu={handleCloseContextMenu}
-        handleSelectionMove={handleSelectionMove}
-        handleSelectionEnd={handleSelectionEnd}
-        handleDragMove={handleDragMove}
-        handleSelectionStart={handleSelectionStart}
-        handleBackgroundClick={handleBackgroundClick}
-        parts={parts}
-        propertiesMap={propertiesMap}
-        images={images}
-        selectedPartIds={selectedPartIds}
-        selectedUsersByPart={selectedUsersByPart}
-        cardVisibilityMap={cardVisibilityMap}
-        selfUser={selfUser}
-        userRoles={userRoles}
-        handlePartClick={handlePartClick}
-        handlePartDragStart={handlePartDragStart}
-        handlePartDragMove={handlePartDragMove}
-        handlePartDragEnd={handlePartDragEnd}
-        handlePartContextMenu={handlePartContextMenu}
-        rectForSelection={rectForSelection}
-      />
+      <div className="relative">
+        <GameBoardCanvas
+          stageRef={stageRef}
+          viewportSize={viewportSize}
+          canvasSize={canvasSize}
+          camera={camera}
+          gameBoardMode={gameBoardMode}
+          isSelectionMode={isSelectionMode}
+          cursorStyle={cursorStyle}
+          grabbingHandlers={grabbingHandlers}
+          handleWheel={handleWheel}
+          handleStageClick={handleStageClick}
+          handleCloseContextMenu={handleCloseContextMenu}
+          handleSelectionMove={handleSelectionMove}
+          handleSelectionEnd={handleSelectionEnd}
+          handleDragMove={handleDragMove}
+          handleSelectionStart={handleSelectionStart}
+          handleBackgroundClick={handleBackgroundClick}
+          parts={parts}
+          propertiesMap={propertiesMap}
+          images={images}
+          selectedPartIds={selectedPartIds}
+          selectedUsersByPart={selectedUsersByPart}
+          cardVisibilityMap={cardVisibilityMap}
+          selfUser={selfUser}
+          userRoles={userRoles}
+          handlePartClick={handlePartClick}
+          handlePartDragStart={handlePartDragStart}
+          handlePartDragMove={handlePartDragMove}
+          handlePartDragEnd={handlePartDragEnd}
+          handlePartContextMenu={handlePartContextMenu}
+          onShuffleDeck={handleShuffleDeck}
+          rectForSelection={rectForSelection}
+        />
+        {isDeckShuffling && (
+          <DeckShuffleAnimation
+            onComplete={handleShuffleAnimationComplete}
+          />
+        )}
+      </div>
 
       <LeftSidebar
         prototypeName={prototypeName}

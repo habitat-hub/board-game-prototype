@@ -74,6 +74,8 @@ interface PartOnGameBoardProps {
     user: { id: string; username: string };
     roles: Array<{ name: string; description: string }>;
   }>;
+  /** デッキシャッフルアニメーション開始コールバック */
+  onShuffleDeck?: () => void;
 }
 
 /** ゲーム盤上のパーツ描画コンポーネント */
@@ -92,6 +94,7 @@ export default function PartOnGameBoard({
   selectedBy = [],
   selfUser,
   userRoles = [],
+  onShuffleDeck,
 }: PartOnGameBoardProps): React.ReactElement {
   const groupRef = useRef<Konva.Group>(null);
   const { isReversing, setIsReversing, reverseCard } = useCard(part);
@@ -305,7 +308,6 @@ export default function PartOnGameBoard({
       anim.stop();
     };
     // displayedSide は anim 内で制御するため依存から除外
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReversing, isCard, setIsReversing, part.id, optimisticFrontSide]);
 
   // 表示する面は displayedSide を参照する。optimisticFrontSide は flipTargetRef に保存される。
@@ -338,6 +340,7 @@ export default function PartOnGameBoard({
 
     if (isDeck) {
       dispatch({ type: 'SHUFFLE_DECK', payload: { deckId: part.id } });
+      onShuffleDeck?.();
       return;
     }
 
