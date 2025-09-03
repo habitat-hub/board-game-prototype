@@ -208,6 +208,74 @@ function handleJoinPrototype(socket: Socket, io: Server): void {
 }
 
 /**
+ * パーツ一括更新
+ * 複数のパーツを一度に更新する
+ * @param socket - Socket
+ * @param io - Server
+ */
+function handleUpdateParts(socket: Socket, io: Server): void {
+  socket.on(
+    PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS,
+    async ({
+      updates,
+    }: {
+      updates: {
+        partId: number;
+        updatePart?: Partial<PartModel>;
+        updateProperties?: Partial<PartPropertyModel>[];
+      }[];
+    }) => {
+      const { prototypeId } = socket.data as SocketData;
+
+      try {
+        if (!updates || updates.length === 0) return;
+
+        const updatedParts: PartModel[] = [];
+        const propertyPartIds = new Set<number>();
+
+        for (const { partId, updatePart, updateProperties } of updates) {
+          if (updatePart && Object.keys(updatePart).length > 0) {
+            const [, result] = await PartModel.update(updatePart, {
+              where: { id: partId },
+              returning: true,
+            });
+            if (result[0]) {
+              updatedParts.push(result[0].dataValues);
+            }
+          }
+
+          if (updateProperties && updateProperties.length > 0) {
+            const updatePromises = updateProperties.map((property) =>
+              PartPropertyModel.update(
+                { ...property, partId },
+                {
+                  where: { partId, side: property.side },
+                }
+              )
+            );
+
+            await Promise.all(updatePromises);
+            propertyPartIds.add(partId);
+          }
+        }
+
+        const updatedPropertiesWithImages =
+          propertyPartIds.size > 0
+            ? await fetchPropertiesWithImagesByPartIds([...propertyPartIds])
+            : [];
+
+        io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS, {
+          parts: updatedParts.map((part) => part),
+          properties: updatedPropertiesWithImages,
+        });
+      } catch (error) {
+        console.error('パーツの一括更新に失敗しました。', error);
+      }
+    }
+  );
+}
+
+/**
  * パーツ追加
  * @param socket - Socket
  * @param io - Server
@@ -706,6 +774,7 @@ function isRebalanceNeeded(parts: PartModel[]): boolean {
 export default function handlePrototype(socket: Socket, io: Server): void {
   handleJoinPrototype(socket, io);
   handleAddPart(socket, io);
+  handleUpdateParts(socket, io);
   handleUpdatePart(socket, io);
   handleDeleteParts(socket, io);
   handleChangeOrder(socket, io);
