@@ -7,6 +7,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
 import { Part } from '@/api/types';
+import Button from '@/components/atoms/Button';
 import PartTypeIcon from '@/features/prototype/components/atoms/PartTypeIcon';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
@@ -97,7 +98,7 @@ export default function PlaySidebar({
   }, [selectedPartId, parts]);
 
   return (
-    <div className="fixed top-20 left-4 flex w-[240px] flex-col rounded-lg shadow-lg border border-kibako-tertiary/40 bg-gradient-to-r from-kibako-white to-kibako-tertiary max-h-[calc(100vh-32px)] overflow-y-auto">
+    <div className="fixed top-20 left-4 flex w-[18rem] flex-col rounded-xl shadow-lg border border-kibako-tertiary/40 bg-gradient-to-r from-kibako-white to-kibako-tertiary max-h-[calc(100vh-32px)] overflow-y-auto">
       {/* ヘッダー */}
       <div className="border-b border-kibako-tertiary/60 rounded-t-lg bg-gradient-to-r from-kibako-secondary/30 to-kibako-secondary/20 py-2 px-4">
         <div className="flex items-center">
@@ -161,7 +162,9 @@ export default function PlaySidebar({
               </div>
 
               <div className="flex items-center gap-2">
-                <button
+                <Button
+                  size="sm"
+                  className="!px-3 !py-1 !text-xs"
                   onClick={() => {
                     if (!user?.id) return;
 
@@ -173,11 +176,13 @@ export default function PlaySidebar({
                       },
                     });
                   }}
-                  className="px-3 py-1 text-xs bg-kibako-info text-kibako-white rounded hover:bg-kibako-info/80"
                 >
                   自分を設定
-                </button>
-                <button
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="!px-3 !py-1 !text-xs"
                   onClick={() => {
                     dispatch({
                       type: 'UPDATE_PART',
@@ -187,10 +192,9 @@ export default function PlaySidebar({
                       },
                     });
                   }}
-                  className="px-3 py-1 text-xs bg-kibako-secondary text-kibako-white rounded hover:bg-kibako-secondary/80"
                 >
                   クリア
-                </button>
+                </Button>
               </div>
             </div>
           </div>
