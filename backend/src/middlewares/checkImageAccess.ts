@@ -13,9 +13,12 @@ import {
 import { hasPermission } from '../helpers/roleHelper';
 import { PERMISSION_ACTIONS, RESOURCE_TYPES } from '../const';
 
-type PartPropertyWithPartAndPrototype = PartPropertyModel & {
-  part?: PartModel & {
-    Prototype?: PrototypeModel;
+/** PartProperty に紐づく Part/Prototype の最小限の型（アクセス判定に必要な項目のみ） */
+type PartPropertyWithPartAndPrototype = {
+  part?: {
+    Prototype?: {
+      projectId: string | number;
+    };
   };
 };
 
