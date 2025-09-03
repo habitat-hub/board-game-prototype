@@ -12,6 +12,7 @@ import PartTypeIcon from '@/features/prototype/components/atoms/PartTypeIcon';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { useUser } from '@/hooks/useUser';
+import { getUserColor } from '@/features/prototype/utils/userColor';
 
 interface PlaySidebarProps {
   parts: Part[];
@@ -37,12 +38,15 @@ export default function PlaySidebar({
   // 選択中の手札ID
   const [selectedHandId, setSelectedHandId] = useState<number | null>(null);
 
-  // userRolesからユーザーマップを作成
-  const userMap = useMemo(() => {
-    const map = new Map<string, string>();
-    userRoles.forEach((userRole) => {
-      if (userRole.user.id && userRole.user.username) {
-        map.set(userRole.user.id, userRole.user.username);
+  // userRoles からユーザーの表示名とロールメニューと同じ色を引けるマップを作成
+  const userMetaMap = useMemo(() => {
+    const map = new Map<string, { username: string; color: string }>();
+    userRoles.forEach(({ user }) => {
+      if (user.id && user.username) {
+        map.set(user.id, {
+          username: user.username,
+          color: getUserColor(user.id, user.username),
+        });
       }
     });
     return map;
@@ -53,12 +57,14 @@ export default function PlaySidebar({
     return parts
       .filter((part) => part.type === 'hand')
       .map((hand) => {
+        const meta = hand.ownerId ? userMetaMap.get(hand.ownerId) : null;
         return {
           ...hand,
-          ownerName: hand.ownerId ? userMap.get(hand.ownerId) : null,
-        };
+          ownerName: meta?.username ?? null,
+          ownerColor: meta?.color ?? null,
+        } as Part & { ownerName: string | null; ownerColor: string | null };
       });
-  }, [parts, userMap]);
+  }, [parts, userMetaMap]);
 
   // カード
   const cards = useMemo(() => {
@@ -136,12 +142,13 @@ export default function PlaySidebar({
                   <span className="text-xs font-medium">手札 #{index + 1}</span>
                   {hand.ownerName && (
                     <span
-                      className={`text-xs ${
-                        isOwnHand
-                          ? 'bg-kibako-success/10 text-kibako-success/80'
-                          : 'bg-kibako-info/10 text-kibako-info/80'
-                      } px-1 rounded`}
+                      className="text-xs px-1 rounded border inline-flex items-center gap-1"
+                      style={{ borderColor: hand.ownerColor || undefined }}
                     >
+                      <span
+                        className="inline-block w-2 h-2"
+                        style={{ backgroundColor: hand.ownerColor || undefined }}
+                      />
                       {hand.ownerName}の手札
                     </span>
                   )}
@@ -157,7 +164,26 @@ export default function PlaySidebar({
             <span className="mb-2 text-xs font-bold">手札設定</span>
             <div className="space-y-3">
               <div className="text-xs text-kibako-primary/70">
-                <div>所有者: {selectedHand.ownerName || '未設定'}</div>
+                <div className="flex items-center gap-2">
+                  <span>所有者:</span>
+                  {selectedHand.ownerName ? (
+                    <span
+                      className="inline-flex items-center gap-1 px-1 rounded border"
+                      style={{ borderColor: (selectedHand as any).ownerColor || undefined }}
+                    >
+                      <span
+                        className="inline-block w-2 h-2"
+                        style={{
+                          backgroundColor:
+                            (selectedHand as any).ownerColor || undefined,
+                        }}
+                      />
+                      {selectedHand.ownerName}
+                    </span>
+                  ) : (
+                    <span>未設定</span>
+                  )}
+                </div>
                 <div>上のカード: {selectedHandCardCount}枚</div>
               </div>
 
