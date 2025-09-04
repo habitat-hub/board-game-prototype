@@ -5,9 +5,23 @@
 'use client';
 
 import axios from 'axios';
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+  useCallback,
+} from 'react';
 import { FaRegCopy, FaRegTrashAlt, FaImage, FaSpinner } from 'react-icons/fa';
 import { IoMdMove } from 'react-icons/io';
+import {
+  MdFormatAlignLeft,
+  MdFormatAlignCenter,
+  MdFormatAlignRight,
+  MdVerticalAlignTop,
+  MdVerticalAlignCenter,
+  MdVerticalAlignBottom,
+} from 'react-icons/md';
 
 import { useImages } from '@/api/hooks/useImages';
 import { Part } from '@/api/types';
@@ -24,6 +38,11 @@ import {
   PartPropertyUpdate,
   PartPropertyWithImage,
 } from '@/features/prototype/types';
+import {
+  calculateAlignmentInfo,
+  getAlignmentUpdates,
+  AlignmentType,
+} from '@/features/prototype/utils/alignment';
 import { saveImageToIndexedDb } from '@/utils/db';
 
 // フロントエンドで許可する画像のMIMEタイプ
@@ -60,6 +79,12 @@ export default function PartPropertyMenu({
   onDuplicatePart,
 }: PartPropertyMenuProps) {
   const selectedPartId = selectedPartIds[0];
+  /** 複数選択中のパーツ一覧 */
+  const selectedParts = useMemo<Part[]>(
+    () => parts.filter((part) => selectedPartIds.includes(part.id)),
+    [parts, selectedPartIds],
+  );
+  const multipleSelected = selectedPartIds.length > 1;
   const showMenu = selectedPartIds.length === 1;
 
   const [uploadedImage, setUploadedImage] = useState<{
@@ -105,6 +130,42 @@ export default function PartPropertyMenu({
       setUploadedImage(null);
     }
   }, [currentProperty]);
+
+  const alignInfo = useMemo<ReturnType<typeof calculateAlignmentInfo>>(
+    () => calculateAlignmentInfo(selectedParts),
+    [selectedParts],
+  );
+
+  /**
+   * 整列を実行する
+   * @param type - 整列タイプ
+   */
+  const alignParts = useCallback(
+    (type: AlignmentType): void => {
+      // 整列情報がない場合：何もしない
+      if (!alignInfo) return;
+      const updates = getAlignmentUpdates(type, selectedParts, alignInfo);
+      if (updates.length === 0) return;
+      dispatch({ type: 'UPDATE_PARTS', payload: { updates } });
+    },
+    [alignInfo, selectedParts, dispatch],
+  );
+
+  const handleAlignLeft = useCallback(() => alignParts('left'), [alignParts]);
+  const handleAlignRight = useCallback(() => alignParts('right'), [alignParts]);
+  const handleAlignHCenter = useCallback(
+    () => alignParts('hCenter'),
+    [alignParts]
+  );
+  const handleAlignTop = useCallback(() => alignParts('top'), [alignParts]);
+  const handleAlignBottom = useCallback(
+    () => alignParts('bottom'),
+    [alignParts]
+  );
+  const handleAlignVCenter = useCallback(
+    () => alignParts('vCenter'),
+    [alignParts]
+  );
 
   const {
     containerRef,
@@ -244,6 +305,79 @@ export default function PartPropertyMenu({
       setIsUploading(false); // ローディング終了
     }
   };
+
+  if (multipleSelected) {
+    return (
+      <>
+        <div
+          ref={containerRef}
+          className={`flex w-[240px] flex-col rounded-lg shadow-lg bg-kibako-secondary/70 max-h-[80vh] text-xs ${
+            isDragging ? 'opacity-95' : ''
+          }`}
+          style={{
+            position: 'fixed',
+            left: position ? `${position.x}px` : undefined,
+            top: position ? `${position.y}px` : undefined,
+            zIndex: 50,
+          }}
+        >
+          <div
+            className="relative rounded-t-lg bg-kibako-primary/70 text-kibako-white py-2 px-4 flex-shrink-0 cursor-move pr-8"
+            onMouseDown={handleDragStart}
+            onTouchStart={handleDragStart}
+          >
+            <div className="flex items-center select-none">
+              <span className="text-[12px] font-medium">整列</span>
+            </div>
+            <IoMdMove
+              className="h-4 w-4 absolute right-2 top-2 opacity-80"
+              aria-hidden="true"
+            />
+          </div>
+          <div className="flex flex-col gap-2 p-4">
+            <div className="grid grid-cols-3 gap-2">
+              <PartPropertyMenuButton
+                text="左揃え"
+                icon={<MdFormatAlignLeft className="h-3 w-3" />}
+                onClick={handleAlignLeft}
+                disabled={alignInfo?.isLeft}
+              />
+              <PartPropertyMenuButton
+                text="左右中央"
+                icon={<MdFormatAlignCenter className="h-3 w-3" />}
+                onClick={handleAlignHCenter}
+                disabled={alignInfo?.isHCenter}
+              />
+              <PartPropertyMenuButton
+                text="右揃え"
+                icon={<MdFormatAlignRight className="h-3 w-3" />}
+                onClick={handleAlignRight}
+                disabled={alignInfo?.isRight}
+              />
+              <PartPropertyMenuButton
+                text="上揃え"
+                icon={<MdVerticalAlignTop className="h-3 w-3" />}
+                onClick={handleAlignTop}
+                disabled={alignInfo?.isTop}
+              />
+              <PartPropertyMenuButton
+                text="上下中央"
+                icon={<MdVerticalAlignCenter className="h-3 w-3" />}
+                onClick={handleAlignVCenter}
+                disabled={alignInfo?.isVCenter}
+              />
+              <PartPropertyMenuButton
+                text="下揃え"
+                icon={<MdVerticalAlignBottom className="h-3 w-3" />}
+                onClick={handleAlignBottom}
+                disabled={alignInfo?.isBottom}
+              />
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
