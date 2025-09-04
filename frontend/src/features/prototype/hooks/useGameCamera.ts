@@ -5,7 +5,7 @@ import type Konva from 'konva';
 import { useEffect, useState } from 'react';
 
 import { Part } from '@/api/types';
-import { GAME_BOARD_CONFIG } from '@/features/prototype/constants';
+import { CAMERA_SCALE, GAME_BOARD_CONFIG } from '@/features/prototype/constants';
 import { useCameraConstraints } from '@/features/prototype/hooks/useCameraConstraints';
 import { useCameraHandlers } from '@/features/prototype/hooks/useCameraHandlers';
 import { CameraPosition, ViewportSize } from '@/features/prototype/types';
@@ -42,7 +42,7 @@ interface UseGameCameraReturn {
  * ゲームボードのカメラ制御を管理するカスタムフック
  */
 export const useGameCamera = ({
-  parts: _parts,
+  parts,
   stageRef,
 }: UseGameCameraProps): UseGameCameraReturn => {
   const {
@@ -53,10 +53,26 @@ export const useGameCamera = ({
     computeCenteredCamera,
   } = useCameraConstraints();
 
-  // カメラの状態管理（初期化時に常にキャンバス中央へ）
-  const [camera, setCamera] = useState<CameraPosition>(() =>
-    computeCenteredCamera()
-  );
+  // カメラの状態管理（初期位置: 最新パーツの中心 or ボード中央）
+  const [camera, setCamera] = useState<CameraPosition>(() => {
+    if (parts.length > 0) {
+      const latestPart = parts.reduce((latest, part) =>
+        new Date(part.createdAt) > new Date(latest.createdAt) ? part : latest
+      );
+      const centerX = latestPart.position.x + latestPart.width / 2;
+      const centerY = latestPart.position.y + latestPart.height / 2;
+      const targetX =
+        centerX * CAMERA_SCALE.DEFAULT - viewportSize.width / 2;
+      const targetY =
+        centerY * CAMERA_SCALE.DEFAULT - viewportSize.height / 2;
+      return getConstrainedCameraPosition(
+        targetX,
+        targetY,
+        CAMERA_SCALE.DEFAULT
+      );
+    }
+    return computeCenteredCamera();
+  });
 
   // ウィンドウリサイズ時は現在の scale を保持し、x/y を新しい viewport に合わせて範囲内に収める
   useEffect(() => {
