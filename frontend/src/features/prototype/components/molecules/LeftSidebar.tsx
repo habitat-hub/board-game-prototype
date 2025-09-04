@@ -9,6 +9,7 @@ import { MdMeetingRoom, MdDelete } from 'react-icons/md';
 import { useProject } from '@/api/hooks/useProject';
 import { useUsers } from '@/api/hooks/useUsers';
 import { Prototype, ProjectsDetailData } from '@/api/types';
+import ConnectedUserIcon from '@/features/prototype/components/atoms/ConnectedUserIcon';
 import PrototypeNameEditor from '@/features/prototype/components/atoms/PrototypeNameEditor';
 import GameBoardHelpPanel from '@/features/prototype/components/molecules/GameBoardHelpPanel';
 import { MAX_DISPLAY_USERS } from '@/features/prototype/constants';
@@ -247,21 +248,18 @@ export default function LeftSidebar({
                           {connectedUsers.length > 0 && (
                             <div className="flex items-center gap-1">
                               <span className="text-xs">接続中:</span>
-                              <div className="flex -space-x-1">
+                              <div className="flex -space-x-3">
                                 {connectedUsers
                                   .slice(0, MAX_DISPLAY_USERS)
                                   .map((user, idx) => (
-                                    <span
+                                    <ConnectedUserIcon
                                       key={user.userId}
-                                      className="flex items-center justify-center w-5 h-5 rounded-full bg-kibako-accent text-kibako-white font-bold text-xs border border-kibako-white"
-                                      style={{ zIndex: 10 - idx }}
-                                      title={user.username}
-                                    >
-                                      {user.username.charAt(0).toUpperCase()}
-                                    </span>
+                                      user={user}
+                                      index={idx}
+                                    />
                                   ))}
                                 {connectedUsers.length > MAX_DISPLAY_USERS && (
-                                  <span className="text-xs text-kibako-secondary ml-1">
+                                  <span className="text-xs text-kibako-secondary ml-2">
                                     +{connectedUsers.length - MAX_DISPLAY_USERS}
                                   </span>
                                 )}
