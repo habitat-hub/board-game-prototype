@@ -79,9 +79,10 @@ export default function PartPropertyMenu({
   onDuplicatePart,
 }: PartPropertyMenuProps) {
   const selectedPartId = selectedPartIds[0];
-  const selectedParts = useMemo(
+  /** 複数選択中のパーツ一覧 */
+  const selectedParts = useMemo<Part[]>(
     () => parts.filter((part) => selectedPartIds.includes(part.id)),
-    [parts, selectedPartIds]
+    [parts, selectedPartIds],
   );
   const multipleSelected = selectedPartIds.length > 1;
   const showMenu = selectedPartIds.length === 1;
