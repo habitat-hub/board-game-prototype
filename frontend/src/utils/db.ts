@@ -1,10 +1,12 @@
-import { openDB } from 'idb';
+import { IDBPDatabase, openDB } from 'idb';
 
 import { getCachedObjectURL, setCachedObjectURL, hasCachedObjectURL, revokeObjectURLAndCleanCache, revokeMultipleObjectURLsAndCleanCache } from './imageCache';
 
 const DB_NAME = 'BoardGamePrototype';
 const STORE_NAME = 'images';
 const IMAGE_DELETE_GRACE_DAYS = 3;
+
+let dbPromise: Promise<IDBPDatabase> | null = null;
 
 type IndexedDbImageResult = {
   imageBlob: Blob;
@@ -13,21 +15,22 @@ type IndexedDbImageResult = {
 
 
 // IndexedDBの初期化関数
-export const getIndexedDb = async () => {
+export const getIndexedDb = async (): Promise<IDBPDatabase> => {
   try {
-    return await openDB(DB_NAME, 1, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-        }
-      },
-    });
+    return await (dbPromise ??=
+      openDB(DB_NAME, 1, {
+        upgrade(db) {
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+          }
+        },
+      }));
   } catch (error) {
+    dbPromise = null;
     if (error instanceof Error) {
       throw new Error(`IndexedDBの初期化に失敗しました: ${error.message}`);
-    } else {
-      throw new Error('予期しないエラーが発生しました');
     }
+    throw new Error('予期しないエラーが発生しました');
   }
 };
 
