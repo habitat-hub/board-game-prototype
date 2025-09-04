@@ -7,6 +7,7 @@
 import Link from 'next/link';
 import { FaUsers } from 'react-icons/fa';
 
+import ConnectedUserIcon from '@/features/prototype/components/atoms/ConnectedUserIcon';
 import { MAX_DISPLAY_USERS } from '@/features/prototype/constants/presence';
 import { ConnectedUser } from '@/features/prototype/types';
 import { getUserColor } from '@/features/prototype/utils/userColor';
@@ -45,19 +46,13 @@ export default function RoleMenu({
           tabIndex={0}
         >
           <div className="flex -space-x-3">
-            {displayUsers.map((user, idx) => {
-              const color = getUserColor(user.userId, user.username);
-              return (
-                <span
-                  key={user.userId || `user-${idx}`}
-                  className="flex items-center justify-center w-7 h-7 rounded-full bg-kibako-white text-kibako-primary font-bold text-sm select-none border-2 shadow-sm"
-                  style={{ zIndex: 10 - idx, borderColor: color }}
-                  title={user.username}
-                >
-                  {user.username.charAt(0).toUpperCase()}
-                </span>
-              );
-            })}
+            {displayUsers.map((user, idx) => (
+              <ConnectedUserIcon
+                key={user.userId || `user-${idx}`}
+                user={user}
+                index={idx}
+              />
+            ))}
           </div>
           {moreCount > 0 && (
             <span className="text-xs text-kibako-secondary ml-2">
