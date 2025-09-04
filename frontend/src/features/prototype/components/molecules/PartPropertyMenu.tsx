@@ -131,15 +131,21 @@ export default function PartPropertyMenu({
     }
   }, [currentProperty]);
 
-  const alignInfo = useMemo(
+  const alignInfo = useMemo<ReturnType<typeof calculateAlignmentInfo>>(
     () => calculateAlignmentInfo(selectedParts),
     [selectedParts],
   );
 
+  /**
+   * 整列を実行する
+   * @param type - 整列タイプ
+   */
   const alignParts = useCallback(
-    (type: AlignmentType) => {
+    (type: AlignmentType): void => {
+      // 整列情報がない場合：何もしない
       if (!alignInfo) return;
       const updates = getAlignmentUpdates(type, selectedParts, alignInfo);
+      if (updates.length === 0) return;
       dispatch({ type: 'UPDATE_PARTS', payload: { updates } });
     },
     [alignInfo, selectedParts, dispatch],
