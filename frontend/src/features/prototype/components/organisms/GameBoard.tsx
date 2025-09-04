@@ -166,6 +166,7 @@ export default function GameBoard({
   } = usePartContextMenu({
     stageRef,
     dispatch,
+    parts,
   });
   // スペースキー押下しているか
   const [spacePressing, setSpacePressing] = useState(false);

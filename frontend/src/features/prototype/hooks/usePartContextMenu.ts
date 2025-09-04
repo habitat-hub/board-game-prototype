@@ -1,12 +1,18 @@
 import Konva from 'konva';
 import React, { useCallback, useState } from 'react';
 
+import { Part } from '@/api/types';
+import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
 import { ContextMenuItem } from '@/features/prototype/types/contextMenu';
 import { Position } from '@/features/prototype/types/gameBoard';
 import {
   ChangeOrderType,
   PartDispatch,
 } from '@/features/prototype/types/socket';
+import {
+  AlignDirection,
+  createAlignPartsAction,
+} from '@/features/prototype/utils/alignParts';
 
 /**
  * Hook に渡すパラメータ
@@ -14,6 +20,7 @@ import {
 type UsePartContextMenuParams = {
   stageRef: React.RefObject<Konva.Stage | null>;
   dispatch: PartDispatch;
+  parts: Part[];
 };
 
 /**
@@ -42,10 +49,12 @@ type UsePartContextMenuReturn = {
 export function usePartContextMenu({
   stageRef,
   dispatch,
+  parts,
 }: UsePartContextMenuParams): UsePartContextMenuReturn {
   const [showContextMenu, setVisible] = useState(false);
   const [menuPosition, setPosition] = useState<Position>({ x: 0, y: 0 });
   const [contextMenuPartId, setActivePartId] = useState<number | null>(null);
+  const { selectedPartIds } = useSelectedParts();
 
   const handlePartContextMenu = useCallback(
     (e: Konva.KonvaEventObject<PointerEvent>, partId: number) => {
@@ -91,7 +100,7 @@ export function usePartContextMenu({
         handleCloseContextMenu();
       };
 
-      return [
+      const items: ContextMenuItem[] = [
         {
           id: 'frontmost',
           text: '最前面に移動',
@@ -121,8 +130,63 @@ export function usePartContextMenu({
           },
         },
       ];
+
+      if (selectedPartIds.length > 1) {
+        const align = (direction: AlignDirection) => {
+          const action = createAlignPartsAction({
+            parts,
+            targetIds: selectedPartIds,
+            referenceId: partId,
+            direction,
+          });
+          if (action) {
+            dispatch(action);
+          }
+          handleCloseContextMenu();
+        };
+
+        items.push(
+          {
+            id: 'align-left',
+            text: '左揃え',
+            action: () => align('left'),
+          },
+          {
+            id: 'align-center',
+            text: '水平中央揃え',
+            action: () => align('center'),
+          },
+          {
+            id: 'align-right',
+            text: '右揃え',
+            action: () => align('right'),
+          },
+          {
+            id: 'align-top',
+            text: '上揃え',
+            action: () => align('top'),
+          },
+          {
+            id: 'align-middle',
+            text: '垂直中央揃え',
+            action: () => align('middle'),
+          },
+          {
+            id: 'align-bottom',
+            text: '下揃え',
+            action: () => align('bottom'),
+          }
+        );
+      }
+
+      return items;
     },
-    [handleCloseContextMenu, dispatch]
+    [
+      handleCloseContextMenu,
+      dispatch,
+      selectedPartIds,
+      parts,
+    ]
   );
 
   const handleStageClickFromHook = useCallback(
