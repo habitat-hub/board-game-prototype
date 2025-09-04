@@ -23,6 +23,12 @@ export type AlignmentInfo = {
   isVCenter: boolean;
 };
 
+/** パーツ位置更新のバッチ要素 */
+export type AlignmentUpdate = {
+  partId: number;
+  updatePart: { position: { x: number; y: number } };
+};
+
 /**
  * 選択されたパーツの位置に基づく整列情報を計算する
  * @param parts - 選択されたパーツ
@@ -71,34 +77,42 @@ export const getAlignmentUpdates = (
   type: AlignmentType,
   parts: Part[],
   info: AlignmentInfo,
-) =>
-  parts.map((p) => {
-    let x = p.position.x;
-    let y = p.position.y;
-    switch (type) {
-      case 'left':
-        x = info.minX;
-        break;
-      case 'right':
-        x = info.maxX - p.width;
-        break;
-      case 'hCenter':
-        x = Math.round(info.centerX - p.width / 2);
-        break;
-      case 'top':
-        y = info.minY;
-        break;
-      case 'bottom':
-        y = info.maxY - p.height;
-        break;
-      case 'vCenter':
-        y = Math.round(info.centerY - p.height / 2);
-        break;
-    }
-    return {
-      partId: p.id,
-      updatePart: {
-        position: { ...p.position, x, y },
-      },
-    };
-  });
+): AlignmentUpdate[] =>
+  parts
+    .map((p) => {
+      let x = p.position.x;
+      let y = p.position.y;
+      switch (type) {
+        case 'left':
+          x = info.minX;
+          break;
+        case 'right':
+          x = info.maxX - p.width;
+          break;
+        case 'hCenter':
+          x = Math.round(info.centerX - p.width / 2);
+          break;
+        case 'top':
+          y = info.minY;
+          break;
+        case 'bottom':
+          y = info.maxY - p.height;
+          break;
+        case 'vCenter':
+          y = Math.round(info.centerY - p.height / 2);
+          break;
+        default: {
+          // 将来 AlignmentType 追加時の網羅性チェック
+          const _exhaustive: never = type;
+          return _exhaustive as never;
+        }
+      }
+      if (x === p.position.x && y === p.position.y) return null;
+      return {
+        partId: p.id,
+        updatePart: {
+          position: { ...p.position, x, y },
+        },
+      } as AlignmentUpdate | null;
+    })
+    .filter((u): u is AlignmentUpdate => u !== null);
