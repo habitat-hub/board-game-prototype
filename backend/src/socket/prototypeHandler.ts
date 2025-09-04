@@ -208,6 +208,132 @@ function handleJoinPrototype(socket: Socket, io: Server): void {
 }
 
 /**
+ * パーツ一括更新
+ * 複数のパーツを一度に更新する
+ * @param socket - Socket
+ * @param io - Server
+ */
+function handleUpdateParts(socket: Socket, io: Server): void {
+  socket.on(
+    PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS,
+    async ({
+      updates,
+    }: {
+      updates: {
+        partId: number;
+        updatePart?: Partial<PartModel>;
+        updateProperties?: Partial<PartPropertyModel>[];
+      }[];
+    }) => {
+      const { prototypeId } = socket.data as SocketData;
+
+      try {
+        if (!updates || updates.length === 0) return;
+
+        const updatedParts: PartModel[] = [];
+        const propertyPartIds = new Set<number>();
+
+        // 入力IDの正規化とルーム制約
+        const normalizedIds = Array.from(
+          new Set(
+            updates.map((u) => u.partId).filter((v) => Number.isInteger(v))
+          )
+        ) as number[];
+
+        const t = await PartModel.sequelize!.transaction();
+        try {
+          // 同じ prototype のパーツID のみ有効とする
+          const partsInRoom = await PartModel.findAll({
+            attributes: ['id'],
+            where: { prototypeId, id: { [Op.in]: normalizedIds } },
+            transaction: t,
+          });
+          const validIds = new Set(partsInRoom.map((p) => p.id));
+
+          for (const { partId, updatePart, updateProperties } of updates) {
+            if (!validIds.has(partId)) continue;
+
+            // 更新対象フィールドはホワイトリストから選択
+            if (updatePart && Object.keys(updatePart).length > 0) {
+              const updateData = Object.entries(updatePart).reduce(
+                (acc, [key, value]) => {
+                  if (
+                    value !== undefined &&
+                    UPDATABLE_PROTOTYPE_FIELDS.PART.includes(key)
+                  ) {
+                    // @ts-expect-error 動的キー
+                    acc[key] = value;
+                  }
+                  return acc;
+                },
+                {} as Partial<PartModel>
+              );
+
+              if (Object.keys(updateData).length > 0) {
+                const [, result] = await PartModel.update(updateData, {
+                  where: { id: partId, prototypeId },
+                  returning: true,
+                  transaction: t,
+                });
+                if (result[0]) {
+                  updatedParts.push(result[0].dataValues);
+                }
+              }
+            }
+
+            // プロパティ更新：side が必須（WHERE句のキー）
+            if (updateProperties && updateProperties.length > 0) {
+              const updatePromises = updateProperties
+                .filter((property) => property.side !== undefined)
+                .map((property) => {
+                  // mass-assignment防止: id / partId / side は更新しない
+                  const propertyUpdateData = Object.entries(property).reduce(
+                    (acc, [key, value]) => {
+                      if (value === undefined) return acc;
+                      if (key === 'id' || key === 'partId' || key === 'side')
+                        return acc;
+                      // @ts-expect-error 動的キーの代入
+                      acc[key] = value;
+                      return acc;
+                    },
+                    {} as Partial<PartPropertyModel>
+                  );
+                  if (Object.keys(propertyUpdateData).length === 0) {
+                    return Promise.resolve();
+                  }
+                  return PartPropertyModel.update(propertyUpdateData, {
+                    where: { partId, side: property.side },
+                    transaction: t,
+                  });
+                });
+              await Promise.all(updatePromises);
+              propertyPartIds.add(partId);
+            }
+          }
+
+          await t.commit();
+        } catch (e) {
+          await t.rollback();
+          throw e;
+        }
+
+        const updatedPropertiesWithImages =
+          propertyPartIds.size > 0
+            ? await fetchPropertiesWithImagesByPartIds([...propertyPartIds])
+            : [];
+
+        io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS, {
+          parts: updatedParts.map((part) => part),
+          properties: updatedPropertiesWithImages,
+        });
+      } catch (error) {
+        console.error('パーツの一括更新に失敗しました。', error);
+      }
+    }
+  );
+}
+
+/**
  * パーツ追加
  * @param socket - Socket
  * @param io - Server
@@ -706,13 +832,14 @@ function isRebalanceNeeded(parts: PartModel[]): boolean {
 export default function handlePrototype(socket: Socket, io: Server): void {
   handleJoinPrototype(socket, io);
   handleAddPart(socket, io);
+  handleUpdateParts(socket, io);
   handleUpdatePart(socket, io);
   handleDeleteParts(socket, io);
   handleChangeOrder(socket, io);
   handleShuffleDeck(socket, io);
   handleSelectedParts(socket);
 
-  socket.on(COMMON_SOCKET_EVENT.DISCONNECTING, () => {
+  socket.on(COMMON_SOCKET_EVENT.DISCONNECTING, async () => {
     // ソケットが切断される直前に呼び出される
     for (const room of socket.rooms) {
       // プロトタイプルームの場合（自身の socket.id 以外 かつ 管理対象のルーム）
@@ -725,15 +852,34 @@ export default function handlePrototype(socket: Socket, io: Server): void {
           // 接続中ユーザー情報から削除
           delete connectedUsersMap[prototypeId][userId];
 
-          // ルームが空の場合、エントリを削除
-          if (Object.keys(connectedUsersMap[prototypeId]).length === 0) {
-            delete connectedUsersMap[prototypeId];
-          }
-
           // 残りのユーザーに更新を通知
           io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS, {
             users: Object.values(connectedUsersMap[prototypeId] || {}),
           });
+
+          // プロジェクトルームに更新を通知
+          try {
+            const prototype = await PrototypeModel.findByPk(prototypeId);
+            if (prototype) {
+              io.to(`project:${prototype.projectId}`).emit(
+                PROJECT_SOCKET_EVENT.ROOM_CONNECTED_USERS_UPDATE,
+                {
+                  prototypeId,
+                  users: Object.values(connectedUsersMap[prototypeId] || {}),
+                }
+              );
+            }
+          } catch (e) {
+            console.error('プロジェクトルームへの通知に失敗しました:', e);
+          }
+
+          // ルームが空の場合、エントリを削除
+          if (
+            connectedUsersMap[prototypeId] &&
+            Object.keys(connectedUsersMap[prototypeId]).length === 0
+          ) {
+            delete connectedUsersMap[prototypeId];
+          }
 
           // 選択中パーツ情報をリセット
           io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.SELECTED_PARTS, {
@@ -756,39 +902,39 @@ export default function handlePrototype(socket: Socket, io: Server): void {
         // 接続中ユーザー情報から削除
         if (connectedUsersMap[prototypeId]) {
           delete connectedUsersMap[prototypeId][userId];
+        }
 
-          // 更新された接続中ユーザーリストを通知
-          io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS, {
-            users: Object.values(connectedUsersMap[prototypeId] || {}),
-          });
+        // 更新された接続中ユーザーリストを通知
+        io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.CONNECTED_USERS, {
+          users: Object.values(connectedUsersMap[prototypeId] || {}),
+        });
 
-          // プロジェクトルームにユーザー切断を通知
-          try {
-            const prototype = await PrototypeModel.findByPk(prototypeId);
-            if (prototype) {
-              const projectId = prototype.projectId;
-              io.to(`project:${projectId}`).emit(
-                PROJECT_SOCKET_EVENT.ROOM_CONNECTED_USERS_UPDATE,
-                {
-                  prototypeId,
-                  users: Object.values(connectedUsersMap[prototypeId] || {}),
-                }
-              );
-            }
-          } catch (error) {
-            console.error(
-              'プロジェクトルームへのユーザー切断通知に失敗しました:',
-              error
+        // プロジェクトルームにユーザー切断を通知
+        try {
+          const prototype = await PrototypeModel.findByPk(prototypeId);
+          if (prototype) {
+            const projectId = prototype.projectId;
+            io.to(`project:${projectId}`).emit(
+              PROJECT_SOCKET_EVENT.ROOM_CONNECTED_USERS_UPDATE,
+              {
+                prototypeId,
+                users: Object.values(connectedUsersMap[prototypeId] || {}),
+              }
             );
           }
+        } catch (error) {
+          console.error(
+            'プロジェクトルームへのユーザー切断通知に失敗しました:',
+            error
+          );
+        }
 
-          // ルームが空の場合、エントリを削除
-          if (
-            connectedUsersMap[prototypeId] &&
-            Object.keys(connectedUsersMap[prototypeId]).length === 0
-          ) {
-            delete connectedUsersMap[prototypeId];
-          }
+        // ルームが空の場合、エントリを削除
+        if (
+          connectedUsersMap[prototypeId] &&
+          Object.keys(connectedUsersMap[prototypeId]).length === 0
+        ) {
+          delete connectedUsersMap[prototypeId];
         }
       }
     }

@@ -9,6 +9,7 @@ import { FaUsers } from 'react-icons/fa';
 
 import { MAX_DISPLAY_USERS } from '@/features/prototype/constants/presence';
 import { ConnectedUser } from '@/features/prototype/types';
+import { getUserColor } from '@/features/prototype/utils/userColor';
 
 interface RoleMenuProps {
   projectId: string;
@@ -34,7 +35,7 @@ export default function RoleMenu({
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 flex flex-row items-center justify-between ${showRoleManagementButton ? 'max-w-[150px]' : 'max-w-[100px]'} h-[56px] bg-kibako-white p-2 rounded-lg`}
+      className={`fixed top-4 right-4 z-overlay flex flex-row items-center justify-between ${showRoleManagementButton ? 'max-w-[150px]' : 'max-w-[100px]'} h-[56px] bg-kibako-white p-2 rounded-lg`}
     >
       {/* ユーザーアイコンリスト（左側・ホバーで全ユーザー名表示） */}
       <div className="relative group">
@@ -45,11 +46,12 @@ export default function RoleMenu({
         >
           <div className="flex -space-x-3">
             {displayUsers.map((user, idx) => {
+              const color = getUserColor(user.userId, user.username);
               return (
                 <span
                   key={user.userId || `user-${idx}`}
-                  className="flex items-center justify-center w-7 h-7 rounded-full bg-kibako-secondary text-kibako-primary font-bold text-sm select-none border-2 border-kibako-white shadow-sm"
-                  style={{ zIndex: 10 - idx }}
+                  className="flex items-center justify-center w-7 h-7 rounded-full bg-kibako-white text-kibako-primary font-bold text-sm select-none border-2 shadow-sm"
+                  style={{ zIndex: 10 - idx, borderColor: color }}
                   title={user.username}
                 >
                   {user.username.charAt(0).toUpperCase()}
@@ -63,17 +65,29 @@ export default function RoleMenu({
             </span>
           )}
         </button>
-        <div className="absolute right-0 mt-2 max-w-xs bg-kibako-white border border-kibako-secondary rounded shadow z-20 px-3 py-2 text-xs text-kibako-primary opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200">
+        <div className="absolute right-0 mt-2 max-w-xs bg-kibako-white border border-kibako-secondary rounded shadow z-tooltip px-3 py-2 text-xs text-kibako-primary opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200">
           <ul>
-            {connectedUsers.map((user) => (
-              <li
-                key={user.userId}
-                className="truncate max-w-[180px] px-0 py-0 leading-6"
-                title={user.username}
-              >
-                {user.username}
-              </li>
-            ))}
+            {connectedUsers.map((user) => {
+              const color = getUserColor(user.userId, user.username);
+              return (
+                <li
+                  key={user.userId}
+                  className="truncate max-w-[180px] px-0 py-0 leading-6"
+                  title={user.username}
+                >
+                  <span
+                    className="inline-flex items-center gap-1 px-1 rounded border"
+                    style={{ borderColor: color }}
+                  >
+                    <span
+                      className="inline-block w-2 h-2"
+                      style={{ backgroundColor: color }}
+                    />
+                    {user.username}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </div>

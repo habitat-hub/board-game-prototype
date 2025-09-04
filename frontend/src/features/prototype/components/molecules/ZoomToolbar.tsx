@@ -25,7 +25,7 @@ export default function ZoomToolbar({
   const zoomPercentage = Math.floor(zoomValue * 100);
 
   return (
-    <div className="fixed bottom-4 right-4 z-20 flex items-center justify-center rounded-xl bg-kibako-white shadow-lg border border-kibako-secondary/20 p-2">
+    <div className="fixed bottom-4 right-4 z-overlay flex items-center justify-center rounded-xl bg-kibako-white shadow-lg border border-kibako-secondary/20 p-2">
       <div className="flex items-center justify-center gap-2">
         <div className="flex items-center justify-center">
           <ZoomOutButton onClick={zoomOut} disabled={!canZoomOut} />

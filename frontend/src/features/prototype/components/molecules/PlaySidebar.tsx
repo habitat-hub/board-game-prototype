@@ -7,9 +7,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
 import { Part } from '@/api/types';
+import Button from '@/components/atoms/Button';
 import PartTypeIcon from '@/features/prototype/components/atoms/PartTypeIcon';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
+import { getUserColor } from '@/features/prototype/utils/userColor';
 import { useUser } from '@/hooks/useUser';
 
 interface PlaySidebarProps {
@@ -36,28 +38,38 @@ export default function PlaySidebar({
   // 選択中の手札ID
   const [selectedHandId, setSelectedHandId] = useState<number | null>(null);
 
-  // userRolesからユーザーマップを作成
-  const userMap = useMemo(() => {
-    const map = new Map<string, string>();
-    userRoles.forEach((userRole) => {
-      if (userRole.user.id && userRole.user.username) {
-        map.set(userRole.user.id, userRole.user.username);
+  // userRoles からユーザーの表示名とロールメニューと同じ色を引けるマップを作成
+  const userMetaMap = useMemo(() => {
+    const map = new Map<string, { username: string; color: string }>();
+    userRoles.forEach(({ user }) => {
+      if (user.id && user.username) {
+        map.set(user.id, {
+          username: user.username,
+          color: getUserColor(user.id, user.username),
+        });
       }
     });
     return map;
   }, [userRoles]);
 
   // 手札
-  const hands = useMemo(() => {
+  type HandWithOwnerMeta = Part & {
+    ownerName: string | null;
+    ownerColor: string | null;
+  };
+
+  const hands: HandWithOwnerMeta[] = useMemo(() => {
     return parts
       .filter((part) => part.type === 'hand')
       .map((hand) => {
+        const meta = hand.ownerId ? userMetaMap.get(hand.ownerId) : null;
         return {
           ...hand,
-          ownerName: hand.ownerId ? userMap.get(hand.ownerId) : null,
-        };
+          ownerName: meta?.username ?? null,
+          ownerColor: meta?.color ?? null,
+        } as HandWithOwnerMeta;
       });
-  }, [parts, userMap]);
+  }, [parts, userMetaMap]);
 
   // カード
   const cards = useMemo(() => {
@@ -97,7 +109,7 @@ export default function PlaySidebar({
   }, [selectedPartId, parts]);
 
   return (
-    <div className="fixed top-20 left-4 flex w-[240px] flex-col rounded-lg shadow-lg border border-kibako-tertiary/40 bg-gradient-to-r from-kibako-white to-kibako-tertiary max-h-[calc(100vh-32px)] overflow-y-auto">
+    <div className="fixed top-20 left-4 flex w-[18rem] flex-col rounded-xl shadow-lg border border-kibako-tertiary/40 bg-gradient-to-r from-kibako-white to-kibako-tertiary max-h-[calc(100vh-32px)] overflow-y-auto">
       {/* ヘッダー */}
       <div className="border-b border-kibako-tertiary/60 rounded-t-lg bg-gradient-to-r from-kibako-secondary/30 to-kibako-secondary/20 py-2 px-4">
         <div className="flex items-center">
@@ -115,8 +127,6 @@ export default function PlaySidebar({
         {/* 手札一覧 */}
         <div className="space-y-2">
           {hands.map((hand, index) => {
-            const isOwnHand = hand.ownerId === user?.id;
-
             return (
               <div
                 key={hand.id}
@@ -135,12 +145,13 @@ export default function PlaySidebar({
                   <span className="text-xs font-medium">手札 #{index + 1}</span>
                   {hand.ownerName && (
                     <span
-                      className={`text-xs ${
-                        isOwnHand
-                          ? 'bg-kibako-success/10 text-kibako-success/80'
-                          : 'bg-kibako-info/10 text-kibako-info/80'
-                      } px-1 rounded`}
+                      className="text-xs px-1 rounded border inline-flex items-center gap-1"
+                      style={{ borderColor: hand.ownerColor || undefined }}
                     >
+                      <span
+                        className="inline-block w-2 h-2"
+                        style={{ backgroundColor: hand.ownerColor || undefined }}
+                      />
                       {hand.ownerName}の手札
                     </span>
                   )}
@@ -156,12 +167,30 @@ export default function PlaySidebar({
             <span className="mb-2 text-xs font-bold">手札設定</span>
             <div className="space-y-3">
               <div className="text-xs text-kibako-primary/70">
-                <div>所有者: {selectedHand.ownerName || '未設定'}</div>
+                <div className="flex items-center gap-2">
+                  <span>所有者:</span>
+                  {selectedHand.ownerName ? (
+                    <span
+                      className="inline-flex items-center gap-1 px-1 rounded border"
+                      style={{ borderColor: selectedHand.ownerColor || undefined }}
+                    >
+                      <span
+                        className="inline-block w-2 h-2"
+                        style={{ backgroundColor: selectedHand.ownerColor || undefined }}
+                      />
+                      {selectedHand.ownerName}
+                    </span>
+                  ) : (
+                    <span>未設定</span>
+                  )}
+                </div>
                 <div>上のカード: {selectedHandCardCount}枚</div>
               </div>
 
               <div className="flex items-center gap-2">
-                <button
+                <Button
+                  size="sm"
+                  className="!px-3 !py-1 !text-xs"
                   onClick={() => {
                     if (!user?.id) return;
 
@@ -173,11 +202,13 @@ export default function PlaySidebar({
                       },
                     });
                   }}
-                  className="px-3 py-1 text-xs bg-kibako-info text-kibako-white rounded hover:bg-kibako-info/80"
                 >
                   自分を設定
-                </button>
-                <button
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="!px-3 !py-1 !text-xs"
                   onClick={() => {
                     dispatch({
                       type: 'UPDATE_PART',
@@ -187,10 +218,9 @@ export default function PlaySidebar({
                       },
                     });
                   }}
-                  className="px-3 py-1 text-xs bg-kibako-secondary text-kibako-white rounded hover:bg-kibako-secondary/80"
                 >
                   クリア
-                </button>
+                </Button>
               </div>
             </div>
           </div>

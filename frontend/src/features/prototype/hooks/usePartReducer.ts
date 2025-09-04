@@ -34,6 +34,12 @@ export const usePartReducer = (): PartReducer => {
               updateProperties: action.payload.updateProperties,
             });
             break;
+          // パーツ一括更新
+          case 'UPDATE_PARTS':
+            socket.emit('UPDATE_PARTS', {
+              updates: action.payload.updates,
+            });
+            break;
           // パーツの一括削除
           case 'DELETE_PARTS':
             socket.emit('DELETE_PARTS', {

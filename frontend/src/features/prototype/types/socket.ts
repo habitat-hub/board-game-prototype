@@ -24,6 +24,11 @@ export type UpdatePartPayload = {
   updateProperties?: Partial<PartProperty>[];
 };
 
+/** パーツ一括更新のペイロード（ソケット送受信用） */
+export type UpdatePartsPayload = {
+  updates: UpdatePartPayload[];
+};
+
 /** パーツ削除のペイロード（ソケット送受信用） */
 export type DeletePartPayload = { partId: number };
 
@@ -43,6 +48,12 @@ export type AddPartAction = {
 export type UpdatePartAction = {
   type: 'UPDATE_PART';
   payload: UpdatePartPayload;
+};
+
+/** パーツ一括更新のアクション（ソケット送受信用） */
+export type UpdatePartsAction = {
+  type: 'UPDATE_PARTS';
+  payload: UpdatePartsPayload;
 };
 
 /** パーツ一括削除のアクション（ソケット送受信用） */
@@ -77,6 +88,7 @@ export type SelectedPartsResponse = {
 export type PartAction =
   | AddPartAction
   | UpdatePartAction
+  | UpdatePartsAction
   | DeletePartsAction
   | ChangeOrderAction
   | ShuffleDeckAction;
