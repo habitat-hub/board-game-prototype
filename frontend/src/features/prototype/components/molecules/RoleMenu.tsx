@@ -67,15 +67,27 @@ export default function RoleMenu({
         </button>
         <div className="absolute right-0 mt-2 max-w-xs bg-kibako-white border border-kibako-secondary rounded shadow z-tooltip px-3 py-2 text-xs text-kibako-primary opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200">
           <ul>
-            {connectedUsers.map((user) => (
-              <li
-                key={user.userId}
-                className="truncate max-w-[180px] px-0 py-0 leading-6"
-                title={user.username}
-              >
-                {user.username}
-              </li>
-            ))}
+            {connectedUsers.map((user) => {
+              const color = getUserColor(user.userId, user.username);
+              return (
+                <li
+                  key={user.userId}
+                  className="truncate max-w-[180px] px-0 py-0 leading-6"
+                  title={user.username}
+                >
+                  <span
+                    className="inline-flex items-center gap-1 px-1 rounded border"
+                    style={{ borderColor: color }}
+                  >
+                    <span
+                      className="inline-block w-2 h-2"
+                      style={{ backgroundColor: color }}
+                    />
+                    {user.username}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </div>
