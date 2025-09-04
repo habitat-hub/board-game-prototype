@@ -142,6 +142,17 @@ export default function PartOnGameBoard({
 
   const isCard = part.type === 'card';
   const isDeck = part.type === 'deck';
+  const [shuffleMessage, setShuffleMessage] = useState<string | null>(null);
+  const shuffleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const shuffleHideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);
+      if (shuffleHideTimeoutRef.current)
+        clearTimeout(shuffleHideTimeoutRef.current);
+    };
+  }, []);
 
   // 自分の選択色（自分が選択中のときに枠・影色に使用）
   const selfSelectedColor = useMemo<string | null>(() => {
@@ -151,7 +162,11 @@ export default function PartOnGameBoard({
 
   // 選択装飾用の計算結果をメモ化
   const selectedByWithColors = useMemo(
-    () => selectedBy.map((u) => ({ ...u, color: getUserColor(u.userId, u.username) })),
+    () =>
+      selectedBy.map((u) => ({
+        ...u,
+        color: getUserColor(u.userId, u.username),
+      })),
     [selectedBy]
   );
 
@@ -305,7 +320,6 @@ export default function PartOnGameBoard({
       anim.stop();
     };
     // displayedSide は anim 内で制御するため依存から除外
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReversing, isCard, setIsReversing, part.id, optimisticFrontSide]);
 
   // 表示する面は displayedSide を参照する。optimisticFrontSide は flipTargetRef に保存される。
@@ -337,7 +351,19 @@ export default function PartOnGameBoard({
     if (!isInteractivePart) return;
 
     if (isDeck) {
+      if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);
+      if (shuffleHideTimeoutRef.current)
+        clearTimeout(shuffleHideTimeoutRef.current);
+
+      setShuffleMessage('シャッフルしています...');
       dispatch({ type: 'SHUFFLE_DECK', payload: { deckId: part.id } });
+
+      shuffleTimeoutRef.current = setTimeout(() => {
+        setShuffleMessage('シャッフルしました！');
+        shuffleHideTimeoutRef.current = setTimeout(() => {
+          setShuffleMessage(null);
+        }, 1000);
+      }, 1000);
       return;
     }
 
@@ -455,7 +481,9 @@ export default function PartOnGameBoard({
         height={part.height}
         fill={imageLoaded ? 'white' : targetProperty?.color || 'white'}
         stroke={
-          isActive && selfSelectedColor ? selfSelectedColor : DEFAULT_STROKE_COLOR
+          isActive && selfSelectedColor
+            ? selfSelectedColor
+            : DEFAULT_STROKE_COLOR
         }
         strokeWidth={getStrokeWidth(part.type)}
         cornerRadius={getCornerRadius(part.type)}
@@ -549,6 +577,21 @@ export default function PartOnGameBoard({
         {isDeck && <ShuffleIcon size={20} color="#666" />}
         {isCard && <FlipIcon size={20} color="#666" />}
       </Group>
+
+      {isDeck && shuffleMessage && (
+        <Text
+          x={0}
+          y={-20}
+          width={part.width}
+          text={shuffleMessage}
+          fontSize={14}
+          fill="#333"
+          align="center"
+          listening={false}
+          perfectDrawEnabled={false}
+          hitStrokeWidth={0}
+        />
+      )}
 
       {selectedByWithColors.map((user, index) => {
         const offset = (index + 1) * SELECT_OUTLINE_STEP_PX;
