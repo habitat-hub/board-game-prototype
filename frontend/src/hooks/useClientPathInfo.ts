@@ -16,7 +16,5 @@ const GAME_BOARD_PATH_REGEX = new RegExp(
 export function useClientPathInfo() {
   const pathname = usePathname();
   const isGameBoardPath = GAME_BOARD_PATH_REGEX.test(pathname);
-  const isUnsupportedDevicePath = pathname === '/unsupported-device';
-
-  return { pathname, isGameBoardPath, isUnsupportedDevicePath };
+  return { pathname, isGameBoardPath };
 }

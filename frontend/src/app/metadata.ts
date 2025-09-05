@@ -64,6 +64,11 @@ export const metadata: Metadata = {
   applicationName: 'KIBAKO',
   category: 'ボードゲーム',
 
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+  },
+
   // その他のメタデータ
   formatDetection: {
     telephone: false,
