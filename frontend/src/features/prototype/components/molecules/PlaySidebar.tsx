@@ -39,18 +39,23 @@ export default function PlaySidebar({
   const [selectedHandId, setSelectedHandId] = useState<number | null>(null);
 
   // userRoles からユーザーの表示名とロールメニューと同じ色を引けるマップを作成
+  const allUsers = useMemo(
+    () => userRoles.map(({ user }) => ({ userId: user.id })),
+    [userRoles]
+  );
+
   const userMetaMap = useMemo(() => {
     const map = new Map<string, { username: string; color: string }>();
     userRoles.forEach(({ user }) => {
       if (user.id && user.username) {
         map.set(user.id, {
           username: user.username,
-          color: getUserColor(user.id, user.username),
+          color: getUserColor(user.id, allUsers),
         });
       }
     });
     return map;
-  }, [userRoles]);
+  }, [userRoles, allUsers]);
 
   // 手札
   type HandWithOwnerMeta = Part & {

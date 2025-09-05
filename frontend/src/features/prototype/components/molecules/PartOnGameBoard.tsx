@@ -117,6 +117,11 @@ export default function PartOnGameBoard({
   const { showDebugInfo } = useDebugMode();
   const { eventHandlers } = useGrabbingCursor();
 
+  const allUsers = useMemo(
+    () => userRoles.map((u) => ({ userId: u.userId })),
+    [userRoles]
+  );
+
   // 他ユーザーによるロック（自分が選択していないのに他人が選択中）
   const isLockedByOthers = selectedBy.length > 0 && !isActive;
   // ロック中は移動禁止
@@ -154,17 +159,17 @@ export default function PartOnGameBoard({
   // 自分の選択色（自分が選択中のときに枠・影色に使用）
   const selfSelectedColor = useMemo<string | null>(() => {
     if (!selfUser) return null;
-    return getUserColor(selfUser.userId, selfUser.username);
-  }, [selfUser]);
+    return getUserColor(selfUser.userId, allUsers);
+  }, [selfUser, allUsers]);
 
   // 選択装飾用の計算結果をメモ化
   const selectedByWithColors = useMemo(
     () =>
       selectedBy.map((u) => ({
         ...u,
-        color: getUserColor(u.userId, u.username),
+        color: getUserColor(u.userId, allUsers),
       })),
-    [selectedBy]
+    [selectedBy, allUsers]
   );
 
   // 手札の持ち主
@@ -217,14 +222,12 @@ export default function PartOnGameBoard({
       return;
 
     // 手札の持ち主変化を最優先に扱う（他プレイヤー手札は裏になる）
-    let target = optimisticFrontSide ?? part.frontSide ?? 'front';
-    if (isHandOwnerChanged) {
-      if (isOtherPlayerHandCard) {
-        target = 'back';
-      } else {
-        target = optimisticFrontSide ?? part.frontSide ?? 'front';
-      }
-    }
+    const baseTarget = optimisticFrontSide ?? part.frontSide ?? 'front';
+    const target = isHandOwnerChanged
+      ? isOtherPlayerHandCard
+        ? 'back'
+        : baseTarget
+      : baseTarget;
 
     flipTargetRef.current = target;
     sideSwitchedRef.current = false;
