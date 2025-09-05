@@ -4,6 +4,15 @@ const nextConfig = {
     domains: ['developers.google.com'],
   },
   devIndicators: false,
+  async redirects() {
+    return [
+      {
+        source: '/unsupported-device',
+        destination: '/',
+        permanent: false,
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
