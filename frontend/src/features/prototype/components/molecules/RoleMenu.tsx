@@ -64,7 +64,7 @@ export default function RoleMenu({
           )}
         </button>
         <div className="absolute right-0 mt-2 max-w-xs bg-kibako-white border border-kibako-secondary rounded shadow z-tooltip px-3 py-2 text-xs text-kibako-primary opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200">
-          <ul>
+          <ul className="flex gap-1 flex-col">
             {roleUsers.map((user) => {
               const isActive = activeUserIds.has(user.userId);
               if (isActive) {
