@@ -119,11 +119,8 @@ export default function PartOnGameBoard({
 
   // 他ユーザーによるロック（自分が選択していないのに他人が選択中）
   const isLockedByOthers = selectedBy.length > 0 && !isActive;
-  // プレイルームでエリアパーツ、またはロック中は移動禁止
-  const isDraggable = !(
-    (gameBoardMode === GameBoardMode.PLAY && part.type === 'area') ||
-    isLockedByOthers
-  );
+  // ロック中は移動禁止
+  const isDraggable = !isLockedByOthers;
 
   // カーソル制御hooks
   const {
