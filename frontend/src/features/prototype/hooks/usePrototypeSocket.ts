@@ -8,6 +8,7 @@ import {
   COMMON_SOCKET_EVENT,
   PROTOTYPE_SOCKET_EVENT,
 } from '@/features/prototype/constants/socket';
+import { UNEXPECTED_DISCONNECT_REASONS } from '@/features/prototype/constants/socket';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
 import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import {
@@ -105,9 +106,11 @@ export const usePrototypeSocket = ({
       socket.connect();
     });
 
-    // 切断時の処理
-    socket.on(COMMON_SOCKET_EVENT.DISCONNECT, () => {
-      alert('接続が切断されました。ページを再読み込みしてください。');
+    // 切断時の処理（想定外の切断理由のみ通知）
+    socket.on(COMMON_SOCKET_EVENT.DISCONNECT, (reason: string) => {
+      if (UNEXPECTED_DISCONNECT_REASONS.has(reason)) {
+        alert('接続が切断されました。ページを再読み込みしてください。');
+      }
     });
 
     // サーバーに接続した後、特定のプロトタイプに参加
