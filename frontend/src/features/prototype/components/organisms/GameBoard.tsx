@@ -35,6 +35,7 @@ import {
   DeleteImageProps,
   GameBoardMode,
 } from '@/features/prototype/types';
+import type { ConnectedUser } from '@/features/prototype/types';
 import { useRoleManagement } from '@/features/role/hooks/useRoleManagement';
 import {
   getImageFromIndexedDb,
@@ -94,14 +95,20 @@ export default function GameBoard({
   const { cardVisibilityMap } = useHandVisibility(parts, gameBoardMode);
   // ロール管理情報を取得
   const { userRoles } = useRoleManagement(projectId);
-  const roleUsers = useMemo(() => {
-    const allUsers = userRoles.map((ur) => ({
-      userId: ur.userId,
-      username: ur.user.username,
-    }));
+  // ロールユーザー一覧（接続中→非接続の順で一意化）
+  const roleUsers: ConnectedUser[] = useMemo(() => {
+    // userId をキーに一意化
+    const uniqUsers = Array.from(
+      new Map(
+        (userRoles ?? []).map((ur) => [
+          ur.userId,
+          { userId: ur.userId, username: ur.user.username } as ConnectedUser,
+        ])
+      ).values()
+    );
     const connectedSet = new Set(connectedUsers.map((u) => u.userId));
-    const active = allUsers.filter((u) => connectedSet.has(u.userId));
-    const inactive = allUsers.filter((u) => !connectedSet.has(u.userId));
+    const active = uniqUsers.filter((u) => connectedSet.has(u.userId));
+    const inactive = uniqUsers.filter((u) => !connectedSet.has(u.userId));
     return [...active, ...inactive];
   }, [userRoles, connectedUsers]);
 
