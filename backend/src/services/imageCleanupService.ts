@@ -1,7 +1,7 @@
 import ImageModel from '../models/Image';
+import PartPropertyModel from '../models/PartProperty';
 import { deleteImageFromS3 } from './imageDeleteService';
 import sequelize from '../models/index';
-import { QueryTypes } from 'sequelize';
 
 /**
  * 画像が他で使われていなければDBとストレージから削除
@@ -13,41 +13,34 @@ export const cleanupImageIfUnused = async (
   partId: string,
   side: 'front' | 'back'
 ): Promise<{ deleted: boolean }> => {
-  const [result] = (await sequelize.query(
-    `SELECT COUNT(*) AS "count" FROM "PartProperties" WHERE "imageId" = :imageId`,
-    { replacements: { imageId }, type: QueryTypes.SELECT }
-  )) as [{ count: number | string }];
+  return await sequelize.transaction(async (transaction) => {
+    const count = await PartPropertyModel.count({
+      where: { imageId },
+      transaction,
+    });
 
-  // countはDBによってstring型で返る場合があるので数値化
-  const count =
-    typeof result.count === 'string'
-      ? parseInt(result.count, 10)
-      : result.count;
+    // 他のパーツでもそのimageIdが使われている場合
+    if (count > 1) {
+      // PartPropertyのimageIdのみクリアする
+      await PartPropertyModel.update(
+        { imageId: null },
+        { where: { partId, side }, transaction }
+      );
+      // 画像は削除しない
+      return { deleted: false };
+    }
 
-  // 他のパーツでもそのimageIdが使われている場合
-  if (count > 1) {
-    // PartPropertyのimageIdのみクリアする
-    await sequelize.query(
-      `UPDATE "PartProperties" SET "imageId" = NULL WHERE "partId" = :partId AND "side" = :side`,
-      {
-        replacements: { partId, side },
-        type: QueryTypes.UPDATE,
-      }
-    );
-    // 画像は削除しない
+    // S3とDBから削除
+    const image = await ImageModel.findByPk(imageId, { transaction });
+    if (image) {
+      await deleteImageFromS3(image.storagePath);
+      // image.destroy()により、PartProperty.imageIdはDBの
+      // ON DELETE SET NULL制約により自動的にNULLに更新される
+      await image.destroy({ transaction });
+      return { deleted: true };
+    }
+    // 画像が見つからない場合は何もしない
+    console.warn(`Image with ID ${imageId} not found for cleanup.`);
     return { deleted: false };
-  }
-
-  // S3とDBから削除
-  const image = await ImageModel.findByPk(imageId);
-  if (image) {
-    await deleteImageFromS3(image.storagePath);
-    // image.destroy()により、PartProperty.imageIdはDBの
-    // ON DELETE SET NULL制約により自動的にNULLに更新される
-    await image.destroy();
-    return { deleted: true };
-  }
-  // 画像が見つからない場合は何もしない
-  console.warn(`Image with ID ${imageId} not found for cleanup.`);
-  return { deleted: false };
+  });
 };
