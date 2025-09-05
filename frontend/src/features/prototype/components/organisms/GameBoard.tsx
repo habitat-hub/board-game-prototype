@@ -554,26 +554,23 @@ export default function GameBoard({
       )}
 
       {gameBoardMode === GameBoardMode.CREATE && (
-        <>
-          {/* フローティングパーツ作成メニュー */}
-          <PartCreateMenu
-            onAddPart={handleAddPart}
-            camera={camera}
-            viewportSize={viewportSize}
-            parts={parts} // 追加
-          />
-
-          {/* プロパティメニュー */}
-          <PartPropertyMenu
-            selectedPartIds={selectedPartIds}
-            parts={parts}
-            properties={properties}
-            onDuplicatePart={handleDuplicatePart}
-            onDeletePart={handleDeleteParts}
-            onDeleteImage={handleDeleteImage}
-          />
-        </>
+        <PartCreateMenu
+          onAddPart={handleAddPart}
+          camera={camera}
+          viewportSize={viewportSize}
+          parts={parts} // 追加
+        />
       )}
+
+      <PartPropertyMenu
+        selectedPartIds={selectedPartIds}
+        parts={parts}
+        properties={properties}
+        onDuplicatePart={handleDuplicatePart}
+        onDeletePart={handleDeleteParts}
+        onDeleteImage={handleDeleteImage}
+        gameBoardMode={gameBoardMode}
+      />
 
       {/* プレイルーム時のサイドバー */}
       {gameBoardMode === GameBoardMode.PLAY && (
