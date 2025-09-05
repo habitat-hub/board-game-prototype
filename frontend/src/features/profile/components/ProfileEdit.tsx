@@ -95,8 +95,8 @@ const ProfileEdit: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto mt-16 relative">
-      <div className="flex items-center gap-4 mb-8">
+    <div className="max-w-4xl mx-auto py-16 relative px-4">
+      <div className="sticky top-20 z-sticky bg-transparent backdrop-blur-sm flex items-center gap-3 mb-8 py-4 rounded-lg">
         <button
           onClick={handleBack}
           className="p-2 hover:bg-kibako-tertiary rounded-full transition-colors"
@@ -104,11 +104,9 @@ const ProfileEdit: React.FC = () => {
         >
           <IoArrowBack className="h-5 w-5 text-kibako-primary hover:text-kibako-primary transition-colors" />
         </button>
-        <div className="flex-grow flex items-center justify-center">
-          <h1 className="text-4xl font-bold text-center text-kibako-primary">
-            プロフィール編集
-          </h1>
-        </div>
+        <h1 className="text-3xl text-kibako-primary font-bold mb-0">
+          プロフィール編集
+        </h1>
       </div>
 
       <div className="mb-6 p-6 overflow-visible rounded-xl bg-gradient-to-r from-kibako-white via-kibako-white to-kibako-tertiary shadow-lg border border-kibako-tertiary/30">
@@ -136,23 +134,22 @@ const ProfileEdit: React.FC = () => {
             />
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex flex-wrap justify-end items-center gap-2">
             <Button type="submit" size="sm" className="flex items-center gap-1 !px-4 !py-2 !text-base">
               <FaCheck className="w-4 h-4" />
               更新する
             </Button>
+            {error && (
+              <p role="alert" aria-live="assertive" className="text-kibako-danger text-sm">
+                {error}
+              </p>
+            )}
+            {success && (
+              <p role="status" aria-live="polite" className="text-kibako-success text-sm">
+                {success}
+              </p>
+            )}
           </div>
-          {error && (
-            <div className="text-kibako-danger text-sm bg-kibako-danger/10 p-2 rounded-md border border-kibako-danger/10">
-              {error}
-            </div>
-          )}
-
-          {success && (
-            <div className="text-kibako-success text-sm bg-kibako-success/10 p-2 rounded-md border border-kibako-success/10">
-              {success}
-            </div>
-          )}
         </form>
       </div>
     </div>
