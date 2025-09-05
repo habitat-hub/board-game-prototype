@@ -27,14 +27,14 @@ export default function ClientLayout({
   children: React.ReactNode;
 }>) {
   const router = useRouter();
-  const { isGameBoardPath, isUnsupportedDevicePath } = useClientPathInfo();
+  const { pathname, isGameBoardPath } = useClientPathInfo();
   // 初期値をfalseにすることでSSRとクライアント側のレンダリングを一致させる
   const [isCheckingDevice, setIsCheckingDevice] = useState(false);
   const [shouldRedirect, setShouldRedirect] = useState(false);
 
   useEffect(() => {
     // クライアントサイドでのみデバイスチェックを実行
-    if (typeof window !== 'undefined' && !isUnsupportedDevicePath) {
+    if (typeof window !== 'undefined' && pathname !== '/') {
       setIsCheckingDevice(true);
 
       const parser = new UAParser.UAParser();
@@ -42,23 +42,20 @@ export default function ClientLayout({
       const deviceType = result.device.type;
 
       // モバイルまたはタブレットの場合にリダイレクトフラグを設定
-      if (
-        (deviceType === 'mobile' || deviceType === 'tablet') &&
-        !isUnsupportedDevicePath
-      ) {
+      if (deviceType === 'mobile' || deviceType === 'tablet') {
         setShouldRedirect(true);
       }
 
       setIsCheckingDevice(false);
     }
-  }, [isUnsupportedDevicePath]);
+  }, [pathname]);
 
   // リダイレクトが必要な場合は実行
   useEffect(() => {
-    if (shouldRedirect && !isUnsupportedDevicePath) {
-      router.push('/unsupported-device');
+    if (shouldRedirect && pathname !== '/') {
+      router.push('/');
     }
-  }, [shouldRedirect, isUnsupportedDevicePath, router]);
+  }, [shouldRedirect, pathname, router]);
 
   // デバイスチェック中は読み込み表示を返すことで、
   // サーバーサイドレンダリングとの整合性を保つ

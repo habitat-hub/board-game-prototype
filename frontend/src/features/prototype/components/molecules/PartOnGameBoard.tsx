@@ -117,13 +117,16 @@ export default function PartOnGameBoard({
   const { showDebugInfo } = useDebugMode();
   const { eventHandlers } = useGrabbingCursor();
 
+  // すべてのユーザーID（色決定の母集団）
+  const allUsers = useMemo(
+    () => userRoles.map(({ user }) => ({ userId: user.id })),
+    [userRoles]
+  );
+
   // 他ユーザーによるロック（自分が選択していないのに他人が選択中）
   const isLockedByOthers = selectedBy.length > 0 && !isActive;
-  // プレイルームでエリアパーツ、またはロック中は移動禁止
-  const isDraggable = !(
-    (gameBoardMode === GameBoardMode.PLAY && part.type === 'area') ||
-    isLockedByOthers
-  );
+  // ロック中は移動禁止
+  const isDraggable = !isLockedByOthers;
 
   // カーソル制御hooks
   const {
@@ -157,17 +160,17 @@ export default function PartOnGameBoard({
   // 自分の選択色（自分が選択中のときに枠・影色に使用）
   const selfSelectedColor = useMemo<string | null>(() => {
     if (!selfUser) return null;
-    return getUserColor(selfUser.userId, selfUser.username);
-  }, [selfUser]);
+    return getUserColor(selfUser.userId, allUsers);
+  }, [selfUser, allUsers]);
 
   // 選択装飾用の計算結果をメモ化
   const selectedByWithColors = useMemo(
     () =>
       selectedBy.map((u) => ({
         ...u,
-        color: getUserColor(u.userId, u.username),
+        color: getUserColor(u.userId, allUsers),
       })),
-    [selectedBy]
+    [selectedBy, allUsers]
   );
 
   // 手札の持ち主

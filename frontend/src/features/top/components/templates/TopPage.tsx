@@ -11,11 +11,13 @@ import React, { useEffect, useState } from 'react';
 import { GiWoodenCrate } from 'react-icons/gi';
 
 import FloatingActionButton from '@/features/top/components/atoms/FloatingActionButton';
+import ShareLinkButton from '@/features/top/components/atoms/ShareLinkButton';
 import CatchCopyCard from '@/features/top/components/molecules/CatchCopyCard';
 import MiniGameBoard from '@/features/top/components/organisms/MiniGameBoard';
 
 const TopPage: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isNonPC, setIsNonPC] = useState(false);
   const { scrollYProgress } = useScroll();
 
   // パララックス効果のための変換値
@@ -25,6 +27,18 @@ const TopPage: React.FC = () => {
   // ページ読み込み後のアニメーション開始のため
   useEffect(() => {
     setIsLoaded(true);
+  }, []);
+
+  // 非PCデバイス判定（モバイル/タブレット想定）
+  useEffect(() => {
+    if (typeof navigator === 'undefined') return;
+
+    const ua = navigator.userAgent || '';
+    const isMobileUA = /Android|iPhone|iPod|iPad|Mobile|Windows Phone/i.test(ua);
+    // iPadOS 13+ は Mac と判定されるケースがあるため補助条件
+    const isIPadOS13 = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+
+    setIsNonPC(isMobileUA || isIPadOS13);
   }, []);
 
   // カード要素のバリアント
@@ -119,6 +133,13 @@ const TopPage: React.FC = () => {
           transition={{ delay: 1.5, duration: 0.8 }}
         />
       </motion.div>
+
+      {isNonPC && (
+        <p className="text-center text-xs text-gray-600 mt-2">
+          現在、ゲームプレイはPCのみ対応しています。PCにリンクを送る
+          <ShareLinkButton />
+        </p>
+      )}
 
       {/* キャッチコピーセクション */}
       <motion.div
@@ -342,7 +363,7 @@ const TopPage: React.FC = () => {
                     initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 1, duration: 0.8 }}
-                    className="flex flex-col sm:flex-row gap-4 justify-center"
+                    className="hidden md:flex flex-col md:flex-row gap-4 justify-center"
                   >
                     <Link href="/login">
                       <motion.div
@@ -371,7 +392,7 @@ const TopPage: React.FC = () => {
                   initial={{ x: 50, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.5, duration: 0.8 }}
-                  className="w-full md:w-2/3"
+                  className="w-full md:w-2/3 hidden md:block"
                 >
                   <div className="rounded-3xl shadow-xl bg-amber-50 p-4 relative">
                     {/* インタラクティブなゲームボード */}
@@ -584,6 +605,7 @@ const TopPage: React.FC = () => {
               whileInView={{ y: 0, opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
+              className="hidden md:block"
             >
               <Link href="/login">
                 <motion.div

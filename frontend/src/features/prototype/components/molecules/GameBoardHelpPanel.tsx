@@ -85,7 +85,7 @@ export default function GameBoardHelpPanel({
                   onClick={() => setActiveTab('parts')}
                   className={`flex-1 rounded-md py-1 text-center text-xs font-medium transition-all ${
                     activeTab === 'parts'
-                      ? 'bg-kibako-tertiary text-kibako-primary'
+                      ? 'bg-kibako-secondary text-kibako-white'
                       : 'text-kibako-primary hover:bg-kibako-tertiary/20'
                   }`}
                   aria-label="パーツタブを開く"
@@ -96,7 +96,7 @@ export default function GameBoardHelpPanel({
                   onClick={() => setActiveTab('operations')}
                   className={`flex-1 rounded-md py-1 text-center text-xs font-medium transition-all ${
                     activeTab === 'operations'
-                      ? 'bg-kibako-tertiary text-kibako-primary'
+                      ? 'bg-kibako-secondary text-kibako-white'
                       : 'text-kibako-primary hover:bg-kibako-tertiary/20'
                   }`}
                   aria-label="操作方法タブを開く"
@@ -107,7 +107,7 @@ export default function GameBoardHelpPanel({
                   onClick={() => setActiveTab('shortcuts')}
                   className={`flex-1 rounded-md py-1 text-center text-xs font-medium transition-all ${
                     activeTab === 'shortcuts'
-                      ? 'bg-kibako-tertiary text-kibako-primary'
+                      ? 'bg-kibako-secondary text-kibako-white'
                       : 'text-kibako-primary hover:bg-kibako-tertiary/20'
                   }`}
                   aria-label="ショートカットタブを開く"

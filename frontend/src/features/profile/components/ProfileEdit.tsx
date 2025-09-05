@@ -6,7 +6,7 @@ import { FaCheck } from 'react-icons/fa6';
 import { IoArrowBack } from 'react-icons/io5';
 
 import { useUsers } from '@/api/hooks/useUsers';
-import Button from '@/components/atoms/Button';
+import KibakoButton from '@/components/atoms/KibakoButton';
 import { useUser } from '@/hooks/useUser';
 
 import ProfileEditSkeleton from './ProfileEditSkeleton';
@@ -20,6 +20,7 @@ const ProfileEdit: React.FC = () => {
   const [isPageLoading, setIsPageLoading] = useState(true); // ページ読み込み時のローディング状態
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   // ユーザー情報が変更されたときに入力フィールドを更新
   useEffect(() => {
@@ -46,22 +47,27 @@ const ProfileEdit: React.FC = () => {
   };
 
   // ユーザー名更新処理
-  const handleUpdateUsername = async (e: React.FormEvent) => {
+  const handleUpdateUsername = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
 
+    // 二重送信防止
+    if (isSubmitting) return;
+
+    // ユーザー名未入力の場合
     if (!username.trim()) {
       setError('ユーザー名を入力してください');
       setSuccess('');
       return;
     }
 
+    // ユーザー情報未取得の場合
     if (!user?.id) {
       setError('ユーザー情報が取得できませんでした');
       setSuccess('');
       return;
     }
 
-    // ユーザー名が変わっていない場合は処理を終了
+    // 変更なしの場合
     if (username.trim() === user?.username?.trim()) {
       setError('');
       setSuccess('');
@@ -69,9 +75,8 @@ const ProfileEdit: React.FC = () => {
     }
 
     try {
-      const updatedUser = await updateUser(user.id, {
-        username: username.trim(),
-      });
+      setIsSubmitting(true);
+      const updatedUser = await updateUser(user.id, { username: username.trim() });
 
       // ユーザーコンテキストを更新
       setUser(updatedUser);
@@ -83,9 +88,9 @@ const ProfileEdit: React.FC = () => {
       console.error('Error updating username:', error);
       setError('ユーザー名の更新に失敗しました');
       // エラー時は元のユーザー名に戻す
-      if (user?.username) {
-        setUsername(user.username);
-      }
+      if (user?.username) setUsername(user.username);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -95,8 +100,8 @@ const ProfileEdit: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto mt-16 relative">
-      <div className="flex items-center gap-4 mb-8">
+    <div className="max-w-4xl mx-auto py-16 relative px-4">
+      <div className="sticky top-20 z-sticky bg-transparent backdrop-blur-sm flex items-center gap-3 mb-8 py-4 rounded-lg">
         <button
           onClick={handleBack}
           className="p-2 hover:bg-kibako-tertiary rounded-full transition-colors"
@@ -104,11 +109,9 @@ const ProfileEdit: React.FC = () => {
         >
           <IoArrowBack className="h-5 w-5 text-kibako-primary hover:text-kibako-primary transition-colors" />
         </button>
-        <div className="flex-grow flex items-center justify-center">
-          <h1 className="text-4xl font-bold text-center text-kibako-primary">
-            プロフィール編集
-          </h1>
-        </div>
+        <h1 className="text-3xl text-kibako-primary font-bold mb-0">
+          プロフィール編集
+        </h1>
       </div>
 
       <div className="mb-6 p-6 overflow-visible rounded-xl bg-gradient-to-r from-kibako-white via-kibako-white to-kibako-tertiary shadow-lg border border-kibako-tertiary/30">
@@ -136,23 +139,28 @@ const ProfileEdit: React.FC = () => {
             />
           </div>
 
-          <div className="flex justify-end">
-            <Button type="submit" size="sm" className="flex items-center gap-1 !px-4 !py-2 !text-base">
+          <div className="flex flex-wrap justify-end items-center gap-2">
+            <KibakoButton
+              type="submit"
+              size="md"
+              className="flex items-center gap-2"
+              isLoading={isSubmitting}
+              disabled={isSubmitting}
+            >
               <FaCheck className="w-4 h-4" />
               更新する
-            </Button>
+            </KibakoButton>
+            {error && (
+              <p role="alert" aria-live="assertive" className="text-kibako-danger text-sm">
+                {error}
+              </p>
+            )}
+            {success && (
+              <p role="status" aria-live="polite" className="text-kibako-success text-sm">
+                {success}
+              </p>
+            )}
           </div>
-          {error && (
-            <div className="text-kibako-danger text-sm bg-kibako-danger/10 p-2 rounded-md border border-kibako-danger/10">
-              {error}
-            </div>
-          )}
-
-          {success && (
-            <div className="text-kibako-success text-sm bg-kibako-success/10 p-2 rounded-md border border-kibako-success/10">
-              {success}
-            </div>
-          )}
         </form>
       </div>
     </div>
