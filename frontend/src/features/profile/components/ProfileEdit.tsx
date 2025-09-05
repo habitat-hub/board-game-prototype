@@ -6,7 +6,7 @@ import { FaCheck } from 'react-icons/fa6';
 import { IoArrowBack } from 'react-icons/io5';
 
 import { useUsers } from '@/api/hooks/useUsers';
-import Button from '@/components/atoms/Button';
+import KibakoButton from '@/components/atoms/KibakoButton';
 import { useUser } from '@/hooks/useUser';
 
 import ProfileEditSkeleton from './ProfileEditSkeleton';
@@ -135,10 +135,10 @@ const ProfileEdit: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap justify-end items-center gap-2">
-            <Button type="submit" size="sm" className="flex items-center gap-1 !px-4 !py-2 !text-base">
+            <KibakoButton type="submit" size="sm" className="flex items-center gap-1 !px-4 !py-2 !text-base">
               <FaCheck className="w-4 h-4" />
               更新する
-            </Button>
+            </KibakoButton>
             {error && (
               <p role="alert" aria-live="assertive" className="text-kibako-danger text-sm">
                 {error}

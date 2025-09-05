@@ -3,22 +3,22 @@ import Link, { type LinkProps } from 'next/link';
 import { ReactNode } from 'react';
 import { twMerge } from 'tailwind-merge';
 
-import { buttonStyles } from './Button';
+import { buttonStyles } from './KibakoButton';
 
-interface LinkButtonProps
+interface KibakoLinkProps
   extends LinkProps,
     VariantProps<typeof buttonStyles> {
   children: ReactNode;
   className?: string;
 }
 
-export default function LinkButton({
+export default function KibakoLink({
   children,
   variant,
   size,
   className = '',
   ...props
-}: LinkButtonProps) {
+}: KibakoLinkProps) {
   const buttonClasses = twMerge(
     buttonStyles({ variant, size }),
     className,

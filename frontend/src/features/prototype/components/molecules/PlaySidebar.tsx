@@ -7,7 +7,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
 import { Part } from '@/api/types';
-import Button from '@/components/atoms/Button';
+import KibakoButton from '@/components/atoms/KibakoButton';
 import PartTypeIcon from '@/features/prototype/components/atoms/PartTypeIcon';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
@@ -193,7 +193,7 @@ export default function PlaySidebar({
               </div>
 
               <div className="flex items-center gap-2">
-                <Button
+                <KibakoButton
                   size="sm"
                   className="!px-3 !py-1 !text-xs"
                   onClick={() => {
@@ -209,8 +209,8 @@ export default function PlaySidebar({
                   }}
                 >
                   自分を設定
-                </Button>
-                <Button
+                </KibakoButton>
+                <KibakoButton
                   size="sm"
                   variant="outline"
                   className="!px-3 !py-1 !text-xs"
@@ -225,7 +225,7 @@ export default function PlaySidebar({
                   }}
                 >
                   クリア
-                </Button>
+                </KibakoButton>
               </div>
             </div>
           </div>
