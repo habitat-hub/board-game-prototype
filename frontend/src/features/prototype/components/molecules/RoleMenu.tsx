@@ -64,7 +64,7 @@ export default function RoleMenu({
               <ConnectedUserIcon
                 key={user.userId || `user-${idx}`}
                 user={user}
-                users={connectedUsers}
+                users={roleUsers}
                 index={idx}
               />
             ))}
@@ -79,8 +79,8 @@ export default function RoleMenu({
           <ul className="flex gap-1 flex-col">
             {roleUsers.map((user) => {
               const isActive = activeUserIds.has(user.userId);
-              const color = isActive
-                ? getUserColor(user.userId, connectedUsers)
+              const color: string | undefined = isActive
+                ? getUserColor(user.userId, roleUsers)
                 : undefined;
               return (
                 <li
