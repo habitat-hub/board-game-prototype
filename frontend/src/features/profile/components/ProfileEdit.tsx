@@ -20,6 +20,7 @@ const ProfileEdit: React.FC = () => {
   const [isPageLoading, setIsPageLoading] = useState(true); // ページ読み込み時のローディング状態
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   // ユーザー情報が変更されたときに入力フィールドを更新
   useEffect(() => {
@@ -46,22 +47,27 @@ const ProfileEdit: React.FC = () => {
   };
 
   // ユーザー名更新処理
-  const handleUpdateUsername = async (e: React.FormEvent) => {
+  const handleUpdateUsername = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
 
+    // 二重送信防止
+    if (isSubmitting) return;
+
+    // ユーザー名未入力の場合
     if (!username.trim()) {
       setError('ユーザー名を入力してください');
       setSuccess('');
       return;
     }
 
+    // ユーザー情報未取得の場合
     if (!user?.id) {
       setError('ユーザー情報が取得できませんでした');
       setSuccess('');
       return;
     }
 
-    // ユーザー名が変わっていない場合は処理を終了
+    // 変更なしの場合
     if (username.trim() === user?.username?.trim()) {
       setError('');
       setSuccess('');
@@ -69,9 +75,8 @@ const ProfileEdit: React.FC = () => {
     }
 
     try {
-      const updatedUser = await updateUser(user.id, {
-        username: username.trim(),
-      });
+      setIsSubmitting(true);
+      const updatedUser = await updateUser(user.id, { username: username.trim() });
 
       // ユーザーコンテキストを更新
       setUser(updatedUser);
@@ -83,9 +88,9 @@ const ProfileEdit: React.FC = () => {
       console.error('Error updating username:', error);
       setError('ユーザー名の更新に失敗しました');
       // エラー時は元のユーザー名に戻す
-      if (user?.username) {
-        setUsername(user.username);
-      }
+      if (user?.username) setUsername(user.username);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -135,7 +140,13 @@ const ProfileEdit: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap justify-end items-center gap-2">
-            <KibakoButton type="submit" size="sm" className="flex items-center gap-1 !px-4 !py-2 !text-base">
+            <KibakoButton
+              type="submit"
+              size="md"
+              className="flex items-center gap-2"
+              isLoading={isSubmitting}
+              disabled={isSubmitting}
+            >
               <FaCheck className="w-4 h-4" />
               更新する
             </KibakoButton>
