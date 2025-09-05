@@ -7,7 +7,6 @@ import { Part, PartProperty } from '@/api/types';
 import {
   COMMON_SOCKET_EVENT,
   PROTOTYPE_SOCKET_EVENT,
-  UNEXPECTED_DISCONNECT_REASONS,
 } from '@/features/prototype/constants/socket';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
 import { useSocket } from '@/features/prototype/contexts/SocketContext';
@@ -107,12 +106,8 @@ export const usePrototypeSocket = ({
     });
 
     // 切断時の処理
-    socket.on(COMMON_SOCKET_EVENT.DISCONNECT, (reason: string) => {
-      // 予期しない切断の場合は再接続を試行
-      if (UNEXPECTED_DISCONNECT_REASONS.has(reason)) {
-        console.error('Socket接続が予期せず切断されました:', { reason });
-        socket.connect();
-      }
+    socket.on(COMMON_SOCKET_EVENT.DISCONNECT, () => {
+      alert('接続が切断されました。ページを再読み込みしてください。');
     });
 
     // サーバーに接続した後、特定のプロトタイプに参加
@@ -254,6 +249,22 @@ export const usePrototypeSocket = ({
       events.forEach((event) => socket.off(event));
     };
   }, [prototypeId, userId, convertToMaps, selectMultipleParts, socket]);
+
+  // タブを再度アクティブにした際にソケットを再接続
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && !socket.connected) {
+        socket.connect();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [socket]);
 
   useEffect(() => {
     if (!socket) return;

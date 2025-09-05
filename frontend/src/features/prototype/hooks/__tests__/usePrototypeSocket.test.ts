@@ -78,17 +78,11 @@ describe('usePrototypeSocket', () => {
   };
 
   describe('エラーハンドリング', () => {
-    let consoleSpy: ReturnType<typeof vi.spyOn>;
-
-    beforeEach(() => {
-      consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    });
-
-    afterEach(() => {
-      consoleSpy.mockRestore();
-    });
-
     it('connect_errorが発生した際にログを出力して再接続が試行される', () => {
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
       renderHook(() => usePrototypeSocket(defaultProps));
 
       const connectErrorCallback = getEventCallback(
@@ -104,9 +98,13 @@ describe('usePrototypeSocket', () => {
         testError
       );
       expect(mockSocket.connect).toHaveBeenCalledTimes(1);
+
+      consoleSpy.mockRestore();
     });
 
-    it('disconnectイベントでログを出力して再接続が適切に処理される', () => {
+    it('disconnectイベントでアラートが表示される', () => {
+      const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+
       renderHook(() => usePrototypeSocket(defaultProps));
 
       const disconnectCallback = getEventCallback(
@@ -114,22 +112,14 @@ describe('usePrototypeSocket', () => {
         COMMON_SOCKET_EVENT.DISCONNECT
       );
 
-      // サーバー側の切断では再接続
-      disconnectCallback!('io server disconnect');
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Socket接続が予期せず切断されました:',
-        {
-          reason: 'io server disconnect',
-        }
-      );
-      expect(mockSocket.connect).toHaveBeenCalledTimes(1);
+      disconnectCallback!();
 
-      // クライアント側の切断では再接続しない
-      vi.clearAllMocks();
-      consoleSpy.mockClear();
-      disconnectCallback!('io client disconnect');
-      expect(consoleSpy).not.toHaveBeenCalled();
+      expect(alertSpy).toHaveBeenCalledWith(
+        '接続が切断されました。ページを再読み込みしてください。'
+      );
       expect(mockSocket.connect).not.toHaveBeenCalled();
+
+      alertSpy.mockRestore();
     });
   });
 
