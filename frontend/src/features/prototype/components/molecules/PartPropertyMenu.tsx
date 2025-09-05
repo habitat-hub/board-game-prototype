@@ -64,9 +64,12 @@ export default function PartPropertyMenu({
   );
   const multipleSelected = selectedPartIds.length > 1;
   const isPlayMode = gameBoardMode === GameBoardMode.PLAY;
+  // Show menu when there is a selection and either:
+  // - CREATE mode, or
+  // - PLAY mode with multiple selection (hide for single select in PLAY mode)
   const showMenu =
     selectedPartIds.length > 0 &&
-    (gameBoardMode === GameBoardMode.CREATE || gameBoardMode === GameBoardMode.PLAY);
+    (gameBoardMode === GameBoardMode.CREATE || (isPlayMode && multipleSelected));
 
   const {
     containerRef,
@@ -148,4 +151,3 @@ export default function PartPropertyMenu({
     </div>
   );
 }
-
