@@ -13,10 +13,15 @@ import { ConnectedUser } from '@/features/prototype/types';
 import { getUserColor } from '@/features/prototype/utils/userColor';
 
 interface RoleMenuProps {
+  // プロジェクト識別子
   projectId: string;
+  // 現在接続中のユーザー（左側のアイコン表示用）
   connectedUsers: ConnectedUser[];
+  // 役割メニューに表示する全ユーザー（接続中を先頭に並び替え済み）
   roleUsers: ConnectedUser[];
+  // ローディング中は非表示
   loading?: boolean;
+  // 右側の権限管理ページリンクを表示するか
   showRoleManagementButton?: boolean;
 }
 
