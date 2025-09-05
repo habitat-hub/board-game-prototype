@@ -25,13 +25,18 @@ interface RoleMenuProps {
   showRoleManagementButton?: boolean;
 }
 
+/**
+ * 権限メニュー。接続中ユーザーのアイコンと、ホバーで全ロールユーザー一覧を表示する。
+ * - 接続中のユーザーは色バッジ付き
+ * - 非接続ユーザーはテキストのみ
+ */
 export default function RoleMenu({
   projectId,
   connectedUsers,
   roleUsers,
   loading = false,
   showRoleManagementButton = true,
-}: RoleMenuProps) {
+}: RoleMenuProps): JSX.Element | null {
   // ローディング中や空の場合は何も表示しない
   if (loading || !connectedUsers || connectedUsers.length === 0) {
     return null;
