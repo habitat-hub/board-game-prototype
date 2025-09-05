@@ -255,6 +255,7 @@ export default function LeftSidebar({
                                     <ConnectedUserIcon
                                       key={user.userId}
                                       user={user}
+                                      users={connectedUsers}
                                       index={idx}
                                     />
                                   ))}

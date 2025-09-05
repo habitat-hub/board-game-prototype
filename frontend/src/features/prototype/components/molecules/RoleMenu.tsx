@@ -64,6 +64,7 @@ export default function RoleMenu({
               <ConnectedUserIcon
                 key={user.userId || `user-${idx}`}
                 user={user}
+                users={roleUsers}
                 index={idx}
               />
             ))}
@@ -78,14 +79,16 @@ export default function RoleMenu({
           <ul className="flex gap-1 flex-col">
             {roleUsers.map((user) => {
               const isActive = activeUserIds.has(user.userId);
-              if (isActive) {
-                const color = getUserColor(user.userId, user.username);
-                return (
-                  <li
-                    key={user.userId}
-                    className="truncate max-w-[180px] px-0 py-0 leading-6"
-                    title={user.username}
-                  >
+              const color: string | undefined = isActive
+                ? getUserColor(user.userId, roleUsers)
+                : undefined;
+              return (
+                <li
+                  key={user.userId}
+                  className="truncate max-w-[180px] px-0 py-0 leading-6"
+                  title={user.username}
+                >
+                  {isActive ? (
                     <span
                       className="inline-flex items-center gap-1 px-1 rounded border"
                       style={{ borderColor: color }}
@@ -96,16 +99,9 @@ export default function RoleMenu({
                       />
                       {user.username}
                     </span>
-                  </li>
-                );
-              }
-              return (
-                <li
-                  key={user.userId}
-                  className="truncate max-w-[180px] px-0 py-0 leading-6"
-                  title={user.username}
-                >
-                  {user.username}
+                  ) : (
+                    user.username
+                  )}
                 </li>
               );
             })}
