@@ -1,6 +1,11 @@
 type UserLike = { userId: string };
 
 const MIN_HUE_DIFF = 30;
+// 色相の全範囲（度）
+const HUE_DEGREES = 360;
+// デフォルトの彩度・輝度（%）
+const DEFAULT_SATURATION = 70;
+const DEFAULT_LIGHTNESS = 60;
 
 const hashToHue = (str: string): number =>
   Math.abs(
@@ -8,16 +13,22 @@ const hashToHue = (str: string): number =>
       const result = char.charCodeAt(0) + ((hash << 5) - hash);
       return result | 0;
     }, 0)
-  ) % 360;
+  ) % HUE_DEGREES;
+
+// 円環距離（0..360）での差分
+const hueDistance = (a: number, b: number): number => {
+  const d = Math.abs(a - b);
+  return Math.min(d, HUE_DEGREES - d);
+};
 
 const findHue = (
   hue: number,
   used: ReadonlyArray<number>,
   attempts = 0
 ): number =>
-  used.some((h) => Math.abs(h - hue) < MIN_HUE_DIFF) &&
-  attempts < 360 / MIN_HUE_DIFF
-    ? findHue((hue + MIN_HUE_DIFF) % 360, used, attempts + 1)
+  used.some((h) => hueDistance(h, hue) < MIN_HUE_DIFF) &&
+  attempts < HUE_DEGREES / MIN_HUE_DIFF
+    ? findHue((hue + MIN_HUE_DIFF) % HUE_DEGREES, used, attempts + 1)
     : hue;
 
 export const getUserColor = (
@@ -38,5 +49,5 @@ export const getUserColor = (
   });
 
   const hue = colorMap.get(userId) ?? hashToHue(userId);
-  return `hsl(${hue}, 70%, 60%)`;
+  return `hsl(${hue}, ${DEFAULT_SATURATION}%, ${DEFAULT_LIGHTNESS}%)`;
 };
