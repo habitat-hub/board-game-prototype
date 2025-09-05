@@ -10,6 +10,7 @@ import { RiLoaderLine } from 'react-icons/ri';
 import { useProject } from '@/api/hooks/useProject';
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Prototype, Project } from '@/api/types';
+import Button from '@/components/atoms/Button';
 import Loading from '@/components/organisms/Loading';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
 import { EmptyProjectState } from '@/features/prototype/components/molecules/EmptyProjectState';
@@ -282,8 +283,8 @@ const ProjectList: React.FC = () => {
             プロジェクト一覧
           </h1>
 
-          {/* リロード（プロジェクト一覧を最新化）ボタン - タイトルの左に移動（案B） */}
-          <button
+          {/* リロード（プロジェクト一覧を最新化）ボタン */}
+          <Button
             onClick={() => {
               // クリック時に必ず1周アニメーションさせる（取得中は連続回転に切り替え）
               setIsReloadAnimating(true);
@@ -292,8 +293,9 @@ const ProjectList: React.FC = () => {
             disabled={!!isFetching}
             aria-label="プロジェクト一覧を最新化"
             title="プロジェクト一覧を最新化"
-            className={`inline-flex items-center justify-center w-10 h-10 bg-kibako-white text-kibako-primary rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-kibako-primary transition-all duration-300 transform z-dropdown
-              ${isFetching ? 'opacity-80 cursor-not-allowed' : 'hover:scale-105'}`}
+            className={`w-10 h-10 p-0 z-dropdown ${
+              isFetching ? '' : ''
+            }`}
           >
             <IoReload
               // isFetching の間は連続回転。それ以外はクリック時に1周だけ回転。
@@ -312,16 +314,15 @@ const ProjectList: React.FC = () => {
                 if (!isFetching) setIsReloadAnimating(false);
               }}
             />
-          </button>
+          </Button>
         </div>
 
         <div className="ml-0 md:ml-4 flex items-center gap-2">
           {/** 新規作成ボタン（右側に残す） */}
-          <button
+          <Button
             onClick={handleCreatePrototype}
             disabled={isCreating}
-            className={`inline-flex items-center gap-2 h-12 px-4 bg-kibako-white text-kibako-primary font-bold rounded-xl shadow-lg transition-all duration-300 transform z-dropdown
-          ${isCreating ? 'opacity-80 cursor-not-allowed' : 'hover:shadow-xl hover:scale-105'}`}
+            className="gap-2 h-12 px-4 shadow-lg hover:shadow-xl z-dropdown"
             title={isCreating ? '作成中...' : '新しいプロジェクトを作成'}
           >
             {isCreating ? (
@@ -335,7 +336,7 @@ const ProjectList: React.FC = () => {
                 <span className="text-sm">新規作成</span>
               </>
             )}
-          </button>
+          </Button>
         </div>
       </div>
 

@@ -3,20 +3,21 @@ import { ButtonHTMLAttributes, ReactNode } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 export const buttonStyles = cva(
-  'inline-block rounded-full font-semibold transition-colors',
+  'inline-flex items-center justify-center text-sm font-bold rounded-xl shadow-sm transition-all duration-300 transform focus:outline-none focus:ring-2 focus:ring-kibako-primary disabled:opacity-80 disabled:cursor-not-allowed',
   {
     variants: {
       variant: {
         primary:
-          'bg-kibako-primary text-kibako-white hover:bg-kibako-primary/80',
-        accent: 'bg-kibako-accent text-kibako-white hover:bg-kibako-accent/80',
+          'bg-kibako-white text-kibako-primary hover:shadow-lg hover:scale-105',
+        accent:
+          'bg-kibako-accent text-kibako-white hover:shadow-lg hover:scale-105 hover:bg-kibako-accent/90',
         outline:
-          'bg-transparent text-kibako-primary/70 hover:text-kibako-primary border border-kibako-primary/30 hover:border-kibako-primary/50',
+          'bg-transparent text-kibako-primary border border-kibako-primary/30 hover:border-kibako-primary/50 hover:shadow-lg hover:scale-105',
       },
       size: {
-        sm: 'px-6 py-3 text-base',
-        md: 'px-8 py-4 text-lg',
-        lg: 'px-10 py-5 text-xl',
+        sm: 'h-8 px-3',
+        md: 'h-10 px-4',
+        lg: 'h-12 px-6',
       },
     },
     defaultVariants: {

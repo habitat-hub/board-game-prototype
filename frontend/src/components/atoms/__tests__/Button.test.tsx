@@ -7,8 +7,8 @@ describe('Button', () => {
     render(<Button>Click me</Button>);
     const button = screen.getByRole('button');
     expect(button.tagName).toBe('BUTTON');
-    expect(button.className).toContain('rounded-full');
-    expect(button.className).toContain('bg-kibako-primary');
+    expect(button.className).toContain('rounded-xl');
+    expect(button.className).toContain('bg-kibako-white');
   });
 
   it('shows loading state', () => {
