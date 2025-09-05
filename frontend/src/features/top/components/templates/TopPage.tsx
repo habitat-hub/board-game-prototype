@@ -17,6 +17,7 @@ import MiniGameBoard from '@/features/top/components/organisms/MiniGameBoard';
 
 const TopPage: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isNonPC, setIsNonPC] = useState(false);
   const { scrollYProgress } = useScroll();
 
   // パララックス効果のための変換値
@@ -26,6 +27,18 @@ const TopPage: React.FC = () => {
   // ページ読み込み後のアニメーション開始のため
   useEffect(() => {
     setIsLoaded(true);
+  }, []);
+
+  // 非PCデバイス判定（モバイル/タブレット想定）
+  useEffect(() => {
+    if (typeof navigator === 'undefined') return;
+
+    const ua = navigator.userAgent || '';
+    const isMobileUA = /Android|iPhone|iPod|iPad|Mobile|Windows Phone/i.test(ua);
+    // iPadOS 13+ は Mac と判定されるケースがあるため補助条件
+    const isIPadOS13 = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+
+    setIsNonPC(isMobileUA || isIPadOS13);
   }, []);
 
   // カード要素のバリアント
@@ -121,10 +134,12 @@ const TopPage: React.FC = () => {
         />
       </motion.div>
 
-      <p className="text-center text-xs text-gray-600 mt-2">
-        現在、ゲームプレイはPCのみ対応しています。
-        <ShareLinkButton />
-      </p>
+      {isNonPC && (
+        <p className="text-center text-xs text-gray-600 mt-2">
+          現在、ゲームプレイはPCのみ対応しています。PCにリンクを送る
+          <ShareLinkButton />
+        </p>
+      )}
 
       {/* キャッチコピーセクション */}
       <motion.div
