@@ -65,13 +65,18 @@ export default function PartPropertyMenuSingle({
     }
   }, [currentProperty]);
 
-  const handleUpdateProperty = (property: Partial<PartPropertyUpdate>) => {
+  /** プロパティを部分更新する（差分のみ送信） */
+  const handleUpdateProperty = (property: Partial<PartPropertyUpdate>): void => {
     if (!selectedPart || !currentProperty) return;
-    const updatedProperty = { ...currentProperty, ...property };
+    const updatedProperty: PartPropertyWithImage = (
+      { ...currentProperty, ...property } as PartPropertyWithImage
+    );
     if (JSON.stringify(currentProperty) === JSON.stringify(updatedProperty)) return;
+    // API は imageId のみ受け付けるため image は除外
+    const { image: _omit, ...updateProperty } = updatedProperty;
     dispatch({
       type: 'UPDATE_PART',
-      payload: { partId: selectedPart.id, updateProperties: [updatedProperty] },
+      payload: { partId: selectedPart.id, updateProperties: [updateProperty] },
     });
   };
 
@@ -314,4 +319,3 @@ export default function PartPropertyMenuSingle({
     </div>
   );
 }
-
