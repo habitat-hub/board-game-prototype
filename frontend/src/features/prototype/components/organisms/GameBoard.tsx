@@ -94,6 +94,16 @@ export default function GameBoard({
   const { cardVisibilityMap } = useHandVisibility(parts, gameBoardMode);
   // ロール管理情報を取得
   const { userRoles } = useRoleManagement(projectId);
+  const roleUsers = useMemo(() => {
+    const allUsers = userRoles.map((ur) => ({
+      userId: ur.userId,
+      username: ur.user.username,
+    }));
+    const connectedSet = new Set(connectedUsers.map((u) => u.userId));
+    const active = allUsers.filter((u) => connectedSet.has(u.userId));
+    const inactive = allUsers.filter((u) => !connectedSet.has(u.userId));
+    return [...active, ...inactive];
+  }, [userRoles, connectedUsers]);
 
   // 自分のユーザー情報（色付けに使用）
   const selfUser = useMemo(() => {
@@ -530,6 +540,7 @@ export default function GameBoard({
         <RoleMenu
           projectId={projectId}
           connectedUsers={connectedUsers}
+          roleUsers={roleUsers}
           loading={false}
           showRoleManagementButton={gameBoardMode === GameBoardMode.CREATE}
         />

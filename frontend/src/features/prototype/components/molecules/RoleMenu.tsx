@@ -15,6 +15,7 @@ import { getUserColor } from '@/features/prototype/utils/userColor';
 interface RoleMenuProps {
   projectId: string;
   connectedUsers: ConnectedUser[];
+  roleUsers: ConnectedUser[];
   loading?: boolean;
   showRoleManagementButton?: boolean;
 }
@@ -22,6 +23,7 @@ interface RoleMenuProps {
 export default function RoleMenu({
   projectId,
   connectedUsers,
+  roleUsers,
   loading = false,
   showRoleManagementButton = true,
 }: RoleMenuProps) {
@@ -33,6 +35,7 @@ export default function RoleMenu({
   // ユーザー名リスト（最大3名まで表示、残りは+Nで省略）
   const displayUsers = connectedUsers.slice(0, MAX_DISPLAY_USERS);
   const moreCount = connectedUsers.length - MAX_DISPLAY_USERS;
+  const activeUserIds = new Set(connectedUsers.map((u) => u.userId));
 
   return (
     <div
@@ -62,24 +65,36 @@ export default function RoleMenu({
         </button>
         <div className="absolute right-0 mt-2 max-w-xs bg-kibako-white border border-kibako-secondary rounded shadow z-tooltip px-3 py-2 text-xs text-kibako-primary opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200">
           <ul>
-            {connectedUsers.map((user) => {
-              const color = getUserColor(user.userId, user.username);
+            {roleUsers.map((user) => {
+              const isActive = activeUserIds.has(user.userId);
+              if (isActive) {
+                const color = getUserColor(user.userId, user.username);
+                return (
+                  <li
+                    key={user.userId}
+                    className="truncate max-w-[180px] px-0 py-0 leading-6"
+                    title={user.username}
+                  >
+                    <span
+                      className="inline-flex items-center gap-1 px-1 rounded border"
+                      style={{ borderColor: color }}
+                    >
+                      <span
+                        className="inline-block w-2 h-2"
+                        style={{ backgroundColor: color }}
+                      />
+                      {user.username}
+                    </span>
+                  </li>
+                );
+              }
               return (
                 <li
                   key={user.userId}
                   className="truncate max-w-[180px] px-0 py-0 leading-6"
                   title={user.username}
                 >
-                  <span
-                    className="inline-flex items-center gap-1 px-1 rounded border"
-                    style={{ borderColor: color }}
-                  >
-                    <span
-                      className="inline-block w-2 h-2"
-                      style={{ backgroundColor: color }}
-                    />
-                    {user.username}
-                  </span>
+                  {user.username}
                 </li>
               );
             })}
