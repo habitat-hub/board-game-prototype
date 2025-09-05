@@ -117,6 +117,7 @@ export default function PartOnGameBoard({
   const { showDebugInfo } = useDebugMode();
   const { eventHandlers } = useGrabbingCursor();
 
+  // すべてのユーザーID（色決定の母集団）
   const allUsers = useMemo(
     () => userRoles.map(({ user }) => ({ userId: user.id })),
     [userRoles]
@@ -222,12 +223,14 @@ export default function PartOnGameBoard({
       return;
 
     // 手札の持ち主変化を最優先に扱う（他プレイヤー手札は裏になる）
-    const baseTarget = optimisticFrontSide ?? part.frontSide ?? 'front';
-    const target = isHandOwnerChanged
-      ? isOtherPlayerHandCard
-        ? 'back'
-        : baseTarget
-      : baseTarget;
+    let target = optimisticFrontSide ?? part.frontSide ?? 'front';
+    if (isHandOwnerChanged) {
+      if (isOtherPlayerHandCard) {
+        target = 'back';
+      } else {
+        target = optimisticFrontSide ?? part.frontSide ?? 'front';
+      }
+    }
 
     flipTargetRef.current = target;
     sideSwitchedRef.current = false;
@@ -344,4 +347,334 @@ export default function PartOnGameBoard({
   const [image] = useImage(validImageURL || '');
 
   // ロードされた画像の状態を追跡
-  // ... rest of file unchanged
+  const imageLoaded = !!image && validImageURL;
+
+  const handleDoubleClick = () => {
+    const isInteractivePart = isCard || isDeck;
+    if (!isInteractivePart) return;
+
+    if (isDeck) {
+      if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);
+      if (shuffleHideTimeoutRef.current)
+        clearTimeout(shuffleHideTimeoutRef.current);
+
+      setShuffleMessage('シャッフルしています...');
+      dispatch({ type: 'SHUFFLE_DECK', payload: { deckId: part.id } });
+
+      shuffleTimeoutRef.current = setTimeout(() => {
+        setShuffleMessage('シャッフルしました！');
+        shuffleHideTimeoutRef.current = setTimeout(() => {
+          setShuffleMessage(null);
+        }, 1000);
+      }, 1000);
+      return;
+    }
+
+    if (isCard && !shouldAlwaysDisplayBackSide) {
+      // 楽観的に先に表示を切り替え、アニメーションも開始する
+      const newSide = part.frontSide === 'front' ? 'back' : 'front';
+      setOptimisticFrontSide(newSide);
+      setIsReversing(true);
+      // サーバーへ更新を投げる（reverseCard は外部更新も行う）
+      reverseCard(newSide, true);
+      return;
+    }
+  };
+
+  // 中央を軸にして反転させるための設定
+  const offsetX = part.width / 2;
+
+  const handleDragStart = (e: Konva.KonvaEventObject<DragEvent>) => {
+    // ドラッグ開始時にツールチップを非表示
+    hideTooltip();
+
+    // ドラッグ中のカーソルを設定
+    const stage = e.target.getStage();
+    // ロック中や非ドラッグ対象はここで停止
+    if (!isDraggable) {
+      e.cancelBubble = true;
+      // 既にドラッグが開始された場合は停止（Konva 型で安全に扱う）
+      const node = e.target as Konva.Node;
+      if (node.isDragging()) {
+        node.stopDrag();
+      }
+      return;
+    }
+    if (isDraggable) {
+      setGrabbingCursor(stage);
+    }
+
+    onDragStart(e);
+  };
+
+  // コンテキストメニュー用ハンドラー
+  const handleContextMenu = (e: Konva.KonvaEventObject<PointerEvent>) => {
+    e.evt.preventDefault();
+    hideTooltip();
+    onContextMenu(e, part.id);
+  };
+
+  /**
+   * ドラッグ終了時の処理
+   * @param e - Konvaのドラッグイベントオブジェクト
+   */
+  const handleDragEnd = (e: Konva.KonvaEventObject<DragEvent>) => {
+    onDragEnd(e, part.id);
+    // ドラッグ終了後のカーソルを設定
+    const stage = e.target.getStage();
+    setDraggableCursor(stage);
+  };
+
+  /**
+   * マウスがパーツに乗った時の処理（ツールチップ開始）
+   */
+  const handleMouseEnter = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent>) => {
+      // ツールチップ表示開始
+      tooltipMouseEnter(e);
+
+      // カーソルを動的に変更
+      const stage = e.target.getStage();
+      setDraggableCursor(stage);
+    },
+    [tooltipMouseEnter, setDraggableCursor]
+  );
+
+  /**
+   * マウスがパーツから離れた時の処理（ツールチップ非表示）
+   */
+  const handleMouseLeave = useCallback(() => {
+    // ツールチップ非表示
+    tooltipMouseLeave();
+
+    // カーソルをデフォルトに戻す
+    const stage = groupRef.current?.getStage();
+    setDefaultCursor(stage || null);
+
+    // useGrabbingCursor のイベントハンドラーを呼び出し
+    eventHandlers.onMouseLeave();
+  }, [tooltipMouseLeave, setDefaultCursor, eventHandlers]);
+
+  return (
+    <Group
+      ref={groupRef}
+      name={`part-${part.id}`}
+      x={part.position.x + offsetX}
+      y={part.position.y}
+      width={part.width}
+      height={part.height}
+      offsetX={offsetX}
+      draggable={isDraggable}
+      scaleX={scaleX}
+      cursor={getCursorType()}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onMouseDown={eventHandlers.onMouseDown}
+      onMouseUp={eventHandlers.onMouseUp}
+      onDragStart={handleDragStart}
+      onDragMove={(e) => onDragMove(e, part.id)}
+      onDragEnd={handleDragEnd}
+      onClick={onClick}
+      onDblClick={handleDoubleClick}
+      onContextMenu={handleContextMenu}
+    >
+      {/* パーツの背景 */}
+      <Rect
+        width={part.width}
+        height={part.height}
+        fill={imageLoaded ? 'white' : targetProperty?.color || 'white'}
+        stroke={
+          isActive && selfSelectedColor
+            ? selfSelectedColor
+            : DEFAULT_STROKE_COLOR
+        }
+        strokeWidth={getStrokeWidth(part.type)}
+        cornerRadius={getCornerRadius(part.type)}
+        dash={getDashPattern(part.type)}
+        shadowColor={
+          isActive && selfSelectedColor
+            ? selfSelectedColor
+            : getShadowColor(part.type, isActive)
+        }
+        shadowBlur={
+          isActive && selfSelectedColor
+            ? getShadowBlur(part.type, true)
+            : getShadowBlur(part.type, isActive)
+        }
+        shadowOpacity={
+          isActive && selfSelectedColor ? SELECTED_SHADOW_OPACITY : 1
+        }
+        shadowOffsetX={getShadowOffsetX(part.type, isActive)}
+        shadowOffsetY={getShadowOffsetY(part.type, isActive)}
+        perfectDrawEnabled={false}
+        hitStrokeWidth={0}
+      />
+
+      {/* 画像があれば表示 */}
+      {imageLoaded && (
+        <Image
+          image={image}
+          width={part.width}
+          height={part.height}
+          cornerRadius={getImageCornerRadius(part.type)}
+          alt={targetProperty?.name || 'Game part'}
+          perfectDrawEnabled={false}
+          hitStrokeWidth={0}
+          listening={false}
+        />
+      )}
+
+      {/* パーツの名前 */}
+      <Text
+        text={targetProperty?.name || ''}
+        fontSize={part.type === 'token' ? 12 : 14}
+        fontStyle="bold"
+        fill={targetProperty?.textColor || 'black'}
+        width={part.width}
+        align="center"
+        padding={10}
+        y={5}
+        perfectDrawEnabled={false}
+        hitStrokeWidth={0}
+        listening={false}
+      />
+
+      {/* 手札の持ち主表示（プレイルームのみ） */}
+      {handOwnerName && (
+        <Text
+          text={`持ち主: ${handOwnerName}`}
+          fontSize={12}
+          fill={targetProperty?.textColor || 'black'}
+          width={part.width - TEXT_LAYOUT.HORIZONTAL_MARGIN * 2}
+          align="center"
+          y={part.height / 2 - TEXT_LAYOUT.LINE_GAP}
+          x={TEXT_LAYOUT.HORIZONTAL_MARGIN}
+          wrap="word"
+          ellipsis={true}
+          perfectDrawEnabled={false}
+          hitStrokeWidth={0}
+          listening={false}
+        />
+      )}
+
+      {/* 説明文 */}
+      {targetProperty?.description && (
+        <Text
+          text={targetProperty.description}
+          fontSize={12}
+          fill={targetProperty.textColor || '#666'}
+          width={part.width - TEXT_LAYOUT.HORIZONTAL_MARGIN * 2}
+          align="center"
+          y={part.height / 2}
+          x={TEXT_LAYOUT.HORIZONTAL_MARGIN}
+          wrap="word"
+          ellipsis={true}
+          perfectDrawEnabled={false}
+          hitStrokeWidth={0}
+          listening={false}
+        />
+      )}
+
+      {/* タイプを示す小さなアイコン */}
+      <Group x={part.width - 30} y={part.height - 25} listening={false}>
+        {isDeck && <ShuffleIcon size={20} color="#666" />}
+        {isCard && <FlipIcon size={20} color="#666" />}
+      </Group>
+
+      {isDeck && shuffleMessage && (
+        <Text
+          x={0}
+          y={-20}
+          width={part.width}
+          text={shuffleMessage}
+          fontSize={14}
+          fill="#333"
+          align="center"
+          listening={false}
+          perfectDrawEnabled={false}
+          hitStrokeWidth={0}
+        />
+      )}
+
+      {selectedByWithColors.map((user, index) => {
+        const offset = (index + 1) * SELECT_OUTLINE_STEP_PX;
+        return (
+          <Rect
+            key={user.userId}
+            x={-offset}
+            y={-offset}
+            width={part.width + offset * 2}
+            height={part.height + offset * 2}
+            stroke={user.color}
+            strokeWidth={SELECT_OUTLINE_STROKE_WIDTH}
+            cornerRadius={getCornerRadius(part.type)}
+            listening={false}
+            hitStrokeWidth={0}
+          />
+        );
+      })}
+
+      {/* 選択中ユーザー名をパーツ右側に表示 */}
+      {selectedByWithColors.map((user, index) => {
+        const itemHeight = LABEL_ITEM_HEIGHT; // ラベル高さ
+        return (
+          <Group
+            key={`label-${user.userId}`}
+            x={part.width + LABEL_X_OFFSET}
+            y={index * itemHeight}
+            listening={false}
+          >
+            {/* 色付きのマーカー（拡大） */}
+            <Rect
+              x={0}
+              y={LABEL_MARKER_Y}
+              width={LABEL_MARKER_SIZE}
+              height={LABEL_MARKER_SIZE}
+              cornerRadius={LABEL_MARKER_RADIUS}
+              fill={user.color}
+              listening={false}
+              hitStrokeWidth={0}
+            />
+            <Text
+              x={LABEL_TEXT_X}
+              y={0}
+              text={user.username}
+              fontSize={LABEL_FONT_SIZE}
+              fill={user.color}
+              listening={false}
+              perfectDrawEnabled={false}
+              hitStrokeWidth={0}
+            />
+          </Group>
+        );
+      })}
+
+      {/* デバッグ情報: ID と順序（order） - showDebugInfoがtrueの場合のみ表示 */}
+      {showDebugInfo && (
+        <Group x={5} y={5} listening={false}>
+          <Rect
+            width={90}
+            height={20}
+            fill="rgba(200, 200, 200, 0.8)"
+            cornerRadius={4}
+            perfectDrawEnabled={false}
+            hitStrokeWidth={0}
+            listening={false}
+          />
+          <Text
+            text={`ID:${part.id}\nO:${typeof part.order === 'number' ? part.order : 'N/A'}`}
+            fontSize={7}
+            fill="black"
+            width={85}
+            align="left"
+            x={5}
+            y={3}
+            perfectDrawEnabled={false}
+            hitStrokeWidth={0}
+            listening={false}
+          />
+        </Group>
+      )}
+    </Group>
+  );
+}
