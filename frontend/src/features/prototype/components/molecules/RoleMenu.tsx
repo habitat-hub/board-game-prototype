@@ -4,8 +4,8 @@
 
 'use client';
 
-import type { ReactElement } from 'react';
 import Link from 'next/link';
+import type { ReactElement } from 'react';
 import { FaUsers } from 'react-icons/fa';
 
 import ConnectedUserIcon from '@/features/prototype/components/atoms/ConnectedUserIcon';
