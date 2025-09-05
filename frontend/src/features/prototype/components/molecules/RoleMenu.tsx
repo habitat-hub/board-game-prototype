@@ -4,6 +4,7 @@
 
 'use client';
 
+import type { ReactElement } from 'react';
 import Link from 'next/link';
 import { FaUsers } from 'react-icons/fa';
 
@@ -36,7 +37,7 @@ export default function RoleMenu({
   roleUsers,
   loading = false,
   showRoleManagementButton = true,
-}: RoleMenuProps): JSX.Element | null {
+}: RoleMenuProps): ReactElement | null {
   // ローディング中や空の場合は何も表示しない
   if (loading || !connectedUsers || connectedUsers.length === 0) {
     return null;
