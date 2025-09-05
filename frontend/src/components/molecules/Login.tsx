@@ -7,7 +7,7 @@ import { GiWoodenCrate, GiCardAceSpades, GiPuzzle } from 'react-icons/gi';
 
 import { getApiUrl } from '@/api/client';
 import { useAuth } from '@/api/hooks/useAuth';
-import LinkButton from '@/components/atoms/LinkButton';
+import KibakoLink from '@/components/atoms/KibakoLink';
 import Loading from '@/components/organisms/Loading';
 
 function Login() {
@@ -57,7 +57,7 @@ function Login() {
 
         {/* 認証ボタン */}
         <div className="flex flex-col gap-4 items-center mt-12 sm:mt-16">
-          <LinkButton
+          <KibakoLink
             variant="accent"
             className="!px-6 !py-4 !text-lg"
             href={getApiUrl('/auth/google')}
@@ -66,7 +66,7 @@ function Login() {
               <FaGoogle className="text-2xl" />
               <span>Googleで続ける</span>
             </div>
-          </LinkButton>
+          </KibakoLink>
         </div>
 
         {/* サブタイトル */}
