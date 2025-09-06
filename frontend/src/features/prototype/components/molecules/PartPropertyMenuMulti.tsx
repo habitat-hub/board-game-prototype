@@ -47,36 +47,62 @@ export default function PartPropertyMenuMulti({ selectedParts, hidden }: PartPro
   const handleAlignBottom = useCallback(() => alignParts('bottom'), [alignParts]);
   const handleAlignVCenter = useCallback(() => alignParts('vCenter'), [alignParts]);
 
-  const handleShuffleCards = useCallback(() => {
-    if (cardParts.length < 2) return;
-    const ids = cardParts.map((p) => p.id);
-    selectMultipleParts(ids);
-    // Visual feedback like deck: show overlay texts on the cards
-    runShuffleEffect(ids);
-    const info = calculateAlignmentInfo(cardParts);
-    if (!info) return;
+  /**
+   * カードのみを選択し、裏面へ反転・中央へ寄せ・順序を公平にシャッフルする
+   * - フィッシャー–イェーツで無偏な順列を生成
+   * - 可視的な重なり順の変化を保証するため、ユニークな order を再採番
+   */
+  const handleShuffleCards = useCallback((): void => {
+    try {
+      if (cardParts.length < 2) return;
 
-    // Shuffle target parts themselves (not only their order values)
-    const shuffledParts = [...cardParts].sort(() => Math.random() - 0.5);
+      const ids = cardParts.map((p) => p.id);
+      selectMultipleParts(ids);
+      // Visual feedback like deck: show overlay texts on the cards
+      runShuffleEffect(ids);
 
-    // Ensure unique z-orders to actually change draw order even if current orders are duplicated.
-    // Keep them roughly around current range by starting from the minimum order and adding a tiny step.
-    const minOrder = Math.min(...cardParts.map((p) => p.order));
-    const step = 0.001; // small step to avoid big jumps vs other parts
+      const info = calculateAlignmentInfo(cardParts);
+      if (!info) return;
 
-    const updates = shuffledParts.map((p, index) => ({
-      partId: p.id,
-      updatePart: {
-        position: {
-          ...p.position,
-          x: Math.round(info.centerX - p.width / 2),
-          y: Math.round(info.centerY - p.height / 2),
+      // Fisher–Yates shuffle for unbiased permutation
+      const partsToShuffle: Part[] = [...cardParts];
+      for (let i = partsToShuffle.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [partsToShuffle[i], partsToShuffle[j]] = [
+          partsToShuffle[j],
+          partsToShuffle[i],
+        ];
+      }
+
+      // Ensure unique z-orders to actually change draw order even if current orders are duplicated.
+      const minOrder = Math.min(...cardParts.map((p) => p.order));
+      const step = 0.001; // small step to avoid big jumps vs other parts
+
+      const updates = partsToShuffle.map((p, index) => ({
+        partId: p.id,
+        updatePart: {
+          position: {
+            ...p.position,
+            x: Math.round(info.centerX - p.width / 2),
+            y: Math.round(info.centerY - p.height / 2),
+          },
+          frontSide: 'back' as const,
+          order: minOrder + index * step,
         },
-        frontSide: 'back' as const,
-        order: minOrder + index * step,
-      },
-    }));
-    dispatch({ type: 'UPDATE_PARTS', payload: { updates } });
+      }));
+
+      if (updates.length !== cardParts.length) {
+        console.error('Shuffle length mismatch', {
+          expected: cardParts.length,
+          actual: updates.length,
+        });
+        return;
+      }
+
+      dispatch({ type: 'UPDATE_PARTS', payload: { updates } });
+    } catch (e) {
+      console.error('カードのシャッフル中にエラーが発生しました', e);
+    }
   }, [cardParts, selectMultipleParts, dispatch, runShuffleEffect]);
 
   return (
