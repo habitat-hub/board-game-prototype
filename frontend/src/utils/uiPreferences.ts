@@ -1,8 +1,21 @@
 const UI_PREFERENCES_KEY = 'uiPreferences';
 
+export type ProjectListView = 'card' | 'table';
+
 export type UIPreferences = {
-  projectListView?: 'card' | 'table';
+  projectListView?: ProjectListView;
   // add more preferences here
+};
+
+// Runtime validator for known preference keys/values
+const isValidPreferenceValue = <K extends keyof UIPreferences>(
+  key: K,
+  value: UIPreferences[K]
+): boolean => {
+  if (key === 'projectListView') {
+    return value === 'card' || value === 'table';
+  }
+  return true;
 };
 
 export const loadUIPreferences = (): UIPreferences => {
@@ -28,13 +41,16 @@ export const getUIPreference = <K extends keyof UIPreferences>(
   key: K
 ): UIPreferences[K] | undefined => {
   const prefs = loadUIPreferences();
-  return prefs[key];
+  const value = prefs[key];
+  return isValidPreferenceValue(key, value) ? value : undefined;
 };
 
 export const setUIPreference = <K extends keyof UIPreferences>(
   key: K,
   value: UIPreferences[K]
 ): void => {
+  // Guard against invalid/corrupted values before persisting
+  if (!isValidPreferenceValue(key, value)) return;
   const prefs = loadUIPreferences();
   prefs[key] = value;
   saveUIPreferences(prefs);

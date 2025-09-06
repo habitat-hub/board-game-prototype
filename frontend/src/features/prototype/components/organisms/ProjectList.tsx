@@ -19,7 +19,11 @@ import { ProjectCardList } from '@/features/prototype/components/molecules/Proje
 import { ProjectTable } from '@/features/prototype/components/molecules/ProjectTable';
 import useInlineEdit from '@/hooks/useInlineEdit';
 import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
-import { getUIPreference, setUIPreference } from '@/utils/uiPreferences';
+import {
+  getUIPreference,
+  setUIPreference,
+  ProjectListView,
+} from '@/utils/uiPreferences';
 
 /**
  * ProjectListコンポーネントで使用される各種Stateの説明:
@@ -61,10 +65,11 @@ const ProjectList: React.FC = () => {
   // リロードアイコンのワンショットアニメーション制御
   const [isReloadAnimating, setIsReloadAnimating] = useState<boolean>(false);
 
-  // 表示モードとソート設定
-  const [viewMode, setViewMode] = useState<'card' | 'table'>(
-    () => getUIPreference('projectListView') ?? 'card'
-  );
+  // 表示モードとソート設定（永続値を安全に復元）
+  const [viewMode, setViewMode] = useState<ProjectListView>(() => {
+    const v = getUIPreference('projectListView');
+    return v === 'card' || v === 'table' ? v : 'card';
+  });
   const [sortKey, setSortKey] = useState<'name' | 'createdAt'>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
