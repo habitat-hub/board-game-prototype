@@ -48,7 +48,7 @@ export default function PartPropertyMenuMulti({ selectedParts, hidden }: PartPro
           text=""
           ariaLabel="水平: 左揃え"
           title="左揃え（水平）"
-          icon={<LuAlignStartHorizontal className="h-5 w-5" />}
+          icon={<LuAlignStartVertical className="h-5 w-5" />}
           onClick={handleAlignLeft}
           disabled={alignInfo?.isLeft}
         />
@@ -56,7 +56,7 @@ export default function PartPropertyMenuMulti({ selectedParts, hidden }: PartPro
           text=""
           ariaLabel="水平: 中央揃え"
           title="中央揃え（水平）"
-          icon={<LuAlignCenterHorizontal className="h-5 w-5" />}
+          icon={<LuAlignCenterVertical className="h-5 w-5" />}
           onClick={handleAlignHCenter}
           disabled={alignInfo?.isHCenter}
         />
@@ -64,7 +64,7 @@ export default function PartPropertyMenuMulti({ selectedParts, hidden }: PartPro
           text=""
           ariaLabel="水平: 右揃え"
           title="右揃え（水平）"
-          icon={<LuAlignEndHorizontal className="h-5 w-5" />}
+          icon={<LuAlignEndVertical className="h-5 w-5" />}
           onClick={handleAlignRight}
           disabled={alignInfo?.isRight}
         />
@@ -72,7 +72,7 @@ export default function PartPropertyMenuMulti({ selectedParts, hidden }: PartPro
           text=""
           ariaLabel="垂直: 上揃え"
           title="上揃え（垂直）"
-          icon={<LuAlignStartVertical className="h-5 w-5" />}
+          icon={<LuAlignStartHorizontal className="h-5 w-5" />}
           onClick={handleAlignTop}
           disabled={alignInfo?.isTop}
         />
@@ -80,7 +80,7 @@ export default function PartPropertyMenuMulti({ selectedParts, hidden }: PartPro
           text=""
           ariaLabel="垂直: 中央揃え"
           title="中央揃え（垂直）"
-          icon={<LuAlignCenterVertical className="h-5 w-5" />}
+          icon={<LuAlignCenterHorizontal className="h-5 w-5" />}
           onClick={handleAlignVCenter}
           disabled={alignInfo?.isVCenter}
         />
@@ -88,7 +88,7 @@ export default function PartPropertyMenuMulti({ selectedParts, hidden }: PartPro
           text=""
           ariaLabel="垂直: 下揃え"
           title="下揃え（垂直）"
-          icon={<LuAlignEndVertical className="h-5 w-5" />}
+          icon={<LuAlignEndHorizontal className="h-5 w-5" />}
           onClick={handleAlignBottom}
           disabled={alignInfo?.isBottom}
         />
