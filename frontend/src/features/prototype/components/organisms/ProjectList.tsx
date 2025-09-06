@@ -395,7 +395,10 @@ const ProjectList: React.FC = () => {
 
       {viewMode === 'card' ? (
         <ProjectCardList
-          prototypeList={prototypeList}
+          prototypeList={prototypeList.filter(
+            (item): item is { project: Project; masterPrototype: Prototype } =>
+              !!item.masterPrototype
+          )}
           isNameEditing={(prototypeId) => isEditing(prototypeId)}
           editedName={editedName}
           setEditedName={setEditedName}
