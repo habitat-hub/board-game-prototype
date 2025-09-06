@@ -21,6 +21,7 @@ export async function getAccessibleProjects({ userId }: { userId: string }) {
   // アクセス可能なプロジェクトをスコープ付きで取得
   return await ProjectModel.scope('withPrototypes').findAll({
     where: { id: { [Op.in]: accessibleProjectIds } },
+    order: [['createdAt', 'DESC']],
   });
 }
 
