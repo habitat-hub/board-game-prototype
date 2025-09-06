@@ -205,6 +205,7 @@ export default function PlaySidebar({
               <div className="flex items-center gap-2">
                 <KibakoButton
                   size="sm"
+                  variant="accent"
                   className="!px-3 !py-1 !text-xs"
                   onClick={() => {
                     if (!user?.id) return;
