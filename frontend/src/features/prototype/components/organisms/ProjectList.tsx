@@ -92,17 +92,21 @@ const ProjectList: React.FC = () => {
             !!item.masterPrototype
         )
         .sort((a, b) => {
-          const valueA =
-            sortKey === 'name'
-              ? a.masterPrototype.name
-              : a.masterPrototype.createdAt;
-          const valueB =
-            sortKey === 'name'
-              ? b.masterPrototype.name
-              : b.masterPrototype.createdAt;
-          if (valueA < valueB) return sortOrder === 'asc' ? -1 : 1;
-          if (valueA > valueB) return sortOrder === 'asc' ? 1 : -1;
-          return 0;
+          if (sortKey === 'name') {
+            const nameA = a.masterPrototype.name ?? '';
+            const nameB = b.masterPrototype.name ?? '';
+            return sortOrder === 'asc'
+              ? nameA.localeCompare(nameB, 'ja')
+              : nameB.localeCompare(nameA, 'ja');
+          } else {
+            const tA = a.masterPrototype.createdAt
+              ? new Date(a.masterPrototype.createdAt).getTime()
+              : 0;
+            const tB = b.masterPrototype.createdAt
+              ? new Date(b.masterPrototype.createdAt).getTime()
+              : 0;
+            return sortOrder === 'asc' ? tA - tB : tB - tA;
+          }
         }),
     [prototypeList, sortKey, sortOrder]
   );
