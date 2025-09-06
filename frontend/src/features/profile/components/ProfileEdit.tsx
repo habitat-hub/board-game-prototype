@@ -142,6 +142,24 @@ const ProfileEdit: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap justify-end items-center gap-2">
+            {error && (
+              <p
+                role="alert"
+                aria-live="assertive"
+                className="text-kibako-danger text-xs"
+              >
+                {error}
+              </p>
+            )}
+            {success && (
+              <p
+                role="status"
+                aria-live="polite"
+                className="text-kibako-success text-xs"
+              >
+                {success}
+              </p>
+            )}
             <KibakoButton
               type="submit"
               size="md"
@@ -152,24 +170,6 @@ const ProfileEdit: React.FC = () => {
               <FaCheck className="w-4 h-4" />
               更新する
             </KibakoButton>
-            {error && (
-              <p
-                role="alert"
-                aria-live="assertive"
-                className="text-kibako-danger text-sm"
-              >
-                {error}
-              </p>
-            )}
-            {success && (
-              <p
-                role="status"
-                aria-live="polite"
-                className="text-kibako-success text-sm"
-              >
-                {success}
-              </p>
-            )}
           </div>
         </form>
       </div>
