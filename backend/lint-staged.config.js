@@ -6,7 +6,6 @@
  * when package.json does not declare "type": "module".
  */
 module.exports = {
-  'src/**/*.{ts,tsx,js,jsx}': ['eslint --fix', 'prettier --write'],
-  'src/**/*.{json,md}': ['prettier --write'],
-  'vitest.config.ts': ['eslint --fix', 'prettier --write'],
+  '**/*.{ts,tsx,js,jsx}': ['eslint --fix', 'prettier --write'],
+  '**/*.{json,md,css,scss}': ['prettier --write'],
 };
