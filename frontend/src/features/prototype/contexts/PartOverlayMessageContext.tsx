@@ -77,7 +77,7 @@ export const usePartOverlayMessage = (): PartOverlayMessageContextType => {
   const ctx = useContext(PartOverlayMessageContext);
   if (!ctx)
     throw new Error(
-      'usePartOverlayMessage must be used within PartOverlayMessageProvider'
+      'usePartOverlayMessage は PartOverlayMessageProvider の内部でのみ使用できます'
     );
   return ctx;
 };
