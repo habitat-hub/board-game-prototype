@@ -138,10 +138,10 @@ const TopPage: React.FC = () => {
       </motion.div>
 
       {isNonPC && (
-        <p className="text-center text-xs text-gray-600 mt-2">
-          現在、ゲームプレイはPCのみ対応しています。PCにリンクを送る
+        <div className="text-center text-xs text-gray-600 mt-2">
+          <p>このサービスはPC専用のサービスです。</p>
           <ShareLinkButton />
-        </p>
+        </div>
       )}
 
       {/* キャッチコピーセクション */}

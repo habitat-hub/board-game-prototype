@@ -1,6 +1,9 @@
 'use client';
 
 import React from 'react';
+import { IoShareOutline } from 'react-icons/io5';
+
+import KibakoButton from '@/components/atoms/KibakoButton';
 
 const ShareLinkButton: React.FC = () => {
   const handleShare = async () => {
@@ -22,13 +25,16 @@ const ShareLinkButton: React.FC = () => {
   };
 
   return (
-    <button
+    <KibakoButton
       type="button"
       onClick={handleShare}
-      className="underline text-xs text-blue-600 ml-1"
+      variant="accent"
+      size="sm"
+      className="mt-1 gap-2"
     >
-      PCにリンクを送る
-    </button>
+      <IoShareOutline className="h-4 w-4" />
+      <span>KIBAKOを共有する</span>
+    </KibakoButton>
   );
 };
 
