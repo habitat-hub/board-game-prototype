@@ -10,7 +10,10 @@ type KibakoToggleProps = {
   className?: string;
   disabled?: boolean;
   ariaLabel?: string;
-  shouldChangeBackgroud?: boolean; // optional: whether track bg changes with state (default: true)
+  /** トラック背景を状態に応じて変えるか（デフォルト: true） */
+  shouldChangeBackground?: boolean;
+  /** @deprecated タイポ。shouldChangeBackground を使用してください */
+  shouldChangeBackgroud?: boolean;
 };
 
 /**
@@ -26,13 +29,19 @@ export default function KibakoToggle({
   className = '',
   disabled = false,
   ariaLabel,
-  shouldChangeBackgroud = true,
+  shouldChangeBackground = true,
+  shouldChangeBackgroud,
 }: KibakoToggleProps) {
+  // 旧プロップが指定されている場合はそれを優先
+  const effectiveShouldChangeBackground =
+    typeof shouldChangeBackgroud === 'boolean'
+      ? shouldChangeBackgroud
+      : shouldChangeBackground;
   const baseWrapper = twMerge(
     'inline-flex items-center gap-2 select-none',
     className
   );
-  const trackBg = shouldChangeBackgroud
+  const trackBg = effectiveShouldChangeBackground
     ? checked
       ? 'bg-kibako-primary'
       : 'bg-kibako-tertiary'
