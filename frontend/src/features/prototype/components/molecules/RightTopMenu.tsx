@@ -5,9 +5,11 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import type { ReactElement } from 'react';
 import { FaUsers } from 'react-icons/fa';
 
+import UserMenu from '@/components/molecules/UserMenu';
 import ConnectedUserIcon from '@/features/prototype/components/atoms/ConnectedUserIcon';
 import { MAX_DISPLAY_USERS } from '@/features/prototype/constants/presence';
 import { ConnectedUser } from '@/features/prototype/types';
@@ -38,10 +40,7 @@ export default function RightTopMenu({
   loading = false,
   showRoleManagementButton = true,
 }: RightTopMenuProps): ReactElement | null {
-  // ローディング中や空の場合は何も表示しない
-  if (loading || !connectedUsers || connectedUsers.length === 0) {
-    return null;
-  }
+  const pathname = usePathname();
 
   // ユーザー名リスト（最大3名まで表示、残りは+Nで省略）
   const displayUsers = connectedUsers.slice(0, MAX_DISPLAY_USERS);
@@ -49,70 +48,71 @@ export default function RightTopMenu({
   const activeUserIds = new Set(connectedUsers.map((u) => u.userId));
 
   return (
-    <div
-      className={`fixed top-4 right-4 z-overlay flex flex-row items-center justify-between ${showRoleManagementButton ? 'max-w-[150px]' : 'max-w-[100px]'} h-[56px] bg-kibako-white p-2 rounded-lg`}
-    >
+    <div className={`fixed top-4 right-4 z-overlay flex flex-row items-center gap-2 h-[56px] bg-kibako-white p-2 rounded-lg`}>
       {/* ユーザーアイコンリスト（左側・ホバーで全ユーザー名表示） */}
-      <div className="relative group">
-        <button
-          className="flex flex-row items-center focus:outline-none"
-          aria-label="ユーザーリストを表示"
-          tabIndex={0}
-        >
-          <div className="flex -space-x-3">
-            {displayUsers.map((user, idx) => (
-              <ConnectedUserIcon
-                key={user.userId || `user-${idx}`}
-                user={user}
-                users={roleUsers}
-                index={idx}
-              />
-            ))}
-          </div>
-          {moreCount > 0 && (
-            <span className="text-xs text-kibako-secondary ml-2">
-              +{moreCount}
-            </span>
-          )}
-        </button>
-        <div className="absolute right-0 mt-2 max-w-xs bg-kibako-white border border-kibako-secondary rounded shadow z-tooltip px-3 py-2 text-xs text-kibako-primary opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200">
-          <ul className="flex gap-1 flex-col">
-            {roleUsers.map((user) => {
-              const isActive = activeUserIds.has(user.userId);
-              const color: string | undefined = isActive
-                ? getUserColor(user.userId, roleUsers)
-                : undefined;
-              return (
-                <li
-                  key={user.userId}
-                  className="truncate max-w-[180px] px-0 py-0 leading-6"
-                  title={user.username}
-                >
-                  {isActive ? (
-                    <span
-                      className="inline-flex items-center gap-1 px-1 rounded border"
-                      style={{ borderColor: color }}
-                    >
+      {!loading && connectedUsers && connectedUsers.length > 0 && (
+        <div className="relative group">
+          <button
+            className="flex flex-row items-center focus:outline-none"
+            aria-label="ユーザーリストを表示"
+            tabIndex={0}
+          >
+            <div className="flex -space-x-3">
+              {displayUsers.map((user, idx) => (
+                <ConnectedUserIcon
+                  key={user.userId || `user-${idx}`}
+                  user={user}
+                  users={roleUsers}
+                  index={idx}
+                />
+              ))}
+            </div>
+            {moreCount > 0 && (
+              <span className="text-xs text-kibako-secondary ml-2">
+                +{moreCount}
+              </span>
+            )}
+          </button>
+          <div className="absolute right-0 mt-2 max-w-xs bg-kibako-white border border-kibako-secondary rounded shadow z-tooltip px-3 py-2 text-xs text-kibako-primary opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200">
+            <ul className="flex gap-1 flex-col">
+              {roleUsers.map((user) => {
+                const isActive = activeUserIds.has(user.userId);
+                const color: string | undefined = isActive
+                  ? getUserColor(user.userId, roleUsers)
+                  : undefined;
+                return (
+                  <li
+                    key={user.userId}
+                    className="truncate max-w-[180px] px-0 py-0 leading-6"
+                    title={user.username}
+                  >
+                    {isActive ? (
                       <span
-                        className="inline-block w-2 h-2"
-                        style={{ backgroundColor: color }}
-                      />
-                      {user.username}
-                    </span>
-                  ) : (
-                    user.username
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+                        className="inline-flex items-center gap-1 px-1 rounded border"
+                        style={{ borderColor: color }}
+                      >
+                        <span
+                          className="inline-block w-2 h-2"
+                          style={{ backgroundColor: color }}
+                        />
+                        {user.username}
+                      </span>
+                    ) : (
+                      user.username
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         </div>
-      </div>
-      {/* 権限管理ページへのリンク（右側） - showRoleManagementButtonがtrueの時のみ表示 */}
+      )}
+
+      {/* 権限管理ページへのリンク（中央） - showRoleManagementButtonがtrueの時のみ表示 */}
       {showRoleManagementButton && (
         <Link
           href={`/projects/${projectId}/roles`}
-          className="group flex items-center justify-center w-10 h-10 relative hover:bg-kibako-tertiary rounded transition-colors ml-2"
+          className="group flex items-center justify-center w-10 h-10 relative hover:bg-kibako-tertiary rounded transition-colors"
           title="権限管理ページへ"
         >
           <FaUsers className="h-5 w-5 text-kibako-primary" />
@@ -121,6 +121,9 @@ export default function RightTopMenu({
           </span>
         </Link>
       )}
+
+      {/* ユーザーメニュー（右側） - 常時表示 */}
+      <UserMenu pathname={pathname} />
     </div>
   );
 }
