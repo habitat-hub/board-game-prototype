@@ -15,7 +15,7 @@ import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
 import PartPropertyMenu from '@/features/prototype/components/molecules/PartPropertyMenu';
 import PlaySidebar from '@/features/prototype/components/molecules/PlaySidebar';
-import RoleMenu from '@/features/prototype/components/molecules/RoleMenu';
+import RightTopMenu from '@/features/prototype/components/molecules/RightTopMenu';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
 import { GAME_BOARD_SIZE } from '@/features/prototype/constants';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
@@ -544,7 +544,7 @@ export default function GameBoard({
       {/* ロールメニュー - CREATEモードとPLAYモードで表示 */}
       {(gameBoardMode === GameBoardMode.CREATE ||
         gameBoardMode === GameBoardMode.PLAY) && (
-        <RoleMenu
+        <RightTopMenu
           projectId={projectId}
           connectedUsers={connectedUsers}
           roleUsers={roleUsers}

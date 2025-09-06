@@ -13,7 +13,7 @@ import { MAX_DISPLAY_USERS } from '@/features/prototype/constants/presence';
 import { ConnectedUser } from '@/features/prototype/types';
 import { getUserColor } from '@/features/prototype/utils/userColor';
 
-interface RoleMenuProps {
+interface RightTopMenuProps {
   // プロジェクト識別子
   projectId: string;
   // 現在接続中のユーザー（左側のアイコン表示用）
@@ -31,13 +31,13 @@ interface RoleMenuProps {
  * - 接続中のユーザーは色バッジ付き
  * - 非接続ユーザーはテキストのみ
  */
-export default function RoleMenu({
+export default function RightTopMenu({
   projectId,
   connectedUsers,
   roleUsers,
   loading = false,
   showRoleManagementButton = true,
-}: RoleMenuProps): ReactElement | null {
+}: RightTopMenuProps): ReactElement | null {
   // ローディング中や空の場合は何も表示しない
   if (loading || !connectedUsers || connectedUsers.length === 0) {
     return null;
