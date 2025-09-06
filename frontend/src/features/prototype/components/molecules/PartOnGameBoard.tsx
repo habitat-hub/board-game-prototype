@@ -27,6 +27,7 @@ import FlipIcon from '@/features/prototype/components/atoms/FlipIcon';
 import ShuffleIcon from '@/features/prototype/components/atoms/ShuffleIcon';
 import { FLIP_ANIMATION } from '@/features/prototype/constants/animation';
 import { TEXT_LAYOUT } from '@/features/prototype/constants/part';
+import { usePartOverlayMessage } from '@/features/prototype/contexts/PartOverlayMessageContext';
 import { useCard } from '@/features/prototype/hooks/useCard';
 import { useCursorControl } from '@/features/prototype/hooks/useCursorControl';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
@@ -156,6 +157,10 @@ export default function PartOnGameBoard({
         clearTimeout(shuffleHideTimeoutRef.current);
     };
   }, []);
+
+  // Overlay messages from context (e.g., shuffle message for cards via menu)
+  const { messages: overlayMessages } = usePartOverlayMessage();
+  const externalOverlayMessage = overlayMessages.get(part.id) || null;
 
   // 自分の選択色（自分が選択中のときに枠・影色に使用）
   const selfSelectedColor = useMemo<string | null>(() => {
@@ -581,15 +586,17 @@ export default function PartOnGameBoard({
         {isCard && <FlipIcon size={20} color="#666" />}
       </Group>
 
-      {isDeck && shuffleMessage && (
+      {(isDeck ? shuffleMessage : externalOverlayMessage) && (
         <Text
           x={0}
           y={-20}
           width={part.width}
-          text={shuffleMessage}
-          fontSize={14}
+          text={(isDeck ? shuffleMessage : externalOverlayMessage) as string}
+          fontSize={11}
           fill="#333"
           align="center"
+          wrap="word"
+          ellipsis={false}
           listening={false}
           perfectDrawEnabled={false}
           hitStrokeWidth={0}

@@ -48,6 +48,7 @@ export const UPDATABLE_PROTOTYPE_FIELDS = {
     'position',
     'width',
     'height',
+    'order',
     'frontSide',
     'ownerId',
   ],

@@ -15,10 +15,11 @@ import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
 import PartPropertyMenu from '@/features/prototype/components/molecules/PartPropertyMenu';
 import PlaySidebar from '@/features/prototype/components/molecules/PlaySidebar';
-import RoleMenu from '@/features/prototype/components/molecules/RoleMenu';
+import RightTopMenu from '@/features/prototype/components/molecules/RightTopMenu';
 import ZoomToolbar from '@/features/prototype/components/molecules/ZoomToolbar';
 import { GAME_BOARD_SIZE } from '@/features/prototype/constants';
 import { DebugModeProvider } from '@/features/prototype/contexts/DebugModeContext';
+import { PartOverlayMessageProvider } from '@/features/prototype/contexts/PartOverlayMessageContext';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
 import DebugInfo from '@/features/prototype/debug-info/DebugInfo';
 import { useGameBoardShortcuts } from '@/features/prototype/hooks/useGameBoardShortcut';
@@ -496,6 +497,9 @@ export default function GameBoard({
 
   return (
     <DebugModeProvider>
+      
+      {/* Provide overlay messages for parts (e.g., shuffle text like deck) */}
+      <PartOverlayMessageProvider>
       <ModeToggleButton
         isSelectionMode={isSelectionMode}
         onToggle={toggleMode}
@@ -544,7 +548,7 @@ export default function GameBoard({
       {/* ロールメニュー - CREATEモードとPLAYモードで表示 */}
       {(gameBoardMode === GameBoardMode.CREATE ||
         gameBoardMode === GameBoardMode.PLAY) && (
-        <RoleMenu
+        <RightTopMenu
           projectId={projectId}
           connectedUsers={connectedUsers}
           roleUsers={roleUsers}
@@ -608,6 +612,7 @@ export default function GameBoard({
         onClose={handleCloseContextMenu}
         items={getContextMenuItems(contextMenuPartId!)}
       />
+      </PartOverlayMessageProvider>
     </DebugModeProvider>
   );
 }
