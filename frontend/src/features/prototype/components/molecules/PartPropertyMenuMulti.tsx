@@ -1,5 +1,12 @@
 import React, { useCallback, useMemo } from 'react';
-import { MdFormatAlignLeft, MdFormatAlignCenter, MdFormatAlignRight, MdVerticalAlignTop, MdVerticalAlignCenter, MdVerticalAlignBottom } from 'react-icons/md';
+import {
+  LuAlignStartHorizontal,
+  LuAlignCenterHorizontal,
+  LuAlignEndHorizontal,
+  LuAlignStartVertical,
+  LuAlignCenterVertical,
+  LuAlignEndVertical,
+} from 'react-icons/lu';
 
 import { Part } from '@/api/types';
 import PartPropertyMenuButton from '@/features/prototype/components/atoms/PartPropertyMenuButton';
@@ -38,38 +45,38 @@ export default function PartPropertyMenuMulti({ selectedParts, hidden }: PartPro
       <p className="text-kibako-white">整列</p>
       <div className="grid grid-cols-3 gap-2">
         <PartPropertyMenuButton
-          text="左揃え"
-          icon={<MdFormatAlignLeft className="h-3 w-3" />}
+          text=""
+          icon={<LuAlignStartHorizontal className="h-5 w-5" />}
           onClick={handleAlignLeft}
           disabled={alignInfo?.isLeft}
         />
         <PartPropertyMenuButton
-          text="左右中央"
-          icon={<MdFormatAlignCenter className="h-3 w-3" />}
+          text=""
+          icon={<LuAlignCenterHorizontal className="h-5 w-5" />}
           onClick={handleAlignHCenter}
           disabled={alignInfo?.isHCenter}
         />
         <PartPropertyMenuButton
-          text="右揃え"
-          icon={<MdFormatAlignRight className="h-3 w-3" />}
+          text=""
+          icon={<LuAlignEndHorizontal className="h-5 w-5" />}
           onClick={handleAlignRight}
           disabled={alignInfo?.isRight}
         />
         <PartPropertyMenuButton
-          text="上揃え"
-          icon={<MdVerticalAlignTop className="h-3 w-3" />}
+          text=""
+          icon={<LuAlignStartVertical className="h-5 w-5" />}
           onClick={handleAlignTop}
           disabled={alignInfo?.isTop}
         />
         <PartPropertyMenuButton
-          text="上下中央"
-          icon={<MdVerticalAlignCenter className="h-3 w-3" />}
+          text=""
+          icon={<LuAlignCenterVertical className="h-5 w-5" />}
           onClick={handleAlignVCenter}
           disabled={alignInfo?.isVCenter}
         />
         <PartPropertyMenuButton
-          text="下揃え"
-          icon={<MdVerticalAlignBottom className="h-3 w-3" />}
+          text=""
+          icon={<LuAlignEndVertical className="h-5 w-5" />}
           onClick={handleAlignBottom}
           disabled={alignInfo?.isBottom}
         />
@@ -77,4 +84,3 @@ export default function PartPropertyMenuMulti({ selectedParts, hidden }: PartPro
     </div>
   );
 }
-
