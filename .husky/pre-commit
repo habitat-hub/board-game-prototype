@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# Fail fast: exit on error, unset vars, and failed pipes
+set -euo pipefail
+
+STAGED_FILES=$(git diff --cached --name-only)
+
+if echo "$STAGED_FILES" | grep -q '^frontend/'; then
+  scripts/pre-commit-frontend.sh
+fi
+
+if echo "$STAGED_FILES" | grep -q '^backend/'; then
+  scripts/pre-commit-backend.sh
+fi
+
+# Ensure a clean success status when reached (failures exit earlier)
+true
