@@ -3,7 +3,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
 import { GiWoodenCrate } from 'react-icons/gi';
 
-import HeaderRightMenu from '@/components/molecules/HeaderRightMenu';
+import UserMenu from '@/components/molecules/UserMenu';
 
 const Header: React.FC = () => {
   const router = useRouter();
@@ -30,7 +30,7 @@ const Header: React.FC = () => {
         </div>
       </button>
 
-      <HeaderRightMenu pathname={pathname} />
+      <UserMenu pathname={pathname} />
     </header>
   );
 };

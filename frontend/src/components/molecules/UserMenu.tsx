@@ -10,11 +10,11 @@ import { useUser } from '@/hooks/useUser';
 // フィードバックフォームのURL
 const FEEDBACK_FORM_URL = 'https://forms.gle/XjMV2WgFRCJg7cHj7';
 
-interface HeaderRightMenuProps {
+interface UserMenuProps {
   pathname: string;
 }
 
-const HeaderRightMenu: React.FC<HeaderRightMenuProps> = ({ pathname }) => {
+const UserMenu: React.FC<UserMenuProps> = ({ pathname }) => {
   const router = useRouter();
   const { user, setUser, isLoading } = useUser();
   const { logout } = useAuth();
@@ -131,4 +131,4 @@ const HeaderRightMenu: React.FC<HeaderRightMenuProps> = ({ pathname }) => {
   );
 };
 
-export default HeaderRightMenu;
+export default UserMenu;
