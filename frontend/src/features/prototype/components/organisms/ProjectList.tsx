@@ -19,6 +19,7 @@ import { ProjectCardList } from '@/features/prototype/components/molecules/Proje
 import { ProjectTable } from '@/features/prototype/components/molecules/ProjectTable';
 import useInlineEdit from '@/hooks/useInlineEdit';
 import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
+import { getUIPreference, setUIPreference } from '@/utils/uiPreferences';
 
 /**
  * ProjectListコンポーネントで使用される各種Stateの説明:
@@ -61,7 +62,9 @@ const ProjectList: React.FC = () => {
   const [isReloadAnimating, setIsReloadAnimating] = useState<boolean>(false);
 
   // 表示モードとソート設定
-  const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
+  const [viewMode, setViewMode] = useState<'card' | 'table'>(
+    () => getUIPreference('projectListView') ?? 'card'
+  );
   const [sortKey, setSortKey] = useState<'name' | 'createdAt'>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
@@ -386,7 +389,11 @@ const ProjectList: React.FC = () => {
           <span className="text-sm text-kibako-secondary">{`合計プロジェクト数: ${sortedPrototypeList.length}`}</span>
           <KibakoToggle
             checked={viewMode === 'table'}
-            onChange={(checked) => setViewMode(checked ? 'table' : 'card')}
+            onChange={(checked) => {
+              const mode = checked ? 'table' : 'card';
+              setViewMode(mode);
+              setUIPreference('projectListView', mode);
+            }}
             labelLeft={<FaTh className="w-4 h-4" aria-hidden="true" />}
             labelRight={<FaTable className="w-4 h-4" aria-hidden="true" />}
             shouldChangeBackgroud={false}
