@@ -21,7 +21,8 @@ const PartsTab: React.FC<PartsTabProps> = ({ parts, properties }) => {
           {[...parts]
             .sort(
               (a, b) =>
-                new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+                new Date(b.updatedAt).getTime() -
+                new Date(a.updatedAt).getTime()
             )
             .map((part) => {
               const partProperties = properties.filter(
@@ -36,8 +37,12 @@ const PartsTab: React.FC<PartsTabProps> = ({ parts, properties }) => {
                   <div className="font-bold text-blue-300">
                     ID: {part.id} | Type: {part.type}
                   </div>
-                  <div>Position: ({part.position.x}, {part.position.y})</div>
-                  <div>Size: {part.width} × {part.height}</div>
+                  <div>
+                    Position: ({part.position.x}, {part.position.y})
+                  </div>
+                  <div>
+                    Size: {part.width} × {part.height}
+                  </div>
                   <div>
                     Order:{' '}
                     {typeof part.order === 'number'
@@ -69,7 +74,9 @@ const PartsTab: React.FC<PartsTabProps> = ({ parts, properties }) => {
                           key={`${part.id}-${prop.side}-${prop.name}-${propIndex}`}
                           className="ml-2 mt-1 text-[10px] border-l border-kibako-white border-opacity-10 pl-1"
                         >
-                          <div className="text-green-300">Side: {prop.side}</div>
+                          <div className="text-green-300">
+                            Side: {prop.side}
+                          </div>
                           <div>Name: {prop.name}</div>
                           <div>Color: {prop.color}</div>
                           <div>Text Color: {prop.textColor}</div>

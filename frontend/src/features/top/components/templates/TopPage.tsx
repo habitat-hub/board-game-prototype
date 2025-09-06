@@ -34,9 +34,12 @@ const TopPage: React.FC = () => {
     if (typeof navigator === 'undefined') return;
 
     const ua = navigator.userAgent || '';
-    const isMobileUA = /Android|iPhone|iPod|iPad|Mobile|Windows Phone/i.test(ua);
+    const isMobileUA = /Android|iPhone|iPod|iPad|Mobile|Windows Phone/i.test(
+      ua
+    );
     // iPadOS 13+ は Mac と判定されるケースがあるため補助条件
-    const isIPadOS13 = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+    const isIPadOS13 =
+      navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
 
     setIsNonPC(isMobileUA || isIPadOS13);
   }, []);

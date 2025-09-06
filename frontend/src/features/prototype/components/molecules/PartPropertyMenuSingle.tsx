@@ -11,7 +11,11 @@ import ColorPicker from '@/features/prototype/components/atoms/ColorPicker';
 import PartPropertyMenuButton from '@/features/prototype/components/atoms/PartPropertyMenuButton';
 import { COLORS } from '@/features/prototype/constants';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
-import { DeleteImageProps, PartPropertyUpdate, PartPropertyWithImage } from '@/features/prototype/types';
+import {
+  DeleteImageProps,
+  PartPropertyUpdate,
+  PartPropertyWithImage,
+} from '@/features/prototype/types';
 import { saveImageToIndexedDb } from '@/utils/db';
 
 const IMAGE_ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png'];
@@ -20,7 +24,13 @@ interface PartPropertyMenuSingleProps {
   selectedPart: Part | null;
   properties: PartPropertyWithImage[];
   onDeletePart: () => void;
-  onDeleteImage: ({ imageId, prototypeId, partId, side, emitUpdate }: DeleteImageProps) => void;
+  onDeleteImage: ({
+    imageId,
+    prototypeId,
+    partId,
+    side,
+    emitUpdate,
+  }: DeleteImageProps) => void;
   onDuplicatePart: () => void;
   isPlayMode: boolean;
   hidden: boolean;
@@ -39,8 +49,11 @@ export default function PartPropertyMenuSingle({
   const { uploadImage } = useImages();
 
   const selectedPartProperties = useMemo(
-    () => (selectedPart ? properties.filter((p) => p.partId === selectedPart.id) : []),
-    [properties, selectedPart],
+    () =>
+      selectedPart
+        ? properties.filter((p) => p.partId === selectedPart.id)
+        : [],
+    [properties, selectedPart]
   );
 
   const currentProperty = useMemo(() => {
@@ -67,15 +80,19 @@ export default function PartPropertyMenuSingle({
   }, [currentProperty]);
 
   /** プロパティを部分更新する（差分のみ送信） */
-  const handleUpdateProperty = (property: Partial<PartPropertyUpdate>): void => {
+  const handleUpdateProperty = (
+    property: Partial<PartPropertyUpdate>
+  ): void => {
     if (!selectedPart || !currentProperty) return;
-    const updatedProperty: PartPropertyWithImage = (
-      { ...currentProperty, ...property } as PartPropertyWithImage
-    );
-    if (JSON.stringify(currentProperty) === JSON.stringify(updatedProperty)) return;
+    const updatedProperty: PartPropertyWithImage = {
+      ...currentProperty,
+      ...property,
+    } as PartPropertyWithImage;
+    if (JSON.stringify(currentProperty) === JSON.stringify(updatedProperty))
+      return;
     // API は imageId のみ受け付けるため image は除外（イミュータブルに除外）
     const { image: imageToDrop, ...updateProperty } =
-      (updatedProperty as PartPropertyUpdate & { image?: unknown });
+      updatedProperty as PartPropertyUpdate & { image?: unknown };
     void imageToDrop;
     dispatch({
       type: 'UPDATE_PART',
@@ -90,7 +107,13 @@ export default function PartPropertyMenuSingle({
   };
 
   const handleFileClearClick = async () => {
-    if (!uploadedImage?.id || !currentProperty?.side || !selectedPart?.id || !currentProperty?.imageId) return;
+    if (
+      !uploadedImage?.id ||
+      !currentProperty?.side ||
+      !selectedPart?.id ||
+      !currentProperty?.imageId
+    )
+      return;
 
     onDeleteImage({
       imageId: uploadedImage.id,
@@ -101,7 +124,9 @@ export default function PartPropertyMenuSingle({
     });
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const image = event.target?.files ? event.target.files[0] : null;
     if (!image) return;
 
@@ -119,7 +144,10 @@ export default function PartPropertyMenuSingle({
       const response = await uploadImage(formData);
       if (response.id) {
         await saveImageToIndexedDb(response.id, image);
-        setUploadedImage({ id: response.id, displayName: response.displayName });
+        setUploadedImage({
+          id: response.id,
+          displayName: response.displayName,
+        });
         handleUpdateProperty({ imageId: response.id });
       }
     } catch (error) {
@@ -142,7 +170,10 @@ export default function PartPropertyMenuSingle({
   }
 
   return (
-    <div className="flex flex-col gap-2" style={{ display: hidden ? 'none' : 'flex' }}>
+    <div
+      className="flex flex-col gap-2"
+      style={{ display: hidden ? 'none' : 'flex' }}
+    >
       {!isPlayMode && (
         <div className="flex items-center justify-around px-2 pb-2">
           <PartPropertyMenuButton
@@ -165,7 +196,9 @@ export default function PartPropertyMenuSingle({
         <div className="flex items-center justify-center mb-2">
           <span
             className={`text-xs font-medium px-3 py-1 rounded-full ${
-              selectedPart.frontSide === 'front' ? 'text-green-800 bg-green-200' : 'text-red-800 bg-red-200'
+              selectedPart.frontSide === 'front'
+                ? 'text-green-800 bg-green-200'
+                : 'text-red-800 bg-red-200'
             }`}
           >
             {selectedPart.frontSide === 'front' ? '表面の設定' : '裏面の設定'}
@@ -183,7 +216,9 @@ export default function PartPropertyMenuSingle({
                 type: 'UPDATE_PART',
                 payload: {
                   partId: selectedPart.id,
-                  updatePart: { position: { x: number, y: selectedPart.position.y } },
+                  updatePart: {
+                    position: { x: number, y: selectedPart.position.y },
+                  },
                 },
               });
             }}
@@ -197,7 +232,9 @@ export default function PartPropertyMenuSingle({
                 type: 'UPDATE_PART',
                 payload: {
                   partId: selectedPart.id,
-                  updatePart: { position: { x: selectedPart.position.x, y: number } },
+                  updatePart: {
+                    position: { x: selectedPart.position.x, y: number },
+                  },
                 },
               });
             }}
@@ -214,7 +251,10 @@ export default function PartPropertyMenuSingle({
                 onChange={(number) => {
                   dispatch({
                     type: 'UPDATE_PART',
-                    payload: { partId: selectedPart.id, updatePart: { width: number } },
+                    payload: {
+                      partId: selectedPart.id,
+                      updatePart: { width: number },
+                    },
                   });
                 }}
                 icon={<>W</>}
@@ -225,7 +265,10 @@ export default function PartPropertyMenuSingle({
                 onChange={(number) => {
                   dispatch({
                     type: 'UPDATE_PART',
-                    payload: { partId: selectedPart.id, updatePart: { height: number } },
+                    payload: {
+                      partId: selectedPart.id,
+                      updatePart: { height: number },
+                    },
                   });
                 }}
                 icon={<>H</>}
@@ -245,7 +288,9 @@ export default function PartPropertyMenuSingle({
               <TextInput
                 key={`${selectedPart.id}-description-${currentProperty?.description}`}
                 value={currentProperty?.description ?? ''}
-                onChange={(description) => handleUpdateProperty({ description })}
+                onChange={(description) =>
+                  handleUpdateProperty({ description })
+                }
                 icon={<>T</>}
                 multiline
                 resizable
@@ -294,7 +339,10 @@ export default function PartPropertyMenuSingle({
               <div className="flex items-center w-full px-2 mb-2 gap-2">
                 {uploadedImage ? (
                   <>
-                    <span className="text-xs truncate w-1/2" title={uploadedImage.displayName}>
+                    <span
+                      className="text-xs truncate w-1/2"
+                      title={uploadedImage.displayName}
+                    >
                       {uploadedImage.displayName}
                     </span>
                     <button
@@ -308,7 +356,13 @@ export default function PartPropertyMenuSingle({
                 ) : (
                   <PartPropertyMenuButton
                     text="アップロード"
-                    icon={isUploading ? <FaSpinner className="h-3 w-3 animate-spin" /> : <FaImage className="h-3 w-3" />}
+                    icon={
+                      isUploading ? (
+                        <FaSpinner className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <FaImage className="h-3 w-3" />
+                      )
+                    }
                     onClick={handleFileUploadClick}
                     disabled={isUploading}
                   />

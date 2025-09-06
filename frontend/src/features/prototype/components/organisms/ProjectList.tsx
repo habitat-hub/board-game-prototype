@@ -1,9 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus, FaTable, FaTh } from 'react-icons/fa';
 import { IoReload } from 'react-icons/io5';
 import { RiLoaderLine } from 'react-icons/ri';
 
@@ -15,6 +15,7 @@ import Loading from '@/components/organisms/Loading';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
 import { EmptyProjectState } from '@/features/prototype/components/molecules/EmptyProjectState';
 import { ProjectCard } from '@/features/prototype/components/molecules/ProjectCard';
+import { ProjectTable } from '@/features/prototype/components/molecules/ProjectTable';
 import useInlineEdit from '@/hooks/useInlineEdit';
 import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
 
@@ -58,12 +59,52 @@ const ProjectList: React.FC = () => {
   // リロードアイコンのワンショットアニメーション制御
   const [isReloadAnimating, setIsReloadAnimating] = useState<boolean>(false);
 
+  // 表示モードとソート設定
+  const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
+  const [sortKey, setSortKey] = useState<'name' | 'createdAt'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  const handleSort = (key: 'name' | 'createdAt') => {
+    if (sortKey === key) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortOrder('asc');
+    }
+  };
+
   // データ変換処理
-  const prototypeList =
-    projectsData?.map(({ project, prototypes }) => ({
-      project,
-      masterPrototype: prototypes.find(({ type }) => type === 'MASTER'),
-    })) || [];
+  const prototypeList = useMemo(
+    () =>
+      projectsData?.map(({ project, prototypes }) => ({
+        project,
+        masterPrototype: prototypes.find(({ type }) => type === 'MASTER'),
+      })) || [],
+    [projectsData]
+  );
+
+  const sortedPrototypeList = useMemo(
+    () =>
+      prototypeList
+        .filter(
+          (item): item is { project: Project; masterPrototype: Prototype } =>
+            !!item.masterPrototype
+        )
+        .sort((a, b) => {
+          const valueA =
+            sortKey === 'name'
+              ? a.masterPrototype.name
+              : a.masterPrototype.createdAt;
+          const valueB =
+            sortKey === 'name'
+              ? b.masterPrototype.name
+              : b.masterPrototype.createdAt;
+          if (valueA < valueB) return sortOrder === 'asc' ? -1 : 1;
+          if (valueA > valueB) return sortOrder === 'asc' ? 1 : -1;
+          return 0;
+        }),
+    [prototypeList, sortKey, sortOrder]
+  );
 
   // コンテキストメニューの状態
   const [contextMenu, setContextMenu] = useState<{
@@ -293,9 +334,7 @@ const ProjectList: React.FC = () => {
             disabled={!!isFetching}
             aria-label="プロジェクト一覧を最新化"
             title="プロジェクト一覧を最新化"
-            className={`w-10 h-10 p-0 z-dropdown ${
-              isFetching ? '' : ''
-            }`}
+            className={`w-10 h-10 p-0 z-dropdown ${isFetching ? '' : ''}`}
           >
             <IoReload
               // isFetching の間は連続回転。それ以外はクリック時に1周だけ回転。
@@ -314,6 +353,22 @@ const ProjectList: React.FC = () => {
                 if (!isFetching) setIsReloadAnimating(false);
               }}
             />
+          </KibakoButton>
+
+          {/* 表示切替ボタン */}
+          <KibakoButton
+            onClick={() => setViewMode(viewMode === 'card' ? 'table' : 'card')}
+            aria-label="表示切替"
+            title={
+              viewMode === 'card' ? 'テーブル表示に切替' : 'カード表示に切替'
+            }
+            className="w-10 h-10 p-0 z-dropdown"
+          >
+            {viewMode === 'card' ? (
+              <FaTable className="w-5 h-5" />
+            ) : (
+              <FaTh className="w-5 h-5" />
+            )}
           </KibakoButton>
         </div>
 
@@ -340,51 +395,63 @@ const ProjectList: React.FC = () => {
         </div>
       </div>
 
-      {/* プロジェクト一覧（カード形式） */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-        {prototypeList.map(({ masterPrototype, project }) => {
-          if (!masterPrototype) return null;
-          const { id } = masterPrototype;
-          const isNameEditing = isEditing(id);
+      {viewMode === 'card' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+          {prototypeList.map(({ masterPrototype, project }) => {
+            if (!masterPrototype) return null;
+            const { id } = masterPrototype;
+            const isNameEditing = isEditing(id);
 
-          /**
-           * カードクリック時の処理
-           */
-          const handleCardClick = () => {
-            router.push(`/projects/${project.id}/prototypes/${id}`);
-          };
+            /**
+             * カードクリック時の処理
+             */
+            const handleCardClick = () => {
+              router.push(`/projects/${project.id}/prototypes/${id}`);
+            };
 
-          /**
-           * ProjectCard用のイベントハンドラー
-           */
-          const handleProjectCardSubmit = (
-            e: React.FormEvent<HTMLFormElement>
-          ) => handleSubmit(e, handleNameEditComplete, validatePrototypeName);
+            /**
+             * ProjectCard用のイベントハンドラー
+             */
+            const handleProjectCardSubmit = (
+              e: React.FormEvent<HTMLFormElement>
+            ) => handleSubmit(e, handleNameEditComplete, validatePrototypeName);
 
-          const handleProjectCardBlur = () =>
-            handleBlur(handleNameEditComplete, validatePrototypeName);
+            const handleProjectCardBlur = () =>
+              handleBlur(handleNameEditComplete, validatePrototypeName);
 
-          const handleProjectCardKeyDown = (
-            e: React.KeyboardEvent<HTMLInputElement>
-          ) => handleKeyDown(e, handleNameEditComplete, validatePrototypeName);
+            const handleProjectCardKeyDown = (
+              e: React.KeyboardEvent<HTMLInputElement>
+            ) =>
+              handleKeyDown(e, handleNameEditComplete, validatePrototypeName);
 
-          return (
-            <ProjectCard
-              key={id}
-              project={project}
-              masterPrototype={masterPrototype}
-              isNameEditing={isNameEditing}
-              editedName={editedName}
-              setEditedName={setEditedName}
-              onCardClick={handleCardClick}
-              onContextMenu={handleContextMenu}
-              onSubmit={handleProjectCardSubmit}
-              onBlur={handleProjectCardBlur}
-              onKeyDown={handleProjectCardKeyDown}
-            />
-          );
-        })}
-      </div>
+            return (
+              <ProjectCard
+                key={id}
+                project={project}
+                masterPrototype={masterPrototype}
+                isNameEditing={isNameEditing}
+                editedName={editedName}
+                setEditedName={setEditedName}
+                onCardClick={handleCardClick}
+                onContextMenu={handleContextMenu}
+                onSubmit={handleProjectCardSubmit}
+                onBlur={handleProjectCardBlur}
+                onKeyDown={handleProjectCardKeyDown}
+              />
+            );
+          })}
+        </div>
+      ) : (
+        <ProjectTable
+          prototypeList={sortedPrototypeList}
+          sortKey={sortKey}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+          onRowClick={(projectId, prototypeId) =>
+            router.push(`/projects/${projectId}/prototypes/${prototypeId}`)
+          }
+        />
+      )}
 
       {/* コンテキストメニュー */}
       {contextMenu.targetProject &&

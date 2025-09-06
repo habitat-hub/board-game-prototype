@@ -14,20 +14,33 @@ import PartPropertyMenuButton from '@/features/prototype/components/atoms/PartPr
 import { usePartOverlayMessage } from '@/features/prototype/contexts/PartOverlayMessageContext';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
-import { calculateAlignmentInfo, getAlignmentUpdates, AlignmentType } from '@/features/prototype/utils/alignment';
+import {
+  calculateAlignmentInfo,
+  getAlignmentUpdates,
+  AlignmentType,
+} from '@/features/prototype/utils/alignment';
 
 interface PartPropertyMenuMultiProps {
   selectedParts: Part[];
   hidden: boolean;
 }
 
-export default function PartPropertyMenuMulti({ selectedParts, hidden }: PartPropertyMenuMultiProps) {
+export default function PartPropertyMenuMulti({
+  selectedParts,
+  hidden,
+}: PartPropertyMenuMultiProps) {
   const { dispatch } = usePartReducer();
   const { selectMultipleParts } = useSelectedParts();
   const { runShuffleEffect } = usePartOverlayMessage();
 
-  const alignInfo = useMemo(() => calculateAlignmentInfo(selectedParts), [selectedParts]);
-  const cardParts = useMemo(() => selectedParts.filter((p) => p.type === 'card'), [selectedParts]);
+  const alignInfo = useMemo(
+    () => calculateAlignmentInfo(selectedParts),
+    [selectedParts]
+  );
+  const cardParts = useMemo(
+    () => selectedParts.filter((p) => p.type === 'card'),
+    [selectedParts]
+  );
   const showActionSection = cardParts.length >= 2;
 
   const alignParts = useCallback(
@@ -37,15 +50,24 @@ export default function PartPropertyMenuMulti({ selectedParts, hidden }: PartPro
       if (updates.length === 0) return;
       dispatch({ type: 'UPDATE_PARTS', payload: { updates } });
     },
-    [alignInfo, selectedParts, dispatch],
+    [alignInfo, selectedParts, dispatch]
   );
 
   const handleAlignLeft = useCallback(() => alignParts('left'), [alignParts]);
   const handleAlignRight = useCallback(() => alignParts('right'), [alignParts]);
-  const handleAlignHCenter = useCallback(() => alignParts('hCenter'), [alignParts]);
+  const handleAlignHCenter = useCallback(
+    () => alignParts('hCenter'),
+    [alignParts]
+  );
   const handleAlignTop = useCallback(() => alignParts('top'), [alignParts]);
-  const handleAlignBottom = useCallback(() => alignParts('bottom'), [alignParts]);
-  const handleAlignVCenter = useCallback(() => alignParts('vCenter'), [alignParts]);
+  const handleAlignBottom = useCallback(
+    () => alignParts('bottom'),
+    [alignParts]
+  );
+  const handleAlignVCenter = useCallback(
+    () => alignParts('vCenter'),
+    [alignParts]
+  );
 
   /**
    * カードのみを選択し、裏面へ反転・中央へ寄せ・順序を公平にシャッフルする
@@ -106,7 +128,10 @@ export default function PartPropertyMenuMulti({ selectedParts, hidden }: PartPro
   }, [cardParts, selectMultipleParts, dispatch, runShuffleEffect]);
 
   return (
-    <div className="flex flex-col gap-2" style={{ display: hidden ? 'none' : 'flex' }}>
+    <div
+      className="flex flex-col gap-2"
+      style={{ display: hidden ? 'none' : 'flex' }}
+    >
       {showActionSection && (
         <>
           <p className="text-kibako-white">アクション</p>

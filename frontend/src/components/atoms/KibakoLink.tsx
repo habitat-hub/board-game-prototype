@@ -5,9 +5,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { buttonStyles } from './KibakoButton';
 
-interface KibakoLinkProps
-  extends LinkProps,
-    VariantProps<typeof buttonStyles> {
+interface KibakoLinkProps extends LinkProps, VariantProps<typeof buttonStyles> {
   children: ReactNode;
   className?: string;
 }
@@ -19,10 +17,7 @@ export default function KibakoLink({
   className = '',
   ...props
 }: KibakoLinkProps) {
-  const buttonClasses = twMerge(
-    buttonStyles({ variant, size }),
-    className,
-  );
+  const buttonClasses = twMerge(buttonStyles({ variant, size }), className);
 
   return (
     <Link className={buttonClasses} {...props}>

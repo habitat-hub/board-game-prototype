@@ -18,7 +18,7 @@ const TABS = [
   { id: 'parts' as const, label: 'Parts' },
 ];
 
-type TabId = typeof TABS[number]['id'];
+type TabId = (typeof TABS)[number]['id'];
 
 interface DebugInfoProps {
   camera: {
@@ -96,4 +96,3 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
 };
 
 export default DebugInfo;
-

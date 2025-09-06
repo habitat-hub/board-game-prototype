@@ -436,12 +436,18 @@ export default function GameBoard({
           }
           try {
             const s3ImageBlob = await fetchImage(imageId);
-            const imageResult = await saveImageToIndexedDb(imageId, s3ImageBlob);
+            const imageResult = await saveImageToIndexedDb(
+              imageId,
+              s3ImageBlob
+            );
             if (imageResult) {
               return { imageId, url: imageResult.objectURL };
             }
           } catch (error) {
-            console.warn(`Image with ID ${imageId} could not be loaded.`, error);
+            console.warn(
+              `Image with ID ${imageId} could not be loaded.`,
+              error
+            );
           }
           return null;
         })
@@ -497,121 +503,120 @@ export default function GameBoard({
 
   return (
     <DebugModeProvider>
-      
       {/* Provide overlay messages for parts (e.g., shuffle text like deck) */}
       <PartOverlayMessageProvider>
-      <ModeToggleButton
-        isSelectionMode={isSelectionMode}
-        onToggle={toggleMode}
-      />
-      <GameBoardCanvas
-        stageRef={stageRef}
-        viewportSize={viewportSize}
-        canvasSize={canvasSize}
-        camera={camera}
-        gameBoardMode={gameBoardMode}
-        isSelectionMode={isSelectionMode}
-        cursorStyle={cursorStyle}
-        grabbingHandlers={grabbingHandlers}
-        handleWheel={handleWheel}
-        handleStageClick={handleStageClick}
-        handleCloseContextMenu={handleCloseContextMenu}
-        handleSelectionMove={handleSelectionMove}
-        handleSelectionEnd={handleSelectionEnd}
-        handleDragMove={handleDragMove}
-        handleSelectionStart={handleSelectionStart}
-        handleBackgroundClick={handleBackgroundClick}
-        parts={parts}
-        propertiesMap={propertiesMap}
-        images={images}
-        selectedPartIds={selectedPartIds}
-        selectedUsersByPart={selectedUsersByPart}
-        cardVisibilityMap={cardVisibilityMap}
-        selfUser={selfUser}
-        userRoles={userRoles}
-        handlePartClick={handlePartClick}
-        handlePartDragStart={handlePartDragStart}
-        handlePartDragMove={handlePartDragMove}
-        handlePartDragEnd={handlePartDragEnd}
-        handlePartContextMenu={handlePartContextMenu}
-        rectForSelection={rectForSelection}
-      />
-
-      <LeftSidebar
-        prototypeName={prototypeName}
-        prototypeId={prototypeId}
-        gameBoardMode={gameBoardMode}
-        projectId={projectId}
-        onPrototypeNameChange={setPrototypeName}
-      />
-
-      {/* ロールメニュー - CREATEモードとPLAYモードで表示 */}
-      {(gameBoardMode === GameBoardMode.CREATE ||
-        gameBoardMode === GameBoardMode.PLAY) && (
-        <RightTopMenu
-          projectId={projectId}
-          connectedUsers={connectedUsers}
-          roleUsers={roleUsers}
-          loading={false}
-          showRoleManagementButton={gameBoardMode === GameBoardMode.CREATE}
+        <ModeToggleButton
+          isSelectionMode={isSelectionMode}
+          onToggle={toggleMode}
         />
-      )}
-
-      {gameBoardMode === GameBoardMode.CREATE && (
-        <PartCreateMenu
-          onAddPart={handleAddPart}
-          camera={camera}
+        <GameBoardCanvas
+          stageRef={stageRef}
           viewportSize={viewportSize}
-          parts={parts} // 追加
-        />
-      )}
-
-      <PartPropertyMenu
-        selectedPartIds={selectedPartIds}
-        parts={parts}
-        properties={properties}
-        onDuplicatePart={handleDuplicatePart}
-        onDeletePart={handleDeleteParts}
-        onDeleteImage={handleDeleteImage}
-        gameBoardMode={gameBoardMode}
-      />
-
-      {/* プレイルーム時のサイドバー */}
-      {gameBoardMode === GameBoardMode.PLAY && (
-        <PlaySidebar
+          canvasSize={canvasSize}
+          camera={camera}
+          gameBoardMode={gameBoardMode}
+          isSelectionMode={isSelectionMode}
+          cursorStyle={cursorStyle}
+          grabbingHandlers={grabbingHandlers}
+          handleWheel={handleWheel}
+          handleStageClick={handleStageClick}
+          handleCloseContextMenu={handleCloseContextMenu}
+          handleSelectionMove={handleSelectionMove}
+          handleSelectionEnd={handleSelectionEnd}
+          handleDragMove={handleDragMove}
+          handleSelectionStart={handleSelectionStart}
+          handleBackgroundClick={handleBackgroundClick}
           parts={parts}
-          onSelectPart={(partId) => selectPart(partId)}
-          selectedPartId={
-            selectedPartIds.length === 1 ? selectedPartIds[0] : null
-          }
+          propertiesMap={propertiesMap}
+          images={images}
+          selectedPartIds={selectedPartIds}
+          selectedUsersByPart={selectedUsersByPart}
+          cardVisibilityMap={cardVisibilityMap}
+          selfUser={selfUser}
           userRoles={userRoles}
+          handlePartClick={handlePartClick}
+          handlePartDragStart={handlePartDragStart}
+          handlePartDragMove={handlePartDragMove}
+          handlePartDragEnd={handlePartDragEnd}
+          handlePartContextMenu={handlePartContextMenu}
+          rectForSelection={rectForSelection}
         />
-      )}
 
-      <ZoomToolbar
-        zoomIn={handleZoomIn}
-        zoomOut={handleZoomOut}
-        canZoomIn={canZoomIn}
-        canZoomOut={canZoomOut}
-        zoomLevel={camera.scale}
-      />
+        <LeftSidebar
+          prototypeName={prototypeName}
+          prototypeId={prototypeId}
+          gameBoardMode={gameBoardMode}
+          projectId={projectId}
+          onPrototypeNameChange={setPrototypeName}
+        />
 
-      <DebugInfo
-        camera={camera}
-        prototypeName={prototypeName}
-        projectId={projectId}
-        mode={gameBoardMode}
-        parts={parts}
-        properties={properties}
-      />
+        {/* ロールメニュー - CREATEモードとPLAYモードで表示 */}
+        {(gameBoardMode === GameBoardMode.CREATE ||
+          gameBoardMode === GameBoardMode.PLAY) && (
+          <RightTopMenu
+            projectId={projectId}
+            connectedUsers={connectedUsers}
+            roleUsers={roleUsers}
+            loading={false}
+            showRoleManagementButton={gameBoardMode === GameBoardMode.CREATE}
+          />
+        )}
 
-      {/* コンテキストメニュー */}
-      <ProjectContextMenu
-        visible={showContextMenu && contextMenuPartId !== null}
-        position={menuPosition}
-        onClose={handleCloseContextMenu}
-        items={getContextMenuItems(contextMenuPartId!)}
-      />
+        {gameBoardMode === GameBoardMode.CREATE && (
+          <PartCreateMenu
+            onAddPart={handleAddPart}
+            camera={camera}
+            viewportSize={viewportSize}
+            parts={parts} // 追加
+          />
+        )}
+
+        <PartPropertyMenu
+          selectedPartIds={selectedPartIds}
+          parts={parts}
+          properties={properties}
+          onDuplicatePart={handleDuplicatePart}
+          onDeletePart={handleDeleteParts}
+          onDeleteImage={handleDeleteImage}
+          gameBoardMode={gameBoardMode}
+        />
+
+        {/* プレイルーム時のサイドバー */}
+        {gameBoardMode === GameBoardMode.PLAY && (
+          <PlaySidebar
+            parts={parts}
+            onSelectPart={(partId) => selectPart(partId)}
+            selectedPartId={
+              selectedPartIds.length === 1 ? selectedPartIds[0] : null
+            }
+            userRoles={userRoles}
+          />
+        )}
+
+        <ZoomToolbar
+          zoomIn={handleZoomIn}
+          zoomOut={handleZoomOut}
+          canZoomIn={canZoomIn}
+          canZoomOut={canZoomOut}
+          zoomLevel={camera.scale}
+        />
+
+        <DebugInfo
+          camera={camera}
+          prototypeName={prototypeName}
+          projectId={projectId}
+          mode={gameBoardMode}
+          parts={parts}
+          properties={properties}
+        />
+
+        {/* コンテキストメニュー */}
+        <ProjectContextMenu
+          visible={showContextMenu && contextMenuPartId !== null}
+          position={menuPosition}
+          onClose={handleCloseContextMenu}
+          items={getContextMenuItems(contextMenuPartId!)}
+        />
       </PartOverlayMessageProvider>
     </DebugModeProvider>
   );

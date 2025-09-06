@@ -14,4 +14,3 @@ export const LABEL_MARKER_RADIUS: number = 4;
 export const LABEL_MARKER_Y: number = 8;
 export const LABEL_TEXT_X: number = 22;
 export const LABEL_FONT_SIZE: number = 24;
-

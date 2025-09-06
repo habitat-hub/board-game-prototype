@@ -21,4 +21,3 @@ export const revokeObjectURLAndCleanCache = (id: string): void => {
 export const revokeMultipleObjectURLsAndCleanCache = (ids: string[]): void => {
   ids.forEach((id) => revokeObjectURLAndCleanCache(id));
 };
-
