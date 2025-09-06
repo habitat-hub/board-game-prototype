@@ -74,8 +74,9 @@ export default function PartPropertyMenuSingle({
     );
     if (JSON.stringify(currentProperty) === JSON.stringify(updatedProperty)) return;
     // API は imageId のみ受け付けるため image は除外（イミュータブルに除外）
-    const { image: _omit, ...updateProperty } =
-      updatedProperty as PartPropertyUpdate & { image?: unknown };
+    const { image: imageToDrop, ...updateProperty } =
+      (updatedProperty as PartPropertyUpdate & { image?: unknown });
+    void imageToDrop;
     dispatch({
       type: 'UPDATE_PART',
       payload: { partId: selectedPart.id, updateProperties: [updateProperty] },

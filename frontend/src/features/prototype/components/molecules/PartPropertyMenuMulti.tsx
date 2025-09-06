@@ -11,6 +11,7 @@ import {
 
 import { Part } from '@/api/types';
 import PartPropertyMenuButton from '@/features/prototype/components/atoms/PartPropertyMenuButton';
+import { usePartOverlayMessage } from '@/features/prototype/contexts/PartOverlayMessageContext';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { calculateAlignmentInfo, getAlignmentUpdates, AlignmentType } from '@/features/prototype/utils/alignment';
@@ -23,6 +24,7 @@ interface PartPropertyMenuMultiProps {
 export default function PartPropertyMenuMulti({ selectedParts, hidden }: PartPropertyMenuMultiProps) {
   const { dispatch } = usePartReducer();
   const { selectMultipleParts } = useSelectedParts();
+  const { runShuffleEffect } = usePartOverlayMessage();
 
   const alignInfo = useMemo(() => calculateAlignmentInfo(selectedParts), [selectedParts]);
   const cardParts = useMemo(() => selectedParts.filter((p) => p.type === 'card'), [selectedParts]);
@@ -47,13 +49,22 @@ export default function PartPropertyMenuMulti({ selectedParts, hidden }: PartPro
 
   const handleShuffleCards = useCallback(() => {
     if (cardParts.length < 2) return;
-    selectMultipleParts(cardParts.map((p) => p.id));
+    const ids = cardParts.map((p) => p.id);
+    selectMultipleParts(ids);
+    // Visual feedback like deck: show overlay texts on the cards
+    runShuffleEffect(ids);
     const info = calculateAlignmentInfo(cardParts);
     if (!info) return;
-    const shuffledOrders = [...cardParts.map((p) => p.order)].sort(
-      () => Math.random() - 0.5,
-    );
-    const updates = cardParts.map((p, index) => ({
+
+    // Shuffle target parts themselves (not only their order values)
+    const shuffledParts = [...cardParts].sort(() => Math.random() - 0.5);
+
+    // Ensure unique z-orders to actually change draw order even if current orders are duplicated.
+    // Keep them roughly around current range by starting from the minimum order and adding a tiny step.
+    const minOrder = Math.min(...cardParts.map((p) => p.order));
+    const step = 0.001; // small step to avoid big jumps vs other parts
+
+    const updates = shuffledParts.map((p, index) => ({
       partId: p.id,
       updatePart: {
         position: {
@@ -62,11 +73,11 @@ export default function PartPropertyMenuMulti({ selectedParts, hidden }: PartPro
           y: Math.round(info.centerY - p.height / 2),
         },
         frontSide: 'back' as const,
-        order: shuffledOrders[index],
+        order: minOrder + index * step,
       },
     }));
     dispatch({ type: 'UPDATE_PARTS', payload: { updates } });
-  }, [cardParts, selectMultipleParts, dispatch]);
+  }, [cardParts, selectMultipleParts, dispatch, runShuffleEffect]);
 
   return (
     <div className="flex flex-col gap-2" style={{ display: hidden ? 'none' : 'flex' }}>
