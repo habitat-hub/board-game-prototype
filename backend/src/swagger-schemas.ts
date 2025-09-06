@@ -1,5 +1,5 @@
 // This file is auto-generated. DO NOT EDIT.
-/* eslint-disable */
+
 export const swaggerSchemas = {
   components: {
     schemas: {

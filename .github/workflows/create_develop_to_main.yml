@@ -1,15 +1,11 @@
 name: Create develop to main PR
 
 # このワークフローが実行される条件:
-# 1. developブランチへのpush時に自動実行
-# 2. 手動実行（workflow_dispatch）も可能
-# 目的：developブランチの変更を自動的にmainブランチへのPRとして作成
+# 1. 手動実行（workflow_dispatch）のみ
+# 目的：developブランチの変更をmainブランチへのPRとして作成
 # 既存のPRがある場合は重複作成を防ぐロジックが組み込まれている
 on:
-  push:
-    branches:
-      - develop  # developブランチへのpush時に自動でPR作成
-  workflow_dispatch: # Allow manual triggering for maintenance and debugging
+  workflow_dispatch: # Manual trigger only
 
 permissions:
   contents: read
