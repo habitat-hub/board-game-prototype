@@ -1,3 +1,4 @@
+/** File updated by Codex CLI **/
 import axios from 'axios';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { FaRegCopy, FaRegTrashAlt, FaImage, FaSpinner } from 'react-icons/fa';
@@ -72,8 +73,9 @@ export default function PartPropertyMenuSingle({
       { ...currentProperty, ...property } as PartPropertyWithImage
     );
     if (JSON.stringify(currentProperty) === JSON.stringify(updatedProperty)) return;
-    // API は imageId のみ受け付けるため image は除外
-    const { image: _omit, ...updateProperty } = updatedProperty;
+    // API は imageId のみ受け付けるため image を除外
+    const { image: _unusedImage, ...rest } = updatedProperty;
+    const updateProperty: PartPropertyUpdate = rest;
     dispatch({
       type: 'UPDATE_PART',
       payload: { partId: selectedPart.id, updateProperties: [updateProperty] },
@@ -142,13 +144,19 @@ export default function PartPropertyMenuSingle({
     <div className="flex flex-col gap-2" style={{ display: hidden ? 'none' : 'flex' }}>
       {!isPlayMode && (
         <div className="flex items-center justify-around px-2 pb-2">
-          <PartPropertyMenuButton text="複製" icon={<FaRegCopy className="h-3 w-3" />} onClick={onDuplicatePart} />
+          <PartPropertyMenuButton
+            text="複製"
+            icon={<FaRegCopy className="h-3 w-3" />}
+            onClick={onDuplicatePart}
+            title="Cmd/Ctrl + D"
+          />
           <PartPropertyMenuButton
             text="削除"
             icon={<FaRegTrashAlt className="h-3 w-3" />}
             onClick={() => {
               onDeletePart();
             }}
+            title="Delete / Backspace"
           />
         </div>
       )}
