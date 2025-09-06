@@ -48,7 +48,9 @@ export default function RightTopMenu({
   const activeUserIds = new Set(connectedUsers.map((u) => u.userId));
 
   return (
-    <div className={`fixed top-4 right-4 z-overlay flex flex-row items-center gap-2 h-[56px] bg-kibako-white p-2 rounded-lg`}>
+    <div
+      className={`fixed top-4 right-4 z-overlay flex flex-row items-center gap-2 h-[56px] bg-kibako-white p-2 rounded-lg`}
+    >
       {/* ユーザーアイコンリスト（左側・ホバーで全ユーザー名表示） */}
       {!loading && connectedUsers && connectedUsers.length > 0 && (
         <div className="relative group">

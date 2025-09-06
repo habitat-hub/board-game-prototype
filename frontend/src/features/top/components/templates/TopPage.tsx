@@ -34,9 +34,12 @@ const TopPage: React.FC = () => {
     if (typeof navigator === 'undefined') return;
 
     const ua = navigator.userAgent || '';
-    const isMobileUA = /Android|iPhone|iPod|iPad|Mobile|Windows Phone/i.test(ua);
+    const isMobileUA = /Android|iPhone|iPod|iPad|Mobile|Windows Phone/i.test(
+      ua
+    );
     // iPadOS 13+ は Mac と判定されるケースがあるため補助条件
-    const isIPadOS13 = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+    const isIPadOS13 =
+      navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
 
     setIsNonPC(isMobileUA || isIPadOS13);
   }, []);
@@ -90,7 +93,7 @@ const TopPage: React.FC = () => {
 
           {/* メインアイコン */}
           <motion.div
-            className="relative z-sticky bg-gradient-to-br from-amber-500 to-amber-700 p-6 rounded-full shadow-2xl"
+            className="relative z-10 bg-gradient-to-br from-amber-500 to-amber-700 p-6 rounded-full shadow-2xl"
             whileHover={{
               rotate: [-5, 5, -5, 5, 0],
               transition: { duration: 0.5 },
@@ -207,7 +210,7 @@ const TopPage: React.FC = () => {
           />
         </div>
 
-        <div className="container mx-auto px-4 relative z-sticky">
+        <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -305,7 +308,7 @@ const TopPage: React.FC = () => {
         className="relative"
       >
         <div className="absolute inset-0 bg-amber-600 opacity-5 -skew-y-6 transform origin-top-left z-base rounded-3xl"></div>
-        <div className="container-fluid w-full max-w-[1800px] mx-auto px-4 py-12 md:py-24 relative z-sticky">
+        <div className="container-fluid w-full max-w-[1800px] mx-auto px-4 py-12 md:py-24 relative z-10">
           <AnimatePresence>
             {isLoaded && (
               <motion.div
@@ -500,7 +503,7 @@ const TopPage: React.FC = () => {
       {/* 使い方セクション */}
       <div className="py-16 relative">
         <div className="absolute inset-0 bg-amber-200 opacity-30 transform -skew-y-3 origin-top z-base rounded-3xl"></div>
-        <div className="container-fluid max-w-[1800px] mx-auto px-4 relative z-sticky">
+        <div className="container-fluid max-w-[1800px] mx-auto px-4 relative z-10">
           <motion.h2
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -580,7 +583,7 @@ const TopPage: React.FC = () => {
           <div className="absolute top-1/2 left-1/3 w-20 h-20 bg-amber-50 rounded-full"></div>
         </motion.div>
 
-        <div className="container-fluid max-w-[1800px] mx-auto px-4 relative z-sticky">
+        <div className="container-fluid max-w-[1800px] mx-auto px-4 relative z-10">
           <div className="text-center">
             <motion.h2
               initial={{ y: 30, opacity: 0 }}

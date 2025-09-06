@@ -3,7 +3,7 @@ import { ButtonHTMLAttributes, ReactNode } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 export const buttonStyles = cva(
-  'inline-flex items-center justify-center text-sm font-bold rounded-xl shadow-sm transition-all duration-300 transform focus:outline-none focus:ring-2 focus:ring-kibako-primary disabled:opacity-80 disabled:cursor-not-allowed',
+  'inline-flex items-center justify-center text-sm font-bold rounded-xl shadow-sm transition-all duration-300 transform focus:outline-none disabled:opacity-80 disabled:cursor-not-allowed',
   {
     variants: {
       variant: {
@@ -24,7 +24,7 @@ export const buttonStyles = cva(
       variant: 'primary',
       size: 'md',
     },
-  },
+  }
 );
 
 interface KibakoButtonProps
@@ -44,10 +44,7 @@ export default function KibakoButton({
   isLoading = false,
   ...props
 }: KibakoButtonProps) {
-  const buttonClasses = twMerge(
-    buttonStyles({ variant, size }),
-    className,
-  );
+  const buttonClasses = twMerge(buttonStyles({ variant, size }), className);
 
   return isLoading ? (
     // ローディング中(3つのドットを点滅表示)

@@ -177,7 +177,9 @@ const RoleManagement: React.FC = () => {
 
         <div className="flex justify-center items-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-kibako-secondary"></div>
-          <span className="ml-3 text-kibako-primary">権限情報を読み込み中...</span>
+          <span className="ml-3 text-kibako-primary">
+            権限情報を読み込み中...
+          </span>
         </div>
       </div>
     );

@@ -2,10 +2,7 @@ import type Konva from 'konva';
 import { useCallback } from 'react';
 
 import { CAMERA_SCALE } from '@/features/prototype/constants';
-import {
-  CameraPosition,
-  ViewportSize,
-} from '@/features/prototype/types';
+import { CameraPosition, ViewportSize } from '@/features/prototype/types';
 
 interface UseCameraHandlersProps {
   camera: CameraPosition;

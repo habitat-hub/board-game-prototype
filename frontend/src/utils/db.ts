@@ -1,6 +1,12 @@
 import { openDB } from 'idb';
 
-import { getCachedObjectURL, setCachedObjectURL, hasCachedObjectURL, revokeObjectURLAndCleanCache, revokeMultipleObjectURLsAndCleanCache } from './imageCache';
+import {
+  getCachedObjectURL,
+  setCachedObjectURL,
+  hasCachedObjectURL,
+  revokeObjectURLAndCleanCache,
+  revokeMultipleObjectURLsAndCleanCache,
+} from './imageCache';
 
 const DB_NAME = 'BoardGamePrototype';
 const STORE_NAME = 'images';
@@ -10,7 +16,6 @@ type IndexedDbImageResult = {
   imageBlob: Blob;
   objectURL: string;
 };
-
 
 // IndexedDBの初期化関数
 export const getIndexedDb = async () => {

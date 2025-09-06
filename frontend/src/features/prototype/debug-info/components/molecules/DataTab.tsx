@@ -19,7 +19,9 @@ const DataTab: React.FC<DataTabProps> = ({ parts, properties }) => {
         <div className="font-semibold">Parts: {parts.length}</div>
         {parts.length > 0 && (
           <div className="ml-2.5 text-xs space-y-1">
-            <div>Types: {[...new Set(parts.map((p) => p.type))].join(', ')}</div>
+            <div>
+              Types: {[...new Set(parts.map((p) => p.type))].join(', ')}
+            </div>
             <div>
               Front Side Cards:{' '}
               {
@@ -37,7 +39,10 @@ const DataTab: React.FC<DataTabProps> = ({ parts, properties }) => {
               {Math.max(...parts.map((p) => p.order)).toFixed(2)}
             </div>
             <div>Total Properties: {properties.length}</div>
-            <div>Properties with Images: {properties.filter((p) => p.imageId).length}</div>
+            <div>
+              Properties with Images:{' '}
+              {properties.filter((p) => p.imageId).length}
+            </div>
           </div>
         )}
       </div>
@@ -46,4 +51,3 @@ const DataTab: React.FC<DataTabProps> = ({ parts, properties }) => {
 };
 
 export default DataTab;
-

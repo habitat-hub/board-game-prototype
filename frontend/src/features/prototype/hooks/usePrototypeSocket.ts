@@ -301,12 +301,14 @@ export const usePrototypeSocket = ({
 
   const selectedUsersByPart = useMemo(() => {
     const map: Record<number, ConnectedUser[]> = {};
-    Object.entries(otherSelections).forEach(([uid, { username, selectedPartIds }]) => {
-      selectedPartIds.forEach((id) => {
-        if (!map[id]) map[id] = [];
-        map[id].push({ userId: uid, username });
-      });
-    });
+    Object.entries(otherSelections).forEach(
+      ([uid, { username, selectedPartIds }]) => {
+        selectedPartIds.forEach((id) => {
+          if (!map[id]) map[id] = [];
+          map[id].push({ userId: uid, username });
+        });
+      }
+    );
     return map;
   }, [otherSelections]);
 

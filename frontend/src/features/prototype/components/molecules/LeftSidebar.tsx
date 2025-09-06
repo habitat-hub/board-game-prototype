@@ -82,7 +82,7 @@ export default function LeftSidebar({
       router.push('/projects');
       return;
     }
-  // プレビューまたはプレイルームの場合はマスタープロトタイプに戻る
+    // プレビューまたはプレイルームの場合はマスタープロトタイプに戻る
     if (
       gameBoardMode === GameBoardMode.PLAY ||
       gameBoardMode === GameBoardMode.PREVIEW

@@ -1,4 +1,11 @@
-import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 type PartOverlayMessageMap = Map<number, string | null>;
 
@@ -10,11 +17,17 @@ type PartOverlayMessageContextType = {
   runShuffleEffect: (partIds: number[]) => void;
 };
 
-const PartOverlayMessageContext = createContext<PartOverlayMessageContextType | undefined>(undefined);
+const PartOverlayMessageContext = createContext<
+  PartOverlayMessageContextType | undefined
+>(undefined);
 
-export const PartOverlayMessageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const PartOverlayMessageProvider: React.FC<{
+  children: React.ReactNode;
+}> = ({ children }) => {
   const [messages, setMessages] = useState<PartOverlayMessageMap>(new Map());
-  const timersRef = useRef<Map<number, { step?: NodeJS.Timeout; hide?: NodeJS.Timeout }>>(new Map());
+  const timersRef = useRef<
+    Map<number, { hide?: ReturnType<typeof setTimeout> }>
+  >(new Map());
 
   const setMessage = useCallback((partId: number, message: string | null) => {
     setMessages((prev) => {
@@ -24,30 +37,29 @@ export const PartOverlayMessageProvider: React.FC<{ children: React.ReactNode }>
     });
   }, []);
 
-  const clearMessage = useCallback((partId: number) => {
-    const timers = timersRef.current.get(partId);
-    if (timers?.step) clearTimeout(timers.step);
-    if (timers?.hide) clearTimeout(timers.hide);
-    timersRef.current.delete(partId);
-    setMessage(partId, null);
-  }, [setMessage]);
+  const clearMessage = useCallback(
+    (partId: number) => {
+      const timers = timersRef.current.get(partId);
+      if (timers?.hide) clearTimeout(timers.hide);
+      timersRef.current.delete(partId);
+      setMessage(partId, null);
+    },
+    [setMessage]
+  );
 
-  const runShuffleEffect = useCallback((partIds: number[]) => {
-    // Only show the completion message, then hide shortly after
-    partIds.forEach((id) => setMessage(id, 'シャッフルしました'));
-
-    const hideTimeout = setTimeout(() => {
-      partIds.forEach((id) => clearMessage(id));
-    }, 1000);
-
-    // Track timers per id so we can clear if needed
-    partIds.forEach((id) => {
-      const current = timersRef.current.get(id) || {};
-      if (current.step) clearTimeout(current.step);
-      if (current.hide) clearTimeout(current.hide);
-      timersRef.current.set(id, { hide: hideTimeout });
-    });
-  }, [clearMessage, setMessage]);
+  const runShuffleEffect = useCallback(
+    (partIds: number[]) => {
+      // Show completion message per id and schedule per-id hide
+      partIds.forEach((id) => {
+        setMessage(id, 'シャッフルしました');
+        const current = timersRef.current.get(id) || {};
+        if (current.hide) clearTimeout(current.hide);
+        const hide = setTimeout(() => clearMessage(id), 1000);
+        timersRef.current.set(id, { hide });
+      });
+    },
+    [clearMessage, setMessage]
+  );
 
   const value = useMemo(
     () => ({ messages, setMessage, clearMessage, runShuffleEffect }),
@@ -63,6 +75,9 @@ export const PartOverlayMessageProvider: React.FC<{ children: React.ReactNode }>
 
 export const usePartOverlayMessage = (): PartOverlayMessageContextType => {
   const ctx = useContext(PartOverlayMessageContext);
-  if (!ctx) throw new Error('usePartOverlayMessage must be used within PartOverlayMessageProvider');
+  if (!ctx)
+    throw new Error(
+      'usePartOverlayMessage は PartOverlayMessageProvider の内部でのみ使用できます'
+    );
   return ctx;
 };

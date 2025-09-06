@@ -1,9 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus, FaTable, FaTh } from 'react-icons/fa';
 import { IoReload } from 'react-icons/io5';
 import { RiLoaderLine } from 'react-icons/ri';
 
@@ -11,10 +11,12 @@ import { useProject } from '@/api/hooks/useProject';
 import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Prototype, Project } from '@/api/types';
 import KibakoButton from '@/components/atoms/KibakoButton';
+import KibakoToggle from '@/components/atoms/KibakoToggle';
 import Loading from '@/components/organisms/Loading';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
 import { EmptyProjectState } from '@/features/prototype/components/molecules/EmptyProjectState';
-import { ProjectCard } from '@/features/prototype/components/molecules/ProjectCard';
+import { ProjectCardList } from '@/features/prototype/components/molecules/ProjectCardList';
+import { ProjectTable } from '@/features/prototype/components/molecules/ProjectTable';
 import useInlineEdit from '@/hooks/useInlineEdit';
 import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
 
@@ -58,12 +60,56 @@ const ProjectList: React.FC = () => {
   // リロードアイコンのワンショットアニメーション制御
   const [isReloadAnimating, setIsReloadAnimating] = useState<boolean>(false);
 
+  // 表示モードとソート設定
+  const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
+  const [sortKey, setSortKey] = useState<'name' | 'createdAt'>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  const handleSort = (key: 'name' | 'createdAt') => {
+    if (sortKey === key) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortOrder('asc');
+    }
+  };
+
   // データ変換処理
-  const prototypeList =
-    projectsData?.map(({ project, prototypes }) => ({
-      project,
-      masterPrototype: prototypes.find(({ type }) => type === 'MASTER'),
-    })) || [];
+  const prototypeList = useMemo(
+    () =>
+      projectsData?.map(({ project, prototypes }) => ({
+        project,
+        masterPrototype: prototypes.find(({ type }) => type === 'MASTER'),
+      })) || [],
+    [projectsData]
+  );
+
+  const sortedPrototypeList = useMemo(
+    () =>
+      prototypeList
+        .filter(
+          (item): item is { project: Project; masterPrototype: Prototype } =>
+            !!item.masterPrototype
+        )
+        .sort((a, b) => {
+          if (sortKey === 'name') {
+            const nameA = a.masterPrototype.name ?? '';
+            const nameB = b.masterPrototype.name ?? '';
+            return sortOrder === 'asc'
+              ? nameA.localeCompare(nameB, 'ja')
+              : nameB.localeCompare(nameA, 'ja');
+          } else {
+            const tA = a.masterPrototype.createdAt
+              ? new Date(a.masterPrototype.createdAt).getTime()
+              : 0;
+            const tB = b.masterPrototype.createdAt
+              ? new Date(b.masterPrototype.createdAt).getTime()
+              : 0;
+            return sortOrder === 'asc' ? tA - tB : tB - tA;
+          }
+        }),
+    [prototypeList, sortKey, sortOrder]
+  );
 
   // コンテキストメニューの状態
   const [contextMenu, setContextMenu] = useState<{
@@ -275,116 +321,116 @@ const ProjectList: React.FC = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto py-16 relative px-4">
-      {/* タイトルと作成ボタンを同じ行に表示（小さい画面では縦並び） */}
-      <div className="sticky top-20 z-sticky bg-transparent backdrop-blur-sm flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 py-4 rounded-lg">
-        <div className="flex items-center gap-3">
-          <h1 className="text-3xl text-kibako-primary font-bold mb-0">
-            プロジェクト一覧
-          </h1>
-
-          {/* リロード（プロジェクト一覧を最新化）ボタン */}
-          <KibakoButton
-            onClick={() => {
-              // クリック時に必ず1周アニメーションさせる（取得中は連続回転に切り替え）
-              setIsReloadAnimating(true);
-              if (refetch) refetch();
-            }}
-            disabled={!!isFetching}
-            aria-label="プロジェクト一覧を最新化"
-            title="プロジェクト一覧を最新化"
-            className={`w-10 h-10 p-0 z-dropdown ${
-              isFetching ? '' : ''
-            }`}
-          >
-            <IoReload
-              // isFetching の間は連続回転。それ以外はクリック時に1周だけ回転。
-              className={`w-5 h-5 ${isFetching ? 'animate-spin' : ''}`}
-              style={
-                !isFetching && isReloadAnimating
-                  ? {
-                      // Tailwind の keyframes "spin" を1回だけ実行
-                      animation: 'spin 1.2s linear 1',
-                      display: 'inline-block',
-                    }
-                  : { display: 'inline-block' }
-              }
-              onAnimationEnd={() => {
-                // 取得中でない時のみ、ワンショットアニメーションのフラグを戻す
-                if (!isFetching) setIsReloadAnimating(false);
+    <div className="max-w-6xl mx-auto py-8 relative px-4">
+      {/* 1行目: タイトルと新規作成を横並び、2行目: 右端にトグル */}
+      <div className="sticky top-20 z-sticky bg-transparent backdrop-blur-sm flex flex-col gap-8 py-4 rounded-lg">
+        {/* 1行目 */}
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          {/* 左側: タイトル + リロード */}
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl text-kibako-primary font-bold mb-0">
+              プロジェクト一覧
+            </h1>
+            <KibakoButton
+              onClick={() => {
+                setIsReloadAnimating(true);
+                if (refetch) refetch();
               }}
-            />
-          </KibakoButton>
+              disabled={!!isFetching}
+              aria-label="プロジェクト一覧を最新化"
+              title="プロジェクト一覧を最新化"
+              className={`w-10 h-10 p-0 z-dropdown ${isFetching ? '' : ''}`}
+            >
+              <IoReload
+                className={`w-5 h-5 ${isFetching ? 'animate-spin' : ''}`}
+                style={
+                  !isFetching && isReloadAnimating
+                    ? {
+                        animation: 'spin 1.2s linear 1',
+                        display: 'inline-block',
+                      }
+                    : { display: 'inline-block' }
+                }
+                onAnimationEnd={() => {
+                  if (!isFetching) setIsReloadAnimating(false);
+                }}
+              />
+            </KibakoButton>
+          </div>
+
+          {/* 右側: 新規作成 */}
+          <div className="flex items-center">
+            <KibakoButton
+              onClick={handleCreatePrototype}
+              disabled={isCreating}
+              className="gap-2 h-12 px-4 shadow-lg hover:shadow-xl z-dropdown"
+              title={isCreating ? '作成中...' : '新しいプロジェクトを作成'}
+            >
+              {isCreating ? (
+                <>
+                  <RiLoaderLine className="w-5 h-5 animate-spin" />
+                  <span className="text-sm">作成中...</span>
+                </>
+              ) : (
+                <>
+                  <FaPlus className="w-5 h-5" />
+                  <span className="text-sm">新規作成</span>
+                </>
+              )}
+            </KibakoButton>
+          </div>
         </div>
 
-        <div className="ml-0 md:ml-4 flex items-center gap-2">
-          {/** 新規作成ボタン（右側に残す） */}
-          <KibakoButton
-            onClick={handleCreatePrototype}
-            disabled={isCreating}
-            className="gap-2 h-12 px-4 shadow-lg hover:shadow-xl z-dropdown"
-            title={isCreating ? '作成中...' : '新しいプロジェクトを作成'}
-          >
-            {isCreating ? (
-              <>
-                <RiLoaderLine className="w-5 h-5 animate-spin" />
-                <span className="text-sm">作成中...</span>
-              </>
-            ) : (
-              <>
-                <FaPlus className="w-5 h-5" />
-                <span className="text-sm">新規作成</span>
-              </>
-            )}
-          </KibakoButton>
+        {/* 2行目 */}
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-kibako-secondary">{`合計プロジェクト数: ${sortedPrototypeList.length}`}</span>
+          <KibakoToggle
+            checked={viewMode === 'table'}
+            onChange={(checked) => setViewMode(checked ? 'table' : 'card')}
+            labelLeft={<FaTh className="w-4 h-4" aria-hidden="true" />}
+            labelRight={<FaTable className="w-4 h-4" aria-hidden="true" />}
+            shouldChangeBackgroud={false}
+            ariaLabel={
+              viewMode === 'card' ? 'テーブル表示に切替' : 'カード表示に切替'
+            }
+          />
         </div>
       </div>
 
-      {/* プロジェクト一覧（カード形式） */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-        {prototypeList.map(({ masterPrototype, project }) => {
-          if (!masterPrototype) return null;
-          const { id } = masterPrototype;
-          const isNameEditing = isEditing(id);
-
-          /**
-           * カードクリック時の処理
-           */
-          const handleCardClick = () => {
-            router.push(`/projects/${project.id}/prototypes/${id}`);
-          };
-
-          /**
-           * ProjectCard用のイベントハンドラー
-           */
-          const handleProjectCardSubmit = (
-            e: React.FormEvent<HTMLFormElement>
-          ) => handleSubmit(e, handleNameEditComplete, validatePrototypeName);
-
-          const handleProjectCardBlur = () =>
-            handleBlur(handleNameEditComplete, validatePrototypeName);
-
-          const handleProjectCardKeyDown = (
-            e: React.KeyboardEvent<HTMLInputElement>
-          ) => handleKeyDown(e, handleNameEditComplete, validatePrototypeName);
-
-          return (
-            <ProjectCard
-              key={id}
-              project={project}
-              masterPrototype={masterPrototype}
-              isNameEditing={isNameEditing}
-              editedName={editedName}
-              setEditedName={setEditedName}
-              onCardClick={handleCardClick}
-              onContextMenu={handleContextMenu}
-              onSubmit={handleProjectCardSubmit}
-              onBlur={handleProjectCardBlur}
-              onKeyDown={handleProjectCardKeyDown}
-            />
-          );
-        })}
-      </div>
+      {viewMode === 'card' ? (
+        <ProjectCardList
+          prototypeList={prototypeList.filter(
+            (item): item is { project: Project; masterPrototype: Prototype } =>
+              !!item.masterPrototype
+          )}
+          isNameEditing={(prototypeId) => isEditing(prototypeId)}
+          editedName={editedName}
+          setEditedName={setEditedName}
+          onCardClick={(projectId, prototypeId) =>
+            router.push(`/projects/${projectId}/prototypes/${prototypeId}`)
+          }
+          onContextMenu={handleContextMenu}
+          onSubmit={(e) =>
+            handleSubmit(e, handleNameEditComplete, validatePrototypeName)
+          }
+          onBlur={() =>
+            handleBlur(handleNameEditComplete, validatePrototypeName)
+          }
+          onKeyDown={(e) =>
+            handleKeyDown(e, handleNameEditComplete, validatePrototypeName)
+          }
+        />
+      ) : (
+        <ProjectTable
+          prototypeList={sortedPrototypeList}
+          sortKey={sortKey}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+          onRowClick={(projectId, prototypeId) =>
+            router.push(`/projects/${projectId}/prototypes/${prototypeId}`)
+          }
+        />
+      )}
 
       {/* コンテキストメニュー */}
       {contextMenu.targetProject &&

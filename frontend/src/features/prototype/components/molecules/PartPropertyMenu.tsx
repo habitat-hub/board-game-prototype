@@ -10,7 +10,10 @@ import { IoMdMove } from 'react-icons/io';
 import { Part } from '@/api/types';
 import PartTypeIcon from '@/features/prototype/components/atoms/PartTypeIcon';
 import useDraggablePartPropertyMenu from '@/features/prototype/hooks/useDraggablePartPropertyMenu';
-import { DeleteImageProps, PartPropertyWithImage } from '@/features/prototype/types';
+import {
+  DeleteImageProps,
+  PartPropertyWithImage,
+} from '@/features/prototype/types';
 import { GameBoardMode } from '@/features/prototype/types';
 
 import PartPropertyMenuMulti from './PartPropertyMenuMulti';
@@ -60,7 +63,7 @@ export default function PartPropertyMenu({
   /** 複数選択中のパーツ一覧 */
   const selectedParts = useMemo<Part[]>(
     () => parts.filter((part) => selectedPartIds.includes(part.id)),
-    [parts, selectedPartIds],
+    [parts, selectedPartIds]
   );
   const multipleSelected = selectedPartIds.length > 1;
   const isPlayMode = gameBoardMode === GameBoardMode.PLAY;
@@ -69,7 +72,8 @@ export default function PartPropertyMenu({
   // - PLAY mode with multiple selection (hide for single select in PLAY mode)
   const showMenu =
     selectedPartIds.length > 0 &&
-    (gameBoardMode === GameBoardMode.CREATE || (isPlayMode && multipleSelected));
+    (gameBoardMode === GameBoardMode.CREATE ||
+      (isPlayMode && multipleSelected));
 
   const {
     containerRef,
@@ -137,7 +141,10 @@ export default function PartPropertyMenu({
         />
       </div>
       <div className="flex flex-col gap-2 p-4 overflow-y-auto overflow-x-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-        <PartPropertyMenuMulti selectedParts={selectedParts} hidden={!multipleSelected} />
+        <PartPropertyMenuMulti
+          selectedParts={selectedParts}
+          hidden={!multipleSelected}
+        />
         <PartPropertyMenuSingle
           selectedPart={selectedPart}
           properties={properties}
