@@ -34,9 +34,7 @@ export type AlignmentUpdate = {
  * @param parts - 選択されたパーツ
  * @returns 整列情報、パーツが2つ未満の場合は null
  */
-export const calculateAlignmentInfo = (
-  parts: Part[],
-): AlignmentInfo | null => {
+export const calculateAlignmentInfo = (parts: Part[]): AlignmentInfo | null => {
   if (parts.length < 2) return null;
 
   const minX = Math.min(...parts.map((p) => p.position.x));
@@ -56,12 +54,12 @@ export const calculateAlignmentInfo = (
     isLeft: parts.every((p) => p.position.x === minX),
     isRight: parts.every((p) => p.position.x + p.width === maxX),
     isHCenter: parts.every(
-      (p) => Math.round(p.position.x + p.width / 2) === centerX,
+      (p) => Math.round(p.position.x + p.width / 2) === centerX
     ),
     isTop: parts.every((p) => p.position.y === minY),
     isBottom: parts.every((p) => p.position.y + p.height === maxY),
     isVCenter: parts.every(
-      (p) => Math.round(p.position.y + p.height / 2) === centerY,
+      (p) => Math.round(p.position.y + p.height / 2) === centerY
     ),
   };
 };
@@ -76,7 +74,7 @@ export const calculateAlignmentInfo = (
 export const getAlignmentUpdates = (
   type: AlignmentType,
   parts: Part[],
-  info: AlignmentInfo,
+  info: AlignmentInfo
 ): AlignmentUpdate[] =>
   parts
     .map((p) => {

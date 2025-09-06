@@ -1,4 +1,9 @@
-import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
+import {
+  useCallback,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 
 import {
   CAMERA_SCALE,

@@ -55,7 +55,9 @@ const InfoTab: React.FC<InfoTabProps> = ({
       </div>
       <div className="mb-1">
         <div className="text-xs text-gray-300 mb-0.5">Center Position:</div>
-        <div>X: {Math.round(camera.x + window.innerWidth / 2 / camera.scale)}</div>
+        <div>
+          X: {Math.round(camera.x + window.innerWidth / 2 / camera.scale)}
+        </div>
         <div>
           Y: {Math.round(camera.y + window.innerHeight / 2 / camera.scale)}
         </div>
@@ -72,4 +74,3 @@ const InfoTab: React.FC<InfoTabProps> = ({
 };
 
 export default InfoTab;
-

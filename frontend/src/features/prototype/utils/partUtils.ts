@@ -80,10 +80,7 @@ export const getShadowColor = (
  * @param isActive - アクティブ状態かどうか
  * @returns 影のぼかし値（ピクセル）
  */
-export const getShadowBlur = (
-  partType: PartType,
-  isActive: boolean
-): number =>
+export const getShadowBlur = (partType: PartType, isActive: boolean): number =>
   isActive ? SHADOW_BLUR_ACTIVE : getPartStyle(partType).shadowBlur;
 
 /**

@@ -29,9 +29,7 @@ interface GameBoardCanvasProps {
     onMouseDown?: (
       e: Konva.KonvaEventObject<MouseEvent | PointerEvent>
     ) => void;
-    onMouseUp?: (
-      e: Konva.KonvaEventObject<MouseEvent | PointerEvent>
-    ) => void;
+    onMouseUp?: (e: Konva.KonvaEventObject<MouseEvent | PointerEvent>) => void;
     onMouseLeave?: (
       e: Konva.KonvaEventObject<MouseEvent | PointerEvent>
     ) => void;
@@ -139,15 +137,18 @@ export default function GameBoardCanvas({
     const map: Record<number, Record<string, string>[]> = {};
     parts.forEach((part) => {
       const partProperties = propertiesMap.get(part.id) || [];
-      map[part.id] = partProperties.reduce<Record<string, string>[]>((acc, p) => {
-        const imageId = p.imageId;
-        if (!imageId) return acc;
-        const url = images[imageId];
-        if (url) {
-          acc.push({ [imageId]: url });
-        }
-        return acc;
-      }, []);
+      map[part.id] = partProperties.reduce<Record<string, string>[]>(
+        (acc, p) => {
+          const imageId = p.imageId;
+          if (!imageId) return acc;
+          const url = images[imageId];
+          if (url) {
+            acc.push({ [imageId]: url });
+          }
+          return acc;
+        },
+        []
+      );
     });
     return map;
   }, [parts, propertiesMap, images]);

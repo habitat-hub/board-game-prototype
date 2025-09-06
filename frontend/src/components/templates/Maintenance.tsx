@@ -27,7 +27,7 @@ const Maintenance: React.FC<MaintenanceProps> = ({
   const endTime = getMaintenanceEndTime();
 
   return (
-      <div className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-kibako-tertiary to-kibako-white flex items-center justify-center p-4">
+    <div className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-kibako-tertiary to-kibako-white flex items-center justify-center p-4">
       {/* メンテナンス情報カード */}
       <div className="max-w-md w-full bg-kibako-white rounded-lg shadow-xl p-8 text-center border border-kibako-secondary">
         {/* ヘッダー部分：ロゴとタイトル */}

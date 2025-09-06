@@ -76,7 +76,9 @@ const ProfileEdit: React.FC = () => {
 
     try {
       setIsSubmitting(true);
-      const updatedUser = await updateUser(user.id, { username: username.trim() });
+      const updatedUser = await updateUser(user.id, {
+        username: username.trim(),
+      });
 
       // ユーザーコンテキストを更新
       setUser(updatedUser);
@@ -151,12 +153,20 @@ const ProfileEdit: React.FC = () => {
               更新する
             </KibakoButton>
             {error && (
-              <p role="alert" aria-live="assertive" className="text-kibako-danger text-sm">
+              <p
+                role="alert"
+                aria-live="assertive"
+                className="text-kibako-danger text-sm"
+              >
                 {error}
               </p>
             )}
             {success && (
-              <p role="status" aria-live="polite" className="text-kibako-success text-sm">
+              <p
+                role="status"
+                aria-live="polite"
+                className="text-kibako-success text-sm"
+              >
                 {success}
               </p>
             )}

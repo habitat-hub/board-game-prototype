@@ -118,7 +118,11 @@ export default function PlaySidebar({
       {/* ヘッダー */}
       <div className="border-b border-kibako-tertiary/60 rounded-t-lg bg-gradient-to-r from-kibako-secondary/30 to-kibako-secondary/20 py-2 px-4">
         <div className="flex items-center">
-          <PartTypeIcon type="hand" className="h-4 w-4 text-kibako-primary mr-2" ariaHidden />
+          <PartTypeIcon
+            type="hand"
+            className="h-4 w-4 text-kibako-primary mr-2"
+            ariaHidden
+          />
           <span className="text-[12px] font-medium text-kibako-primary">
             プレイルーム設定
           </span>
@@ -155,7 +159,9 @@ export default function PlaySidebar({
                     >
                       <span
                         className="inline-block w-2 h-2"
-                        style={{ backgroundColor: hand.ownerColor || undefined }}
+                        style={{
+                          backgroundColor: hand.ownerColor || undefined,
+                        }}
                       />
                       {hand.ownerName}の手札
                     </span>
@@ -177,11 +183,15 @@ export default function PlaySidebar({
                   {selectedHand.ownerName ? (
                     <span
                       className="inline-flex items-center gap-1 px-1 rounded border"
-                      style={{ borderColor: selectedHand.ownerColor || undefined }}
+                      style={{
+                        borderColor: selectedHand.ownerColor || undefined,
+                      }}
                     >
                       <span
                         className="inline-block w-2 h-2"
-                        style={{ backgroundColor: selectedHand.ownerColor || undefined }}
+                        style={{
+                          backgroundColor: selectedHand.ownerColor || undefined,
+                        }}
                       />
                       {selectedHand.ownerName}
                     </span>

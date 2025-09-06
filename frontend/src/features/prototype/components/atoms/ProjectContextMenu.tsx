@@ -93,7 +93,9 @@ export const ProjectContextMenu: React.FC<ProjectContextMenuProps> = ({
         <button
           key={item.id}
           className={`w-full px-4 text-left flex items-center gap-2 transition-colors ${
-            hoveredMenuItem === item.id ? 'bg-kibako-tertiary/20' : 'hover:bg-kibako-tertiary/20'
+            hoveredMenuItem === item.id
+              ? 'bg-kibako-tertiary/20'
+              : 'hover:bg-kibako-tertiary/20'
           } ${
             item.danger
               ? 'text-kibako-danger hover:text-kibako-danger/80'
