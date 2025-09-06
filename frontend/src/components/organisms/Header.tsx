@@ -1,13 +1,23 @@
 'use client';
 import { usePathname, useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { GiWoodenCrate } from 'react-icons/gi';
+import * as UAParser from 'ua-parser-js';
 
 import UserMenu from '@/components/molecules/UserMenu';
 
 const Header: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const [isPC, setIsPC] = useState(false);
+
+  useEffect(() => {
+    const parser = new UAParser.UAParser();
+    const deviceType = parser.getResult().device.type;
+    if (!deviceType) {
+      setIsPC(true);
+    }
+  }, []);
 
   /**
    * トップページへ遷移する
@@ -30,7 +40,7 @@ const Header: React.FC = () => {
         </div>
       </button>
 
-      <UserMenu pathname={pathname} />
+      {isPC && <UserMenu pathname={pathname} />}
     </header>
   );
 };
