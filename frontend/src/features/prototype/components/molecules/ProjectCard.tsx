@@ -115,7 +115,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           )}
         </div>
         {/* 詳細情報 */}
-        <div className="flex justify-end">
+        <div className="flex justify-end mt-2">
           <div className="text-right text-xs text-kibako-secondary">
             <div>
               作成者:{' '}

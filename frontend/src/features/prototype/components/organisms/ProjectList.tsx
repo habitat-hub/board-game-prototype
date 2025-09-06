@@ -15,7 +15,7 @@ import KibakoToggle from '@/components/atoms/KibakoToggle';
 import Loading from '@/components/organisms/Loading';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
 import { EmptyProjectState } from '@/features/prototype/components/molecules/EmptyProjectState';
-import { ProjectCard } from '@/features/prototype/components/molecules/ProjectCard';
+import { ProjectCardList } from '@/features/prototype/components/molecules/ProjectCardList';
 import { ProjectTable } from '@/features/prototype/components/molecules/ProjectTable';
 import useInlineEdit from '@/hooks/useInlineEdit';
 import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
@@ -394,51 +394,25 @@ const ProjectList: React.FC = () => {
       </div>
 
       {viewMode === 'card' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-          {prototypeList.map(({ masterPrototype, project }) => {
-            if (!masterPrototype) return null;
-            const { id } = masterPrototype;
-            const isNameEditing = isEditing(id);
-
-            /**
-             * カードクリック時の処理
-             */
-            const handleCardClick = () => {
-              router.push(`/projects/${project.id}/prototypes/${id}`);
-            };
-
-            /**
-             * ProjectCard用のイベントハンドラー
-             */
-            const handleProjectCardSubmit = (
-              e: React.FormEvent<HTMLFormElement>
-            ) => handleSubmit(e, handleNameEditComplete, validatePrototypeName);
-
-            const handleProjectCardBlur = () =>
-              handleBlur(handleNameEditComplete, validatePrototypeName);
-
-            const handleProjectCardKeyDown = (
-              e: React.KeyboardEvent<HTMLInputElement>
-            ) =>
-              handleKeyDown(e, handleNameEditComplete, validatePrototypeName);
-
-            return (
-              <ProjectCard
-                key={id}
-                project={project}
-                masterPrototype={masterPrototype}
-                isNameEditing={isNameEditing}
-                editedName={editedName}
-                setEditedName={setEditedName}
-                onCardClick={handleCardClick}
-                onContextMenu={handleContextMenu}
-                onSubmit={handleProjectCardSubmit}
-                onBlur={handleProjectCardBlur}
-                onKeyDown={handleProjectCardKeyDown}
-              />
-            );
-          })}
-        </div>
+        <ProjectCardList
+          prototypeList={prototypeList}
+          isNameEditing={(prototypeId) => isEditing(prototypeId)}
+          editedName={editedName}
+          setEditedName={setEditedName}
+          onCardClick={(projectId, prototypeId) =>
+            router.push(`/projects/${projectId}/prototypes/${prototypeId}`)
+          }
+          onContextMenu={handleContextMenu}
+          onSubmit={(e) =>
+            handleSubmit(e, handleNameEditComplete, validatePrototypeName)
+          }
+          onBlur={() =>
+            handleBlur(handleNameEditComplete, validatePrototypeName)
+          }
+          onKeyDown={(e) =>
+            handleKeyDown(e, handleNameEditComplete, validatePrototypeName)
+          }
+        />
       ) : (
         <ProjectTable
           prototypeList={sortedPrototypeList}
