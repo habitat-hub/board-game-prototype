@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
-import { FaCheck } from 'react-icons/fa6';
+import { FaCheck, FaPenToSquare } from 'react-icons/fa6';
 import { IoArrowBack } from 'react-icons/io5';
 
 import { useUsers } from '@/api/hooks/useUsers';
@@ -21,6 +21,7 @@ const ProfileEdit: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
 
   // ユーザー情報が変更されたときに入力フィールドを更新
   useEffect(() => {
@@ -86,6 +87,8 @@ const ProfileEdit: React.FC = () => {
       // 更新成功メッセージを表示
       setSuccess('ユーザー名を更新しました');
       setError('');
+      // 編集モードを終了
+      setIsEditing(false);
     } catch (error) {
       console.error('Error updating username:', error);
       setError('ユーザー名の更新に失敗しました');
@@ -117,61 +120,101 @@ const ProfileEdit: React.FC = () => {
       </div>
 
       <div className="mb-6 p-6 overflow-visible rounded-xl bg-gradient-to-r from-kibako-white via-kibako-white to-kibako-tertiary shadow-lg border border-kibako-tertiary/30">
-        <h2 className="text-xl font-bold text-kibako-primary mb-4 border-b border-kibako-secondary/30 pb-2">
-          ユーザー情報
-        </h2>
-
-        <form onSubmit={handleUpdateUsername} className="space-y-6">
-          <div>
-            <label
-              htmlFor="username"
-              className="block text-sm uppercase tracking-wide text-kibako-primary/70 mb-2 font-medium"
+        <div className="flex items-center justify-between mb-4 border-b border-kibako-secondary/30 pb-2">
+          <h2 className="text-xl font-bold text-kibako-primary">ユーザー情報</h2>
+          {!isEditing && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsEditing(true);
+                setError('');
+                setSuccess('');
+                setUsername(user?.username || '');
+              }}
+              className="p-2 hover:bg-kibako-tertiary rounded-full transition-colors"
+              title="編集"
             >
-              ユーザー名
-            </label>
-            <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="ユーザー名を入力"
-              className="py-2 px-3 border border-kibako-secondary/30 rounded-lg bg-kibako-white w-full"
-              maxLength={50}
-              autoFocus
-            />
-          </div>
+              <FaPenToSquare className="h-5 w-5 text-kibako-primary" />
+            </button>
+          )}
+        </div>
 
-          <div className="flex flex-wrap justify-end items-center gap-2">
-            <KibakoButton
-              type="submit"
-              size="md"
-              className="flex items-center gap-2"
-              isLoading={isSubmitting}
-              disabled={isSubmitting}
-            >
-              <FaCheck className="w-4 h-4" />
-              更新する
-            </KibakoButton>
-            {error && (
-              <p
-                role="alert"
-                aria-live="assertive"
-                className="text-kibako-danger text-sm"
-              >
-                {error}
+        {!isEditing ? (
+          // 表示モード
+          <div className="space-y-4">
+            <div>
+              <p className="block text-sm uppercase tracking-wide text-kibako-primary/70 mb-1 font-medium">
+                ユーザー名
               </p>
-            )}
+              <p className="text-kibako-primary text-base font-semibold break-words">
+                {user?.username || '-'}
+              </p>
+            </div>
             {success && (
-              <p
-                role="status"
-                aria-live="polite"
-                className="text-kibako-success text-sm"
-              >
+              <p role="status" aria-live="polite" className="text-kibako-success text-xs">
                 {success}
               </p>
             )}
+            {error && (
+              <p role="alert" aria-live="assertive" className="text-kibako-danger text-xs">
+                {error}
+              </p>
+            )}
           </div>
-        </form>
+        ) : (
+          // 編集モード
+          <form onSubmit={handleUpdateUsername} className="space-y-6">
+            <div>
+              <label
+                htmlFor="username"
+                className="block text-sm uppercase tracking-wide text-kibako-primary/70 mb-2 font-medium"
+              >
+                ユーザー名
+              </label>
+              <input
+                type="text"
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="ユーザー名を入力"
+                className="py-2 px-3 border border-kibako-secondary/30 rounded-lg bg-kibako-white w-full"
+                maxLength={50}
+                autoFocus
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div className="flex flex-wrap justify-end items-center gap-2">
+              {error && (
+                <p
+                  role="alert"
+                  aria-live="assertive"
+                  className="text-kibako-danger text-xs"
+                >
+                  {error}
+                </p>
+              )}
+              {success && (
+                <p
+                  role="status"
+                  aria-live="polite"
+                  className="text-kibako-success text-xs"
+                >
+                  {success}
+                </p>
+              )}
+              <KibakoButton
+                type="submit"
+                size="md"
+                className="flex items-center gap-2"
+                disabled={isSubmitting}
+              >
+                <FaCheck className="w-4 h-4" />
+                更新する
+              </KibakoButton>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );
