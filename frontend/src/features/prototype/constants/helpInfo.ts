@@ -87,6 +87,6 @@ export const OPERATIONS_INFO: OperationInfo[] = [
     id: 'drag-drop-other',
     operation: 'ドラッグ&ドロップ(パーツ以外)',
     description:
-      '矩形選択またはボードを移動する。左下でモードを切り替えられる。',
+      '矩形選択（薄い水色の長方形による選択）する、または、ボードを移動する。左下でモードを切り替えられる。',
   },
 ];
