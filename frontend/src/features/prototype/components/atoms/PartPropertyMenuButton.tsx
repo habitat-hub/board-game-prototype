@@ -1,3 +1,4 @@
+import type React from 'react';
 import { ReactNode } from 'react';
 
 type Props = {
@@ -13,13 +14,14 @@ type Props = {
   title?: string;
 };
 
+/** コンポーネント: パーツのプロパティメニュー用ボタン。title でネイティブツールチップを表示する。 */
 const PartPropertyMenuButton = ({
   text,
   icon,
   disabled = false,
   onClick,
   title,
-}: Props) => {
+}: Props): React.ReactElement => {
   return (
     <button
       className="flex items-center gap-2 rounded px-2 py-1 text-xs text-kibako-white bg-kibako-primary/30 hover:bg-kibako-primary"

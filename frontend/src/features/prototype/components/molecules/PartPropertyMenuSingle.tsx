@@ -1,3 +1,4 @@
+/** File updated by Codex CLI **/
 import axios from 'axios';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { FaRegCopy, FaRegTrashAlt, FaImage, FaSpinner } from 'react-icons/fa';
@@ -72,9 +73,9 @@ export default function PartPropertyMenuSingle({
       { ...currentProperty, ...property } as PartPropertyWithImage
     );
     if (JSON.stringify(currentProperty) === JSON.stringify(updatedProperty)) return;
-    // API は imageId のみ受け付けるため image は除外
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { image: _image, ...updateProperty } = updatedProperty;
+    // API は imageId のみ受け付けるため image を除外（型を明示）
+    const { image: _unusedImage, ...rest }: Omit<PartPropertyWithImage, 'image'> = updatedProperty;
+    const updateProperty: PartPropertyUpdate = rest;
     dispatch({
       type: 'UPDATE_PART',
       payload: { partId: selectedPart.id, updateProperties: [updateProperty] },
