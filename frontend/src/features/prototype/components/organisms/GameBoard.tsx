@@ -103,7 +103,11 @@ export default function GameBoard({
       new Map(
         (userRoles ?? []).map((ur) => [
           ur.userId,
-          { userId: ur.userId, username: ur.user.username } as ConnectedUser,
+          {
+            userId: ur.userId,
+            username: ur.user.username,
+            roleName: ur.roles[0]?.name,
+          } as ConnectedUser,
         ])
       ).values()
     );
@@ -112,10 +116,6 @@ export default function GameBoard({
     const inactive = uniqUsers.filter((u) => !connectedSet.has(u.userId));
     return [...active, ...inactive];
   }, [userRoles, connectedUsers]);
-
-  const currentUserRole = useMemo(() => {
-    return userRoles.find((ur) => ur.userId === currentUserId)?.roles[0]?.name;
-  }, [userRoles, currentUserId]);
 
   // 自分のユーザー情報（色付けに使用）
   const selfUser = useMemo(() => {
@@ -563,7 +563,6 @@ export default function GameBoard({
             roleUsers={roleUsers}
             loading={false}
             showRoleManagementButton={gameBoardMode === GameBoardMode.CREATE}
-            currentUserRole={currentUserRole}
           />
         )}
 

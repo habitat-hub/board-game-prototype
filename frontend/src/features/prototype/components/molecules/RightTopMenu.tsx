@@ -14,6 +14,7 @@ import ConnectedUserIcon from '@/features/prototype/components/atoms/ConnectedUs
 import { MAX_DISPLAY_USERS } from '@/features/prototype/constants/presence';
 import { ConnectedUser } from '@/features/prototype/types';
 import { getUserColor } from '@/features/prototype/utils/userColor';
+import { getRoleConfig } from '@/features/role/components/atoms/RoleBadge';
 
 interface RightTopMenuProps {
   // プロジェクト識別子
@@ -26,8 +27,6 @@ interface RightTopMenuProps {
   loading?: boolean;
   // 右側の権限管理ページリンクを表示するか
   showRoleManagementButton?: boolean;
-  // 現在のユーザーのロール名
-  currentUserRole?: string;
 }
 
 /**
@@ -41,7 +40,6 @@ export default function RightTopMenu({
   roleUsers,
   loading = false,
   showRoleManagementButton = true,
-  currentUserRole,
 }: RightTopMenuProps): ReactElement | null {
   const pathname = usePathname();
 
@@ -108,6 +106,9 @@ export default function RightTopMenu({
                   const color: string | undefined = isActive
                     ? getUserColor(user.userId, roleUsers)
                     : undefined;
+                  const roleConfig = user.roleName
+                    ? getRoleConfig(user.roleName)
+                    : null;
                   return (
                     <li
                       key={user.userId}
@@ -119,6 +120,11 @@ export default function RightTopMenu({
                           className="inline-flex items-center gap-1 px-1 rounded border"
                           style={{ borderColor: color }}
                         >
+                          {roleConfig && (
+                            <span className={roleConfig.textColor}>
+                              {roleConfig.icon}
+                            </span>
+                          )}
                           <span
                             className="inline-block w-2 h-2"
                             style={{ backgroundColor: color }}
@@ -126,7 +132,14 @@ export default function RightTopMenu({
                           {user.username}
                         </span>
                       ) : (
-                        user.username
+                        <span className="inline-flex items-center gap-1">
+                          {roleConfig && (
+                            <span className={roleConfig.textColor}>
+                              {roleConfig.icon}
+                            </span>
+                          )}
+                          {user.username}
+                        </span>
                       )}
                     </li>
                   );
@@ -152,7 +165,7 @@ export default function RightTopMenu({
       )}
 
       {/* ユーザーメニュー（右側） - 常時表示 */}
-      <UserMenu pathname={pathname} roleName={currentUserRole} />
+      <UserMenu pathname={pathname} />
     </div>
   );
 }
