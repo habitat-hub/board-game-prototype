@@ -37,6 +37,10 @@ app.use(
 
 app.use(express.json());
 
+app.get('/health', (_req, res) => {
+  res.sendStatus(200);
+});
+
 setupSession(app);
 
 app.use('/auth', authRoutes);
@@ -47,12 +51,16 @@ app.use('/api/images', imageRoutes);
 
 app.use(errorHandler);
 
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Socket.IO is ready for real-time connections`);
-  if (env.NODE_ENV === 'development') {
-    console.log(
-      `API Documentation available at: http://localhost:${PORT}/api-docs`
-    );
-  }
-});
+if (env.NODE_ENV !== 'test') {
+  server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+    console.log(`Socket.IO is ready for real-time connections`);
+    if (env.NODE_ENV === 'development') {
+      console.log(
+        `API Documentation available at: http://localhost:${PORT}/api-docs`
+      );
+    }
+  });
+}
+
+export { app, server };

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 
+import { KEYBOARD_SHORTCUTS } from '@/features/prototype/constants';
 import { GameBoardMode } from '@/features/prototype/types';
 import { isInputFieldFocused } from '@/utils/inputFocus';
 
@@ -7,7 +8,7 @@ import { isInputFieldFocused } from '@/utils/inputFocus';
 /**
  * 汎用のゲームボードショートカットフック
  * - Delete / Backspace: 選択パーツを削除（CREATEモード）
- * - Cmd/Ctrl + D: 選択パーツを複製（CREATEモード）
+ * - Cmd または Ctrl + d: 選択パーツを複製（CREATEモード）
  */
 export function useGameBoardShortcuts(
   handleDeleteParts: () => Promise<void> | void,
@@ -29,10 +30,8 @@ export function useGameBoardShortcuts(
       // 入力中は無視
       if (isInputFieldFocused()) return;
 
-      // --- 削除処理 (Delete / Backspace, 修飾キー併用は無視) ---
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
-
+      // --- 削除処理 ---
+      if (KEYBOARD_SHORTCUTS.deleteParts.match?.(e)) {
         e.preventDefault();
         if (isDeletingRef.current) return;
 
@@ -53,14 +52,8 @@ export function useGameBoardShortcuts(
         return;
       }
 
-      // --- 複製処理 (Cmd/Ctrl + D) ---
-      // key は小文字の 'd' になることがあるため toLowerCase で比較
-      if (
-        (e.metaKey || e.ctrlKey) &&
-        !e.altKey &&
-        !e.shiftKey &&
-        e.key.toLowerCase() === 'd'
-      ) {
+      // --- 複製処理 ---
+      if (KEYBOARD_SHORTCUTS.duplicatePart.match?.(e)) {
         // ハンドラが未定義なら無視
         if (!handleDuplicatePart) return;
 

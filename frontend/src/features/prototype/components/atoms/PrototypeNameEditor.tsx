@@ -12,12 +12,27 @@ interface PrototypeNameEditorProps {
   name: string;
   /** 名前更新完了時に親へ新しい名前を通知するコールバック */
   onUpdated: (newName: string) => void;
+  /** 表示時に名前を省略表記にするか（デフォルト: true） */
+  truncate?: boolean;
+  /** ラッパー要素に適用する任意のクラス */
+  className?: string;
+  /** 左右にクリック領域を“はみ出させる”か（デフォルト: true） */
+  bleedX?: boolean;
+  /** 表示文字サイズ（デフォルト: 'xs'） */
+  size?: 'xs' | 'sm' | 'base' | 'lg' | 'xl';
+  /** 太字オプション（デフォルト: 'medium'） */
+  weight?: 'normal' | 'medium' | 'semibold' | 'bold';
 }
 
 export default function PrototypeNameEditor({
   prototypeId,
   name,
   onUpdated,
+  truncate = true,
+  className,
+  bleedX = true,
+  size = 'xs',
+  weight = 'medium',
 }: PrototypeNameEditorProps) {
   const { useUpdatePrototype } = usePrototypes();
   const updatePrototypeMutation = useUpdatePrototype();
@@ -32,6 +47,26 @@ export default function PrototypeNameEditor({
   } = useInlineEdit();
 
   const isNameEditing = isEditing(prototypeId);
+
+  const sizeClass =
+    size === 'xs'
+      ? 'text-xs'
+      : size === 'sm'
+        ? 'text-sm'
+        : size === 'base'
+          ? 'text-base'
+          : size === 'lg'
+            ? 'text-lg'
+            : 'text-xl';
+
+  const weightClass =
+    weight === 'normal'
+      ? 'font-normal'
+      : weight === 'medium'
+        ? 'font-medium'
+        : weight === 'semibold'
+          ? 'font-semibold'
+          : 'font-bold';
 
   const handleComplete = async (newName: string) => {
     // 変更がない場合は何もしない
@@ -57,7 +92,7 @@ export default function PrototypeNameEditor({
   };
 
   return (
-    <div className="w-full">
+    <div className={`w-full ${className ?? ''}`}>
       {isNameEditing ? (
         <form
           onSubmit={(e) => handleSubmit(e, handleComplete, validate)}
@@ -69,23 +104,24 @@ export default function PrototypeNameEditor({
             onChange={(e) => setEditedValue(e.target.value)}
             onBlur={() => handleBlur(handleComplete, validate)}
             onKeyDown={(e) => handleKeyDown(e, handleComplete, validate)}
-            className="w-full text-kibako-primary font-medium bg-transparent border border-transparent rounded-md px-1 -mx-1 focus:outline-none focus:bg-kibako-white focus:border-kibako-primary focus:shadow-sm transition-all text-xs"
+            className={`w-full text-kibako-primary ${weightClass} bg-transparent border border-transparent rounded-md py-1.5 min-h-8 focus:outline-none focus:bg-kibako-white focus:border-kibako-primary focus:shadow-sm transition-all ${sizeClass} ${
+              bleedX ? 'px-2 -mx-2' : 'px-2'
+            }`}
             autoFocus
           />
         </form>
       ) : (
-        <h2 className="text-xs font-medium text-kibako-primary">
-          {/* 表示モード（ボタンで編集開始） */}
-          <button
-            type="button"
-            className="w-full text-left truncate cursor-pointer px-1 -mx-1 rounded-md hover:bg-kibako-tertiary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-kibako-primary focus-visible:ring-offset-2 focus-visible:ring-offset-kibako-white"
-            title={name}
-            aria-label={`「${name}」を編集`}
-            onClick={() => startEditing(prototypeId, name)}
-          >
-            {name}
-          </button>
-        </h2>
+        <button
+          type="button"
+          className={`block w-full text-left ${sizeClass} ${weightClass} text-kibako-primary cursor-pointer py-1.5 min-h-8 rounded-md hover:bg-kibako-secondary/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-kibako-primary focus-visible:ring-offset-2 focus-visible:ring-offset-kibako-white ${
+            bleedX ? 'px-2 -mx-2' : 'px-2'
+          } ${truncate ? 'truncate' : 'whitespace-normal break-words'}`}
+          title={name}
+          aria-label={`「${name}」を編集`}
+          onClick={() => startEditing(prototypeId, name)}
+        >
+          {name}
+        </button>
       )}
     </div>
   );

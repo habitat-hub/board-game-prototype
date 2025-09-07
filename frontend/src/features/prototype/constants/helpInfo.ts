@@ -3,44 +3,10 @@
  */
 
 import type {
-  ShortcutInfo,
   PartInfo,
   OperationInfo,
 } from '@/features/prototype/types/helpInfo';
-
-// ショートカット情報の定義
-export const SHORTCUTS: ShortcutInfo[] = [
-  {
-    id: 'help',
-    key: 'Shift + ?',
-    description: 'ヘルプパネルを開閉する。',
-  },
-  {
-    id: 'space-drag',
-    key: 'Space + ドラッグ',
-    description: '選択モード時に一時的にゲームボードを移動する。',
-  },
-  {
-    id: 'multi-select',
-    key: 'Shift + クリック',
-    description: '複数のパーツを選択する。',
-  },
-  {
-    id: 'delete',
-    key: 'Delete / Backspace',
-    description: '選択中のパーツを全て削除する。',
-  },
-  {
-    id: 'duplicate',
-    key: 'Cmd/Ctrl + D',
-    description: '選択中のパーツ1つを複製する。',
-  },
-  {
-    id: 'zoom',
-    key: 'Cmd/Ctrl + ホイール',
-    description: 'ボードを拡大縮小する。',
-  },
-];
+export { SHORTCUTS } from './shortcutKeys';
 
 // パーツ操作情報の定義
 export const PARTS_INFO: PartInfo[] = [
