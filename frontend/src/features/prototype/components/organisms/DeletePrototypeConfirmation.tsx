@@ -30,10 +30,6 @@ const DeletePrototypeConfirmation = () => {
         setMasterPrototype(
           project.prototypes.find(({ type }) => type === 'MASTER') || null
         );
-        // ユーザーがプロトタイプのオーナーでない場合はリダイレクト
-        if (user && project.userId !== user.id) {
-          router.push('/projects');
-        }
       } catch (err) {
         setError('プロトタイプの取得に失敗しました');
         console.error('Error fetching prototype:', err);
