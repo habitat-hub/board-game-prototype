@@ -16,9 +16,12 @@ import CatchCopyCard from '@/features/top/components/molecules/CatchCopyCard';
 import MiniGameBoard from '@/features/top/components/organisms/MiniGameBoard';
 import { useIsPC } from '@/hooks/useIsPC';
 
+/**
+ * トップページのランディング。PC限定UIの案内やヒーロー/特徴/案内セクションを含む。
+ */
 const TopPage: React.FC = () => {
-  const [isLoaded, setIsLoaded] = useState(false);
   const { isPC, isReady } = useIsPC();
+  const [isLoaded, setIsLoaded] = useState(false);
   const { scrollYProgress } = useScroll();
 
   // パララックス効果のための変換値
@@ -30,6 +33,7 @@ const TopPage: React.FC = () => {
     setIsLoaded(true);
   }, []);
 
+  // 非PCデバイスの場合にのみ案内を表示する判定
   const isNonPC = isReady && !isPC;
 
   // カード要素のバリアント
