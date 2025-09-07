@@ -41,5 +41,6 @@ export default function formatDate(
       : {}),
   };
 
-  return new Intl.DateTimeFormat('ja-JP', options).format(d);
+  // Force Gregorian calendar to avoid imperial calendar resolution in some envs
+  return new Intl.DateTimeFormat('ja-JP-u-ca-gregory', options).format(d);
 }
