@@ -27,9 +27,9 @@ const mockedGenerateKey = generateS3KeyFromFilename as unknown as ReturnType<
 >;
 
 beforeEach(() => {
-  mockedSend.mockReset();
-  mockedCleanFileName.mockReset();
-  mockedGenerateKey.mockReset();
+  mockedSend.mockClear();
+  mockedCleanFileName.mockClear();
+  mockedGenerateKey.mockClear();
 });
 
 describe('uploadImageToS3', () => {
