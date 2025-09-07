@@ -8,7 +8,7 @@ import { isInputFieldFocused } from '@/utils/inputFocus';
 /**
  * 汎用のゲームボードショートカットフック
  * - Delete / Backspace: 選択パーツを削除（CREATEモード）
- * - Cmd または Ctrl + D: 選択パーツを複製（CREATEモード）
+ * - Cmd または Ctrl + d: 選択パーツを複製（CREATEモード）
  */
 export function useGameBoardShortcuts(
   handleDeleteParts: () => Promise<void> | void,
