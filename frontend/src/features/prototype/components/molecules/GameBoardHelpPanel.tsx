@@ -7,6 +7,7 @@
 import { useState, useEffect } from 'react';
 import { IoClose, IoInformationCircleOutline } from 'react-icons/io5';
 
+import { KEYBOARD_SHORTCUTS } from '@/features/prototype/constants';
 import {
   SHORTCUTS,
   PARTS_INFO,
@@ -38,7 +39,7 @@ export default function GameBoardHelpPanel({
       }
 
       // Shift + ? (Shift + / キー)でショートカットメニューを開閉
-      if (event.shiftKey && event.key === '?') {
+      if (KEYBOARD_SHORTCUTS.help.match?.(event)) {
         setIsExpanded((prev) => !prev);
       }
     };
@@ -58,7 +59,7 @@ export default function GameBoardHelpPanel({
           onClick={() => setIsExpanded(!isExpanded)}
           className="flex items-center justify-center rounded-full bg-kibako-primary p-1.5 shadow-md hover:bg-kibako-primary transition-all"
           aria-label={isExpanded ? 'ヘルプを閉じる' : 'ヘルプを開く'}
-          title="操作ヘルプ (Shift+?)"
+          title={`操作ヘルプ (${KEYBOARD_SHORTCUTS.help.label})`}
         >
           <IoInformationCircleOutline className="h-4 w-4 text-kibako-white" />
         </button>
