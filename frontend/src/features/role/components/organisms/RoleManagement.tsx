@@ -169,32 +169,27 @@ const RoleManagement: React.FC = () => {
         <button
           onClick={() => router.back()}
           className="p-2 hover:bg-kibako-tertiary rounded-full transition-colors"
-          title="戻る"
+          title="前のページに戻る"
         >
           <IoArrowBack className="h-5 w-5 text-kibako-primary hover:text-kibako-primary transition-colors" />
         </button>
-        <h1 className="text-3xl text-kibako-primary font-bold mb-0">
-          権限設定
-        </h1>
+        <h1 className="text-3xl text-kibako-primary font-bold mb-0">権限設定</h1>
       </div>
 
       <div className="mb-6 p-6 overflow-visible rounded-xl bg-gradient-to-r from-kibako-white via-kibako-white to-kibako-tertiary shadow-lg border border-kibako-tertiary/30">
-        <div className="mb-6">
-          <p className="text-center text-kibako-primary">
+        <div className="flex items-center justify-between mb-4 border-b border-kibako-secondary/30 pb-2">
+          <h2 className="text-xl font-bold text-kibako-primary">権限管理</h2>
+        </div>
+        <div className="space-y-4">
+          <p className="text-kibako-primary">
             プロジェクト
             {masterPrototypeName && `「${masterPrototypeName}」の`}
             ユーザー権限を管理します。
           </p>
           {!isCurrentUserAdmin && (
-            <p className="mt-2 text-center text-kibako-primary/70">
-              権限を設定できるのはAdminユーザーのみです
-            </p>
+            <p className="text-kibako-primary/70">権限を設定できるのはAdminユーザーのみです</p>
           )}
-        </div>
 
-        {/* ユーザー権限管理 */}
-        <div className="mb-8">
-          {/* 権限追加・更新フォーム */}
           <RoleManagementForm
             editMode={editMode}
             onCancelEdit={handleCancelEdit}
@@ -213,29 +208,32 @@ const RoleManagement: React.FC = () => {
             loading={loading}
             canManageRole={isCurrentUserAdmin}
           />
-
-          {/* 現在のユーザー権限一覧 */}
-          <div
-            className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 transition-all ${
-              editMode.isEditing || !isCurrentUserAdmin
-                ? 'opacity-40 pointer-events-none'
-                : ''
-            }`}
-          >
-            <UserRolesList
-              userRoles={userRoles}
-              creator={creator}
-              canRemoveUserRole={canRemoveUserRole}
-              onEdit={handleStartEdit}
-              onRemove={handleRemoveRole}
-              loading={loading}
-              editMode={editMode.isEditing}
-            />
-          </div>
         </div>
       </div>
 
-      {/* トーストメッセージ */}
+      <div className="mb-8 p-6 overflow-visible rounded-xl bg-gradient-to-r from-kibako-white via-kibako-white to-kibako-tertiary shadow-lg border border-kibako-tertiary/30">
+        <div className="flex items-center justify-between mb-4 border-b border-kibako-secondary/30 pb-2">
+          <h2 className="text-xl font-bold text-kibako-primary">現在のユーザー権限</h2>
+        </div>
+        <div
+          className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 transition-all ${
+            editMode.isEditing || !isCurrentUserAdmin
+              ? 'opacity-40 pointer-events-none'
+              : ''
+          }`}
+        >
+          <UserRolesList
+            userRoles={userRoles}
+            creator={creator}
+            canRemoveUserRole={canRemoveUserRole}
+            onEdit={handleStartEdit}
+            onRemove={handleRemoveRole}
+            loading={loading}
+            editMode={editMode.isEditing}
+          />
+        </div>
+      </div>
+
       <Toast
         message={toast.message}
         type={toast.type}
