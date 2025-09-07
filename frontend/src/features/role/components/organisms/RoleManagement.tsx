@@ -8,7 +8,6 @@ import Loading from '@/components/organisms/Loading';
 import { useRoleManagement } from '@/features/role/hooks/useRoleManagement';
 
 import Toast from '../atoms/Toast';
-import ConfirmDialog from '../molecules/ConfirmDialog';
 import RoleManagementForm from '../molecules/RoleManagementForm';
 import UserRolesList from '../molecules/UserRolesList';
 
@@ -50,14 +49,11 @@ const RoleManagement: React.FC = () => {
     // UI状態
     roleForm,
     toast,
-    confirmDialog,
 
     // ハンドラー
     handleAddRole,
     handleUpdateRole,
     handleRemoveRole,
-    handleConfirmRemove,
-    handleCancelRemove,
     updateRoleForm,
     closeToast,
     fetchAllUsers,
@@ -234,19 +230,6 @@ const RoleManagement: React.FC = () => {
           />
         </div>
       </div>
-
-      {/* 確認ダイアログ */}
-      <ConfirmDialog
-        show={confirmDialog.show && !!confirmDialog.data}
-        title="権限削除の確認"
-        message={
-          confirmDialog.data
-            ? `${confirmDialog.data.userName} の権限を削除しますか？`
-            : ''
-        }
-        onConfirm={handleConfirmRemove}
-        onCancel={handleCancelRemove}
-      />
 
       {/* トーストメッセージ */}
       <Toast

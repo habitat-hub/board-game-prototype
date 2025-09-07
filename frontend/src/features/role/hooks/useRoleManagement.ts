@@ -17,11 +17,6 @@ interface ToastState {
   show: boolean;
 }
 
-interface ConfirmDialogState {
-  userId: string;
-  userName: string;
-}
-
 interface RoleFormState {
   selectedUserId: string | null;
   selectedRole: 'admin' | 'editor' | 'viewer';
@@ -68,13 +63,6 @@ export const useRoleManagement = (projectId: string) => {
     message: '',
     type: 'success',
     show: false,
-  });
-  const [confirmDialog, setConfirmDialog] = useState<{
-    show: boolean;
-    data: ConfirmDialogState | null;
-  }>({
-    show: false,
-    data: null,
   });
 
   // トーストメッセージを表示する関数
@@ -270,7 +258,7 @@ export const useRoleManagement = (projectId: string) => {
   );
 
   const handleRemoveRole = useCallback(
-    (userId: string) => {
+    async (userId: string) => {
       const removeCheck = canRemoveUserRole(userId, userRoles);
 
       if (!removeCheck.canRemove) {
@@ -278,28 +266,10 @@ export const useRoleManagement = (projectId: string) => {
         return;
       }
 
-      // 確認ダイアログを表示
-      const user = userRoles.find((ur) => ur.userId === userId);
-      if (user) {
-        setConfirmDialog({
-          show: true,
-          data: { userId, userName: user.user.username },
-        });
-      }
+      await removeRole(userId);
     },
-    [userRoles, canRemoveUserRole, showToast]
+    [userRoles, canRemoveUserRole, showToast, removeRole]
   );
-
-  const handleConfirmRemove = useCallback(async () => {
-    if (confirmDialog.data) {
-      await removeRole(confirmDialog.data.userId);
-      setConfirmDialog({ show: false, data: null });
-    }
-  }, [confirmDialog.data, removeRole]);
-
-  const handleCancelRemove = useCallback(() => {
-    setConfirmDialog({ show: false, data: null });
-  }, []);
 
   const updateRoleForm = useCallback((updates: Partial<RoleFormState>) => {
     setRoleForm((prev) => ({ ...prev, ...updates }));
@@ -343,14 +313,11 @@ export const useRoleManagement = (projectId: string) => {
     // UI状態
     roleForm,
     toast,
-    confirmDialog,
 
     // ハンドラー
     handleAddRole,
     handleUpdateRole,
     handleRemoveRole,
-    handleConfirmRemove,
-    handleCancelRemove,
     updateRoleForm,
     closeToast,
   };
