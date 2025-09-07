@@ -10,4 +10,9 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* Common grid for ProjectTable header/body rows */
+  .project-table-grid {
+    grid-template-columns: minmax(0, 1fr) 120px 200px 120px;
+  }
 }
