@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { FaPlus, FaTable, FaTh } from 'react-icons/fa';
 import { IoReload } from 'react-icons/io5';
@@ -54,7 +54,6 @@ const ProjectList: React.FC = () => {
     editedValue: editedName,
     setEditedValue: setEditedName,
     isEditing,
-    startEditing: handleNameEditToggle,
     handleKeyDown,
     handleSubmit,
     handleBlur,
@@ -64,6 +63,21 @@ const ProjectList: React.FC = () => {
   const [isCreating, setIsCreating] = useState<boolean>(false);
   // リロードアイコンのワンショットアニメーション制御
   const [isReloadAnimating, setIsReloadAnimating] = useState<boolean>(false);
+  // Stickyヘッダーの高さをCSS変数に反映し、テーブルヘッダーのオフセットとして使用
+  const headerRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const updateOffset = () => {
+      const baseTop = 80; // top-20 (Tailwind spacing)
+      const h = headerRef.current?.getBoundingClientRect().height ?? 0;
+      document.documentElement.style.setProperty(
+        '--project-list-offset',
+        `${baseTop + h}px`
+      );
+    };
+    updateOffset();
+    window.addEventListener('resize', updateOffset);
+    return () => window.removeEventListener('resize', updateOffset);
+  }, []);
 
   // 表示モードとソート設定（永続値を安全に復元）
   const [viewMode, setViewMode] = useState<ProjectListView>(() => {
@@ -288,15 +302,8 @@ const ProjectList: React.FC = () => {
    */
   const getContextMenuItems = (
     project: Project,
-    masterPrototype: Prototype
+    _masterPrototype: Prototype
   ) => [
-    {
-      id: 'rename',
-      text: '名前変更',
-      action: () => {
-        handleNameEditToggle(masterPrototype.id, masterPrototype.name);
-      },
-    },
     {
       id: 'permissions',
       text: '権限設定',
@@ -329,9 +336,12 @@ const ProjectList: React.FC = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto py-8 relative px-4">
+    <div className="max-w-6xl mx-auto pb-8 relative px-4">
       {/* 1行目: タイトルと新規作成を横並び、2行目: 右端にトグル */}
-      <div className="sticky top-20 z-sticky bg-transparent backdrop-blur-sm flex flex-col gap-8 py-4 rounded-lg">
+      <div
+        ref={headerRef}
+        className="sticky top-20 z-sticky bg-transparent backdrop-blur-sm flex flex-col gap-8 pt-16 pb-4 rounded-lg"
+      >
         {/* 1行目 */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
           {/* 左側: タイトル + リロード */}
@@ -391,7 +401,15 @@ const ProjectList: React.FC = () => {
 
         {/* 2行目 */}
         <div className="flex items-center justify-between">
-          <span className="text-sm text-kibako-secondary">{`合計プロジェクト数: ${sortedPrototypeList.length}`}</span>
+          <div className="inline-flex items-center gap-2 rounded-full border border-kibako-primary/30 bg-gradient-to-r from-kibako-primary/10 to-kibako-secondary/10 text-kibako-primary px-3 py-1 text-sm shadow-sm">
+            <span className="font-medium">プロジェクト数</span>
+            <span
+              className="inline-flex items-center rounded-full bg-white/60 text-kibako-primary px-2 py-0.5 text-xs font-semibold shadow-xs"
+              aria-label="プロジェクト数"
+            >
+              {sortedPrototypeList.length}
+            </span>
+          </div>
           <KibakoToggle
             checked={viewMode === 'table'}
             onChange={(checked) => {
