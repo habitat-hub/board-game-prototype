@@ -85,6 +85,15 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
                     ? '編集モード中は変更できません'
                     : '権限を変更'
             }
+            aria-label={
+              isCreator
+                ? 'プロジェクト作成者の権限は変更できません'
+                : loading
+                  ? '処理中...'
+                  : editMode
+                    ? '編集モード中は変更できません'
+                    : '権限を変更'
+            }
             disabled={loading || isCreator || editMode}
           >
             <AiOutlineUserSwitch className="h-4 w-4" />
@@ -99,6 +108,15 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
                 : 'text-kibako-secondary/50 cursor-not-allowed'
             }`}
             title={
+              loading
+                ? '処理中...'
+                : editMode
+                  ? '編集モード中は削除できません'
+                  : canRemove
+                    ? '権限を削除'
+                    : removeReason
+            }
+            aria-label={
               loading
                 ? '処理中...'
                 : editMode
