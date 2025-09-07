@@ -1,5 +1,18 @@
 import { UAParser, type IResult } from 'ua-parser-js';
 
+/** デバイス検出オプション */
+export interface DeviceDetectOptions {
+  /** window.navigator.platform の値（例: 'MacIntel'） */
+  platform?: string;
+  /** マルチタッチ点数（iPadOS 判定に使用） */
+  maxTouchPoints?: number;
+  /** タブレットをPC扱いする場合は true（既定: false） */
+  treatTabletAsPC?: boolean;
+}
+
+// フォールバック用: モバイル系 UA の大まかな検出
+const MOBILE_UA_REGEX = /Android|iPhone|iPod|iPad|Mobile|Windows Phone/i;
+
 /**
  * デバイスをPCとして扱うべきかを判定する。
  * UAParserの結果に加え、iPadOS13+の擬装検出・モバイルUAの簡易判定を組み合わせる。
@@ -7,13 +20,18 @@ import { UAParser, type IResult } from 'ua-parser-js';
  * @param ua ユーザーエージェント文字列
  * @param opts 追加情報（platform / maxTouchPoints）
  */
-export function isPCFromUA(
-  ua: string,
-  opts?: { platform?: string; maxTouchPoints?: number }
-): boolean {
-  const parser = new UAParser(ua);
-  const result: IResult = parser.getResult();
-  const deviceType = result.device.type; // 'mobile' | 'tablet' | 'console' | 'smarttv' | 'wearable' | 'embedded' | undefined
+export function isPCFromUA(ua: string, opts?: DeviceDetectOptions): boolean {
+  let deviceType: IResult['device']['type'];
+  try {
+    const parser = new UAParser(ua);
+    const result: IResult = parser.getResult();
+    deviceType = result.device.type; // 'mobile' | 'tablet' | 'console' | 'smarttv' | 'wearable' | 'embedded' | undefined
+  } catch (e) {
+    // 予期しないエラーはログに記録し、安全側（非PC扱いしない）に倒す
+    // eslint-disable-next-line no-console
+    console.error('デバイス判定中に予期しないエラーが発生しました', e);
+    deviceType = undefined;
+  }
 
   const platform = opts?.platform;
   const maxTouchPoints = opts?.maxTouchPoints ?? 0;
@@ -23,15 +41,16 @@ export function isPCFromUA(
     return false; // treat as non-PC (tablet)
   }
 
-  // Fallback: broad mobile UA check
-  const isMobileUA = /Android|iPhone|iPod|iPad|Mobile|Windows Phone/i.test(ua);
+  // フォールバック: モバイル系 UA の大まかな検出
+  const isMobileUA = MOBILE_UA_REGEX.test(ua);
   if (isMobileUA) {
     return false;
   }
 
-  // UAParser: if a specific device type is detected, treat as non-PC
-  // (UAParser typically leaves desktop as undefined)
+  // UAParser: device.type が存在する = 非デスクトップ
+  // タブレットのみ PC とみなすオプションに対応
   if (deviceType) {
+    if (deviceType === 'tablet' && opts?.treatTabletAsPC) return true;
     return false;
   }
 
