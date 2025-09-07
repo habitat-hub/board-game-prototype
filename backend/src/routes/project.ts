@@ -6,6 +6,7 @@ import { ensureAuthenticated } from '../middlewares/auth';
 import {
   checkProjectReadPermission,
   checkProjectManagePermission,
+  checkProjectAdminRole,
 } from '../middlewares/permissions';
 import { getAccessiblePrototypes } from '../helpers/prototypeHelper';
 import sequelize from '../models';
@@ -934,7 +935,7 @@ router.get(
  */
 router.post(
   '/:projectId/roles',
-  checkProjectManagePermission,
+  checkProjectAdminRole,
   async (req: Request, res: Response) => {
     const { projectId } = req.params;
     const { userId, roleName } = req.body;
@@ -1020,7 +1021,7 @@ router.post(
  */
 router.delete(
   '/:projectId/roles/:userId',
-  checkProjectManagePermission,
+  checkProjectAdminRole,
   async (req: Request, res: Response) => {
     const { projectId, userId } = req.params;
 
@@ -1122,7 +1123,7 @@ router.delete(
  */
 router.put(
   '/:projectId/roles/:userId',
-  checkProjectManagePermission,
+  checkProjectAdminRole,
   async (req: Request, res: Response) => {
     const { projectId, userId } = req.params;
     const { roleName } = req.body;

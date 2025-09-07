@@ -37,6 +37,7 @@ interface RoleManagementFormProps {
   onAddRole: () => void;
   onUpdateRole: () => void;
   loading: boolean;
+  canManageRole: boolean;
 }
 
 const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
@@ -55,10 +56,15 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
   onAddRole,
   onUpdateRole,
   loading,
+  canManageRole,
 }) => {
   return (
     <div className="mb-4">
-      <div className="bg-kibako-tertiary/20 border border-kibako-secondary/20 rounded-lg p-3">
+      <div
+        className={`bg-kibako-tertiary/20 border border-kibako-secondary/20 rounded-lg p-3 ${
+          canManageRole ? '' : 'opacity-50 pointer-events-none'
+        }`}
+      >
         {/* ヘッダー */}
         <div className="mb-3">
           <div className="flex items-center gap-2">
@@ -112,14 +118,14 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
               <div className="flex gap-3">
                 <button
                   onClick={onCancelEdit}
-                  disabled={loading}
+                  disabled={loading || !canManageRole}
                   className="px-6 py-2 text-kibako-primary/70 border border-kibako-secondary/30 rounded-lg hover:bg-kibako-tertiary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   <span className="text-sm">キャンセル</span>
                 </button>
                 <button
                   onClick={onUpdateRole}
-                  disabled={loading}
+                  disabled={loading || !canManageRole}
                   className="px-6 py-2 bg-kibako-secondary hover:bg-kibako-secondary text-kibako-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {loading ? (
@@ -135,7 +141,7 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
             ) : (
               <button
                 onClick={onAddRole}
-                disabled={!selectedUser || loading}
+                disabled={!selectedUser || loading || !canManageRole}
                 className="px-6 py-2 bg-kibako-secondary hover:bg-kibako-secondary text-kibako-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {loading ? (

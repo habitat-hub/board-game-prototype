@@ -44,6 +44,7 @@ const RoleManagement: React.FC = () => {
     creator,
     loading,
     canRemoveUserRole,
+    isCurrentUserAdmin,
 
     // UI状態
     roleForm,
@@ -204,6 +205,11 @@ const RoleManagement: React.FC = () => {
           {masterPrototypeName && `「${masterPrototypeName}」の`}
           ユーザー権限を管理します。
         </p>
+        {!isCurrentUserAdmin && (
+          <p className="mt-2 text-center text-kibako-primary/70">
+            権限を設定できるのはAdminユーザーのみです
+          </p>
+        )}
       </div>
 
       {/* ユーザー権限管理 */}
@@ -225,12 +231,15 @@ const RoleManagement: React.FC = () => {
           onAddRole={handleAddRoleWithReset}
           onUpdateRole={handleUpdateRoleWithReset}
           loading={loading}
+          canManageRole={isCurrentUserAdmin}
         />
 
         {/* 現在のユーザー権限一覧 */}
         <div
           className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 transition-all ${
-            editMode.isEditing ? 'opacity-40 pointer-events-none' : ''
+            editMode.isEditing || !isCurrentUserAdmin
+              ? 'opacity-40 pointer-events-none'
+              : ''
           }`}
         >
           <UserRolesList

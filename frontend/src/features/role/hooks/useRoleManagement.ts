@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 
 import { useProject } from '@/api/hooks/useProject';
 import { useUsers } from '@/api/hooks/useUsers';
@@ -49,6 +49,15 @@ export const useRoleManagement = (projectId: string) => {
   );
   const [creator, setCreator] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
+  const isCurrentUserAdmin = useMemo(() => {
+    if (!currentUser) return false;
+    const currentUserRole = userRoles.find(
+      (ur) => ur.userId === currentUser.id
+    );
+    return currentUserRole
+      ? currentUserRole.roles.some((role) => role.name === 'admin')
+      : false;
+  }, [currentUser, userRoles]);
 
   // UI状態
   const [roleForm, setRoleForm] = useState<RoleFormState>({
@@ -177,12 +186,17 @@ export const useRoleManagement = (projectId: string) => {
   // ユーザーのロール削除が可能かチェック
   const canRemoveUserRole = useCallback(
     (targetUserId: string, userRoles: UserRole[]) => {
-      // 現在のユーザー情報がない場合は削除不可
       if (!currentUser || !projectDetail) {
         return { canRemove: false, reason: 'ユーザー情報が取得できません' };
       }
 
-      // プロジェクトの作成者の場合は削除不可
+      if (!isCurrentUserAdmin) {
+        return {
+          canRemove: false,
+          reason: '権限を設定できるのはAdminユーザーのみです',
+        };
+      }
+
       if (projectDetail.userId === targetUserId) {
         return {
           canRemove: false,
@@ -190,24 +204,20 @@ export const useRoleManagement = (projectId: string) => {
         };
       }
 
-      // 対象ユーザーのロールを取得
       const targetUserRole = userRoles.find((ur) => ur.userId === targetUserId);
       if (!targetUserRole) {
         return { canRemove: false, reason: 'ユーザーが見つかりません' };
       }
 
-      // 管理者ロールを持っているかチェック
       const hasAdminRole = targetUserRole.roles.some(
         (role) => role.name === 'admin'
       );
 
       if (hasAdminRole) {
-        // 管理者の総数をカウント
         const adminCount = userRoles.filter((ur) =>
           ur.roles.some((role) => role.name === 'admin')
         ).length;
 
-        // 最後の管理者の場合は削除不可
         if (adminCount <= 1) {
           return {
             canRemove: false,
@@ -218,7 +228,7 @@ export const useRoleManagement = (projectId: string) => {
 
       return { canRemove: true, reason: '' };
     },
-    [currentUser, projectDetail]
+    [currentUser, projectDetail, isCurrentUserAdmin]
   );
 
   // ロール削除（エラーハンドリング改善）
@@ -325,6 +335,7 @@ export const useRoleManagement = (projectId: string) => {
     removeRole,
     updateRole,
     canRemoveUserRole,
+    isCurrentUserAdmin,
     refetch: fetchUserRoles,
     // ユーザー検索を呼び出すために username を受け取れる fetchAllUsers を公開
     fetchAllUsers: fetchUsers,
