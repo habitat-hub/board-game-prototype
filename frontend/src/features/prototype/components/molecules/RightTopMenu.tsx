@@ -6,8 +6,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import type { ReactElement } from 'react';
-import { FaUsers } from 'react-icons/fa';
+import { useEffect, useRef, useState, type ReactElement } from 'react';
+import { FaUsers, FaChevronDown } from 'react-icons/fa';
 
 import UserMenu from '@/components/molecules/UserMenu';
 import ConnectedUserIcon from '@/features/prototype/components/atoms/ConnectedUserIcon';
@@ -29,7 +29,7 @@ interface RightTopMenuProps {
 }
 
 /**
- * 権限メニュー。接続中ユーザーのアイコンと、ホバーで全ロールユーザー一覧を表示する。
+ * 権限メニュー。接続中ユーザーのアイコンと、クリックで全ロールユーザー一覧を表示する。
  * - 接続中のユーザーは色バッジ付き
  * - 非接続ユーザーはテキストのみ
  */
@@ -47,16 +47,37 @@ export default function RightTopMenu({
   const moreCount = connectedUsers.length - MAX_DISPLAY_USERS;
   const activeUserIds = new Set(connectedUsers.map((u) => u.userId));
 
+  const [showUserList, setShowUserList] = useState(false);
+  const userListRef = useRef<HTMLDivElement>(null);
+
+  const handleClickOutside = (event: MouseEvent): void => {
+    if (
+      !userListRef.current ||
+      userListRef.current.contains(event.target as Node)
+    )
+      return;
+
+    setShowUserList(false);
+  };
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <div
       className={`fixed top-4 right-4 z-overlay flex flex-row items-center gap-2 h-[56px] bg-kibako-white p-2 rounded-lg`}
     >
-      {/* ユーザーアイコンリスト（左側・ホバーで全ユーザー名表示） */}
+      {/* ユーザーアイコンリスト（左側・クリックで全ユーザー名表示） */}
       {!loading && connectedUsers && connectedUsers.length > 0 && (
-        <div className="relative group">
+        <div className="relative" ref={userListRef}>
           <button
             className="flex flex-row items-center focus:outline-none"
             aria-label="ユーザーリストを表示"
+            onClick={() => setShowUserList(!showUserList)}
             tabIndex={0}
           >
             <div className="flex -space-x-3">
@@ -74,39 +95,42 @@ export default function RightTopMenu({
                 +{moreCount}
               </span>
             )}
+            <FaChevronDown className="ml-2 h-3 w-3 text-kibako-secondary" />
           </button>
-          <div className="absolute right-0 mt-2 max-w-xs bg-kibako-white border border-kibako-secondary rounded shadow z-tooltip px-3 py-2 text-xs text-kibako-primary opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200">
-            <ul className="flex gap-1 flex-col">
-              {roleUsers.map((user) => {
-                const isActive = activeUserIds.has(user.userId);
-                const color: string | undefined = isActive
-                  ? getUserColor(user.userId, roleUsers)
-                  : undefined;
-                return (
-                  <li
-                    key={user.userId}
-                    className="truncate max-w-[180px] px-0 py-0 leading-6"
-                    title={user.username}
-                  >
-                    {isActive ? (
-                      <span
-                        className="inline-flex items-center gap-1 px-1 rounded border"
-                        style={{ borderColor: color }}
-                      >
+          {showUserList && (
+            <div className="absolute right-0 mt-2 max-w-xs bg-kibako-white border border-kibako-secondary rounded shadow z-overlay px-3 py-2 text-xs text-kibako-primary">
+              <ul className="flex gap-1 flex-col">
+                {roleUsers.map((user) => {
+                  const isActive = activeUserIds.has(user.userId);
+                  const color: string | undefined = isActive
+                    ? getUserColor(user.userId, roleUsers)
+                    : undefined;
+                  return (
+                    <li
+                      key={user.userId}
+                      className="truncate max-w-[180px] px-0 py-0 leading-6"
+                      title={user.username}
+                    >
+                      {isActive ? (
                         <span
-                          className="inline-block w-2 h-2"
-                          style={{ backgroundColor: color }}
-                        />
-                        {user.username}
-                      </span>
-                    ) : (
-                      user.username
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
+                          className="inline-flex items-center gap-1 px-1 rounded border"
+                          style={{ borderColor: color }}
+                        >
+                          <span
+                            className="inline-block w-2 h-2"
+                            style={{ backgroundColor: color }}
+                          />
+                          {user.username}
+                        </span>
+                      ) : (
+                        user.username
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
         </div>
       )}
 
