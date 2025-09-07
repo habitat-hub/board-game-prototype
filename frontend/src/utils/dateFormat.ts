@@ -9,10 +9,21 @@
  * formatDate(new Date('2021-01-01'), true) // '2021/01/01 00:00:00'
  */
 export default function formatDate(
-  date: string | Date,
-  withTime = false
+  date: string | Date | null | undefined,
+  withTime = false,
+  fallback: string = ''
 ): string {
+  // Guard null/undefined/empty-string early
+  if (date == null || (typeof date === 'string' && date.trim() === '')) {
+    return fallback;
+  }
+
   const d = new Date(date);
+
+  // Validate constructed date
+  if (Number.isNaN(d.getTime())) {
+    return fallback;
+  }
 
   // Use UTC to ensure stable results regardless of execution environment's timezone.
   const options: Intl.DateTimeFormatOptions = {
