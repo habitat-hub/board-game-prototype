@@ -13,14 +13,22 @@ export default function formatDate(
   withTime = false
 ): string {
   const d = new Date(date);
-  return d.toLocaleDateString('ja-JP', {
+
+  // Use UTC to ensure stable results regardless of execution environment's timezone.
+  const options: Intl.DateTimeFormatOptions = {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-    ...(withTime && {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    }),
-  });
+    timeZone: 'UTC',
+    ...(withTime
+      ? ({
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        } as const)
+      : {}),
+  };
+
+  return new Intl.DateTimeFormat('ja-JP', options).format(d);
 }
