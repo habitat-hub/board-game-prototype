@@ -1,11 +1,11 @@
 import { UAParser, type IResult } from 'ua-parser-js';
 
 /**
- * Determine if the current device should be treated as a PC (desktop).
- * Combines UAParser detection with iPadOS 13+ and generic mobile UA heuristics.
+ * デバイスをPCとして扱うべきかを判定する。
+ * UAParserの結果に加え、iPadOS13+の擬装検出・モバイルUAの簡易判定を組み合わせる。
  *
- * @param ua - User agent string
- * @param opts - Optional platform and touch info for better accuracy
+ * @param ua ユーザーエージェント文字列
+ * @param opts 追加情報（platform / maxTouchPoints）
  */
 export function isPCFromUA(
   ua: string,
@@ -40,8 +40,8 @@ export function isPCFromUA(
 }
 
 /**
- * Convenience wrapper using the global navigator if available.
- * Returns null when not runnable (e.g., during SSR).
+ * グローバルの navigator が利用可能な場合のラッパー。
+ * SSR 等で判定不能な場合は null を返す。
  */
 export function isPCFromNavigator(): boolean | null {
   if (typeof navigator === 'undefined') return null;
