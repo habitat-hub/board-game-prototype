@@ -38,9 +38,14 @@ describe('fetchImageFromS3', () => {
   it('throws NotFoundError when Body missing', async () => {
     mockedSend.mockResolvedValue({} as unknown as GetObjectCommandOutput);
 
-    await expect(fetchImageFromS3('key')).rejects.toMatchObject({
-      statusCode: 404,
-      message: 'S3に指定された画像が存在しません',
-    });
+    await expect(fetchImageFromS3('key')).rejects.toBeInstanceOf(NotFoundError);
+    await expect(fetchImageFromS3('key')).rejects.toHaveProperty(
+      'message',
+      'S3に指定された画像が存在しません'
+    );
+    await expect(fetchImageFromS3('key')).rejects.toHaveProperty(
+      'statusCode',
+      404
+    );
   });
 });

@@ -4,7 +4,10 @@ export class CustomError extends Error {
   constructor(message: string, statusCode: number) {
     super(message);
     this.statusCode = statusCode;
-    Object.setPrototypeOf(this, CustomError.prototype);
+    // Ensure correct prototype chain for subclass instanceof checks
+    Object.setPrototypeOf(this, new.target.prototype);
+    // Set error name to the concrete subclass name
+    this.name = new.target.name;
   }
 }
 
