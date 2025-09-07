@@ -21,6 +21,9 @@ const queryClient = new QueryClient({
   },
 });
 
+/**
+ * クライアント専用レイアウト。非PCデバイスはトップへリダイレクトする。
+ */
 export default function ClientLayout({
   children,
 }: Readonly<{
@@ -34,7 +37,7 @@ export default function ClientLayout({
   useEffect(() => {
     if (!isReady) return;
     if (!isPC && pathname !== '/') {
-      router.push('/');
+      router.replace('/');
     }
   }, [isPC, isReady, pathname, router]);
 
@@ -43,7 +46,7 @@ export default function ClientLayout({
   if (!isReady && pathname !== '/') {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p>Loading...</p>
+        <p>読み込み中...</p>
       </div>
     );
   }
