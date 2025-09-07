@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { FaPlus, FaTable, FaTh } from 'react-icons/fa';
 import { IoReload } from 'react-icons/io5';
@@ -63,21 +63,7 @@ const ProjectList: React.FC = () => {
   const [isCreating, setIsCreating] = useState<boolean>(false);
   // リロードアイコンのワンショットアニメーション制御
   const [isReloadAnimating, setIsReloadAnimating] = useState<boolean>(false);
-  // Stickyヘッダーの高さをCSS変数に反映し、テーブルヘッダーのオフセットとして使用
-  const headerRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    const updateOffset = () => {
-      const baseTop = 80; // top-20 (Tailwind spacing)
-      const h = headerRef.current?.getBoundingClientRect().height ?? 0;
-      document.documentElement.style.setProperty(
-        '--project-list-offset',
-        `${baseTop + h}px`
-      );
-    };
-    updateOffset();
-    window.addEventListener('resize', updateOffset);
-    return () => window.removeEventListener('resize', updateOffset);
-  }, []);
+  
 
   // 表示モードとソート設定（永続値を安全に復元）
   const [viewMode, setViewMode] = useState<ProjectListView>(() => {
@@ -338,10 +324,7 @@ const ProjectList: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto pb-8 relative px-4">
       {/* 1行目: タイトルと新規作成を横並び、2行目: 右端にトグル */}
-      <div
-        ref={headerRef}
-        className="sticky top-20 z-sticky bg-transparent backdrop-blur-sm flex flex-col gap-8 pt-16 pb-4 rounded-lg"
-      >
+      <div className="sticky top-20 z-sticky bg-transparent backdrop-blur-sm flex flex-col gap-8 pt-16 pb-4 rounded-lg">
         {/* 1行目 */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
           {/* 左側: タイトル + リロード */}

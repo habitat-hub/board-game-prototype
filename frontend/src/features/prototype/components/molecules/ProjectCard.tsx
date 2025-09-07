@@ -1,4 +1,5 @@
 import React, { useContext, useState } from 'react';
+import type { IconType } from 'react-icons';
 
 import { Prototype, Project } from '@/api/types';
 import { UserContext } from '@/contexts/UserContext';
@@ -43,7 +44,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   const userContext = useContext(UserContext);
 
   const { id, name, createdAt } = masterPrototype;
-  const IconComponent = getProjectIcon(id);
+  const IconComponent: IconType = getProjectIcon(id);
   const [updatedName, setUpdatedName] = useState<string | null>(null);
 
   return (
