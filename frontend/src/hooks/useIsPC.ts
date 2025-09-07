@@ -5,9 +5,9 @@ import { isPCFromNavigator } from '@/utils/device';
  * React hook to detect if the current device is a PC (desktop).
  * Provides an `isReady` flag to avoid SSR hydration mismatches.
  */
-export function useIsPC() {
+export function useIsPC(): Readonly<{ isPC: boolean; isReady: boolean }> {
   const [isPC, setIsPC] = useState<boolean>(true);
-  const [isReady, setIsReady] = useState(false);
+  const [isReady, setIsReady] = useState<boolean>(false);
 
   useEffect(() => {
     const result = isPCFromNavigator();
@@ -22,4 +22,3 @@ export function useIsPC() {
 
   return { isPC, isReady } as const;
 }
-

@@ -1,4 +1,4 @@
-import * as UAParser from 'ua-parser-js';
+import { UAParser, type IResult } from 'ua-parser-js';
 
 /**
  * Determine if the current device should be treated as a PC (desktop).
@@ -11,8 +11,8 @@ export function isPCFromUA(
   ua: string,
   opts?: { platform?: string; maxTouchPoints?: number }
 ): boolean {
-  const parser = new UAParser.UAParser(ua);
-  const result = parser.getResult();
+  const parser = new UAParser(ua);
+  const result: IResult = parser.getResult();
   const deviceType = result.device.type; // 'mobile' | 'tablet' | 'console' | 'smarttv' | 'wearable' | 'embedded' | undefined
 
   const platform = opts?.platform;
@@ -47,8 +47,7 @@ export function isPCFromNavigator(): boolean | null {
   if (typeof navigator === 'undefined') return null;
   const ua = navigator.userAgent || '';
   const platform = navigator.platform;
-  const maxTouchPoints = (navigator as any).maxTouchPoints as
-    | number
-    | undefined;
+  const maxTouchPoints =
+    'maxTouchPoints' in navigator ? navigator.maxTouchPoints : undefined;
   return isPCFromUA(ua, { platform, maxTouchPoints });
 }
