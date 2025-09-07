@@ -112,6 +112,9 @@ describe('checkProjectOwner', () => {
     } as unknown as Request;
     const res = createRes();
     const next = vi.fn();
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
 
     mockedFindByPk.mockRejectedValue(new Error('DB failure'));
 
@@ -122,6 +125,8 @@ describe('checkProjectOwner', () => {
       message: '予期せぬエラーが発生しました',
     });
     expect(next).not.toHaveBeenCalled();
+
+    consoleErrorSpy.mockRestore();
   });
 });
 
@@ -202,6 +207,9 @@ describe('checkPermission factory and wrappers', () => {
     } as unknown as Request;
     const res = createRes();
     const next = vi.fn();
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
 
     mockedHasPermission.mockRejectedValue(new Error('RBAC failure'));
 
@@ -218,5 +226,7 @@ describe('checkPermission factory and wrappers', () => {
       message: '予期せぬエラーが発生しました',
     });
     expect(next).not.toHaveBeenCalled();
+
+    consoleErrorSpy.mockRestore();
   });
 });
