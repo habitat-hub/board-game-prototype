@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 
 import { Part, PartProperty } from '@/api/types';
+import { KEYBOARD_SHORTCUTS } from '@/features/prototype/constants';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { GameBoardMode } from '@/features/prototype/types';
 
@@ -89,7 +90,7 @@ const DebugInfo: React.FC<DebugInfoProps> = ({
       <div className="flex-1 overflow-y-auto">{renderTabContent()}</div>
 
       <div className="text-[11px] mt-2 pt-2 border-t border-kibako-white border-opacity-20">
-        Press Cmd+i (Mac) or Ctrl+i (Windows) to toggle debug panel
+        Press {KEYBOARD_SHORTCUTS.debugToggle.label} to toggle debug panel
       </div>
     </div>
   );

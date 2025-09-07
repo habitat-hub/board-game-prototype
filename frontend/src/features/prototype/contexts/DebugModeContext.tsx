@@ -7,6 +7,7 @@ import React, {
   ReactNode,
 } from 'react';
 
+import { KEYBOARD_SHORTCUTS } from '@/features/prototype/constants';
 import { isInputFieldFocused } from '@/utils/inputFocus';
 
 interface DebugModeContextType {
@@ -36,8 +37,8 @@ export const DebugModeProvider: React.FC<{ children: ReactNode }> = ({
         return;
       }
 
-      // Cmd+i または Ctrl+i でデバッグ情報の表示/非表示を切り替え
-      if ((e.metaKey || e.ctrlKey) && e.key === 'i') {
+      // デバッグ情報の表示/非表示を切り替え
+      if (KEYBOARD_SHORTCUTS.debugToggle.match?.(e)) {
         e.preventDefault();
         toggleDebugInfo();
       }

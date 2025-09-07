@@ -9,7 +9,7 @@ import NumberInput from '@/components/atoms/NumberInput';
 import TextInput from '@/components/atoms/TextInput';
 import ColorPicker from '@/features/prototype/components/atoms/ColorPicker';
 import PartPropertyMenuButton from '@/features/prototype/components/atoms/PartPropertyMenuButton';
-import { COLORS } from '@/features/prototype/constants';
+import { COLORS, KEYBOARD_SHORTCUTS } from '@/features/prototype/constants';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import {
   DeleteImageProps,
@@ -180,7 +180,7 @@ export default function PartPropertyMenuSingle({
             text="複製"
             icon={<FaRegCopy className="h-3 w-3" />}
             onClick={onDuplicatePart}
-            title="Cmd/Ctrl + D"
+            title={KEYBOARD_SHORTCUTS.duplicatePart.label}
           />
           <PartPropertyMenuButton
             text="削除"
@@ -188,7 +188,7 @@ export default function PartPropertyMenuSingle({
             onClick={() => {
               onDeletePart();
             }}
-            title="Delete / Backspace"
+            title={KEYBOARD_SHORTCUTS.deleteParts.label}
           />
         </div>
       )}
