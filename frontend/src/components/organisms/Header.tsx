@@ -4,10 +4,12 @@ import React from 'react';
 import { GiWoodenCrate } from 'react-icons/gi';
 
 import UserMenu from '@/components/molecules/UserMenu';
+import { useIsPC } from '@/hooks/useIsPC';
 
 const Header: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const { isPC, isReady } = useIsPC();
 
   /**
    * トップページへ遷移する
@@ -30,7 +32,8 @@ const Header: React.FC = () => {
         </div>
       </button>
 
-      <UserMenu pathname={pathname} />
+      {/* PC のみユーザーメニューを表示 */}
+      {isReady && isPC && <UserMenu pathname={pathname} />}
     </header>
   );
 };

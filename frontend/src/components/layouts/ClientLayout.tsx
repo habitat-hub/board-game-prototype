@@ -2,12 +2,12 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
-import * as UAParser from 'ua-parser-js';
+import React, { useEffect } from 'react';
 
 import { WoodenCrateBackground } from '@/components/atoms/WoodenCrateBackground';
 import Header from '@/components/organisms/Header';
 import { useClientPathInfo } from '@/hooks/useClientPathInfo';
+import { useIsPC } from '@/hooks/useIsPC';
 
 // QueryClientの設定
 const queryClient = new QueryClient({
@@ -21,6 +21,9 @@ const queryClient = new QueryClient({
   },
 });
 
+/**
+ * クライアント専用レイアウト。非PCデバイスはトップへリダイレクトする。
+ */
 export default function ClientLayout({
   children,
 }: Readonly<{
@@ -28,41 +31,22 @@ export default function ClientLayout({
 }>) {
   const router = useRouter();
   const { pathname, isGameBoardPath } = useClientPathInfo();
-  // 初期値をfalseにすることでSSRとクライアント側のレンダリングを一致させる
-  const [isCheckingDevice, setIsCheckingDevice] = useState(false);
-  const [shouldRedirect, setShouldRedirect] = useState(false);
+  const { isPC, isReady } = useIsPC();
 
+  // 非PCデバイスはトップページへ戻す
   useEffect(() => {
-    // クライアントサイドでのみデバイスチェックを実行
-    if (typeof window !== 'undefined' && pathname !== '/') {
-      setIsCheckingDevice(true);
-
-      const parser = new UAParser.UAParser();
-      const result = parser.getResult();
-      const deviceType = result.device.type;
-
-      // モバイルまたはタブレットの場合にリダイレクトフラグを設定
-      if (deviceType === 'mobile' || deviceType === 'tablet') {
-        setShouldRedirect(true);
-      }
-
-      setIsCheckingDevice(false);
+    if (!isReady) return;
+    if (!isPC && pathname !== '/') {
+      router.replace('/');
     }
-  }, [pathname]);
-
-  // リダイレクトが必要な場合は実行
-  useEffect(() => {
-    if (shouldRedirect && pathname !== '/') {
-      router.push('/');
-    }
-  }, [shouldRedirect, pathname, router]);
+  }, [isPC, isReady, pathname, router]);
 
   // デバイスチェック中は読み込み表示を返すことで、
   // サーバーサイドレンダリングとの整合性を保つ
-  if (isCheckingDevice) {
+  if (!isReady && pathname !== '/') {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p>Loading...</p>
+        <p>読み込み中...</p>
       </div>
     );
   }
