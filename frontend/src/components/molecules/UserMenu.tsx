@@ -84,13 +84,13 @@ const UserMenu: React.FC<UserMenuProps> = ({ pathname }) => {
   }
 
   return (
-    <div className="relative z-dropdown" ref={menuRef}>
+    <div className="relative z-overlay" ref={menuRef}>
       <button onClick={() => setShowMenu(!showMenu)}>
         <UserAvatar username={user.username} size="lg" />
       </button>
 
       {showMenu && (
-        <div className="absolute right-0 top-full w-48 flex flex-col mt-2 shadow-xl rounded-lg overflow-hidden bg-kibako-tertiary border border-kibako-secondary/30">
+        <div className="absolute right-0 top-full z-overlay w-48 flex flex-col mt-2 shadow-xl rounded-lg overflow-hidden bg-kibako-tertiary border border-kibako-secondary/30">
           {/* ユーザー名表示行 */}
           <div className="flex items-center gap-3 p-3 bg-kibako-secondary/5 border-b border-kibako-secondary/20">
             <UserAvatar username={user.username} size="sm" />
