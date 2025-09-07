@@ -53,7 +53,7 @@ export const useRoleManagement = (projectId: string) => {
   // UI状態
   const [roleForm, setRoleForm] = useState<RoleFormState>({
     selectedUserId: null,
-    selectedRole: 'admin',
+    selectedRole: 'editor',
   });
   const [toast, setToast] = useState<ToastState>({
     message: '',
@@ -247,7 +247,7 @@ export const useRoleManagement = (projectId: string) => {
       await addRole(roleForm.selectedUserId, roleForm.selectedRole);
       setRoleForm({
         selectedUserId: null,
-        selectedRole: 'admin',
+        selectedRole: 'editor',
       });
     }
   }, [roleForm.selectedUserId, roleForm.selectedRole, addRole]);

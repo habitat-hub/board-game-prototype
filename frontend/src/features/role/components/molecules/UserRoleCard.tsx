@@ -34,7 +34,7 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
   isLastAdmin: _isLastAdmin, // 現在未使用のため_プレフィックスを追加
   canRemove,
   removeReason,
-  onEdit: _onEdit, // 現在未使用のため_プレフィックスを追加
+  onEdit,
   onRemove,
   loading,
   editMode,
@@ -68,16 +68,33 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
         <div className="flex gap-1">
           {/* 変更ボタン */}
           <button
-            onClick={() => {
-              // 現在は無効化されているため何もしない
-            }}
-            className="p-2 rounded transition-colors text-kibako-secondary/50 cursor-not-allowed"
+            onClick={() =>
+              onEdit(userRole.userId, userRole.user.username, primaryRole.name)
+            }
+            className={`p-2 rounded transition-colors ${
+              !isCreator && !loading && !editMode
+                ? 'text-kibako-primary/60 hover:text-kibako-secondary hover:bg-kibako-tertiary/20'
+                : 'text-kibako-secondary/50 cursor-not-allowed'
+            }`}
             title={
               isCreator
                 ? 'プロジェクト作成者の権限は変更できません'
-                : '権限を変更する - Coming Soon 開発中です'
+                : loading
+                  ? '処理中...'
+                  : editMode
+                    ? '編集モード中は変更できません'
+                    : '権限を変更'
             }
-            disabled={true}
+            aria-label={
+              isCreator
+                ? 'プロジェクト作成者の権限は変更できません'
+                : loading
+                  ? '処理中...'
+                  : editMode
+                    ? '編集モード中は変更できません'
+                    : '権限を変更'
+            }
+            disabled={loading || isCreator || editMode}
           >
             <AiOutlineUserSwitch className="h-4 w-4" />
           </button>
@@ -91,6 +108,15 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
                 : 'text-kibako-secondary/50 cursor-not-allowed'
             }`}
             title={
+              loading
+                ? '処理中...'
+                : editMode
+                  ? '編集モード中は削除できません'
+                  : canRemove
+                    ? '権限を削除'
+                    : removeReason
+            }
+            aria-label={
               loading
                 ? '処理中...'
                 : editMode

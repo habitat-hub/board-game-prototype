@@ -140,7 +140,7 @@ const RoleManagement: React.FC = () => {
     });
     setSelectedUser(null);
     setSearchTerm('');
-    updateRoleForm({ selectedUserId: '', selectedRole: 'admin' });
+    updateRoleForm({ selectedUserId: '', selectedRole: 'editor' });
   };
 
   // 権限更新実行
