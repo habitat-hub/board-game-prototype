@@ -14,10 +14,11 @@ import FloatingActionButton from '@/features/top/components/atoms/FloatingAction
 import ShareLinkButton from '@/features/top/components/atoms/ShareLinkButton';
 import CatchCopyCard from '@/features/top/components/molecules/CatchCopyCard';
 import MiniGameBoard from '@/features/top/components/organisms/MiniGameBoard';
+import { useIsPC } from '@/hooks/useIsPC';
 
 const TopPage: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isNonPC, setIsNonPC] = useState(false);
+  const { isPC, isReady } = useIsPC();
   const { scrollYProgress } = useScroll();
 
   // パララックス効果のための変換値
@@ -29,20 +30,7 @@ const TopPage: React.FC = () => {
     setIsLoaded(true);
   }, []);
 
-  // 非PCデバイス判定（モバイル/タブレット想定）
-  useEffect(() => {
-    if (typeof navigator === 'undefined') return;
-
-    const ua = navigator.userAgent || '';
-    const isMobileUA = /Android|iPhone|iPod|iPad|Mobile|Windows Phone/i.test(
-      ua
-    );
-    // iPadOS 13+ は Mac と判定されるケースがあるため補助条件
-    const isIPadOS13 =
-      navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
-
-    setIsNonPC(isMobileUA || isIPadOS13);
-  }, []);
+  const isNonPC = isReady && !isPC;
 
   // カード要素のバリアント
   const cardVariants = {
