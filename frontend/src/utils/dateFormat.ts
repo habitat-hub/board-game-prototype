@@ -9,18 +9,38 @@
  * formatDate(new Date('2021-01-01'), true) // '2021/01/01 00:00:00'
  */
 export default function formatDate(
-  date: string | Date,
-  withTime = false
+  date: string | Date | null | undefined,
+  withTime = false,
+  fallback: string = ''
 ): string {
+  // Guard null/undefined/empty-string early
+  if (date == null || (typeof date === 'string' && date.trim() === '')) {
+    return fallback;
+  }
+
   const d = new Date(date);
-  return d.toLocaleDateString('ja-JP', {
+
+  // Validate constructed date
+  if (Number.isNaN(d.getTime())) {
+    return fallback;
+  }
+
+  // Use UTC to ensure stable results regardless of execution environment's timezone.
+  const options: Intl.DateTimeFormatOptions = {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-    ...(withTime && {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    }),
-  });
+    timeZone: 'UTC',
+    ...(withTime
+      ? ({
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        } as const)
+      : {}),
+  };
+
+  // Force Gregorian calendar to avoid imperial calendar resolution in some envs
+  return new Intl.DateTimeFormat('ja-JP-u-ca-gregory', options).format(d);
 }
