@@ -7,44 +7,44 @@ interface RoleBadgeProps {
   size?: 'sm' | 'md';
 }
 
+export const getRoleConfig = (role: string) => {
+  switch (role) {
+    case 'admin':
+      return {
+        icon: <FaUserShield className="h-3 w-3" />,
+        bgColor: 'bg-kibako-danger/10',
+        textColor: 'text-kibako-danger/80',
+        label: 'Admin',
+      };
+    case 'editor':
+      return {
+        icon: <FaEdit className="h-3 w-3" />,
+        bgColor: 'bg-kibako-info/10',
+        textColor: 'text-kibako-info/80',
+        label: 'Editor',
+      };
+    case 'viewer':
+      return {
+        icon: <FaEye className="h-3 w-3" />,
+        bgColor: 'bg-kibako-tertiary/20',
+        textColor: 'text-kibako-primary/80',
+        label: 'Viewer',
+      };
+    default:
+      return {
+        icon: <FaEye className="h-3 w-3" />,
+        bgColor: 'bg-kibako-tertiary/20',
+        textColor: 'text-kibako-primary/80',
+        label: role.charAt(0).toUpperCase() + role.slice(1),
+      };
+  }
+};
+
 const RoleBadge: React.FC<RoleBadgeProps> = ({
   roleName,
   showIcon = true,
   size = 'md',
 }) => {
-  const getRoleConfig = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return {
-          icon: <FaUserShield className="h-3 w-3" />,
-          bgColor: 'bg-kibako-danger/10',
-          textColor: 'text-kibako-danger/80',
-          label: 'Admin',
-        };
-      case 'editor':
-        return {
-          icon: <FaEdit className="h-3 w-3" />,
-          bgColor: 'bg-kibako-info/10',
-          textColor: 'text-kibako-info/80',
-          label: 'Editor',
-        };
-      case 'viewer':
-        return {
-          icon: <FaEye className="h-3 w-3" />,
-          bgColor: 'bg-kibako-tertiary/20',
-          textColor: 'text-kibako-primary/80',
-          label: 'Viewer',
-        };
-      default:
-        return {
-          icon: <FaEye className="h-3 w-3" />,
-          bgColor: 'bg-kibako-tertiary/20',
-          textColor: 'text-kibako-primary/80',
-          label: role.charAt(0).toUpperCase() + role.slice(1),
-        };
-    }
-  };
-
   const config = getRoleConfig(roleName);
   const sizeClasses =
     size === 'sm' ? 'text-xs px-1.5 py-0.5' : 'text-xs px-2 py-0.5';

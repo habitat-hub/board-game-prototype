@@ -113,6 +113,10 @@ export default function GameBoard({
     return [...active, ...inactive];
   }, [userRoles, connectedUsers]);
 
+  const currentUserRole = useMemo(() => {
+    return userRoles.find((ur) => ur.userId === currentUserId)?.roles[0]?.name;
+  }, [userRoles, currentUserId]);
+
   // 自分のユーザー情報（色付けに使用）
   const selfUser = useMemo(() => {
     return connectedUsers.find((u) => u.userId === currentUserId) || null;
@@ -559,6 +563,7 @@ export default function GameBoard({
             roleUsers={roleUsers}
             loading={false}
             showRoleManagementButton={gameBoardMode === GameBoardMode.CREATE}
+            currentUserRole={currentUserRole}
           />
         )}
 

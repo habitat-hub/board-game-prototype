@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/api/hooks/useAuth';
+import { getRoleConfig } from '@/features/role/components/atoms/RoleBadge';
 import UserAvatar from '@/features/role/components/atoms/UserAvatar';
 import { useUser } from '@/hooks/useUser';
 
@@ -12,9 +13,10 @@ const FEEDBACK_FORM_URL = 'https://forms.gle/XjMV2WgFRCJg7cHj7';
 
 interface UserMenuProps {
   pathname: string;
+  roleName?: string;
 }
 
-const UserMenu: React.FC<UserMenuProps> = ({ pathname }) => {
+const UserMenu: React.FC<UserMenuProps> = ({ pathname, roleName }) => {
   const router = useRouter();
   const { user, setUser, isLoading } = useUser();
   const { logout } = useAuth();
@@ -60,6 +62,8 @@ const UserMenu: React.FC<UserMenuProps> = ({ pathname }) => {
       .catch((error) => console.error('Logout error:', error));
   };
 
+  const roleConfig = roleName ? getRoleConfig(roleName) : null;
+
   // ローディング時はnullを返す
   if (isLoading) {
     return null;
@@ -94,9 +98,14 @@ const UserMenu: React.FC<UserMenuProps> = ({ pathname }) => {
           {/* ユーザー名表示行 */}
           <div className="flex items-center gap-3 p-3 bg-kibako-secondary/5 border-b border-kibako-secondary/20">
             <UserAvatar username={user.username} size="sm" />
-            <span className="font-medium text-kibako-primary">
-              {user.username}
-            </span>
+            <div className="flex items-center gap-1">
+              {roleConfig && (
+                <span className={roleConfig.textColor}>{roleConfig.icon}</span>
+              )}
+              <span className="font-medium text-kibako-primary">
+                {user.username}
+              </span>
+            </div>
           </div>
 
           <Link

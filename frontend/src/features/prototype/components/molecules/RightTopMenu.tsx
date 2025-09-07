@@ -26,6 +26,8 @@ interface RightTopMenuProps {
   loading?: boolean;
   // 右側の権限管理ページリンクを表示するか
   showRoleManagementButton?: boolean;
+  // 現在のユーザーのロール名
+  currentUserRole?: string;
 }
 
 /**
@@ -39,6 +41,7 @@ export default function RightTopMenu({
   roleUsers,
   loading = false,
   showRoleManagementButton = true,
+  currentUserRole,
 }: RightTopMenuProps): ReactElement | null {
   const pathname = usePathname();
 
@@ -149,7 +152,7 @@ export default function RightTopMenu({
       )}
 
       {/* ユーザーメニュー（右側） - 常時表示 */}
-      <UserMenu pathname={pathname} />
+      <UserMenu pathname={pathname} roleName={currentUserRole} />
     </div>
   );
 }
