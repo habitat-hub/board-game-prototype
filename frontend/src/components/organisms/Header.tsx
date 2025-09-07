@@ -32,6 +32,7 @@ const Header: React.FC = () => {
         </div>
       </button>
 
+      {/* PC のみユーザーメニューを表示 */}
       {isReady && isPC && <UserMenu pathname={pathname} />}
     </header>
   );
