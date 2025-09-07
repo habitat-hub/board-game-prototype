@@ -1,8 +1,16 @@
 import { z } from 'zod';
 import dotenv from 'dotenv';
 
-// Load .env first
-dotenv.config();
+// Load .env only when not running under a test runner
+const isTestRunner =
+  process.env.NODE_ENV === 'test' ||
+  !!process.env.VITEST ||
+  !!process.env.JEST_WORKER_ID ||
+  (Array.isArray(process.argv) && process.argv.join(' ').includes('vitest'));
+
+if (!isTestRunner) {
+  dotenv.config();
+}
 
 // Detect test environment early to relax validation for unit tests that mock deps
 const isTest = process.env.NODE_ENV === 'test';
