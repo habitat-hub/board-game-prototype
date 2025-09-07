@@ -19,6 +19,7 @@ interface UserRoleWithDetails {
 interface UserRoleCardProps {
   userRole: UserRoleWithDetails;
   isCreator: boolean;
+  isSelf: boolean;
   isLastAdmin: boolean;
   canRemove: boolean;
   removeReason: string;
@@ -31,6 +32,7 @@ interface UserRoleCardProps {
 const UserRoleCard: React.FC<UserRoleCardProps> = ({
   userRole,
   isCreator,
+  isSelf,
   isLastAdmin: _isLastAdmin, // 現在未使用のため_プレフィックスを追加
   canRemove,
   removeReason,
@@ -72,29 +74,33 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
               onEdit(userRole.userId, userRole.user.username, primaryRole.name)
             }
             className={`p-2 rounded transition-colors ${
-              !isCreator && !loading && !editMode
+              !isCreator && !isSelf && !loading && !editMode
                 ? 'text-kibako-primary/60 hover:text-kibako-secondary hover:bg-kibako-tertiary/20'
                 : 'text-kibako-secondary/50 cursor-not-allowed'
             }`}
             title={
               isCreator
                 ? 'プロジェクト作成者の権限は変更できません'
-                : loading
-                  ? '処理中...'
-                  : editMode
-                    ? '編集モード中は変更できません'
-                    : '権限を変更'
+                : isSelf
+                  ? '自分の権限は変更できません'
+                  : loading
+                    ? '処理中...'
+                    : editMode
+                      ? '編集モード中は変更できません'
+                      : '権限を変更'
             }
             aria-label={
               isCreator
                 ? 'プロジェクト作成者の権限は変更できません'
-                : loading
-                  ? '処理中...'
-                  : editMode
-                    ? '編集モード中は変更できません'
-                    : '権限を変更'
+                : isSelf
+                  ? '自分の権限は変更できません'
+                  : loading
+                    ? '処理中...'
+                    : editMode
+                      ? '編集モード中は変更できません'
+                      : '権限を変更'
             }
-            disabled={loading || isCreator || editMode}
+            disabled={loading || isCreator || isSelf || editMode}
           >
             <AiOutlineUserSwitch className="h-4 w-4" />
           </button>
