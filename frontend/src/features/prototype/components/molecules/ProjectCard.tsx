@@ -1,8 +1,9 @@
-import React, { useContext } from 'react';
-import { GiWoodenCrate, GiCardAceSpades, GiPuzzle } from 'react-icons/gi';
+import React, { useContext, useState } from 'react';
 
 import { Prototype, Project } from '@/api/types';
 import { UserContext } from '@/contexts/UserContext';
+import PrototypeNameEditor from '@/features/prototype/components/atoms/PrototypeNameEditor';
+import { getProjectIcon } from '@/features/prototype/utils/getProjectIcon';
 import formatDate from '@/utils/dateFormat';
 
 /**
@@ -35,40 +36,19 @@ type ProjectCardProps = {
 export const ProjectCard: React.FC<ProjectCardProps> = ({
   project,
   masterPrototype,
-  isNameEditing,
-  editedName,
-  setEditedName,
   onCardClick,
   onContextMenu,
-  onSubmit,
-  onBlur,
-  onKeyDown,
 }) => {
   // UserContextからユーザー情報を取得
   const userContext = useContext(UserContext);
 
   const { id, name, createdAt } = masterPrototype;
-
-  /**
-   * ランダムなアイコンを取得する
-   * @param id プロトタイプID（一意性を保つため）
-   * @returns アイコンコンポーネント
-   */
-  const getRandomIcon = (id: string) => {
-    const icons = [GiWoodenCrate, GiCardAceSpades, GiPuzzle];
-    // IDをもとにハッシュ値を生成して一意性を保つ
-    const hash = id
-      .split('')
-      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const iconIndex = hash % icons.length;
-    const IconComponent = icons[iconIndex];
-
-    return <IconComponent className="w-36 h-36 text-kibako-white" />;
-  };
+  const IconComponent = getProjectIcon(id);
+  const [updatedName, setUpdatedName] = useState<string | null>(null);
 
   return (
     <div
-      className="bg-kibako-white border border-kibako-tertiary/20 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer"
+      className="bg-kibako-white border border-kibako-secondary/30 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer"
       onClick={onCardClick}
       onContextMenu={(e) => {
         e.preventDefault();
@@ -78,41 +58,25 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
     >
       {/* カード画像エリア */}
       <div className="relative h-56 bg-gradient-to-br from-kibako-accent to-kibako-tertiary flex items-center justify-center">
-        {getRandomIcon(id)}
+        <IconComponent className="w-36 h-36 text-kibako-white" />
         <div className="absolute inset-0 bg-black/10 rounded-t-xl"></div>
       </div>
 
       {/* カード内容 */}
       <div className="p-3">
-        {/* プロトタイプ名 */}
+        {/* プロトタイプ名（インライン編集） */}
         <div className="flex items-center">
-          {isNameEditing ? (
-            <form className="w-full" onSubmit={onSubmit}>
-              <input
-                type="text"
-                value={editedName}
-                onChange={(e) => setEditedName(e.target.value)}
-                onBlur={() =>
-                  onBlur().catch((error) => {
-                    console.error('Error in onBlur:', error);
-                    alert(error.message || 'エラーが発生しました');
-                  })
-                }
-                onKeyDown={(e) =>
-                  onKeyDown(e).catch((error) => {
-                    console.error('Error in onKeyDown:', error);
-                    alert(error.message || 'エラーが発生しました');
-                  })
-                }
-                className="w-full text-kibako-primary font-semibold bg-transparent border border-transparent rounded-md p-1 -m-1 focus:outline-none focus:bg-kibako-white focus:border-kibako-primary focus:shadow-sm transition-all text-base"
-                autoFocus
-              />
-            </form>
-          ) : (
-            <span className="text-kibako-primary font-semibold p-1 -m-1 rounded-md text-left text-base leading-tight">
-              {name}
-            </span>
-          )}
+          <div className="w-full" onClick={(e) => e.stopPropagation()}>
+            <PrototypeNameEditor
+              prototypeId={id}
+              name={updatedName ?? name}
+              size="base"
+              weight="bold"
+              truncate={false}
+              bleedX={false}
+              onUpdated={(newName) => setUpdatedName(newName)}
+            />
+          </div>
         </div>
         {/* 詳細情報 */}
         <div className="flex justify-end mt-2">
