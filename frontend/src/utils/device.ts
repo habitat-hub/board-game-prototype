@@ -28,7 +28,7 @@ export function isPCFromUA(ua: string, opts?: DeviceDetectOptions): boolean {
     deviceType = result.device.type; // 'mobile' | 'tablet' | 'console' | 'smarttv' | 'wearable' | 'embedded' | undefined
   } catch (e) {
     // 予期しないエラーはログに記録し、安全側（非PC扱いしない）に倒す
-    // eslint-disable-next-line no-console
+
     console.error('デバイス判定中に予期しないエラーが発生しました', e);
     deviceType = undefined;
   }

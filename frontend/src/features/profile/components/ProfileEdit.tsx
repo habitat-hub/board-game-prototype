@@ -121,7 +121,9 @@ const ProfileEdit: React.FC = () => {
 
       <div className="mb-6 p-6 overflow-visible rounded-xl bg-gradient-to-r from-kibako-white via-kibako-white to-kibako-tertiary shadow-lg border border-kibako-tertiary/30">
         <div className="flex items-center justify-between mb-4 border-b border-kibako-secondary/30 pb-2">
-          <h2 className="text-xl font-bold text-kibako-primary">ユーザー情報</h2>
+          <h2 className="text-xl font-bold text-kibako-primary">
+            ユーザー情報
+          </h2>
           {!isEditing && (
             <button
               type="button"
@@ -151,12 +153,20 @@ const ProfileEdit: React.FC = () => {
               </p>
             </div>
             {success && (
-              <p role="status" aria-live="polite" className="text-kibako-success text-xs">
+              <p
+                role="status"
+                aria-live="polite"
+                className="text-kibako-success text-xs"
+              >
                 {success}
               </p>
             )}
             {error && (
-              <p role="alert" aria-live="assertive" className="text-kibako-danger text-xs">
+              <p
+                role="alert"
+                aria-live="assertive"
+                className="text-kibako-danger text-xs"
+              >
                 {error}
               </p>
             )}

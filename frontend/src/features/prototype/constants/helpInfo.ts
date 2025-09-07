@@ -2,9 +2,11 @@
  * ヘルプ情報に関する定数
  */
 
-import type { PartInfo, OperationInfo } from '@/features/prototype/types/helpInfo';
+import type {
+  PartInfo,
+  OperationInfo,
+} from '@/features/prototype/types/helpInfo';
 export { SHORTCUTS } from './shortcutKeys';
-
 
 // パーツ操作情報の定義
 export const PARTS_INFO: PartInfo[] = [
