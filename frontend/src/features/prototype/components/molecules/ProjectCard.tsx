@@ -57,8 +57,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       title="クリックで編集 / 右クリックでメニュー表示"
     >
       {/* カード画像エリア */}
-      <div className="relative h-56 bg-gradient-to-br from-kibako-accent to-kibako-tertiary flex items-center justify-center">
-        <IconComponent className="w-36 h-36 text-kibako-white" />
+      <div className="relative h-40 bg-gradient-to-br from-kibako-accent to-kibako-tertiary flex items-center justify-center">
+        <IconComponent className="w-24 h-24 text-kibako-white" />
         <div className="absolute inset-0 bg-black/10 rounded-t-xl"></div>
       </div>
 
