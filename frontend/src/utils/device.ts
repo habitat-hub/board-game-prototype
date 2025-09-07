@@ -13,7 +13,7 @@ export function isPCFromUA(
 ): boolean {
   const parser = new UAParser.UAParser(ua);
   const result = parser.getResult();
-  const deviceType = result.device.type; // 'mobile' | 'tablet' | 'console' | 'smarttv' | 'wearable' | 'embedded' | 'desktop' | undefined
+  const deviceType = result.device.type; // 'mobile' | 'tablet' | 'console' | 'smarttv' | 'wearable' | 'embedded' | undefined
 
   const platform = opts?.platform;
   const maxTouchPoints = opts?.maxTouchPoints ?? 0;
@@ -29,8 +29,9 @@ export function isPCFromUA(
     return false;
   }
 
-  // UAParser: if specific non-desktop device type is detected, treat as non-PC
-  if (deviceType && deviceType !== 'desktop') {
+  // UAParser: if a specific device type is detected, treat as non-PC
+  // (UAParser typically leaves desktop as undefined)
+  if (deviceType) {
     return false;
   }
 
@@ -51,4 +52,3 @@ export function isPCFromNavigator(): boolean | null {
     | undefined;
   return isPCFromUA(ua, { platform, maxTouchPoints });
 }
-
