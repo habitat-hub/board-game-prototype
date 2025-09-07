@@ -45,7 +45,7 @@ export const KEYBOARD_SHORTCUTS: Record<string, ShortcutDef> = {
   },
   duplicatePart: {
     id: 'duplicate',
-    label: `${MODIFIER_KEY} + D`,
+    label: `${MODIFIER_KEY} + d`,
     description: '選択中のパーツ1つを複製する。',
     match: (e: KeyboardEvent) =>
       (IS_MAC ? e.metaKey && !e.ctrlKey : e.ctrlKey && !e.metaKey) &&
@@ -62,7 +62,7 @@ export const KEYBOARD_SHORTCUTS: Record<string, ShortcutDef> = {
   },
   debugToggle: {
     id: 'debug-toggle',
-    label: `${MODIFIER_KEY} + I`,
+    label: `${MODIFIER_KEY} + i`,
     description: 'デバッグ情報の表示/非表示を切り替える。',
     match: (e: KeyboardEvent) =>
       (IS_MAC ? e.metaKey && !e.ctrlKey : e.ctrlKey && !e.metaKey) &&
