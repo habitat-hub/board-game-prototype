@@ -1,12 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { uploadImageToS3 } from './imageUploadService';
-import s3Client from '../config/s3Client';
-import { IMAGE_MAX_SIZE } from '../constants/file';
-import {
-  cleanFileName,
-  generateS3KeyFromFilename,
-} from '../helpers/fileHelper';
 
+// Ensure mocks are registered before importing SUT and mocked modules
 vi.mock('../config/s3Client', () => ({
   default: { send: vi.fn() },
 }));
@@ -15,6 +9,14 @@ vi.mock('../helpers/fileHelper', () => ({
   cleanFileName: vi.fn((name: string) => name),
   generateS3KeyFromFilename: vi.fn(() => 'uploads/test-image.jpg'),
 }));
+
+import { uploadImageToS3 } from './imageUploadService';
+import s3Client from '../config/s3Client';
+import { IMAGE_MAX_SIZE } from '../constants/file';
+import {
+  cleanFileName,
+  generateS3KeyFromFilename,
+} from '../helpers/fileHelper';
 
 const mockedSend = s3Client.send as unknown as ReturnType<typeof vi.fn>;
 const mockedCleanFileName = cleanFileName as unknown as ReturnType<
