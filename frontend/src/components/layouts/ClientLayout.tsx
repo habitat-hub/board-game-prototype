@@ -6,6 +6,7 @@ import React, { useEffect } from 'react';
 
 import { WoodenCrateBackground } from '@/components/atoms/WoodenCrateBackground';
 import Header from '@/components/organisms/Header';
+import Loading from '@/components/organisms/Loading';
 import { useClientPathInfo } from '@/hooks/useClientPathInfo';
 import { useIsPC } from '@/hooks/useIsPC';
 
@@ -44,11 +45,7 @@ export default function ClientLayout({
   // デバイスチェック中は読み込み表示を返すことで、
   // サーバーサイドレンダリングとの整合性を保つ
   if (!isReady && pathname !== '/') {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p>読み込み中...</p>
-      </div>
-    );
+    return <Loading />;
   }
 
   return (
