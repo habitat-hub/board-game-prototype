@@ -78,7 +78,7 @@ export default function PrototypeNameEditor({
           {/* 表示モード（ボタンで編集開始） */}
           <button
             type="button"
-            className="w-full text-left truncate cursor-pointer px-1 -mx-1 rounded-md hover:bg-kibako-tertiary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-kibako-primary focus-visible:ring-offset-2 focus-visible:ring-offset-kibako-white"
+            className="w-full text-left truncate cursor-pointer px-1 -mx-1 rounded-md hover:bg-kibako-secondary/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-kibako-primary focus-visible:ring-offset-2 focus-visible:ring-offset-kibako-white"
             title={name}
             aria-label={`「${name}」を編集`}
             onClick={() => startEditing(prototypeId, name)}
