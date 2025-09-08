@@ -178,6 +178,12 @@ export const useRoleManagement = (projectId: string) => {
         return { canRemove: false, reason: 'ユーザー情報が取得できません' };
       }
 
+      // 自分自身の権限は削除不可（このチェックを最優先）
+      if (currentUser.id === targetUserId) {
+        return { canRemove: false, reason: '自分の権限は削除できません' };
+      }
+
+      // Admin 権限のみ削除操作が可能
       if (!isCurrentUserAdmin) {
         return {
           canRemove: false,
@@ -185,6 +191,7 @@ export const useRoleManagement = (projectId: string) => {
         };
       }
 
+      // プロジェクトの作成者の場合は削除不可
       if (projectDetail.userId === targetUserId) {
         return {
           canRemove: false,
