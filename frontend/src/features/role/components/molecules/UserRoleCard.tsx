@@ -142,6 +142,7 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
 
           {/* 削除ボタン */}
           <button
+            type="button"
             onClick={() => onRemove(userRole.userId)}
             className={`p-2 rounded transition-colors ${
               canRemove && !loading && !editMode
