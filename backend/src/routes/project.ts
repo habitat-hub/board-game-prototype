@@ -127,10 +127,6 @@ router.post(
       await transaction.rollback();
       next(error);
     }
-  
-  
-    
- 
   }
 );
 
