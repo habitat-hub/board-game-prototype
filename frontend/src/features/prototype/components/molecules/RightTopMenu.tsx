@@ -7,7 +7,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactElement } from 'react';
-import { FaUsers, FaChevronDown } from 'react-icons/fa';
+import { FaUsers, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
 import UserMenu from '@/components/molecules/UserMenu';
 import ConnectedUserIcon from '@/features/prototype/components/atoms/ConnectedUserIcon';
@@ -96,7 +96,11 @@ export default function RightTopMenu({
                 +{moreCount}
               </span>
             )}
-            <FaChevronDown className="ml-2 h-3 w-3 text-kibako-secondary" />
+            {showUserList ? (
+              <FaChevronUp className="ml-2 h-3 w-3 text-kibako-secondary" />
+            ) : (
+              <FaChevronDown className="ml-2 h-3 w-3 text-kibako-secondary" />
+            )}
           </button>
           {showUserList && (
             <div className="absolute right-0 mt-2 max-w-xs bg-kibako-white border border-kibako-secondary rounded shadow z-overlay px-3 py-2 text-xs text-kibako-primary">
