@@ -6,13 +6,19 @@ import {
   checkPermission,
   checkProjectReadPermission,
   checkPrototypeWritePermission,
+  checkProjectAdminRole,
 } from './permissions';
 import ProjectModel from '../models/Project';
+import UserRoleModel from '../models/UserRole';
 import { hasPermission } from '../helpers/roleHelper';
 import { PERMISSION_ACTIONS, RESOURCE_TYPES } from '../const';
 
 vi.mock('../models/Project', () => ({
   default: { findByPk: vi.fn() },
+}));
+
+vi.mock('../models/UserRole', () => ({
+  default: { findOne: vi.fn() },
 }));
 
 vi.mock('../helpers/roleHelper', () => ({
@@ -23,6 +29,9 @@ const mockedFindByPk = ProjectModel.findByPk as unknown as ReturnType<
   typeof vi.fn
 >;
 const mockedHasPermission = hasPermission as unknown as ReturnType<
+  typeof vi.fn
+>;
+const mockedFindOneUserRole = UserRoleModel.findOne as unknown as ReturnType<
   typeof vi.fn
 >;
 
@@ -39,6 +48,7 @@ function createRes() {
 beforeEach(() => {
   mockedFindByPk.mockReset();
   mockedHasPermission.mockReset();
+  mockedFindOneUserRole.mockReset();
 });
 
 describe('checkProjectOwner', () => {
@@ -119,6 +129,95 @@ describe('checkProjectOwner', () => {
     mockedFindByPk.mockRejectedValue(new Error('DB failure'));
 
     await checkProjectOwner(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({
+      message: '予期せぬエラーが発生しました',
+    });
+    expect(next).not.toHaveBeenCalled();
+
+    consoleErrorSpy.mockRestore();
+  });
+});
+
+describe('checkProjectAdminRole', () => {
+  it('calls next when user has admin role', async () => {
+    const req = {
+      params: { projectId: 'proj1' },
+      user: { id: 'user1' },
+    } as unknown as Request;
+    const res = createRes();
+    const next = vi.fn();
+
+    mockedFindOneUserRole.mockResolvedValue({ id: 'ur1' });
+
+    await checkProjectAdminRole(req, res, next);
+
+    expect(next).toHaveBeenCalledWith();
+    expect(res.status).not.toHaveBeenCalled();
+  });
+
+  it('returns 401 when unauthenticated', async () => {
+    const req = { params: { projectId: 'proj1' } } as unknown as Request;
+    const res = createRes();
+    const next = vi.fn();
+
+    await checkProjectAdminRole(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({ message: '認証が必要です' });
+    expect(next).not.toHaveBeenCalled();
+    expect(mockedFindOneUserRole).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 when projectId param is missing', async () => {
+    const req = { params: {}, user: { id: 'user1' } } as unknown as Request;
+    const res = createRes();
+    const next = vi.fn();
+
+    await checkProjectAdminRole(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      message: '必要なパラメータが不足しています',
+    });
+    expect(next).not.toHaveBeenCalled();
+    expect(mockedFindOneUserRole).not.toHaveBeenCalled();
+  });
+
+  it('returns 403 when user lacks admin role', async () => {
+    const req = {
+      params: { projectId: 'proj1' },
+      user: { id: 'user1' },
+    } as unknown as Request;
+    const res = createRes();
+    const next = vi.fn();
+
+    mockedFindOneUserRole.mockResolvedValue(null);
+
+    await checkProjectAdminRole(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({
+      message: '管理者ロールが必要です',
+    });
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('returns 500 on unexpected errors', async () => {
+    const req = {
+      params: { projectId: 'proj1' },
+      user: { id: 'user1' },
+    } as unknown as Request;
+    const res = createRes();
+    const next = vi.fn();
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
+    mockedFindOneUserRole.mockRejectedValue(new Error('DB failure'));
+
+    await checkProjectAdminRole(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({

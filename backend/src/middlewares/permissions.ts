@@ -1,12 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import ProjectModel from '../models/Project';
+import UserRoleModel from '../models/UserRole';
+import RoleModel from '../models/Role';
 // 型のみ利用（ランタイム依存を避ける）
 import type UserModel from '../models/User';
 import { hasPermission } from '../helpers/roleHelper';
 import {
   RESOURCE_TYPES,
   PERMISSION_ACTIONS,
+  ROLE_TYPE,
   type ResourceType,
   type PermissionAction,
 } from '../const';
@@ -87,6 +90,60 @@ export async function checkProjectOwner(
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: '予期せぬエラーが発生しました' });
     return;
+  }
+}
+
+/**
+ * プロジェクトの管理者ロールを持っているか確認する
+ * @param req - リクエスト
+ * @param res - レスポンス
+ * @param next - 次のミドルウェア
+ */
+export async function checkProjectAdminRole(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const user = validateUser(req, res);
+    if (!user) {
+      return;
+    }
+
+    const projectId = validateParam(req, res, 'projectId');
+    if (!projectId) {
+      return;
+    }
+
+    const adminRole = await UserRoleModel.findOne({
+      where: {
+        userId: String(user.id),
+        resourceType: RESOURCE_TYPES.PROJECT,
+        resourceId: projectId,
+      },
+      include: [
+        {
+          model: RoleModel,
+          as: 'Role',
+          where: { name: ROLE_TYPE.ADMIN },
+          required: true,
+        },
+      ],
+    });
+
+    if (!adminRole) {
+      res
+        .status(StatusCodes.FORBIDDEN)
+        .json({ message: '管理者ロールが必要です' });
+      return;
+    }
+
+    next();
+  } catch (error) {
+    console.error(error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: '予期せぬエラーが発生しました' });
   }
 }
 /**

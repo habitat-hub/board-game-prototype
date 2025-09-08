@@ -2,6 +2,7 @@ import React from 'react';
 import { FaUserShield } from 'react-icons/fa';
 
 import { User } from '@/api/types/data-contracts';
+import { useUser } from '@/hooks/useUser';
 
 import UserRoleCard from './UserRoleCard';
 
@@ -36,6 +37,7 @@ const UserRolesList: React.FC<UserRolesListProps> = ({
   loading,
   editMode,
 }) => {
+  const { user: currentUser } = useUser();
   if (userRoles.length === 0 && !loading) {
     return (
       <div className="col-span-full flex flex-col items-center justify-center py-12 text-kibako-secondary">
@@ -55,6 +57,7 @@ const UserRolesList: React.FC<UserRolesListProps> = ({
       {userRoles.map((userRole) => {
         const removeCheck = canRemoveUserRole(userRole.userId, userRoles);
         const isCreator = creator && creator.id === userRole.userId;
+        const isSelf = currentUser?.id === userRole.userId;
         const hasAdminRole = userRole.roles.some(
           (role) => role.name === 'admin'
         );
@@ -68,6 +71,7 @@ const UserRolesList: React.FC<UserRolesListProps> = ({
             key={userRole.userId}
             userRole={userRole}
             isCreator={!!isCreator}
+            isSelf={!!isSelf}
             isLastAdmin={isLastAdmin}
             canRemove={removeCheck.canRemove}
             removeReason={removeCheck.reason}

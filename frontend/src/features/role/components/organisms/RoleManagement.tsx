@@ -4,10 +4,10 @@ import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 
+import Loading from '@/components/organisms/Loading';
 import { useRoleManagement } from '@/features/role/hooks/useRoleManagement';
 
 import Toast from '../atoms/Toast';
-import ConfirmDialog from '../molecules/ConfirmDialog';
 import RoleManagementForm from '../molecules/RoleManagementForm';
 import UserRolesList from '../molecules/UserRolesList';
 
@@ -44,18 +44,16 @@ const RoleManagement: React.FC = () => {
     creator,
     loading,
     canRemoveUserRole,
+    isCurrentUserAdmin,
 
     // UI状態
     roleForm,
     toast,
-    confirmDialog,
 
     // ハンドラー
     handleAddRole,
     handleUpdateRole,
     handleRemoveRole,
-    handleConfirmRemove,
-    handleCancelRemove,
     updateRoleForm,
     closeToast,
     fetchAllUsers,
@@ -140,7 +138,7 @@ const RoleManagement: React.FC = () => {
     });
     setSelectedUser(null);
     setSearchTerm('');
-    updateRoleForm({ selectedUserId: '', selectedRole: 'admin' });
+    updateRoleForm({ selectedUserId: '', selectedRole: 'editor' });
   };
 
   // 権限更新実行
@@ -162,75 +160,66 @@ const RoleManagement: React.FC = () => {
 
   // ローディング中の表示
   if (loading && userRoles.length === 0) {
-    return (
-      <div className="max-w-4xl mx-auto p-4 bg-kibako-white rounded-lg shadow mt-16">
-        <div className="flex items-center relative mb-6">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-kibako-tertiary/20 rounded-full transition-colors absolute left-0"
-            title="戻る"
-          >
-            <IoArrowBack className="h-5 w-5 text-kibako-primary hover:text-kibako-primary transition-colors" />
-          </button>
-          <h2 className="text-xl font-bold w-full text-center">権限設定</h2>
-        </div>
-
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-kibako-secondary"></div>
-          <span className="ml-3 text-kibako-primary">
-            権限情報を読み込み中...
-          </span>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 bg-kibako-white rounded-lg shadow mt-16">
-      <div className="flex items-center relative mb-6">
+    <div className="max-w-4xl mx-auto py-16 relative px-4">
+      <div className="sticky top-20 z-sticky bg-transparent backdrop-blur-sm flex items-center gap-3 mb-8 py-4 rounded-lg">
         <button
           onClick={() => router.back()}
-          className="p-2 hover:bg-kibako-tertiary/20 rounded-full transition-colors absolute left-0"
-          title="戻る"
+          className="p-2 hover:bg-kibako-tertiary rounded-full transition-colors"
+          title="前のページに戻る"
         >
           <IoArrowBack className="h-5 w-5 text-kibako-primary hover:text-kibako-primary transition-colors" />
         </button>
-        <h2 className="text-xl font-bold w-full text-center">権限設定</h2>
+        <h1 className="text-3xl text-kibako-primary font-bold mb-0">権限設定</h1>
       </div>
 
-      <div className="mb-6">
-        <p className="text-center text-kibako-primary">
-          プロジェクト
-          {masterPrototypeName && `「${masterPrototypeName}」の`}
-          ユーザー権限を管理します。
-        </p>
+      <div className="mb-6 p-6 overflow-visible rounded-xl bg-gradient-to-r from-kibako-white via-kibako-white to-kibako-tertiary shadow-lg border border-kibako-tertiary/30">
+        <div className="flex items-center justify-between mb-4 border-b border-kibako-secondary/30 pb-2">
+          <h2 className="text-xl font-bold text-kibako-primary">権限管理</h2>
+        </div>
+        <div className="space-y-4">
+          <p className="text-kibako-primary">
+            プロジェクト
+            {masterPrototypeName && `「${masterPrototypeName}」の`}
+            ユーザー権限を管理します。
+          </p>
+          {!isCurrentUserAdmin && (
+            <p className="text-kibako-primary/70">権限を設定できるのはAdminユーザーのみです</p>
+          )}
+
+          <RoleManagementForm
+            editMode={editMode}
+            onCancelEdit={handleCancelEdit}
+            searchTerm={searchTerm}
+            onSearchTermChange={setSearchTerm}
+            selectedUser={selectedUser}
+            onUserSelect={handleUserSelect}
+            onClearUser={handleClearUser}
+            showUserDropdown={showUserDropdown}
+            onToggleUserDropdown={setShowUserDropdown}
+            filteredUsers={filteredUsers}
+            selectedRole={roleForm.selectedRole}
+            onRoleChange={(role) => updateRoleForm({ selectedRole: role })}
+            onAddRole={handleAddRoleWithReset}
+            onUpdateRole={handleUpdateRoleWithReset}
+            loading={loading}
+            canManageRole={isCurrentUserAdmin}
+          />
+        </div>
       </div>
 
-      {/* ユーザー権限管理 */}
-      <div className="mb-8">
-        {/* 権限追加・更新フォーム */}
-        <RoleManagementForm
-          editMode={editMode}
-          onCancelEdit={handleCancelEdit}
-          searchTerm={searchTerm}
-          onSearchTermChange={setSearchTerm}
-          selectedUser={selectedUser}
-          onUserSelect={handleUserSelect}
-          onClearUser={handleClearUser}
-          showUserDropdown={showUserDropdown}
-          onToggleUserDropdown={setShowUserDropdown}
-          filteredUsers={filteredUsers}
-          selectedRole={roleForm.selectedRole}
-          onRoleChange={(role) => updateRoleForm({ selectedRole: role })}
-          onAddRole={handleAddRoleWithReset}
-          onUpdateRole={handleUpdateRoleWithReset}
-          loading={loading}
-        />
-
-        {/* 現在のユーザー権限一覧 */}
+      <div className="mb-8 p-6 overflow-visible rounded-xl bg-gradient-to-r from-kibako-white via-kibako-white to-kibako-tertiary shadow-lg border border-kibako-tertiary/30">
+        <div className="flex items-center justify-between mb-4 border-b border-kibako-secondary/30 pb-2">
+          <h2 className="text-xl font-bold text-kibako-primary">現在のユーザー権限</h2>
+        </div>
         <div
           className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 transition-all ${
-            editMode.isEditing ? 'opacity-40 pointer-events-none' : ''
+            editMode.isEditing || !isCurrentUserAdmin
+              ? 'opacity-40 pointer-events-none'
+              : ''
           }`}
         >
           <UserRolesList
@@ -245,20 +234,6 @@ const RoleManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* 確認ダイアログ */}
-      <ConfirmDialog
-        show={confirmDialog.show && !!confirmDialog.data}
-        title="権限削除の確認"
-        message={
-          confirmDialog.data
-            ? `${confirmDialog.data.userName} の権限を削除しますか？`
-            : ''
-        }
-        onConfirm={handleConfirmRemove}
-        onCancel={handleCancelRemove}
-      />
-
-      {/* トーストメッセージ */}
       <Toast
         message={toast.message}
         type={toast.type}

@@ -4,4 +4,5 @@
 export type ConnectedUser = {
   userId: string;
   username: string;
+  roleName?: string;
 };

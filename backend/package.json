@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "vitest",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "build": "tsc",
     "start": "npm run build && node dist/server.js",
     "dev": "ts-node-dev --env-file=.env --respawn --transpile-only --ignore-watch src/swagger-schemas.ts src/server.ts",

@@ -22,6 +22,8 @@ interface PrototypeNameEditorProps {
   size?: 'xs' | 'sm' | 'base' | 'lg' | 'xl';
   /** 太字オプション（デフォルト: 'medium'） */
   weight?: 'normal' | 'medium' | 'semibold' | 'bold';
+  /** 編集可能かどうか */
+  editable?: boolean;
 }
 
 export default function PrototypeNameEditor({
@@ -33,6 +35,7 @@ export default function PrototypeNameEditor({
   bleedX = true,
   size = 'xs',
   weight = 'medium',
+  editable = true,
 }: PrototypeNameEditorProps) {
   const { useUpdatePrototype } = usePrototypes();
   const updatePrototypeMutation = useUpdatePrototype();
@@ -67,6 +70,21 @@ export default function PrototypeNameEditor({
         : weight === 'semibold'
           ? 'font-semibold'
           : 'font-bold';
+
+  if (!editable) {
+    return (
+      <div className={`w-full ${className ?? ''}`}>
+        <span
+          className={`${sizeClass} ${weightClass} text-kibako-primary ${truncate ? 'truncate' : 'whitespace-normal break-words'} ${
+            bleedX ? 'px-2 -mx-2' : 'px-2'
+          }`}
+          title={name}
+        >
+          {name}
+        </span>
+      </div>
+    );
+  }
 
   const handleComplete = async (newName: string) => {
     // 変更がない場合は何もしない

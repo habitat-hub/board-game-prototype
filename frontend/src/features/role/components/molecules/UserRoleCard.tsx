@@ -19,6 +19,7 @@ interface UserRoleWithDetails {
 interface UserRoleCardProps {
   userRole: UserRoleWithDetails;
   isCreator: boolean;
+  isSelf: boolean;
   isLastAdmin: boolean;
   canRemove: boolean;
   removeReason: string;
@@ -28,18 +29,74 @@ interface UserRoleCardProps {
   editMode: boolean;
 }
 
+/**
+ * 編集ボタンのタイトルを返す
+ * @returns タイトル文字列
+ */
+const getEditButtonTitle = ({
+  isCreator,
+  isSelf,
+  loading,
+  editMode,
+}: {
+  isCreator: boolean;
+  isSelf: boolean;
+  loading: boolean;
+  editMode: boolean;
+}): string => {
+  // プロジェクト作成者の場合
+  if (isCreator) return 'プロジェクト作成者の権限は変更できません';
+  // 自分自身の場合
+  if (isSelf) return '自分の権限は変更できません';
+  // ローディング中の場合
+  if (loading) return '処理中...';
+  // 編集モード中の場合
+  if (editMode) return '編集モード中は変更できません';
+  return '権限を変更';
+};
+
+const getRemoveButtonTitle = ({
+  canRemove,
+  removeReason,
+  loading,
+  editMode,
+}: {
+  canRemove: boolean;
+  removeReason: string;
+  loading: boolean;
+  editMode: boolean;
+}) => {
+  if (loading) return '処理中...';
+  if (editMode) return '編集モード中は削除できません';
+  if (canRemove) return '権限を削除';
+  return removeReason;
+};
+
 const UserRoleCard: React.FC<UserRoleCardProps> = ({
   userRole,
   isCreator,
+  isSelf,
   isLastAdmin: _isLastAdmin, // 現在未使用のため_プレフィックスを追加
   canRemove,
   removeReason,
-  onEdit: _onEdit, // 現在未使用のため_プレフィックスを追加
+  onEdit,
   onRemove,
   loading,
   editMode,
 }) => {
   const primaryRole = userRole.roles[0];
+  const editTitle = getEditButtonTitle({
+    isCreator,
+    isSelf,
+    loading,
+    editMode,
+  });
+  const removeTitle = getRemoveButtonTitle({
+    canRemove,
+    removeReason,
+    loading,
+    editMode,
+  });
 
   return (
     <div
@@ -68,37 +125,32 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
         <div className="flex gap-1">
           {/* 変更ボタン */}
           <button
-            onClick={() => {
-              // 現在は無効化されているため何もしない
-            }}
-            className="p-2 rounded transition-colors text-kibako-secondary/50 cursor-not-allowed"
-            title={
-              isCreator
-                ? 'プロジェクト作成者の権限は変更できません'
-                : '権限を変更する - Coming Soon 開発中です'
+            onClick={() =>
+              onEdit(userRole.userId, userRole.user.username, primaryRole.name)
             }
-            disabled={true}
+            className={`p-2 rounded transition-colors ${
+              !isCreator && !isSelf && !loading && !editMode
+                ? 'text-kibako-primary/60 hover:text-kibako-secondary hover:bg-kibako-tertiary/40'
+                : 'text-kibako-secondary/50 cursor-not-allowed'
+            }`}
+            title={editTitle}
+            aria-label={editTitle}
+            disabled={loading || isCreator || isSelf || editMode}
           >
             <AiOutlineUserSwitch className="h-4 w-4" />
           </button>
 
           {/* 削除ボタン */}
           <button
+            type="button"
             onClick={() => onRemove(userRole.userId)}
             className={`p-2 rounded transition-colors ${
               canRemove && !loading && !editMode
-                ? 'text-kibako-primary/60 hover:text-kibako-danger hover:bg-kibako-danger/10'
+                ? 'text-kibako-primary/60 hover:text-kibako-danger hover:bg-kibako-danger/30'
                 : 'text-kibako-secondary/50 cursor-not-allowed'
             }`}
-            title={
-              loading
-                ? '処理中...'
-                : editMode
-                  ? '編集モード中は削除できません'
-                  : canRemove
-                    ? '権限を削除'
-                    : removeReason
-            }
+            title={removeTitle}
+            aria-label={removeTitle}
             disabled={loading || !canRemove || editMode}
           >
             {loading ? (
