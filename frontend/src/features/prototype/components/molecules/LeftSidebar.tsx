@@ -41,8 +41,12 @@ export default function LeftSidebar({
   const router = useRouter();
   const { user } = useUser();
   const { checkNeedTutorial } = useUsers();
-  const { getProject, createPrototypeVersion, deletePrototypeVersion } =
-    useProject();
+  const {
+    getProject,
+    createPrototypeVersion,
+    deletePrototypeVersion,
+    getProjectRoles,
+  } = useProject();
 
   // プロジェクトレベルのSocket通信設定（state 初期化前に宣言し、project 依存を排除）
   const {
@@ -58,6 +62,7 @@ export default function LeftSidebar({
   const [project, setProject] = useState<ProjectsDetailData | null>(null);
   const [isRoomCreating, setIsRoomCreating] = useState(false);
   const [needTutorial, setNeedTutorial] = useState(false);
+  const [currentRole, setCurrentRole] = useState<string | null>(null);
 
   // プロジェクトデータから必要な情報を取得
   // Socket通信で更新されたプロトタイプがあればそれを優先、なければプロジェクトのプロトタイプを使用
@@ -129,8 +134,25 @@ export default function LeftSidebar({
     fetchNeedTutorialStatus();
   }, [user?.id, checkNeedTutorial]);
 
+  // 現在のユーザーロールを取得
+  useEffect(() => {
+    const fetchRole = async () => {
+      if (!user?.id) return;
+      try {
+        const roles = await getProjectRoles(projectId);
+        const role =
+          roles.find((r) => r.userId === user.id)?.roles?.[0]?.name ?? null;
+        setCurrentRole(role);
+      } catch (error) {
+        console.error('ロールの取得中にエラーが発生しました：', error);
+      }
+    };
+    fetchRole();
+  }, [getProjectRoles, projectId, user?.id]);
+
   // プレイルーム作成（バージョン＋インスタンス）
   const handleCreateRoom = async () => {
+    if (currentRole !== 'admin' && currentRole !== 'editor') return;
     if (isRoomCreating) return;
     setIsRoomCreating(true);
     try {
@@ -153,6 +175,7 @@ export default function LeftSidebar({
 
   // プレイルーム削除
   const handleDeleteRoom = async (instanceId: string) => {
+    if (currentRole !== 'admin' && currentRole !== 'editor') return;
     if (!window.confirm('本当にこのプレイルームを削除しますか？')) return;
 
     try {
@@ -199,25 +222,27 @@ export default function LeftSidebar({
       <div className="p-2 overflow-y-auto scrollbar-hide space-y-4">
         <div className="flex flex-col gap-2 py-0.5 px-0">
           {/* 新しいプレイルーム作成ボタン */}
-          <button
-            onClick={handleCreateRoom}
-            disabled={isRoomCreating}
-            className="relative flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 border-2 border-dashed border-kibako-secondary hover:border-kibako-accent hover:border-solid mb-2 disabled:opacity-60 disabled:cursor-not-allowed"
-            title="新しいプレイルームを作る"
-          >
-            <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
-            <div className="flex flex-col min-w-0 flex-1">
-              <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[180px]">
-                新しいプレイルームを作る
-              </span>
-              <span className="text-xs text-kibako-secondary mt-0.5 flex items-center gap-1">
-                今のボードの状態を保存して
-                <br />
-                遊び場を作成します
-              </span>
-            </div>
-            <IoAdd className="h-5 w-5 text-kibako-secondary ml-1 transition-colors" />
-          </button>
+          {currentRole && currentRole !== 'viewer' && (
+            <button
+              onClick={handleCreateRoom}
+              disabled={isRoomCreating}
+              className="relative flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 border-2 border-dashed border-kibako-secondary hover:border-kibako-accent hover:border-solid mb-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              title="新しいプレイルームを作る"
+            >
+              <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[180px]">
+                  新しいプレイルームを作る
+                </span>
+                <span className="text-xs text-kibako-secondary mt-0.5 flex items-center gap-1">
+                  今のボードの状態を保存して
+                  <br />
+                  遊び場を作成します
+                </span>
+              </div>
+              <IoAdd className="h-5 w-5 text-kibako-secondary ml-1 transition-colors" />
+            </button>
+          )}
           {instancePrototypes
             .slice()
             .sort((a, b) =>
@@ -271,13 +296,15 @@ export default function LeftSidebar({
                       </div>
                     </div>
                   </Link>
-                  <button
-                    onClick={() => handleDeleteRoom(instance.id)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full group/delete hover:bg-kibako-accent/20 focus:outline-none flex items-center justify-center"
-                    title="プレイルームを削除"
-                  >
-                    <MdDelete className="h-5 w-5 text-kibako-secondary transition-colors" />
-                  </button>
+                  {currentRole && currentRole !== 'viewer' && (
+                    <button
+                      onClick={() => handleDeleteRoom(instance.id)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full group/delete hover:bg-kibako-accent/20 focus:outline-none flex items-center justify-center"
+                      title="プレイルームを削除"
+                    >
+                      <MdDelete className="h-5 w-5 text-kibako-secondary transition-colors" />
+                    </button>
+                  )}
                 </div>
               );
             })}
@@ -305,6 +332,7 @@ export default function LeftSidebar({
             prototypeId={prototypeId}
             name={prototypeName}
             onUpdated={handlePrototypeNameUpdated}
+            editable={currentRole !== 'viewer' && currentRole !== null}
           />
         </div>
         {/* プレイルームを開いている時は開閉ボタンを非表示 */}
