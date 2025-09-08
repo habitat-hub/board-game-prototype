@@ -29,6 +29,10 @@ interface UserRoleCardProps {
   editMode: boolean;
 }
 
+/**
+ * 編集ボタンのタイトルを返す
+ * @returns タイトル文字列
+ */
 const getEditButtonTitle = ({
   isCreator,
   isSelf,
@@ -39,10 +43,14 @@ const getEditButtonTitle = ({
   isSelf: boolean;
   loading: boolean;
   editMode: boolean;
-}) => {
+}): string => {
+  // プロジェクト作成者の場合
   if (isCreator) return 'プロジェクト作成者の権限は変更できません';
+  // 自分自身の場合
   if (isSelf) return '自分の権限は変更できません';
+  // ローディング中の場合
   if (loading) return '処理中...';
+  // 編集モード中の場合
   if (editMode) return '編集モード中は変更できません';
   return '権限を変更';
 };
