@@ -73,7 +73,7 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
             }
             className={`p-2 rounded transition-colors ${
               !isCreator && !loading && !editMode
-                ? 'text-kibako-primary/60 hover:text-kibako-secondary hover:bg-kibako-tertiary/20'
+                ? 'text-kibako-primary/60 hover:text-kibako-secondary hover:bg-kibako-tertiary'
                 : 'text-kibako-secondary/50 cursor-not-allowed'
             }`}
             title={
@@ -104,7 +104,7 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
             onClick={() => onRemove(userRole.userId)}
             className={`p-2 rounded transition-colors ${
               canRemove && !loading && !editMode
-                ? 'text-kibako-primary/60 hover:text-kibako-danger hover:bg-kibako-danger/10'
+                ? 'text-kibako-primary/60 hover:text-kibako-danger hover:bg-kibako-danger/30'
                 : 'text-kibako-secondary/50 cursor-not-allowed'
             }`}
             title={
