@@ -116,20 +116,22 @@ export default function RightTopMenu({
                       title={user.username}
                     >
                       {isActive ? (
-                        <span
-                          className="inline-flex items-center gap-1 px-1 rounded border"
-                          style={{ borderColor: color }}
-                        >
+                        <span className="inline-flex items-center gap-1">
                           {roleConfig && (
                             <span className={roleConfig.textColor}>
                               {roleConfig.icon}
                             </span>
                           )}
                           <span
-                            className="inline-block w-2 h-2"
-                            style={{ backgroundColor: color }}
-                          />
-                          {user.username}
+                            className="inline-flex items-center gap-1 px-1 rounded border"
+                            style={{ borderColor: color }}
+                          >
+                            <span
+                              className="inline-block w-2 h-2"
+                              style={{ backgroundColor: color }}
+                            />
+                            {user.username}
+                          </span>
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1">
