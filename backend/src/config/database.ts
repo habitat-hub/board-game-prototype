@@ -11,6 +11,9 @@ export async function connectDatabase(): Promise<void> {
     await sequelize.sync();
     console.log('✅ Database connected successfully');
 
+    // Dynamically import seeding logic only after a successful connection.
+    // This keeps startup lean and avoids loading seed modules during tests
+    // or when the database is unreachable.
     const { initializeDatabaseIfNeeded } = await import(
       '../database/initializer'
     );
