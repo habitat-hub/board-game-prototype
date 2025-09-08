@@ -38,8 +38,13 @@ export const uploadImageToS3 = async (
     );
   }
 
+  // ファイル名はブラウザからlatin1で送られるため、明示的にUTF-8へ変換
+  const originalName = Buffer.from(file.originalname, 'latin1').toString(
+    'utf8'
+  );
+
   // 拡張子ベースの簡易的なMIMEタイプ判定
-  const extension = path.extname(file.originalname).toLowerCase();
+  const extension = path.extname(originalName).toLowerCase();
   let mime: string | undefined;
   if (extension === '.jpg' || extension === '.jpeg') {
     mime = 'image/jpeg';
@@ -52,7 +57,7 @@ export const uploadImageToS3 = async (
     );
   }
 
-  const cleanName = cleanFileName(file.originalname);
+  const cleanName = cleanFileName(originalName);
   const key = generateS3KeyFromFilename(cleanName);
   const command = new PutObjectCommand({
     Bucket: bucketName,
