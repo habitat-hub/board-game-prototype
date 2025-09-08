@@ -103,7 +103,11 @@ export default function GameBoard({
       new Map(
         (userRoles ?? []).map((ur) => [
           ur.userId,
-          { userId: ur.userId, username: ur.user.username } as ConnectedUser,
+          {
+            userId: ur.userId,
+            username: ur.user.username,
+            roleName: ur.roles[0]?.name,
+          } as ConnectedUser,
         ])
       ).values()
     );
