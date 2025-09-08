@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 
 export const metadata: Metadata = {
   title: {
@@ -64,15 +64,15 @@ export const metadata: Metadata = {
   applicationName: 'KIBAKO',
   category: 'ボードゲーム',
 
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-  },
-
   // その他のメタデータ
   formatDetection: {
     telephone: false,
     email: false,
     address: false,
   },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };

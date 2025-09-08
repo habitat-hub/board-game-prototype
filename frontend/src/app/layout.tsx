@@ -4,9 +4,9 @@ import ClientLayout from '@/components/layouts/ClientLayout';
 import { UserProvider } from '@/contexts/UserContext';
 
 import './globals.css';
-import { metadata } from './metadata';
+import { metadata, viewport } from './metadata';
 
-export { metadata };
+export { metadata, viewport };
 
 export default function RootLayout({
   children,
