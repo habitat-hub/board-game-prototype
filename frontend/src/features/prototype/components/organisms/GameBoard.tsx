@@ -64,6 +64,14 @@ interface GameBoardProps {
   currentUserId: string;
 }
 
+/**
+ * ロール管理API由来のユーザー最小型
+ * 表示用のユーザー名と代表ロール名を取得するために使用
+ *
+ * @property {string} userId ユーザーの一意なID
+ * @property {{ username: string }} user 表示用のユーザー名を保持
+ * @property {Array<{ name: string }>} roles 付与ロール一覧（先頭要素を代表ロールとして利用）
+ */
 interface RoleUser {
   userId: string;
   user: { username: string };
