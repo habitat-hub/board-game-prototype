@@ -185,7 +185,7 @@ router.post(
  */
 router.post(
   '/:projectId/versions',
-  checkProjectReadPermission,
+  checkProjectManagePermission,
   validate(projectCreationSchema),
   async (req: Request, res: Response) => {
     const { name } = req.body;
