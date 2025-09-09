@@ -175,13 +175,18 @@ export async function duplicateProject({
   if (!adminRole) {
     throw new Error('管理者ロールが見つかりません');
   }
-  await assignRole(
-    userId,
-    adminRole.id,
-    RESOURCE_TYPES.PROJECT,
-    project.id,
-    transaction
-  );
+  try {
+    await assignRole(
+      userId,
+      adminRole.id,
+      RESOURCE_TYPES.PROJECT,
+      project.id,
+      transaction
+    );
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`ロール割り当てに失敗しました: ${errorMessage}`);
+  }
 
   return {
     project,
