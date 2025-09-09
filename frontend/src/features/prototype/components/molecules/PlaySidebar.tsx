@@ -31,6 +31,10 @@ export default function PlaySidebar({
   selectedPartId,
   userRoles,
 }: PlaySidebarProps) {
+  /**
+   * プレイルームの手札選択・設定を行うサイドバー
+   * - 手札が1枚以上ある場合のみ表示する
+   */
   const { dispatch } = usePartReducer();
   const { user } = useUser();
   const { clearSelection } = useSelectedParts();
@@ -77,8 +81,8 @@ export default function PlaySidebar({
   }, [parts, userMetaMap]);
 
   // カード
-  const cards = useMemo(() => {
-    return parts.filter((part) => part.type === 'card');
+  const cards: Part[] = useMemo<Part[]>(() => {
+    return parts.filter((p) => p.type === 'card');
   }, [parts]);
 
   // 手札の上のカードを判定する関数
@@ -112,6 +116,11 @@ export default function PlaySidebar({
     const selectedPart = parts.find((part) => part.id === selectedPartId);
     setSelectedHandId(selectedPart?.type === 'hand' ? selectedPartId : null);
   }, [selectedPartId, parts]);
+
+  // 手札が存在しない場合は、設定パネルを非表示にする
+  if (hands.length === 0) {
+    return null;
+  }
 
   return (
     <div className="fixed top-20 left-4 flex w-[18rem] flex-col rounded-xl shadow-lg border border-kibako-tertiary/40 bg-gradient-to-r from-kibako-white to-kibako-tertiary max-h-[calc(100vh-32px)] overflow-y-auto">
