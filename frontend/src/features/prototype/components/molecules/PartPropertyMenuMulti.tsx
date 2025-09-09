@@ -9,6 +9,7 @@ import {
   LuAlignHorizontalSpaceBetween,
   LuAlignVerticalSpaceBetween,
   LuShuffle,
+  LuFlipHorizontal,
 } from 'react-icons/lu';
 
 import { Part } from '@/api/types';
@@ -95,6 +96,33 @@ export default function PartPropertyMenuMulti({
     [distributeParts]
   );
 
+  const cardSideTarget = useMemo((): 'front' | 'back' => {
+    if (cardParts.length === 0) return 'front';
+    const frontCount = cardParts.filter((p) => p.frontSide !== 'back').length;
+    const backCount = cardParts.length - frontCount;
+    return frontCount >= backCount ? 'front' : 'back';
+  }, [cardParts]);
+
+  const cardSideTargetLabel = useMemo(
+    () =>
+      cardSideTarget === 'front' ? 'カードを表面にする' : 'カードを裏面にする',
+    [cardSideTarget]
+  );
+
+  const handleUnifyCardSides = useCallback((): void => {
+    if (cardParts.length === 0) return;
+
+    const updates = cardParts
+      .filter((p) => p.frontSide !== cardSideTarget)
+      .map((p) => ({
+        partId: p.id,
+        updatePart: { frontSide: cardSideTarget },
+      }));
+
+    if (updates.length === 0) return;
+    dispatch({ type: 'UPDATE_PARTS', payload: { updates } });
+  }, [cardParts, cardSideTarget, dispatch]);
+
   /**
    * カードのみを選択し、裏面へ反転・中央へ寄せ・順序を公平にシャッフルする
    * - フィッシャー–イェーツで無偏な順列を生成
@@ -174,6 +202,14 @@ export default function PartPropertyMenuMulti({
               icon={<LuAlignVerticalSpaceBetween className="h-5 w-5" />}
               onClick={handleDistributeVerticalEvenly}
             />
+            {cardParts.length > 0 && (
+              <PartPropertyMenuButton
+                text={cardSideTargetLabel}
+                ariaLabel={cardSideTargetLabel}
+                icon={<LuFlipHorizontal className="h-5 w-5" />}
+                onClick={handleUnifyCardSides}
+              />
+            )}
             {cardParts.length >= 2 && (
               <PartPropertyMenuButton
                 text="カードをシャッフル"
