@@ -197,12 +197,12 @@ export default function PartPropertyMenuSingle({
         <div className="flex items-center justify-center mb-2 gap-2">
           <span
             className={`text-xs font-medium px-3 py-1 rounded-full ${
-              selectedPart.frontSide === 'front'
+              (selectedPart.frontSide ?? 'front') === 'front'
                 ? 'text-green-800 bg-green-200'
                 : 'text-red-800 bg-red-200'
             }`}
           >
-            {selectedPart.frontSide === 'front' ? '表面' : '裏面'}
+            {(selectedPart.frontSide ?? 'front') === 'front' ? '表面' : '裏面'}
           </span>
           <PartPropertyMenuButton
             text=""
@@ -216,7 +216,7 @@ export default function PartPropertyMenuSingle({
                   partId: selectedPart.id,
                   updatePart: {
                     frontSide:
-                      selectedPart.frontSide === 'front' ? 'back' : 'front',
+                      (selectedPart.frontSide ?? 'front') === 'front' ? 'back' : 'front',
                   },
                 },
               })
