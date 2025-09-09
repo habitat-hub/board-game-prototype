@@ -150,7 +150,7 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                 >
                   <FaUsers className="h-4 w-4" />
                 </RowIconLink>
-                {projectAdminMap[project.id] && (
+                {projectAdminMap[project.id] ? (
                   <RowIconLink
                     href={`/projects/${project.id}/delete`}
                     ariaLabel="削除"
@@ -159,6 +159,15 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                   >
                     <FaTrash className="h-4 w-4" />
                   </RowIconLink>
+                ) : (
+                  <RowIconButton
+                    ariaLabel="削除"
+                    title="削除は管理者のみ可能です"
+                    variant="danger"
+                    disabled
+                  >
+                    <FaTrash className="h-4 w-4" />
+                  </RowIconButton>
                 )}
               </div>
             </td>

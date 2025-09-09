@@ -6,6 +6,7 @@ type RowIconButtonProps = {
   onClick?: () => void;
   variant?: 'neutral' | 'danger';
   className?: string;
+  disabled?: boolean;
   children: React.ReactNode;
 };
 
@@ -15,6 +16,7 @@ const RowIconButton: React.FC<RowIconButtonProps> = ({
   onClick,
   variant = 'neutral',
   className = '',
+  disabled = false,
   children,
 }) => {
   const base =
@@ -25,6 +27,7 @@ const RowIconButton: React.FC<RowIconButtonProps> = ({
     'border border-red-200 bg-white text-red-600 hover:bg-red-100 hover:border-red-400 hover:text-red-700 hover:shadow focus:ring-2 focus:ring-red-300';
 
   const variantClass = variant === 'danger' ? danger : neutral;
+  const disabledClass = disabled ? ' opacity-50 cursor-not-allowed' : '';
 
   return (
     <button
@@ -32,7 +35,9 @@ const RowIconButton: React.FC<RowIconButtonProps> = ({
       aria-label={ariaLabel}
       title={title}
       onClick={onClick}
-      className={`${base} ${variantClass} ${className}`}
+      disabled={disabled}
+      aria-disabled={disabled}
+      className={`${base} ${variantClass}${disabledClass} ${className}`}
     >
       {children}
     </button>
