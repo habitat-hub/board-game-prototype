@@ -6,6 +6,8 @@ import {
   LuAlignStartVertical,
   LuAlignCenterVertical,
   LuAlignEndVertical,
+  LuAlignHorizontalSpaceBetween,
+  LuAlignVerticalSpaceBetween,
   LuShuffle,
 } from 'react-icons/lu';
 
@@ -17,6 +19,7 @@ import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import {
   calculateAlignmentInfo,
   getAlignmentUpdates,
+  getEvenDistributionUpdates,
   AlignmentType,
 } from '@/features/prototype/utils/alignment';
 
@@ -41,7 +44,7 @@ export default function PartPropertyMenuMulti({
     () => selectedParts.filter((p) => p.type === 'card'),
     [selectedParts]
   );
-  const showActionSection = cardParts.length >= 2;
+  const showActionSection = selectedParts.length >= 2;
 
   const alignParts = useCallback(
     (type: AlignmentType): void => {
@@ -67,6 +70,29 @@ export default function PartPropertyMenuMulti({
   const handleAlignVCenter = useCallback(
     () => alignParts('vCenter'),
     [alignParts]
+  );
+
+  const distributeParts = useCallback(
+    (axis: 'horizontal' | 'vertical'): void => {
+      if (!alignInfo) return;
+      const updates = getEvenDistributionUpdates(
+        axis,
+        selectedParts,
+        alignInfo
+      );
+      if (updates.length === 0) return;
+      dispatch({ type: 'UPDATE_PARTS', payload: { updates } });
+    },
+    [alignInfo, selectedParts, dispatch]
+  );
+
+  const handleDistributeHorizontalEvenly = useCallback(
+    () => distributeParts('horizontal'),
+    [distributeParts]
+  );
+  const handleDistributeVerticalEvenly = useCallback(
+    () => distributeParts('vertical'),
+    [distributeParts]
   );
 
   /**
@@ -137,11 +163,25 @@ export default function PartPropertyMenuMulti({
           <p className="text-kibako-white">アクション</p>
           <div className="grid grid-cols-1 gap-2">
             <PartPropertyMenuButton
-              text="カードをシャッフル"
-              ariaLabel="カードをシャッフル"
-              icon={<LuShuffle className="h-5 w-5" />}
-              onClick={handleShuffleCards}
+              text="水平方向に等間隔に配置"
+              ariaLabel="水平方向に等間隔に配置"
+              icon={<LuAlignHorizontalSpaceBetween className="h-5 w-5" />}
+              onClick={handleDistributeHorizontalEvenly}
             />
+            <PartPropertyMenuButton
+              text="垂直方向に等間隔に配置"
+              ariaLabel="垂直方向に等間隔に配置"
+              icon={<LuAlignVerticalSpaceBetween className="h-5 w-5" />}
+              onClick={handleDistributeVerticalEvenly}
+            />
+            {cardParts.length >= 2 && (
+              <PartPropertyMenuButton
+                text="カードをシャッフル"
+                ariaLabel="カードをシャッフル"
+                icon={<LuShuffle className="h-5 w-5" />}
+                onClick={handleShuffleCards}
+              />
+            )}
           </div>
         </>
       )}

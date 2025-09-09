@@ -114,3 +114,48 @@ export const getAlignmentUpdates = (
       } as AlignmentUpdate | null;
     })
     .filter((u): u is AlignmentUpdate => u !== null);
+
+export type DistributionAxis = 'horizontal' | 'vertical';
+
+/**
+ * 選択されたパーツを等間隔に配置するための更新を生成する
+ * @param axis - 配置軸（horizontal | vertical）
+ * @param parts - 選択されたパーツ
+ * @param info - 整列情報
+ * @returns パーツ更新オブジェクトの配列
+ */
+export const getEvenDistributionUpdates = (
+  axis: DistributionAxis,
+  parts: Part[],
+  info: AlignmentInfo
+): AlignmentUpdate[] => {
+  const sorted = [...parts].sort((a, b) =>
+    axis === 'horizontal'
+      ? a.position.x - b.position.x
+      : a.position.y - b.position.y
+  );
+  if (sorted.length < 2) return [];
+
+  const totalSize = sorted.reduce(
+    (sum, p) => sum + (axis === 'horizontal' ? p.width : p.height),
+    0
+  );
+  const space =
+    axis === 'horizontal'
+      ? info.maxX - info.minX - totalSize
+      : info.maxY - info.minY - totalSize;
+  const gap = space / (sorted.length - 1);
+  let current = axis === 'horizontal' ? info.minX : info.minY;
+
+  return sorted.map((p) => {
+    const x = axis === 'horizontal' ? Math.round(current) : p.position.x;
+    const y = axis === 'vertical' ? Math.round(current) : p.position.y;
+    current += (axis === 'horizontal' ? p.width : p.height) + gap;
+    return {
+      partId: p.id,
+      updatePart: {
+        position: { ...p.position, x, y },
+      },
+    };
+  });
+};
