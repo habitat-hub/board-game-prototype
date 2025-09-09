@@ -96,17 +96,27 @@ const ProjectList: React.FC = () => {
   const prototypeList = useMemo(
     () =>
       projectsData?.map(({ project, prototypes }) => {
-        const masterPrototype = prototypes.find(
-          ({ type }) => type === 'MASTER'
-        );
-        const protoWithParts = masterPrototype as Prototype & {
-          parts?: unknown[];
-        };
+        // MASTER プロトタイプを取得する
+        const masterPrototype = prototypes.find(({ type }) => type === 'MASTER');
+        // ルーム数をカウント（INSTANCE の数）
         const roomCount = prototypes.filter((p) => p.type === 'INSTANCE').length;
+        // parts 配列が存在し配列である場合のみ長さを使用する
+        const partCount =
+          masterPrototype &&
+          typeof masterPrototype === 'object' &&
+          'parts' in (masterPrototype as Record<string, unknown>) &&
+          Array.isArray(
+            (masterPrototype as Record<string, unknown>).parts as unknown
+          )
+            ? (
+                (masterPrototype as Record<string, unknown>)
+                  .parts as unknown[]
+              ).length
+            : 0;
         return {
           project,
           masterPrototype,
-          partCount: protoWithParts?.parts?.length ?? 0,
+          partCount,
           roomCount,
         };
       }) || [],
