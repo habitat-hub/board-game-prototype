@@ -41,7 +41,8 @@ const ROLE_ADMIN = 'admin' as const;
 const ProjectList: React.FC = () => {
   const router = useRouter();
   const { useUpdatePrototype } = usePrototypes();
-  const { useGetProjects, createProject, getProjectRoles } = useProject();
+  const { useGetProjects, createProject, getProjectRoles, duplicateProject } =
+    useProject();
   const { user } = useUser();
 
   // useQueryとuseMutationフックの使用
@@ -340,6 +341,24 @@ const ProjectList: React.FC = () => {
     _masterPrototype: Prototype
   ) => {
     const items = [
+      {
+        id: 'duplicate',
+        text: '複製',
+        action: async () => {
+          try {
+            const result = await duplicateProject(project.id);
+            const master = result.prototypes.find((p) => p.type === 'MASTER');
+            if (master) {
+              router.push(
+                `/projects/${result.project.id}/prototypes/${master.id}`
+              );
+            }
+          } catch (error) {
+            console.error('Failed to duplicate project', error);
+            alert('プロジェクトの複製に失敗しました。');
+          }
+        },
+      },
       {
         id: 'permissions',
         text: '権限設定',

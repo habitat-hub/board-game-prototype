@@ -35,6 +35,26 @@ export const projectService = {
     return response.data;
   },
   /**
+   * プロジェクト複製
+   * @param projectId 複製元プロジェクトID
+   * @returns 新規プロジェクトとそのマスタープロトタイプ
+   */
+  duplicateProject: async (
+    projectId: string
+  ): Promise<{ project: Project; prototypes: Array<Prototype> }> => {
+    try {
+      const response = await axiosInstance.post(
+        `/api/projects/${projectId}/duplicate`
+      );
+      return response.data;
+    } catch (error: any) {
+      const status = error?.response?.status as number | undefined;
+      const msg = error?.response?.data?.message ?? error?.message ?? '';
+      const note = status ? ` (HTTP ${status})` : '';
+      throw new Error(`プロジェクトの複製に失敗しました${note}: ${String(msg)}`);
+    }
+  },
+  /**
    * プロトタイプバージョン作成
    */
   createPrototypeVersion: async (
