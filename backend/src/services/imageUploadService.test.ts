@@ -5,26 +5,16 @@ vi.mock('../config/s3Client', () => ({
   default: { send: vi.fn() },
 }));
 
-vi.mock('../helpers/fileHelper', () => ({
-  cleanFileName: vi.fn((name: string) => name),
-  generateS3KeyFromFilename: vi.fn(() => 'uploads/test-image.jpg'),
-}));
-
 import { uploadImageToS3 } from './imageUploadService';
 import s3Client from '../config/s3Client';
 import { IMAGE_MAX_SIZE } from '../constants/file';
-import {
-  cleanFileName,
-  generateS3KeyFromFilename,
-} from '../helpers/fileHelper';
+import * as fileHelper from '../helpers/fileHelper';
 
 const mockedSend = s3Client.send as unknown as ReturnType<typeof vi.fn>;
-const mockedCleanFileName = cleanFileName as unknown as ReturnType<
-  typeof vi.fn
->;
-const mockedGenerateKey = generateS3KeyFromFilename as unknown as ReturnType<
-  typeof vi.fn
->;
+const mockedCleanFileName = vi.spyOn(fileHelper, 'cleanFileName');
+const mockedGenerateKey = vi
+  .spyOn(fileHelper, 'generateS3KeyFromFilename')
+  .mockReturnValue('uploads/test-image.jpg');
 
 beforeEach(() => {
   mockedSend.mockClear();
@@ -52,6 +42,29 @@ describe('uploadImageToS3', () => {
       displayName: 'test-image.jpg',
       storagePath: 'uploads/test-image.jpg',
       contentType: 'image/jpeg',
+      fileSize: buffer.length,
+    });
+  });
+
+  it('decodes latin1 encoded filename and sanitizes it', async () => {
+    const utf8Name = 'ファイル 名.PNG';
+    const latin1Name = Buffer.from(utf8Name, 'utf8').toString('latin1');
+    const buffer = Buffer.alloc(1);
+    const mockFile = {
+      originalname: latin1Name,
+      size: buffer.length,
+      buffer,
+    } as unknown as Express.Multer.File;
+
+    mockedSend.mockResolvedValue({ $metadata: { httpStatusCode: 200 } });
+
+    const result = await uploadImageToS3(mockFile);
+
+    expect(mockedCleanFileName).toHaveBeenCalledWith(utf8Name);
+    expect(result).toEqual({
+      displayName: 'ファイル-名.png',
+      storagePath: 'uploads/test-image.jpg',
+      contentType: 'image/png',
       fileSize: buffer.length,
     });
   });

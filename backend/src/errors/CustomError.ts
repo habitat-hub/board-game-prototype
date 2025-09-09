@@ -34,9 +34,21 @@ export class NotFoundError extends CustomError {
   }
 }
 
+export class ConflictError extends CustomError {
+  constructor(message: string) {
+    super(message, 409); // 409 Conflict
+  }
+}
+
 export class InternalServerError extends CustomError {
   constructor(message: string) {
     super(message, 500); // 500 Internal Server Error
+  }
+}
+
+export class NotImplementedError extends CustomError {
+  constructor(message: string) {
+    super(message, 501); // 501 Not Implemented
   }
 }
 

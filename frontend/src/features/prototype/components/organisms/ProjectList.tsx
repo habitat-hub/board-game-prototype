@@ -18,12 +18,25 @@ import { EmptyProjectState } from '@/features/prototype/components/molecules/Emp
 import { ProjectCardList } from '@/features/prototype/components/molecules/ProjectCardList';
 import { ProjectTable } from '@/features/prototype/components/molecules/ProjectTable';
 import useInlineEdit from '@/hooks/useInlineEdit';
+import { useUser } from '@/hooks/useUser';
 import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
 import {
   getUIPreference,
   setUIPreference,
   ProjectListView,
 } from '@/utils/uiPreferences';
+
+// 役割名の定数（マジックストリング回避）
+const ROLE_ADMIN = 'admin' as const;
+
+// master の parts が配列かどうかを実行時に判定して件数を算出するためのタイプガード
+const hasArrayParts = (
+  obj: unknown
+): obj is { parts: unknown[] } => {
+  if (typeof obj !== 'object' || obj === null) return false;
+  const rec = obj as { [k: string]: unknown };
+  return Array.isArray(rec.parts);
+};
 
 /**
  * ProjectListコンポーネントで使用される各種Stateの説明:
@@ -37,7 +50,9 @@ import {
 const ProjectList: React.FC = () => {
   const router = useRouter();
   const { useUpdatePrototype } = usePrototypes();
-  const { useGetProjects, createProject } = useProject();
+  const { useGetProjects, createProject, getProjectRoles, duplicateProject } =
+    useProject();
+  const { user } = useUser();
 
   // useQueryとuseMutationフックの使用
   const {
@@ -63,7 +78,11 @@ const ProjectList: React.FC = () => {
   const [isCreating, setIsCreating] = useState<boolean>(false);
   // リロードアイコンのワンショットアニメーション制御
   const [isReloadAnimating, setIsReloadAnimating] = useState<boolean>(false);
-  
+
+  // プロジェクトごとの管理者権限マップ
+  const [projectAdminMap, setProjectAdminMap] = useState<
+    Record<string, boolean>
+  >({});
 
   // 表示モードとソート設定（永続値を安全に復元）
   const [viewMode, setViewMode] = useState<ProjectListView>(() => {
@@ -85,10 +104,22 @@ const ProjectList: React.FC = () => {
   // データ変換処理
   const prototypeList = useMemo(
     () =>
-      projectsData?.map(({ project, prototypes }) => ({
-        project,
-        masterPrototype: prototypes.find(({ type }) => type === 'MASTER'),
-      })) || [],
+      projectsData?.map(({ project, prototypes }) => {
+        // MASTER プロトタイプを取得する
+        const masterPrototype = prototypes.find(({ type }) => type === 'MASTER');
+        // ルーム数をカウント（INSTANCE の数）
+        const roomCount = prototypes.filter((p) => p.type === 'INSTANCE').length;
+        // parts 配列が存在し配列である場合のみ長さを使用する
+        const partCount = hasArrayParts(masterPrototype)
+          ? masterPrototype.parts.length
+          : 0;
+        return {
+          project,
+          masterPrototype,
+          partCount,
+          roomCount,
+        };
+      }) || [],
     [projectsData]
   );
 
@@ -96,8 +127,14 @@ const ProjectList: React.FC = () => {
     () =>
       prototypeList
         .filter(
-          (item): item is { project: Project; masterPrototype: Prototype } =>
-            !!item.masterPrototype
+          (
+            item
+          ): item is {
+            project: Project;
+            masterPrototype: Prototype;
+            partCount: number;
+            roomCount: number;
+          } => !!item.masterPrototype
         )
         .sort((a, b) => {
           if (sortKey === 'name') {
@@ -118,6 +155,46 @@ const ProjectList: React.FC = () => {
         }),
     [prototypeList, sortKey, sortOrder]
   );
+
+  // ユーザーが管理者かどうかを取得
+  useEffect(() => {
+    // projectsData または user が未定義の場合は全て非管理者として扱う
+    if (!projectsData || !user) {
+      setProjectAdminMap({});
+      return;
+    }
+
+    const cancelled = { current: false } as const as { current: boolean };
+    const fetchRoles = async (): Promise<void> => {
+      const entries = await Promise.all(
+        projectsData.map(async ({ project }) => {
+          try {
+            const roles = await getProjectRoles(project.id);
+            const isAdmin = roles.some(
+              (r) =>
+                r.userId === user.id &&
+                r.roles.some((role) => role.name === ROLE_ADMIN)
+            );
+            return [project.id, isAdmin] as const;
+          } catch (e) {
+            // 予期しないエラーはログに記録し、UI 側は非管理者として扱う
+            console.error('プロジェクトのロール取得に失敗しました:', {
+              projectId: project.id,
+              error: e,
+            });
+            return [project.id, false] as const;
+          }
+        })
+      );
+      if (!cancelled.current) {
+        setProjectAdminMap(Object.fromEntries(entries));
+      }
+    };
+    fetchRoles();
+    return () => {
+      cancelled.current = true;
+    };
+  }, [projectsData, user, getProjectRoles]);
 
   // コンテキストメニューの状態
   const [contextMenu, setContextMenu] = useState<{
@@ -289,22 +366,45 @@ const ProjectList: React.FC = () => {
   const getContextMenuItems = (
     project: Project,
     _masterPrototype: Prototype
-  ) => [
-    {
-      id: 'permissions',
-      text: '権限設定',
-      action: () => {
-        router.push(`/projects/${project.id}/roles`);
+  ) => {
+    const items = [
+      {
+        id: 'duplicate',
+        text: '複製',
+        action: async () => {
+          try {
+            const result = await duplicateProject(project.id);
+            const master = result.prototypes.find((p) => p.type === 'MASTER');
+            if (master) {
+              router.push(
+                `/projects/${result.project.id}/prototypes/${master.id}`
+              );
+            }
+          } catch (error) {
+            console.error('Failed to duplicate project', error);
+            alert('プロジェクトの複製に失敗しました。');
+          }
+        },
       },
-    },
-    {
-      id: 'delete',
-      text: '削除',
-      action: () => {
-        router.push(`/projects/${project.id}/delete`);
+      {
+        id: 'permissions',
+        text: '権限設定',
+        action: () => {
+          router.push(`/projects/${project.id}/roles`);
+        },
       },
-    },
-  ];
+    ];
+    if (projectAdminMap[project.id]) {
+      items.push({
+        id: 'delete',
+        text: '削除',
+        action: () => {
+          router.push(`/projects/${project.id}/delete`);
+        },
+      });
+    }
+    return items;
+  };
 
   // ローディング表示
   if (isLoading) {
@@ -413,9 +513,16 @@ const ProjectList: React.FC = () => {
       {viewMode === 'card' ? (
         <ProjectCardList
           prototypeList={prototypeList.filter(
-            (item): item is { project: Project; masterPrototype: Prototype } =>
-              !!item.masterPrototype
+            (
+              item
+            ): item is {
+              project: Project;
+              masterPrototype: Prototype;
+              partCount: number;
+              roomCount: number;
+            } => !!item.masterPrototype
           )}
+          projectAdminMap={projectAdminMap}
           isNameEditing={(prototypeId) => isEditing(prototypeId)}
           editedName={editedName}
           setEditedName={setEditedName}
@@ -439,9 +546,10 @@ const ProjectList: React.FC = () => {
           sortKey={sortKey}
           sortOrder={sortOrder}
           onSort={handleSort}
-          onRowClick={(projectId, prototypeId) =>
+          onSelectPrototype={(projectId, prototypeId) =>
             router.push(`/projects/${projectId}/prototypes/${prototypeId}`)
           }
+          projectAdminMap={projectAdminMap}
         />
       )}
 

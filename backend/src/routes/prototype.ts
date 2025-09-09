@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { ensureAuthenticated } from '../middlewares/auth';
 import {
   checkPrototypeReadPermission,
@@ -7,6 +7,7 @@ import {
 } from '../middlewares/permissions';
 import { UPDATABLE_PROTOTYPE_FIELDS } from '../const';
 import PrototypeModel from '../models/Prototype';
+import { NotFoundError, ValidationError } from '../errors/CustomError';
 
 const router = express.Router();
 
@@ -54,20 +55,19 @@ router.use(ensureAuthenticated);
 router.get(
   '/:prototypeId',
   checkPrototypeReadPermission,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const prototypeId = req.params.prototypeId;
 
     try {
       const prototype = await PrototypeModel.findByPk(prototypeId);
       if (!prototype) {
-        res.status(404).json({ error: 'プロトタイプが見つかりません' });
-        return;
+        throw new NotFoundError('プロトタイプが見つかりません');
       }
 
       res.json(prototype);
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+      next(error);
     }
   }
 );
@@ -116,15 +116,14 @@ router.get(
 router.put(
   '/:prototypeId',
   checkPrototypeWritePermission,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const prototypeId = req.params.prototypeId;
 
     try {
       const prototype = await PrototypeModel.findByPk(prototypeId);
 
       if (!prototype) {
-        res.status(404).json({ error: 'プロトタイプが見つかりません' });
-        return;
+        throw new NotFoundError('プロトタイプが見つかりません');
       }
 
       const updateData = Object.entries(req.body).reduce(
@@ -144,7 +143,7 @@ router.put(
       res.json(prototype);
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+      next(error);
     }
   }
 );
@@ -180,19 +179,17 @@ router.put(
 router.delete(
   '/:prototypeId',
   checkPrototypeDeletePermission,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const prototypeId = req.params.prototypeId;
 
     try {
       const prototype = await PrototypeModel.findByPk(prototypeId);
       if (!prototype) {
-        res.status(404).json({ error: 'プロトタイプが見つかりません' });
-        return;
+        throw new NotFoundError('プロトタイプが見つかりません');
       }
 
       if (prototype.type === 'MASTER') {
-        res.status(400).json({ error: 'マスタープロトタイプは削除できません' });
-        return;
+        throw new ValidationError('マスタープロトタイプは削除できません');
       }
 
       await PrototypeModel.destroy({ where: { id: prototypeId } });
@@ -200,7 +197,7 @@ router.delete(
       res.json({ message: 'プロトタイプを削除しました' });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+      next(error);
     }
   }
 );

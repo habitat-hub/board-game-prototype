@@ -16,4 +16,10 @@ describe('KibakoButton', () => {
     const dots = screen.getAllByText('・');
     expect(dots).toHaveLength(3);
   });
+
+  it('applies danger variant styles', () => {
+    render(<KibakoButton variant="danger">Delete</KibakoButton>);
+    const button = screen.getByRole('button');
+    expect(button.className).toContain('bg-kibako-danger');
+  });
 });

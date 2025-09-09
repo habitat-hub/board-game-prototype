@@ -1,5 +1,7 @@
 import { Op } from 'sequelize';
 import PartModel from '../models/Part';
+import PartPropertyModel from '../models/PartProperty';
+import ImageModel from '../models/Image';
 import ProjectModel from '../models/Project';
 import { getAccessibleResourceIds } from './roleHelper';
 import { RESOURCE_TYPES, PERMISSION_ACTIONS } from '../const';
@@ -34,6 +36,34 @@ export async function getAccessibleProjects({ userId }: { userId: string }) {
 export async function getAccessiblePrototypes({ userId }: { userId: string }) {
   const projects = await getAccessibleProjects({ userId });
 
+  // プロトタイプIDを抽出
+  const prototypeIds = projects.flatMap((project) => {
+    const projectData = project.toJSON() as {
+      prototypes?: { id: string }[];
+    };
+    return projectData.prototypes?.map((proto) => proto.id) || [];
+  });
+
+  // 各プロトタイプに紐づくパーツ・パーツ設定・画像を取得
+  const partsByPrototypeId: Record<string, PartModel[]> = {};
+  if (prototypeIds.length > 0) {
+    const parts = await PartModel.findAll({
+      where: { prototypeId: { [Op.in]: prototypeIds } },
+      include: [
+        {
+          model: PartPropertyModel,
+          as: 'partProperties',
+          include: [{ model: ImageModel, as: 'image' }],
+        },
+      ],
+    });
+    parts.forEach((part) => {
+      const key = part.prototypeId;
+      if (!partsByPrototypeId[key]) partsByPrototypeId[key] = [];
+      partsByPrototypeId[key].push(part);
+    });
+  }
+
   // スコープを使って取得したデータを整形
   return projects.map((project) => {
     const projectData = project.toJSON() as {
@@ -41,7 +71,7 @@ export async function getAccessiblePrototypes({ userId }: { userId: string }) {
       userId: string;
       createdAt: string;
       updatedAt: string;
-      prototypes?: unknown[];
+      prototypes?: { id: string; [key: string]: unknown }[];
     };
 
     return {
@@ -51,7 +81,12 @@ export async function getAccessiblePrototypes({ userId }: { userId: string }) {
         createdAt: projectData.createdAt,
         updatedAt: projectData.updatedAt,
       },
-      prototypes: projectData.prototypes || [],
+      prototypes: (projectData.prototypes || []).map((proto) => ({
+        ...proto,
+        parts: (partsByPrototypeId[proto.id] || []).map((part) =>
+          part.toJSON()
+        ),
+      })),
     };
   });
 }

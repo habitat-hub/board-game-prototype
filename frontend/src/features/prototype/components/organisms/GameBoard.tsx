@@ -64,6 +64,42 @@ interface GameBoardProps {
   currentUserId: string;
 }
 
+/**
+ * ロール管理API由来のユーザー最小型
+ * 表示用のユーザー名と代表ロール名を取得するために使用
+ *
+ * @property {string} userId ユーザーの一意なID
+ * @property {{ username: string }} user 表示用のユーザー名を保持
+ * @property {Array<{ name: string }>} roles 付与ロール一覧（先頭要素を代表ロールとして利用）
+ */
+interface RoleUser {
+  userId: string;
+  user: { username: string };
+  roles: Array<{ name: string }>;
+}
+
+function deriveRoleUsers(
+  userRoles: RoleUser[] | undefined,
+  connectedUsers: ConnectedUser[]
+): ConnectedUser[] {
+  const uniqUsers = Array.from(
+    new Map(
+      (userRoles ?? []).map((ur) => [
+        ur.userId,
+        {
+          userId: ur.userId,
+          username: ur.user.username,
+          roleName: ur.roles[0]?.name,
+        } as ConnectedUser,
+      ])
+    ).values()
+  );
+  const connectedSet = new Set(connectedUsers.map((u) => u.userId));
+  const active = uniqUsers.filter((u) => connectedSet.has(u.userId));
+  const inactive = uniqUsers.filter((u) => !connectedSet.has(u.userId));
+  return [...active, ...inactive];
+}
+
 export default function GameBoard({
   prototypeName: initialPrototypeName,
   prototypeId,
@@ -97,25 +133,10 @@ export default function GameBoard({
   // ロール管理情報を取得
   const { userRoles } = useRoleManagement(projectId);
   // ロールユーザー一覧（接続中→非接続の順で一意化）
-  const roleUsers: ConnectedUser[] = useMemo(() => {
-    // userId をキーに一意化
-    const uniqUsers = Array.from(
-      new Map(
-        (userRoles ?? []).map((ur) => [
-          ur.userId,
-          {
-            userId: ur.userId,
-            username: ur.user.username,
-            roleName: ur.roles[0]?.name,
-          } as ConnectedUser,
-        ])
-      ).values()
-    );
-    const connectedSet = new Set(connectedUsers.map((u) => u.userId));
-    const active = uniqUsers.filter((u) => connectedSet.has(u.userId));
-    const inactive = uniqUsers.filter((u) => !connectedSet.has(u.userId));
-    return [...active, ...inactive];
-  }, [userRoles, connectedUsers]);
+  const roleUsers: ConnectedUser[] = useMemo(
+    () => deriveRoleUsers(userRoles, connectedUsers),
+    [userRoles, connectedUsers]
+  );
 
   // 自分のユーザー情報（色付けに使用）
   const selfUser = useMemo(() => {

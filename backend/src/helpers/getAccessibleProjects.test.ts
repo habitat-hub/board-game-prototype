@@ -4,6 +4,8 @@ vi.mock('../config/env', () => ({
   default: { DATABASE_URL: 'postgres://test' },
 }));
 vi.mock('../models/Part', () => ({ default: {} }));
+vi.mock('../models/PartProperty', () => ({ default: {} }));
+vi.mock('../models/Image', () => ({ default: {} }));
 vi.mock('./roleHelper', () => ({ getAccessibleResourceIds: vi.fn() }));
 vi.mock('../const', () => ({
   RESOURCE_TYPES: { PROJECT: 'project' },

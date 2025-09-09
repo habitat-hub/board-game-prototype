@@ -6,7 +6,12 @@ import {
   LuAlignStartVertical,
   LuAlignCenterVertical,
   LuAlignEndVertical,
+  LuAlignHorizontalSpaceBetween,
+  LuAlignVerticalSpaceBetween,
   LuShuffle,
+  LuFlipHorizontal,
+  LuStretchHorizontal,
+  LuStretchVertical,
 } from 'react-icons/lu';
 
 import { Part } from '@/api/types';
@@ -17,6 +22,8 @@ import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import {
   calculateAlignmentInfo,
   getAlignmentUpdates,
+  getEvenDistributionUpdates,
+  getSpreadUpdates,
   AlignmentType,
 } from '@/features/prototype/utils/alignment';
 
@@ -41,7 +48,8 @@ export default function PartPropertyMenuMulti({
     () => selectedParts.filter((p) => p.type === 'card'),
     [selectedParts]
   );
-  const showActionSection = cardParts.length >= 2;
+  // カード関連アクションの表示はカードが含まれるときのみ
+  const showActionSection = cardParts.length > 0;
 
   const alignParts = useCallback(
     (type: AlignmentType): void => {
@@ -68,6 +76,86 @@ export default function PartPropertyMenuMulti({
     () => alignParts('vCenter'),
     [alignParts]
   );
+
+  const distributeParts = useCallback(
+    (axis: 'horizontal' | 'vertical'): void => {
+      if (!alignInfo) return;
+      const updates = getEvenDistributionUpdates(
+        axis,
+        selectedParts,
+        alignInfo
+      );
+      if (updates.length === 0) return;
+      dispatch({ type: 'UPDATE_PARTS', payload: { updates } });
+    },
+    [alignInfo, selectedParts, dispatch]
+  );
+
+  const handleDistributeHorizontalEvenly = useCallback(
+    () => distributeParts('horizontal'),
+    [distributeParts]
+  );
+  const handleDistributeVerticalEvenly = useCallback(
+    () => distributeParts('vertical'),
+    [distributeParts]
+  );
+
+  /**
+   * 選択パーツを指定軸に沿って展開する
+   * @param axis 'horizontal' | 'vertical'
+   */
+  const spreadParts = useCallback(
+    (axis: 'horizontal' | 'vertical'): void => {
+      // 整列情報がない場合は何もしない
+      if (!alignInfo) return;
+      const updates = getSpreadUpdates(axis, selectedParts, alignInfo);
+      if (updates.length === 0) return;
+      dispatch({ type: 'UPDATE_PARTS', payload: { updates } });
+    },
+    [alignInfo, selectedParts, dispatch]
+  );
+
+  /** 横方向に展開する */
+  const handleSpreadHorizontal = useCallback(
+    () => spreadParts('horizontal'),
+    [spreadParts]
+  );
+  /** 縦方向に展開する */
+  const handleSpreadVertical = useCallback(
+    () => spreadParts('vertical'),
+    [spreadParts]
+  );
+
+  const cardSideTarget = useMemo((): 'front' | 'back' => {
+    if (cardParts.length === 0) return 'front';
+    const frontCount = cardParts.filter((p) => p.frontSide !== 'back').length;
+    const backCount = cardParts.length - frontCount;
+    if (frontCount === 0) return 'front';
+    if (backCount === 0) return 'back';
+    if (frontCount > backCount) return 'front';
+    if (backCount > frontCount) return 'back';
+    return 'front';
+  }, [cardParts]);
+
+  const cardSideTargetLabel = useMemo(
+    () =>
+      cardSideTarget === 'front' ? 'カードを表面にする' : 'カードを裏面にする',
+    [cardSideTarget]
+  );
+
+  const handleUnifyCardSides = useCallback((): void => {
+    if (cardParts.length === 0) return;
+
+    const updates = cardParts
+      .filter((p) => p.frontSide !== cardSideTarget)
+      .map((p) => ({
+        partId: p.id,
+        updatePart: { frontSide: cardSideTarget },
+      }));
+
+    if (updates.length === 0) return;
+    dispatch({ type: 'UPDATE_PARTS', payload: { updates } });
+  }, [cardParts, cardSideTarget, dispatch]);
 
   /**
    * カードのみを選択し、裏面へ反転・中央へ寄せ・順序を公平にシャッフルする
@@ -137,16 +225,24 @@ export default function PartPropertyMenuMulti({
           <p className="text-kibako-white">アクション</p>
           <div className="grid grid-cols-1 gap-2">
             <PartPropertyMenuButton
-              text="カードをシャッフル"
-              ariaLabel="カードをシャッフル"
-              icon={<LuShuffle className="h-5 w-5" />}
-              onClick={handleShuffleCards}
+              text={cardSideTargetLabel}
+              ariaLabel={cardSideTargetLabel}
+              icon={<LuFlipHorizontal className="h-5 w-5" />}
+              onClick={handleUnifyCardSides}
             />
+            {cardParts.length >= 2 && (
+              <PartPropertyMenuButton
+                text="カードをシャッフル"
+                ariaLabel="カードをシャッフル"
+                icon={<LuShuffle className="h-5 w-5" />}
+                onClick={handleShuffleCards}
+              />
+            )}
           </div>
         </>
       )}
       <p className="text-kibako-white">整列</p>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-4 gap-2">
         <PartPropertyMenuButton
           text=""
           ariaLabel="水平: 左揃え"
@@ -173,6 +269,13 @@ export default function PartPropertyMenuMulti({
         />
         <PartPropertyMenuButton
           text=""
+          ariaLabel="水平方向に等間隔に配置"
+          title="水平方向に等間隔に配置"
+          icon={<LuAlignHorizontalSpaceBetween className="h-5 w-5" />}
+          onClick={handleDistributeHorizontalEvenly}
+        />
+        <PartPropertyMenuButton
+          text=""
           ariaLabel="垂直: 上揃え"
           title="上揃え（垂直）"
           icon={<LuAlignStartHorizontal className="h-5 w-5" />}
@@ -194,6 +297,27 @@ export default function PartPropertyMenuMulti({
           icon={<LuAlignEndHorizontal className="h-5 w-5" />}
           onClick={handleAlignBottom}
           disabled={alignInfo?.isBottom}
+        />
+        <PartPropertyMenuButton
+          text=""
+          ariaLabel="垂直方向に等間隔に配置"
+          title="垂直方向に等間隔に配置"
+          icon={<LuAlignVerticalSpaceBetween className="h-5 w-5" />}
+          onClick={handleDistributeVerticalEvenly}
+        />
+        <PartPropertyMenuButton
+          text=""
+          ariaLabel="横に展開する"
+          title="横方向に、重ならないように広げる"
+          icon={<LuStretchVertical className="h-5 w-5" />}
+          onClick={handleSpreadHorizontal}
+        />
+        <PartPropertyMenuButton
+          text=""
+          ariaLabel="縦に展開する"
+          title="縦方向に、重ならないように広げる"
+          icon={<LuStretchHorizontal className="h-5 w-5" />}
+          onClick={handleSpreadVertical}
         />
       </div>
     </div>

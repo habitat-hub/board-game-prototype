@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import UserModel from '../models/User';
 import ProjectModel from '../models/Project';
 import PrototypeModel from '../models/Prototype';
@@ -13,6 +13,7 @@ import sequelize from '../models';
 import {
   createProject,
   createPrototypeVersion,
+  duplicateProject,
 } from '../factories/prototypeFactory';
 import { Op } from 'sequelize';
 import { getAccessibleUsers } from '../helpers/userHelper';
@@ -23,6 +24,11 @@ import UserRoleModel from '../models/UserRole';
 import { getProjectMembers } from '../helpers/userRoleHelper';
 import { validate } from '../middlewares/validators/validate';
 import { projectCreationSchema } from '../middlewares/validators/project';
+import {
+  NotFoundError,
+  ValidationError,
+  ConflictError,
+} from '../errors/CustomError';
 
 const router = express.Router();
 
@@ -51,16 +57,34 @@ router.use(ensureAuthenticated);
  *                   prototypes:
  *                     type: array
  *                     items:
- *                       $ref: '#/components/schemas/Prototype'
+ *                       allOf:
+ *                         - $ref: '#/components/schemas/Prototype'
+ *                         - type: object
+ *                           properties:
+ *                             parts:
+ *                               type: array
+ *                               items:
+ *                                 allOf:
+ *                                   - $ref: '#/components/schemas/Part'
+ *                                   - type: object
+ *                                     properties:
+ *                                       partProperties:
+ *                                         type: array
+ *                                         items:
+ *                                           allOf:
+ *                                             - $ref: '#/components/schemas/PartProperty'
+ *                                             - type: object
+ *                                               properties:
+ *                                                 image:
+ *                                                   $ref: '#/components/schemas/Image'
  */
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   const user = req.user as UserModel;
 
   try {
     res.json(await getAccessiblePrototypes({ userId: user.id }));
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: '予期せぬエラーが発生しました' });
+    next(error);
   }
 });
 
@@ -103,7 +127,7 @@ router.get('/', async (req: Request, res: Response) => {
 router.post(
   '/',
   validate(projectCreationSchema),
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user as UserModel;
 
     const { name } = req.body;
@@ -120,8 +144,7 @@ router.post(
       res.status(201).json(project);
     } catch (error) {
       await transaction.rollback();
-      console.error(error);
-      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+      next(error);
     }
   }
 );
@@ -187,7 +210,7 @@ router.post(
   '/:projectId/versions',
   checkProjectManagePermission,
   validate(projectCreationSchema),
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const { name } = req.body;
 
     try {
@@ -217,8 +240,7 @@ router.post(
         .status(201)
         .json({ version: versionPrototype, instance: instancePrototype });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+      next(error);
     }
   }
 );
@@ -266,7 +288,7 @@ router.post(
 router.delete(
   '/:projectId/versions/:prototypeId',
   checkProjectManagePermission,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const { projectId, prototypeId } = req.params;
 
     try {
@@ -283,7 +305,7 @@ router.delete(
           });
 
           if (!versionPrototype) {
-            throw new Error('NOT_FOUND');
+            throw new NotFoundError('プロトタイプルームが見つかりません');
           }
 
           // 関連するINSTANCEプロトタイプを取得（削除前にIDを記録）
@@ -293,7 +315,7 @@ router.delete(
               type: 'INSTANCE',
               sourceVersionPrototypeId: versionPrototype.id,
             },
-            attributes: ['id'], // IDのみ取得で軽量化
+            attributes: ['id'],
             transaction: t,
           });
 
@@ -301,7 +323,7 @@ router.delete(
             (p: PrototypeModel) => p.id
           );
 
-          // INSTANCEプロトタイプを一括削除（CASCADE により Part → PartProperty も自動削除される）
+          // INSTANCEプロトタイプを一括削除
           if (instancePrototypes.length > 0) {
             await PrototypeModel.destroy({
               where: {
@@ -311,7 +333,7 @@ router.delete(
             });
           }
 
-          // VERSIONプロトタイプを削除（CASCADE により Part → PartProperty も自動削除される）
+          // VERSIONプロトタイプを削除
           await PrototypeModel.destroy({
             where: { id: versionPrototype.id },
             transaction: t,
@@ -338,12 +360,7 @@ router.delete(
         deletedInstances: deletedInstanceIds,
       });
     } catch (error) {
-      if (error instanceof Error && error.message === 'NOT_FOUND') {
-        res.status(404).json({ error: 'プロトタイプルームが見つかりません' });
-        return;
-      }
-      console.error(error);
-      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+      next(error);
     }
   }
 );
@@ -386,7 +403,7 @@ router.delete(
 router.get(
   '/:projectId',
   checkProjectReadPermission,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const projectId = req.params.projectId;
 
     try {
@@ -395,14 +412,12 @@ router.get(
         await ProjectModel.scope('withPrototypes').findByPk(projectId);
 
       if (!project) {
-        res.status(404).json({ error: 'プロジェクトが見つかりません' });
-        return;
+        throw new NotFoundError('プロジェクトが見つかりません');
       }
 
       res.json(project.toJSON());
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+      next(error);
     }
   }
 );
@@ -437,15 +452,14 @@ router.get(
  */
 router.delete(
   '/:projectId',
-  checkProjectManagePermission,
-  async (req: Request, res: Response) => {
+  checkProjectAdminRole,
+  async (req: Request, res: Response, next: NextFunction) => {
     const projectId = req.params.projectId;
 
     try {
       const project = await ProjectModel.findByPk(projectId);
       if (!project) {
-        res.status(404).json({ error: 'プロジェクトが見つかりません' });
-        return;
+        throw new NotFoundError('プロジェクトが見つかりません');
       }
 
       await ProjectModel.destroy({
@@ -454,8 +468,7 @@ router.delete(
 
       res.json({ message: 'プロジェクトを削除しました' });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+      next(error);
     }
   }
 );
@@ -487,14 +500,13 @@ router.delete(
 router.get(
   '/:projectId/access-users',
   checkProjectReadPermission,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const projectId = req.params.projectId;
 
     try {
       res.json(await getAccessibleUsers({ projectId }));
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+      next(error);
     }
   }
 );
@@ -559,7 +571,7 @@ router.get(
 router.post(
   '/:projectId/invite',
   checkProjectReadPermission,
-  async (req, res) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const projectId = req.params.projectId;
     const guestIds = req.body.guestIds;
     const roleType = req.body.roleType || ROLE_TYPE.EDITOR; // デフォルトはeditor
@@ -567,8 +579,7 @@ router.post(
     // 有効なロールタイプかチェック
     const validRoleTypes = Object.values(ROLE_TYPE);
     if (!validRoleTypes.includes(roleType)) {
-      res.status(400).json({ message: '無効なロールタイプが指定されました' });
-      return;
+      return next(new ValidationError('無効なロールタイプが指定されました'));
     }
 
     try {
@@ -578,16 +589,14 @@ router.post(
       });
 
       if (!role) {
-        res.status(400).json({ message: '無効なロールが指定されました' });
-        return;
+        throw new NotFoundError('ロールが見つかりません');
       }
 
       const guests = await UserModel.findAll({
         where: { id: { [Op.in]: guestIds } },
       });
       if (guests.length === 0) {
-        res.status(404).json({ message: '招待できるユーザーが見つかりません' });
-        return;
+        throw new NotFoundError('招待できるユーザーが見つかりません');
       }
 
       await Promise.all(
@@ -606,8 +615,7 @@ router.post(
         assignedRole: roleType,
       });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: '予期せぬエラーが発生しました' });
+      next(error);
     }
   }
 );
@@ -661,19 +669,18 @@ router.post(
 router.delete(
   '/:projectId/invite/:guestId',
   checkProjectReadPermission,
-  async (req, res) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const projectId = req.params.projectId;
     const guestId = req.params.guestId;
 
     try {
       const project = await ProjectModel.findByPk(projectId);
       if (!project) {
-        throw new Error('プロジェクトが見つかりません');
+        throw new NotFoundError('プロジェクトが見つかりません');
       }
 
       if (project.userId === guestId) {
-        res.status(400).json({ message: '作成者は削除できません' });
-        return;
+        throw new ValidationError('作成者は削除できません');
       }
 
       // すべてのロールを削除（このプロジェクトに対する）
@@ -687,8 +694,7 @@ router.delete(
 
       res.status(200).json({ message: 'ユーザーのアクセス権を削除しました' });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: '予期せぬエラーが発生しました' });
+      next(error);
     }
   }
 );
@@ -730,15 +736,23 @@ router.delete(
 router.post(
   '/:projectId/duplicate',
   checkProjectReadPermission,
-  async (req, res) => {
-    // const projectId = req.params.projectId;
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as UserModel;
+    const { projectId } = req.params;
 
+    const transaction = await sequelize.transaction();
     try {
-      // TODO: プロジェクトの複製
-      res.status(501).json({ message: '未実装' });
+      const duplicated = await duplicateProject({
+        projectId,
+        userId: user.id,
+        transaction,
+      });
+
+      await transaction.commit();
+      res.json(duplicated);
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: '予期せぬエラーが発生しました' });
+      await transaction.rollback();
+      next(error);
     }
   }
 );
@@ -782,15 +796,14 @@ router.post(
 router.get(
   '/:projectId/members',
   checkProjectReadPermission,
-  async (req, res) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const projectId = req.params.projectId;
 
     try {
       const members = await getProjectMembers(projectId);
       res.json(members);
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: '予期せぬエラーが発生しました' });
+      next(error);
     }
   }
 );
@@ -836,7 +849,7 @@ router.get(
 router.get(
   '/:projectId/roles',
   checkProjectReadPermission,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const { projectId } = req.params;
 
     try {
@@ -891,8 +904,7 @@ router.get(
 
       res.json(Array.from(roleMap.values()));
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+      next(error);
     }
   }
 );
@@ -936,21 +948,18 @@ router.get(
 router.post(
   '/:projectId/roles',
   checkProjectAdminRole,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const { projectId } = req.params;
     const { userId, roleName } = req.body;
-
     if (!userId || !roleName) {
-      res.status(400).json({ error: 'ユーザーIDとロール名は必須です' });
-      return;
+      return next(new ValidationError('ユーザーIDとロール名は必須です'));
     }
 
     try {
       // ユーザーが存在するかチェック
       const user = await UserModel.findByPk(userId);
       if (!user) {
-        res.status(404).json({ error: 'ユーザーが見つかりません' });
-        return;
+        throw new NotFoundError('ユーザーが見つかりません');
       }
 
       // ロールが存在するかチェック
@@ -958,8 +967,7 @@ router.post(
         where: { name: roleName },
       });
       if (!role) {
-        res.status(404).json({ error: 'ロールが見つかりません' });
-        return;
+        throw new NotFoundError('ロールが見つかりません');
       }
 
       // 既存のロール割り当てをチェック
@@ -972,10 +980,7 @@ router.post(
         },
       });
       if (existingRole) {
-        res
-          .status(409)
-          .json({ error: 'ユーザーは既にこのロールを持っています' });
-        return;
+        throw new ConflictError('ユーザーは既にこのロールを持っています');
       }
 
       // ロールを割り当て
@@ -987,8 +992,7 @@ router.post(
         roleName,
       });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+      next(error);
     }
   }
 );
@@ -1022,17 +1026,16 @@ router.post(
 router.delete(
   '/:projectId/roles/:userId',
   checkProjectAdminRole,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const { projectId, userId } = req.params;
 
     try {
       // プロジェクトの作成者かチェック
       const project = await ProjectModel.findByPk(projectId);
       if (project && project.userId === userId) {
-        res.status(400).json({
-          error: 'プロジェクトの作成者のロールは削除できません',
-        });
-        return;
+        throw new ValidationError(
+          'プロジェクトの作成者のロールは削除できません'
+        );
       }
 
       // 最後の管理者かチェック
@@ -1056,10 +1059,7 @@ router.delete(
         });
 
         if (userAdminRole && adminCount <= 1) {
-          res
-            .status(400)
-            .json({ error: '最後の管理者のロールは削除できません' });
-          return;
+          throw new ValidationError('最後の管理者のロールは削除できません');
         }
       }
 
@@ -1077,8 +1077,7 @@ router.delete(
         userId,
       });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+      next(error);
     }
   }
 );
@@ -1124,21 +1123,19 @@ router.delete(
 router.put(
   '/:projectId/roles/:userId',
   checkProjectAdminRole,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const { projectId, userId } = req.params;
     const { roleName } = req.body;
 
     if (!roleName) {
-      res.status(400).json({ error: 'ロール名は必須です' });
-      return;
+      return next(new ValidationError('ロール名は必須です'));
     }
 
     try {
       // ユーザーが存在するかチェック
       const user = await UserModel.findByPk(userId);
       if (!user) {
-        res.status(404).json({ error: 'ユーザーが見つかりません' });
-        return;
+        throw new NotFoundError('ユーザーが見つかりません');
       }
 
       // 新しいロールが存在するかチェック
@@ -1146,17 +1143,15 @@ router.put(
         where: { name: roleName },
       });
       if (!newRole) {
-        res.status(404).json({ error: 'ロールが見つかりません' });
-        return;
+        throw new NotFoundError('ロールが見つかりません');
       }
 
       // プロジェクトの作成者の場合、管理者権限は変更不可
       const project = await ProjectModel.findByPk(projectId);
       if (project && project.userId === userId) {
-        res.status(400).json({
-          error: 'プロジェクトの作成者のロールは変更できません',
-        });
-        return;
+        throw new ValidationError(
+          'プロジェクトの作成者のロールは変更できません'
+        );
       }
 
       // 現在のロールを取得
@@ -1170,10 +1165,9 @@ router.put(
       });
 
       if (currentUserRoles.length === 0) {
-        res.status(404).json({
-          error: 'ユーザーはこのプロジェクトのロールを持っていません',
-        });
-        return;
+        throw new NotFoundError(
+          'ユーザーはこのプロジェクトのロールを持っていません'
+        );
       }
 
       // 管理者ロールを変更する場合の特別チェック
@@ -1193,10 +1187,7 @@ router.put(
         });
 
         if (adminCount <= 1) {
-          res.status(400).json({
-            error: '最後の管理者のロールは変更できません',
-          });
-          return;
+          throw new ValidationError('最後の管理者のロールは変更できません');
         }
       }
 
@@ -1206,10 +1197,7 @@ router.put(
       );
 
       if (hasTargetRole) {
-        res.status(400).json({
-          error: 'ユーザーは既にこのロールを持っています',
-        });
-        return;
+        throw new ValidationError('ユーザーは既にこのロールを持っています');
       }
 
       // トランザクションを使用してロールを更新
@@ -1242,8 +1230,7 @@ router.put(
         roleName,
       });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: '予期せぬエラーが発生しました' });
+      next(error);
     }
   }
 );
