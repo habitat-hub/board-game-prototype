@@ -13,6 +13,7 @@
 
   /* Common grid for ProjectTable header/body rows */
   .project-table-grid {
-    grid-template-columns: minmax(0, 1fr) 120px 200px 80px 120px;
+    /* Columns: name | part | room | author | createdAt | ops */
+    grid-template-columns: minmax(0, 1fr) 90px 90px 120px 200px 180px;
   }
 }

@@ -26,6 +26,7 @@ type ProjectTableProps = {
     project: Project;
     masterPrototype: Prototype;
     partCount: number;
+    roomCount: number;
   }[];
   sortKey: ProjectTableSortKey;
   sortOrder: 'asc' | 'desc';
@@ -83,6 +84,8 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
               {renderSortIcon('name')}
             </button>
           </th>
+          <th className="px-4 py-2">パーツ数</th>
+          <th className="px-4 py-2">ルーム数</th>
           <th className="px-4 py-2">作成者</th>
           <th className="px-4 py-2">
             <button
@@ -94,12 +97,11 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
               {renderSortIcon('createdAt')}
             </button>
           </th>
-          <th className="px-4 py-2">パーツ数</th>
-          <th className="px-4 py-2 text-right">操作</th>
+          <th className="px-4 py-2 text-left">操作</th>
         </tr>
       </thead>
       <tbody className="block max-h-[60vh] overflow-y-auto scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-        {prototypeList.map(({ project, masterPrototype, partCount }) => (
+        {prototypeList.map(({ project, masterPrototype, partCount, roomCount }) => (
           <tr
             key={project.id}
             className="grid project-table-grid items-center border-b text-kibako-primary"
@@ -137,6 +139,12 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
               </div>
             </RowCell>
             <RowCell>
+              <span className="ml-auto text-right text-xs text-kibako-secondary">{partCount}</span>
+            </RowCell>
+            <RowCell>
+              <span className="ml-auto text-right text-xs text-kibako-secondary">{roomCount}</span>
+            </RowCell>
+            <RowCell>
               <span className="text-xs text-kibako-secondary">
                 {userContext?.user?.id === project.userId
                   ? '自分'
@@ -147,9 +155,6 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
               <span className="whitespace-nowrap text-xs text-kibako-secondary">
                 {formatDate(masterPrototype.createdAt, true)}
               </span>
-            </RowCell>
-            <RowCell>
-              <span className="text-xs text-kibako-secondary">{partCount}</span>
             </RowCell>
             <td className="px-4 py-2 align-middle">
               <div className="flex items-center justify-end gap-2 h-full">

@@ -8,6 +8,7 @@ type ProjectCardListProps = {
     project: Project;
     masterPrototype: Prototype;
     partCount: number;
+    roomCount: number;
   }[];
   projectAdminMap: Record<string, boolean>;
   // 編集状態と値
@@ -40,7 +41,7 @@ export const ProjectCardList: React.FC<ProjectCardListProps> = ({
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-      {prototypeList.map(({ masterPrototype, project, partCount }) => {
+      {prototypeList.map(({ masterPrototype, project, partCount, roomCount }) => {
         if (!masterPrototype) return null;
         const { id } = masterPrototype;
         const nameEditing = isNameEditing(id);
@@ -54,6 +55,7 @@ export const ProjectCardList: React.FC<ProjectCardListProps> = ({
             project={project}
             masterPrototype={masterPrototype}
             partCount={partCount}
+            roomCount={roomCount}
             isProjectAdmin={isProjectAdmin}
             isNameEditing={nameEditing}
             editedName={editedName}

@@ -102,10 +102,12 @@ const ProjectList: React.FC = () => {
         const protoWithParts = masterPrototype as Prototype & {
           parts?: unknown[];
         };
+        const roomCount = prototypes.filter((p) => p.type === 'INSTANCE').length;
         return {
           project,
           masterPrototype,
           partCount: protoWithParts?.parts?.length ?? 0,
+          roomCount,
         };
       }) || [],
     [projectsData]
@@ -121,6 +123,7 @@ const ProjectList: React.FC = () => {
             project: Project;
             masterPrototype: Prototype;
             partCount: number;
+            roomCount: number;
           } => !!item.masterPrototype
         )
         .sort((a, b) => {
@@ -506,6 +509,7 @@ const ProjectList: React.FC = () => {
               project: Project;
               masterPrototype: Prototype;
               partCount: number;
+              roomCount: number;
             } => !!item.masterPrototype
           )}
           projectAdminMap={projectAdminMap}
