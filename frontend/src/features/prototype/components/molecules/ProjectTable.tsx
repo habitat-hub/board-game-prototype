@@ -22,7 +22,11 @@ import formatDate from '@/utils/dateFormat';
 export type ProjectTableSortKey = 'name' | 'createdAt';
 
 type ProjectTableProps = {
-  prototypeList: { project: Project; masterPrototype: Prototype }[];
+  prototypeList: {
+    project: Project;
+    masterPrototype: Prototype;
+    partCount: number;
+  }[];
   sortKey: ProjectTableSortKey;
   sortOrder: 'asc' | 'desc';
   onSort: (key: ProjectTableSortKey) => void;
@@ -90,11 +94,12 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
               {renderSortIcon('createdAt')}
             </button>
           </th>
+          <th className="px-4 py-2">パーツ数</th>
           <th className="px-4 py-2 text-right">操作</th>
         </tr>
       </thead>
       <tbody className="block max-h-[60vh] overflow-y-auto scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-        {prototypeList.map(({ project, masterPrototype }) => (
+        {prototypeList.map(({ project, masterPrototype, partCount }) => (
           <tr
             key={project.id}
             className="grid project-table-grid items-center border-b text-kibako-primary"
@@ -142,6 +147,9 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
               <span className="whitespace-nowrap text-xs text-kibako-secondary">
                 {formatDate(masterPrototype.createdAt, true)}
               </span>
+            </RowCell>
+            <RowCell>
+              <span className="text-xs text-kibako-secondary">{partCount}</span>
             </RowCell>
             <td className="px-4 py-2 align-middle">
               <div className="flex items-center justify-end gap-2 h-full">

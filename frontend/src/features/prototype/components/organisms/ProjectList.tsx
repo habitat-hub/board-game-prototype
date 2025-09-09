@@ -95,10 +95,19 @@ const ProjectList: React.FC = () => {
   // データ変換処理
   const prototypeList = useMemo(
     () =>
-      projectsData?.map(({ project, prototypes }) => ({
-        project,
-        masterPrototype: prototypes.find(({ type }) => type === 'MASTER'),
-      })) || [],
+      projectsData?.map(({ project, prototypes }) => {
+        const masterPrototype = prototypes.find(
+          ({ type }) => type === 'MASTER'
+        );
+        const protoWithParts = masterPrototype as Prototype & {
+          parts?: unknown[];
+        };
+        return {
+          project,
+          masterPrototype,
+          partCount: protoWithParts?.parts?.length ?? 0,
+        };
+      }) || [],
     [projectsData]
   );
 
@@ -106,8 +115,13 @@ const ProjectList: React.FC = () => {
     () =>
       prototypeList
         .filter(
-          (item): item is { project: Project; masterPrototype: Prototype } =>
-            !!item.masterPrototype
+          (
+            item
+          ): item is {
+            project: Project;
+            masterPrototype: Prototype;
+            partCount: number;
+          } => !!item.masterPrototype
         )
         .sort((a, b) => {
           if (sortKey === 'name') {
@@ -486,8 +500,13 @@ const ProjectList: React.FC = () => {
       {viewMode === 'card' ? (
         <ProjectCardList
           prototypeList={prototypeList.filter(
-            (item): item is { project: Project; masterPrototype: Prototype } =>
-              !!item.masterPrototype
+            (
+              item
+            ): item is {
+              project: Project;
+              masterPrototype: Prototype;
+              partCount: number;
+            } => !!item.masterPrototype
           )}
           projectAdminMap={projectAdminMap}
           isNameEditing={(prototypeId) => isEditing(prototypeId)}
