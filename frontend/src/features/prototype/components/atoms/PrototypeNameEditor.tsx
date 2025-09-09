@@ -24,6 +24,8 @@ interface PrototypeNameEditorProps {
   weight?: 'normal' | 'medium' | 'semibold' | 'bold';
   /** 編集可能かどうか */
   editable?: boolean;
+  /** 編集不可の場合に表示する理由 */
+  notEditableReason?: string;
 }
 
 export default function PrototypeNameEditor({
@@ -36,6 +38,7 @@ export default function PrototypeNameEditor({
   size = 'xs',
   weight = 'medium',
   editable = true,
+  notEditableReason = '管理者のみ名前を変更できます',
 }: PrototypeNameEditorProps) {
   const { useUpdatePrototype } = usePrototypes();
   const updatePrototypeMutation = useUpdatePrototype();
@@ -72,13 +75,17 @@ export default function PrototypeNameEditor({
           : 'font-bold';
 
   if (!editable) {
+    const titleText = notEditableReason
+      ? `${name} - ${notEditableReason}`
+      : name;
     return (
       <div className={`w-full ${className ?? ''}`}>
         <span
           className={`${sizeClass} ${weightClass} text-kibako-primary ${truncate ? 'truncate' : 'whitespace-normal break-words'} ${
             bleedX ? 'px-2 -mx-2' : 'px-2'
           }`}
-          title={name}
+          title={titleText}
+          aria-label={titleText}
         >
           {name}
         </span>

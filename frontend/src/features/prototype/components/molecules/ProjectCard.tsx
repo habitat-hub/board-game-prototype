@@ -80,6 +80,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
               bleedX={false}
               onUpdated={(newName) => setUpdatedName(newName)}
               editable={isProjectAdmin}
+              notEditableReason="管理者のみ名前を変更できます"
             />
           </div>
         </div>

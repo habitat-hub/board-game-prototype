@@ -121,6 +121,7 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                       }))
                     }
                     editable={projectAdminMap[project.id]}
+                    notEditableReason="管理者のみ名前を変更できます"
                   />
                 </div>
               </div>
