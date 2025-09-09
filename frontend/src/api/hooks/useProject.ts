@@ -42,9 +42,15 @@ export const useProject = () => {
 
   /**
    * プロジェクト複製
+   * @param projectId 複製元プロジェクトID
+   * @returns 新規プロジェクトとそのマスタープロトタイプ
    */
   const duplicateProject = useCallback(
-    async (projectId: string) => {
+    async (
+      projectId: string
+    ): Promise<
+      Awaited<ReturnType<typeof projectService.duplicateProject>>
+    > => {
       const result = await projectService.duplicateProject(projectId);
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       return result;

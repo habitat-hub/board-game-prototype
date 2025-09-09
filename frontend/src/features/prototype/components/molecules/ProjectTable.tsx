@@ -42,6 +42,8 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
   const [updatedNames, setUpdatedNames] = useState<Record<string, string>>({});
   const userContext = useContext(UserContext);
   const { duplicateProject } = useProject();
+  // 行内の複製進行中状態
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
 
   // プロジェクト行で使用するアイコン（IDベースで安定）
   const renderIcon = (id: string) => {
@@ -154,7 +156,9 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                 <RowIconButton
                   ariaLabel="複製"
                   title="複製"
+                  disabled={duplicatingId === project.id}
                   onClick={async () => {
+                    setDuplicatingId(project.id);
                     try {
                       const result = await duplicateProject(project.id);
                       const master = result.prototypes.find(
@@ -162,10 +166,14 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                       );
                       if (master) {
                         onSelectPrototype(result.project.id, master.id);
+                      } else {
+                        alert('MASTERプロトタイプが見つかりませんでした。');
                       }
                     } catch (error) {
                       console.error('Failed to duplicate project', error);
                       alert('プロジェクトの複製に失敗しました。');
+                    } finally {
+                      setDuplicatingId(null);
                     }
                   }}
                 >
