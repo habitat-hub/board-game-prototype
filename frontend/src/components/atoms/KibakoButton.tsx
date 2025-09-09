@@ -13,6 +13,8 @@ export const buttonStyles = cva(
           'bg-kibako-accent text-kibako-white hover:shadow-lg hover:scale-105 hover:bg-kibako-accent/90',
         outline:
           'bg-transparent text-kibako-primary border border-kibako-primary/30 hover:border-kibako-primary/50 hover:shadow-lg hover:scale-105',
+        danger:
+          'bg-kibako-danger text-kibako-white hover:shadow-lg hover:scale-105 hover:bg-kibako-danger/90',
       },
       size: {
         sm: 'h-8 px-3',
