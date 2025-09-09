@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { IoArrowBack, IoTrash } from 'react-icons/io5';
 
+import { projectService } from '@/api/endpoints/project';
 import { useProject } from '@/api/hooks/useProject';
 import { Prototype, Project } from '@/api/types';
 import KibakoButton from '@/components/atoms/KibakoButton';
@@ -13,11 +14,13 @@ const DeletePrototypeConfirmation = () => {
   const router = useRouter();
   const { user } = useUser();
   const { projectId } = useParams<{ projectId: string }>();
-  const { getProject, deleteProject, getProjectRoles } = useProject();
+  const { deleteProject, getProjectRoles } = useProject();
   const [project, setProject] = useState<Project | null>(null);
   const [masterPrototype, setMasterPrototype] = useState<Prototype | null>(
     null
   );
+  const [partCount, setPartCount] = useState<number>(0);
+  const [roomCount, setRoomCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,11 +30,21 @@ const DeletePrototypeConfirmation = () => {
     const fetchProject = async () => {
       try {
         setIsLoading(true);
-        const project = await getProject(projectId);
-        setProject(project);
-        setMasterPrototype(
-          project.prototypes.find(({ type }) => type === 'MASTER') || null
-        );
+        const projects = await projectService.getProjects();
+        const current = projects.find((p) => p.project.id === projectId);
+        if (current) {
+          setProject(current.project);
+          const prototypes = current.prototypes as (Prototype & {
+            parts?: unknown[];
+          })[];
+          const master =
+            prototypes.find(({ type }) => type === 'MASTER') || null;
+          setMasterPrototype(master);
+          setPartCount(master?.parts?.length ?? 0);
+          setRoomCount(
+            prototypes.filter(({ type }) => type === 'INSTANCE').length
+          );
+        }
         const roles = await getProjectRoles(projectId);
         const admin = roles.some(
           (r) =>
@@ -52,7 +65,7 @@ const DeletePrototypeConfirmation = () => {
     } else {
       fetchProject();
     }
-  }, [projectId, getProject, getProjectRoles, user, router]);
+  }, [projectId, getProjectRoles, user, router]);
 
   const handleDelete = async () => {
     try {
@@ -135,6 +148,14 @@ const DeletePrototypeConfirmation = () => {
           <div className="mb-4">
             <div className="text-sm text-kibako-primary/60">プロジェクト名</div>
             <div className="text-lg font-medium">{masterPrototype?.name}</div>
+          </div>
+          <div className="mb-4">
+            <div className="text-sm text-kibako-primary/60">パーツ数</div>
+            <div className="text-lg font-medium">{partCount}</div>
+          </div>
+          <div>
+            <div className="text-sm text-kibako-primary/60">ルーム数</div>
+            <div className="text-lg font-medium">{roomCount}</div>
           </div>
         </div>
 
