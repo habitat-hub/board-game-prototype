@@ -10,6 +10,8 @@ import {
   LuAlignVerticalSpaceBetween,
   LuShuffle,
   LuFlipHorizontal,
+  LuStretchHorizontal,
+  LuStretchVertical,
 } from 'react-icons/lu';
 
 import { Part } from '@/api/types';
@@ -21,6 +23,7 @@ import {
   calculateAlignmentInfo,
   getAlignmentUpdates,
   getEvenDistributionUpdates,
+  getSpreadUpdates,
   AlignmentType,
 } from '@/features/prototype/utils/alignment';
 
@@ -95,6 +98,32 @@ export default function PartPropertyMenuMulti({
   const handleDistributeVerticalEvenly = useCallback(
     () => distributeParts('vertical'),
     [distributeParts]
+  );
+
+  /**
+   * 選択パーツを指定軸に沿って展開する
+   * @param axis 'horizontal' | 'vertical'
+   */
+  const spreadParts = useCallback(
+    (axis: 'horizontal' | 'vertical'): void => {
+      // 整列情報がない場合は何もしない
+      if (!alignInfo) return;
+      const updates = getSpreadUpdates(axis, selectedParts, alignInfo);
+      if (updates.length === 0) return;
+      dispatch({ type: 'UPDATE_PARTS', payload: { updates } });
+    },
+    [alignInfo, selectedParts, dispatch]
+  );
+
+  /** 横方向に展開する */
+  const handleSpreadHorizontal = useCallback(
+    () => spreadParts('horizontal'),
+    [spreadParts]
+  );
+  /** 縦方向に展開する */
+  const handleSpreadVertical = useCallback(
+    () => spreadParts('vertical'),
+    [spreadParts]
   );
 
   const cardSideTarget = useMemo((): 'front' | 'back' => {
@@ -275,6 +304,20 @@ export default function PartPropertyMenuMulti({
           title="垂直方向に等間隔に配置"
           icon={<LuAlignVerticalSpaceBetween className="h-5 w-5" />}
           onClick={handleDistributeVerticalEvenly}
+        />
+        <PartPropertyMenuButton
+          text=""
+          ariaLabel="横に展開する"
+          title="横方向に、重ならないように広げる"
+          icon={<LuStretchVertical className="h-5 w-5" />}
+          onClick={handleSpreadHorizontal}
+        />
+        <PartPropertyMenuButton
+          text=""
+          ariaLabel="縦に展開する"
+          title="縦方向に、重ならないように広げる"
+          icon={<LuStretchHorizontal className="h-5 w-5" />}
+          onClick={handleSpreadVertical}
         />
       </div>
     </div>

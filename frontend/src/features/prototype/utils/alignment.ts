@@ -1,4 +1,8 @@
 import { Part } from '@/api/types';
+import { GAME_BOARD_SIZE } from '@/features/prototype/constants/gameBoard';
+
+/** スプレッド時のデフォルト間隔(px) */
+export const DEFAULT_SPREAD_GAP = 20;
 
 export type AlignmentType =
   | 'left'
@@ -158,4 +162,81 @@ export const getEvenDistributionUpdates = (
       },
     };
   });
+};
+
+/**
+ * 選択されたパーツを横または縦方向に並べて展開するための更新を生成する
+ * @param axis - 展開軸（horizontal | vertical）
+ * @param parts - 選択されたパーツ
+ * @param info - 整列情報
+ * @param gap - パーツ間の隙間(px)
+ * @returns パーツ更新オブジェクトの配列
+ */
+export const getSpreadUpdates = (
+  axis: DistributionAxis,
+  parts: Part[],
+  info: AlignmentInfo,
+  gap = DEFAULT_SPREAD_GAP
+): AlignmentUpdate[] => {
+  const sorted = [...parts].sort((a, b) =>
+    axis === 'horizontal'
+      ? a.position.x - b.position.x
+      : a.position.y - b.position.y
+  );
+  if (sorted.length === 0) return [];
+
+  // ベースサイズ合計（パーツそのものの幅/高さの合計）
+  const baseSumSizes = sorted.reduce(
+    (sum, p) => sum + (axis === 'horizontal' ? p.width : p.height),
+    0
+  );
+
+  // ボード全体に収まるように、必要であれば gap を縮める（重なり＝負のギャップも許可）
+  const boardSize = GAME_BOARD_SIZE;
+  const count = sorted.length;
+  const maxGap =
+    count > 1 ? Math.floor((boardSize - baseSumSizes) / (count - 1)) : 0;
+  // 要求ギャップが大きすぎてはみ出す場合は、最大許容ギャップ（maxGap）まで縮める。
+  // maxGap は負にもなり得る（重なってでも収める）。
+  const effectiveGap = Math.min(gap, maxGap);
+
+  const totalSize = baseSumSizes + effectiveGap * (count - 1);
+
+  // 展開開始位置を中央から計算し、ボード内に収める
+  let startCoord =
+    axis === 'horizontal'
+      ? Math.round(info.centerX - totalSize / 2)
+      : Math.round(info.centerY - totalSize / 2);
+  // totalSize がボードより大きい場合は 0 から詰める。収まる場合は中央基準でクランプ
+  startCoord =
+    totalSize > boardSize
+      ? 0
+      : Math.max(0, Math.min(boardSize - totalSize, startCoord));
+
+  const updates: AlignmentUpdate[] = [];
+  let current = startCoord;
+  sorted.forEach((p) => {
+    const x =
+      axis === 'horizontal' ? current : Math.round(info.centerX - p.width / 2);
+    const y =
+      axis === 'vertical' ? current : Math.round(info.centerY - p.height / 2);
+
+    // ボード内に収める
+    const clampedX = Math.max(0, Math.min(GAME_BOARD_SIZE - p.width, x));
+    const clampedY = Math.max(0, Math.min(GAME_BOARD_SIZE - p.height, y));
+
+    if (clampedX !== p.position.x || clampedY !== p.position.y) {
+      updates.push({
+        partId: p.id,
+        updatePart: {
+          position: { ...p.position, x: clampedX, y: clampedY },
+        },
+      });
+    }
+
+    current +=
+      (axis === 'horizontal' ? p.width : p.height) + effectiveGap;
+  });
+
+  return updates;
 };
