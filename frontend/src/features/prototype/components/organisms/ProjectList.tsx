@@ -439,7 +439,7 @@ const ProjectList: React.FC = () => {
           sortKey={sortKey}
           sortOrder={sortOrder}
           onSort={handleSort}
-          onRowClick={(projectId, prototypeId) =>
+          onSelectPrototype={(projectId, prototypeId) =>
             router.push(`/projects/${projectId}/prototypes/${prototypeId}`)
           }
         />

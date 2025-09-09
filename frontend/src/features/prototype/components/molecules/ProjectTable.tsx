@@ -24,7 +24,7 @@ type ProjectTableProps = {
   sortKey: ProjectTableSortKey;
   sortOrder: 'asc' | 'desc';
   onSort: (key: ProjectTableSortKey) => void;
-  onRowClick: (projectId: string, prototypeId: string) => void;
+  onSelectPrototype: (projectId: string, prototypeId: string) => void;
 };
 
 export const ProjectTable: React.FC<ProjectTableProps> = ({
@@ -32,7 +32,7 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
   sortKey,
   sortOrder,
   onSort,
-  onRowClick,
+  onSelectPrototype,
 }) => {
   // 即時反映用: 名前更新が完了した行の一時表示名
   const [updatedNames, setUpdatedNames] = useState<Record<string, string>>({});
@@ -94,7 +94,15 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
           >
             <RowCell className="overflow-hidden">
               <div className="flex items-center gap-3 min-w-0 w-full overflow-hidden">
-                {renderIcon(masterPrototype.id)}
+                <button
+                  type="button"
+                  aria-label="開く"
+                  title="開く"
+                  onClick={() => onSelectPrototype(project.id, masterPrototype.id)}
+                  className="p-1 rounded hover:bg-kibako-accent/20 focus:outline-none focus:ring-2 focus:ring-kibako-accent/50"
+                >
+                  {renderIcon(masterPrototype.id)}
+                </button>
                 <div className="min-w-0 flex-1 overflow-hidden">
                   <PrototypeNameEditor
                     prototypeId={masterPrototype.id}
@@ -129,7 +137,7 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                 <RowIconButton
                   ariaLabel="開く"
                   title="開く"
-                  onClick={() => onRowClick(project.id, masterPrototype.id)}
+                  onClick={() => onSelectPrototype(project.id, masterPrototype.id)}
                 >
                   <FaFolderOpen className="h-4 w-4" />
                 </RowIconButton>
