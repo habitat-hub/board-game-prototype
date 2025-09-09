@@ -12,6 +12,10 @@ import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Prototype, Project } from '@/api/types';
 import KibakoButton from '@/components/atoms/KibakoButton';
 import KibakoToggle from '@/components/atoms/KibakoToggle';
+import SortDropdown, {
+  SortKey,
+  SortOrder,
+} from '@/components/atoms/SortDropdown';
 import Loading from '@/components/organisms/Loading';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
 import { EmptyProjectState } from '@/features/prototype/components/molecules/EmptyProjectState';
@@ -91,16 +95,12 @@ const ProjectList: React.FC = () => {
     const v = getUIPreference('projectListView');
     return v === 'card' || v === 'table' ? v : 'card';
   });
-  const [sortKey, setSortKey] = useState<'name' | 'createdAt'>('createdAt');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [sortKey, setSortKey] = useState<SortKey>('createdAt');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
-  const handleSort = (key: 'name' | 'createdAt') => {
-    if (sortKey === key) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortKey(key);
-      setSortOrder('asc');
-    }
+  const handleSortChange = (key: SortKey, order: SortOrder) => {
+    setSortKey(key);
+    setSortOrder(order);
   };
 
   // データ変換処理
@@ -143,23 +143,42 @@ const ProjectList: React.FC = () => {
           } => !!item.masterPrototype
         )
         .sort((a, b) => {
-          if (sortKey === 'name') {
-            const nameA = a.masterPrototype.name ?? '';
-            const nameB = b.masterPrototype.name ?? '';
-            return sortOrder === 'asc'
-              ? nameA.localeCompare(nameB, 'ja')
-              : nameB.localeCompare(nameA, 'ja');
-          } else {
-            const tA = a.masterPrototype.createdAt
-              ? new Date(a.masterPrototype.createdAt).getTime()
-              : 0;
-            const tB = b.masterPrototype.createdAt
-              ? new Date(b.masterPrototype.createdAt).getTime()
-              : 0;
-            return sortOrder === 'asc' ? tA - tB : tB - tA;
+          switch (sortKey) {
+            case 'name': {
+              const nameA = a.masterPrototype.name ?? '';
+              const nameB = b.masterPrototype.name ?? '';
+              return sortOrder === 'asc'
+                ? nameA.localeCompare(nameB, 'ja')
+                : nameB.localeCompare(nameA, 'ja');
+            }
+            case 'partCount':
+              return sortOrder === 'asc'
+                ? a.partCount - b.partCount
+                : b.partCount - a.partCount;
+            case 'roomCount':
+              return sortOrder === 'asc'
+                ? a.roomCount - b.roomCount
+                : b.roomCount - a.roomCount;
+            case 'creator': {
+              const cA = projectCreatorMap[a.project.id] ?? '';
+              const cB = projectCreatorMap[b.project.id] ?? '';
+              return sortOrder === 'asc'
+                ? cA.localeCompare(cB, 'ja')
+                : cB.localeCompare(cA, 'ja');
+            }
+            case 'createdAt':
+            default: {
+              const tA = a.masterPrototype.createdAt
+                ? new Date(a.masterPrototype.createdAt).getTime()
+                : 0;
+              const tB = b.masterPrototype.createdAt
+                ? new Date(b.masterPrototype.createdAt).getTime()
+                : 0;
+              return sortOrder === 'asc' ? tA - tB : tB - tA;
+            }
           }
         }),
-    [prototypeList, sortKey, sortOrder]
+    [prototypeList, sortKey, sortOrder, projectCreatorMap]
   );
 
   // ユーザーが管理者かどうかを取得
@@ -509,35 +528,33 @@ const ProjectList: React.FC = () => {
               {sortedPrototypeList.length}
             </span>
           </div>
-          <KibakoToggle
-            checked={viewMode === 'table'}
-            onChange={(checked) => {
-              const mode = checked ? 'table' : 'card';
-              setViewMode(mode);
-              setUIPreference('projectListView', mode);
-            }}
-            labelLeft={<FaTh className="w-4 h-4" aria-hidden="true" />}
-            labelRight={<FaTable className="w-4 h-4" aria-hidden="true" />}
-            shouldChangeBackgroud={false}
-            ariaLabel={
-              viewMode === 'card' ? 'テーブル表示に切替' : 'カード表示に切替'
-            }
-          />
+          <div className="flex items-center gap-2">
+            <SortDropdown
+              sortKey={sortKey}
+              sortOrder={sortOrder}
+              onChange={handleSortChange}
+            />
+            <KibakoToggle
+              checked={viewMode === 'table'}
+              onChange={(checked) => {
+                const mode = checked ? 'table' : 'card';
+                setViewMode(mode);
+                setUIPreference('projectListView', mode);
+              }}
+              labelLeft={<FaTh className="w-4 h-4" aria-hidden="true" />}
+              labelRight={<FaTable className="w-4 h-4" aria-hidden="true" />}
+              shouldChangeBackgroud={false}
+              ariaLabel={
+                viewMode === 'card' ? 'テーブル表示に切替' : 'カード表示に切替'
+              }
+            />
+          </div>
         </div>
       </div>
 
       {viewMode === 'card' ? (
         <ProjectCardList
-          prototypeList={prototypeList.filter(
-            (
-              item
-            ): item is {
-              project: Project;
-              masterPrototype: Prototype;
-              partCount: number;
-              roomCount: number;
-            } => !!item.masterPrototype
-          )}
+          prototypeList={sortedPrototypeList}
           projectAdminMap={projectAdminMap}
           projectCreatorMap={projectCreatorMap}
           isNameEditing={(prototypeId) => isEditing(prototypeId)}
@@ -560,9 +577,6 @@ const ProjectList: React.FC = () => {
       ) : (
         <ProjectTable
           prototypeList={sortedPrototypeList}
-          sortKey={sortKey}
-          sortOrder={sortOrder}
-          onSort={handleSort}
           onSelectPrototype={(projectId, prototypeId) =>
             router.push(`/projects/${projectId}/prototypes/${prototypeId}`)
           }
