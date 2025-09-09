@@ -17,10 +17,10 @@ const DeletePrototypeConfirmation = () => {
   const [masterPrototype, setMasterPrototype] = useState<Prototype | null>(
     null
   );
-  const [isLoading, setIsLoading] = useState(true);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchProject = async () => {
