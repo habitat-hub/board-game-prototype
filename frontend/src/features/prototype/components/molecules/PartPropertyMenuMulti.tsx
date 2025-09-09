@@ -100,8 +100,13 @@ export default function PartPropertyMenuMulti({
     [distributeParts]
   );
 
+  /**
+   * 選択パーツを指定軸に沿って展開する
+   * @param axis 'horizontal' | 'vertical'
+   */
   const spreadParts = useCallback(
     (axis: 'horizontal' | 'vertical'): void => {
+      // 整列情報がない場合は何もしない
       if (!alignInfo) return;
       const updates = getSpreadUpdates(axis, selectedParts, alignInfo);
       if (updates.length === 0) return;
