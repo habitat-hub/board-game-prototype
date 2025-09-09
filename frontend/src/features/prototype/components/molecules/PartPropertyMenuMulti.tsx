@@ -10,6 +10,8 @@ import {
   LuAlignVerticalSpaceBetween,
   LuShuffle,
   LuFlipHorizontal,
+  LuStretchHorizontal,
+  LuStretchVertical,
 } from 'react-icons/lu';
 
 import { Part } from '@/api/types';
@@ -21,6 +23,7 @@ import {
   calculateAlignmentInfo,
   getAlignmentUpdates,
   getEvenDistributionUpdates,
+  getSpreadUpdates,
   AlignmentType,
 } from '@/features/prototype/utils/alignment';
 
@@ -95,6 +98,25 @@ export default function PartPropertyMenuMulti({
   const handleDistributeVerticalEvenly = useCallback(
     () => distributeParts('vertical'),
     [distributeParts]
+  );
+
+  const spreadParts = useCallback(
+    (axis: 'horizontal' | 'vertical'): void => {
+      if (!alignInfo) return;
+      const updates = getSpreadUpdates(axis, selectedParts, alignInfo);
+      if (updates.length === 0) return;
+      dispatch({ type: 'UPDATE_PARTS', payload: { updates } });
+    },
+    [alignInfo, selectedParts, dispatch]
+  );
+
+  const handleSpreadHorizontal = useCallback(
+    () => spreadParts('horizontal'),
+    [spreadParts]
+  );
+  const handleSpreadVertical = useCallback(
+    () => spreadParts('vertical'),
+    [spreadParts]
   );
 
   const cardSideTarget = useMemo((): 'front' | 'back' => {
@@ -275,6 +297,20 @@ export default function PartPropertyMenuMulti({
           title="垂直方向に等間隔に配置"
           icon={<LuAlignVerticalSpaceBetween className="h-5 w-5" />}
           onClick={handleDistributeVerticalEvenly}
+        />
+        <PartPropertyMenuButton
+          text=""
+          ariaLabel="横に展開する"
+          title="横方向に、重ならないように広げる"
+          icon={<LuStretchHorizontal className="h-5 w-5" />}
+          onClick={handleSpreadHorizontal}
+        />
+        <PartPropertyMenuButton
+          text=""
+          ariaLabel="縦に展開する"
+          title="縦方向に、重ならないように広げる"
+          icon={<LuStretchVertical className="h-5 w-5" />}
+          onClick={handleSpreadVertical}
         />
       </div>
     </div>

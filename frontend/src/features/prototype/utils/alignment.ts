@@ -1,4 +1,5 @@
 import { Part } from '@/api/types';
+import { GAME_BOARD_SIZE } from '@/features/prototype/constants';
 
 export type AlignmentType =
   | 'left'
@@ -158,4 +159,66 @@ export const getEvenDistributionUpdates = (
       },
     };
   });
+};
+
+/**
+ * 選択されたパーツを横または縦方向に並べて展開するための更新を生成する
+ * @param axis - 展開軸（horizontal | vertical）
+ * @param parts - 選択されたパーツ
+ * @param info - 整列情報
+ * @param gap - パーツ間の隙間(px)
+ * @returns パーツ更新オブジェクトの配列
+ */
+export const getSpreadUpdates = (
+  axis: DistributionAxis,
+  parts: Part[],
+  info: AlignmentInfo,
+  gap = 20
+): AlignmentUpdate[] => {
+  const sorted = [...parts].sort((a, b) =>
+    axis === 'horizontal'
+      ? a.position.x - b.position.x
+      : a.position.y - b.position.y
+  );
+  if (sorted.length === 0) return [];
+
+  const totalSize =
+    sorted.reduce(
+      (sum, p) => sum + (axis === 'horizontal' ? p.width : p.height),
+      0
+    ) +
+    gap * (sorted.length - 1);
+
+  // 展開開始位置を中央から計算し、ボード内に収める
+  let startCoord =
+    axis === 'horizontal'
+      ? Math.round(info.centerX - totalSize / 2)
+      : Math.round(info.centerY - totalSize / 2);
+  startCoord = Math.max(0, Math.min(GAME_BOARD_SIZE - totalSize, startCoord));
+
+  const updates: AlignmentUpdate[] = [];
+  let current = startCoord;
+  sorted.forEach((p) => {
+    const x =
+      axis === 'horizontal' ? current : Math.round(info.centerX - p.width / 2);
+    const y =
+      axis === 'vertical' ? current : Math.round(info.centerY - p.height / 2);
+
+    // ボード内に収める
+    const clampedX = Math.max(0, Math.min(GAME_BOARD_SIZE - p.width, x));
+    const clampedY = Math.max(0, Math.min(GAME_BOARD_SIZE - p.height, y));
+
+    if (clampedX !== p.position.x || clampedY !== p.position.y) {
+      updates.push({
+        partId: p.id,
+        updatePart: {
+          position: { ...p.position, x: clampedX, y: clampedY },
+        },
+      });
+    }
+
+    current += (axis === 'horizontal' ? p.width : p.height) + gap;
+  });
+
+  return updates;
 };
