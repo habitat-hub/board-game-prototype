@@ -1,8 +1,7 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import type { IconType } from 'react-icons';
 
 import { Prototype, Project } from '@/api/types';
-import { UserContext } from '@/contexts/UserContext';
 import PrototypeNameEditor from '@/features/prototype/components/atoms/PrototypeNameEditor';
 import { getProjectIcon } from '@/features/prototype/utils/getProjectIcon';
 import formatDate from '@/utils/dateFormat';
@@ -21,6 +20,8 @@ type ProjectCardProps = {
   roomCount: number;
   // 管理者権限を持つかどうか
   isProjectAdmin: boolean;
+  // 作成者名
+  creatorName?: string;
   // 編集関連
   isNameEditing: boolean;
   editedName: string;
@@ -46,12 +47,10 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   partCount,
   roomCount,
   isProjectAdmin,
+  creatorName,
   onCardClick,
   onContextMenu,
 }) => {
-  // UserContextからユーザー情報を取得
-  const userContext = useContext(UserContext);
-
   const { id, name, createdAt } = masterPrototype;
   const IconComponent: IconType = getProjectIcon(id);
   const [updatedName, setUpdatedName] = useState<string | null>(null);
@@ -97,12 +96,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
             <div>ルーム数: {roomCount}</div>
           </div>
           <div className="text-right text-xs text-kibako-secondary">
-            <div>
-              作成者:{' '}
-              {userContext?.user?.id === project.userId
-                ? '自分'
-                : '他のユーザー'}
-            </div>
+            <div>作成者: {creatorName || '不明'}</div>
             <div>作成日時: {formatDate(createdAt, true)}</div>
           </div>
         </div>
