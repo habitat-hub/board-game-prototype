@@ -15,6 +15,8 @@ type ProjectCardProps = {
   project: Project;
   // マスタープロトタイプ情報
   masterPrototype: Prototype;
+  // 管理者権限を持つかどうか
+  isProjectAdmin: boolean;
   // 編集関連
   isNameEditing: boolean;
   editedName: string;
@@ -37,6 +39,7 @@ type ProjectCardProps = {
 export const ProjectCard: React.FC<ProjectCardProps> = ({
   project,
   masterPrototype,
+  isProjectAdmin,
   onCardClick,
   onContextMenu,
 }) => {
@@ -76,6 +79,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
               truncate={false}
               bleedX={false}
               onUpdated={(newName) => setUpdatedName(newName)}
+              editable={isProjectAdmin}
             />
           </div>
         </div>

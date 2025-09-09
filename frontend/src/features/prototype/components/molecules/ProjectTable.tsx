@@ -100,7 +100,9 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                   type="button"
                   aria-label="開く"
                   title="開く"
-                  onClick={() => onSelectPrototype(project.id, masterPrototype.id)}
+                  onClick={() =>
+                    onSelectPrototype(project.id, masterPrototype.id)
+                  }
                   className="p-1 rounded hover:bg-kibako-accent/20 focus:outline-none focus:ring-2 focus:ring-kibako-accent/50"
                 >
                   {renderIcon(masterPrototype.id)}
@@ -118,6 +120,7 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                         [masterPrototype.id]: newName,
                       }))
                     }
+                    editable={projectAdminMap[project.id]}
                   />
                 </div>
               </div>
@@ -139,7 +142,9 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                 <RowIconButton
                   ariaLabel="開く"
                   title="開く"
-                  onClick={() => onSelectPrototype(project.id, masterPrototype.id)}
+                  onClick={() =>
+                    onSelectPrototype(project.id, masterPrototype.id)
+                  }
                 >
                   <FaFolderOpen className="h-4 w-4" />
                 </RowIconButton>

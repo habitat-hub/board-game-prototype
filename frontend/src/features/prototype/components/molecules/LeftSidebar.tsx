@@ -332,7 +332,7 @@ export default function LeftSidebar({
             prototypeId={prototypeId}
             name={prototypeName}
             onUpdated={handlePrototypeNameUpdated}
-            editable={currentRole !== 'viewer' && currentRole !== null}
+            editable={currentRole === 'admin'}
           />
         </div>
         {/* プレイルームを開いている時は開閉ボタンを非表示 */}
