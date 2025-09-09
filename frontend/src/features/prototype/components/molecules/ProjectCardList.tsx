@@ -5,6 +5,7 @@ import { ProjectCard } from '@/features/prototype/components/molecules/ProjectCa
 
 type ProjectCardListProps = {
   prototypeList: { project: Project; masterPrototype: Prototype }[];
+  projectAdminMap: Record<string, boolean>;
   // 編集状態と値
   isNameEditing: (prototypeId: string) => boolean;
   editedName: string;
@@ -23,6 +24,7 @@ type ProjectCardListProps = {
 
 export const ProjectCardList: React.FC<ProjectCardListProps> = ({
   prototypeList,
+  projectAdminMap,
   isNameEditing,
   editedName,
   setEditedName,
@@ -38,6 +40,7 @@ export const ProjectCardList: React.FC<ProjectCardListProps> = ({
         if (!masterPrototype) return null;
         const { id } = masterPrototype;
         const nameEditing = isNameEditing(id);
+        const isProjectAdmin = projectAdminMap[project.id];
 
         const handleCardClick = () => onCardClick(project.id, id);
 
@@ -46,6 +49,7 @@ export const ProjectCardList: React.FC<ProjectCardListProps> = ({
             key={id}
             project={project}
             masterPrototype={masterPrototype}
+            isProjectAdmin={isProjectAdmin}
             isNameEditing={nameEditing}
             editedName={editedName}
             setEditedName={setEditedName}

@@ -470,6 +470,7 @@ const ProjectList: React.FC = () => {
             (item): item is { project: Project; masterPrototype: Prototype } =>
               !!item.masterPrototype
           )}
+          projectAdminMap={projectAdminMap}
           isNameEditing={(prototypeId) => isEditing(prototypeId)}
           editedName={editedName}
           setEditedName={setEditedName}
