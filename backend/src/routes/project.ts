@@ -57,7 +57,26 @@ router.use(ensureAuthenticated);
  *                   prototypes:
  *                     type: array
  *                     items:
- *                       $ref: '#/components/schemas/Prototype'
+ *                       allOf:
+ *                         - $ref: '#/components/schemas/Prototype'
+ *                         - type: object
+ *                           properties:
+ *                             parts:
+ *                               type: array
+ *                               items:
+ *                                 allOf:
+ *                                   - $ref: '#/components/schemas/Part'
+ *                                   - type: object
+ *                                     properties:
+ *                                       partProperties:
+ *                                         type: array
+ *                                         items:
+ *                                           allOf:
+ *                                             - $ref: '#/components/schemas/PartProperty'
+ *                                             - type: object
+ *                                               properties:
+ *                                                 image:
+ *                                                   $ref: '#/components/schemas/Image'
  */
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   const user = req.user as UserModel;
