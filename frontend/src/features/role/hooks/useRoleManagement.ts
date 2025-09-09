@@ -257,13 +257,6 @@ export const useRoleManagement = (projectId: string) => {
     }
   }, [roleForm.selectedUserId, roleForm.selectedRole, addRole]);
 
-  const handleUpdateRole = useCallback(
-    async (userId: string, newRole: 'admin' | 'editor' | 'viewer') => {
-      await updateRole(userId, newRole);
-    },
-    [updateRole]
-  );
-
   const handleRemoveRole = useCallback(
     async (userId: string) => {
       const removeCheck = canRemoveUserRole(userId, userRoles);
@@ -323,7 +316,6 @@ export const useRoleManagement = (projectId: string) => {
 
     // ハンドラー
     handleAddRole,
-    handleUpdateRole,
     handleRemoveRole,
     updateRoleForm,
     closeToast,

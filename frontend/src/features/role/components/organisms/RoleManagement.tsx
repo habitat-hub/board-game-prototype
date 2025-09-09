@@ -23,19 +23,6 @@ const RoleManagement: React.FC = () => {
   } | null>(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
-  // 編集モード用の状態
-  const [editMode, setEditMode] = useState<{
-    isEditing: boolean;
-    userId: string | null;
-    username: string | null;
-    currentRole: string | null;
-  }>({
-    isEditing: false,
-    userId: null,
-    username: null,
-    currentRole: null,
-  });
-
   const {
     // データ
     userRoles,
@@ -52,8 +39,8 @@ const RoleManagement: React.FC = () => {
 
     // ハンドラー
     handleAddRole,
-    handleUpdateRole,
     handleRemoveRole,
+    updateRole,
     updateRoleForm,
     closeToast,
     fetchAllUsers,
@@ -110,46 +97,6 @@ const RoleManagement: React.FC = () => {
     updateRoleForm({ selectedUserId: '' });
   };
 
-  // 編集モード開始
-  const handleStartEdit = (
-    userId: string,
-    username: string,
-    currentRole: string
-  ) => {
-    setEditMode({
-      isEditing: true,
-      userId,
-      username,
-      currentRole,
-    });
-    updateRoleForm({
-      selectedUserId: userId,
-      selectedRole: currentRole as 'admin' | 'editor' | 'viewer',
-    });
-  };
-
-  // 編集モードキャンセル
-  const handleCancelEdit = () => {
-    setEditMode({
-      isEditing: false,
-      userId: null,
-      username: null,
-      currentRole: null,
-    });
-    setSelectedUser(null);
-    setSearchTerm('');
-    updateRoleForm({ selectedUserId: '', selectedRole: 'editor' });
-  };
-
-  // 権限更新実行
-  const handleUpdateRoleWithReset = async () => {
-    if (editMode.userId && roleForm.selectedRole) {
-      await handleUpdateRole(editMode.userId, roleForm.selectedRole);
-      // 更新成功後に編集モードをリセット
-      handleCancelEdit();
-    }
-  };
-
   // 権限追加のハンドラー（ユーザー選択状態もクリア）
   const handleAddRoleWithReset = async () => {
     await handleAddRole();
@@ -173,7 +120,9 @@ const RoleManagement: React.FC = () => {
         >
           <IoArrowBack className="h-5 w-5 text-kibako-primary hover:text-kibako-primary transition-colors" />
         </button>
-        <h1 className="text-3xl text-kibako-primary font-bold mb-0">権限設定</h1>
+        <h1 className="text-3xl text-kibako-primary font-bold mb-0">
+          権限設定
+        </h1>
       </div>
 
       <div className="mb-6 p-6 overflow-visible rounded-xl bg-gradient-to-r from-kibako-white via-kibako-white to-kibako-tertiary shadow-lg border border-kibako-tertiary/30">
@@ -187,12 +136,12 @@ const RoleManagement: React.FC = () => {
             ユーザー権限を管理します。
           </p>
           {!isCurrentUserAdmin && (
-            <p className="text-kibako-primary/70">権限を設定できるのはAdminユーザーのみです</p>
+            <p className="text-kibako-primary/70">
+              権限を設定できるのはAdminユーザーのみです
+            </p>
           )}
 
           <RoleManagementForm
-            editMode={editMode}
-            onCancelEdit={handleCancelEdit}
             searchTerm={searchTerm}
             onSearchTermChange={setSearchTerm}
             selectedUser={selectedUser}
@@ -204,7 +153,6 @@ const RoleManagement: React.FC = () => {
             selectedRole={roleForm.selectedRole}
             onRoleChange={(role) => updateRoleForm({ selectedRole: role })}
             onAddRole={handleAddRoleWithReset}
-            onUpdateRole={handleUpdateRoleWithReset}
             loading={loading}
             canManageRole={isCurrentUserAdmin}
           />
@@ -213,23 +161,23 @@ const RoleManagement: React.FC = () => {
 
       <div className="mb-8 p-6 overflow-visible rounded-xl bg-gradient-to-r from-kibako-white via-kibako-white to-kibako-tertiary shadow-lg border border-kibako-tertiary/30">
         <div className="flex items-center justify-between mb-4 border-b border-kibako-secondary/30 pb-2">
-          <h2 className="text-xl font-bold text-kibako-primary">現在のユーザー権限</h2>
+          <h2 className="text-xl font-bold text-kibako-primary">
+            現在のユーザー権限
+          </h2>
         </div>
         <div
           className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 transition-all ${
-            editMode.isEditing || !isCurrentUserAdmin
-              ? 'opacity-40 pointer-events-none'
-              : ''
+            !isCurrentUserAdmin ? 'opacity-40 pointer-events-none' : ''
           }`}
         >
           <UserRolesList
             userRoles={userRoles}
             creator={creator}
             canRemoveUserRole={canRemoveUserRole}
-            onEdit={handleStartEdit}
+            onRoleChange={(userId, role) => updateRole(userId, role)}
             onRemove={handleRemoveRole}
             loading={loading}
-            editMode={editMode.isEditing}
+            canManageRole={isCurrentUserAdmin}
           />
         </div>
       </div>
