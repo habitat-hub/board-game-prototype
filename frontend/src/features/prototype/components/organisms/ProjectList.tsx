@@ -29,6 +29,15 @@ import {
 // 役割名の定数（マジックストリング回避）
 const ROLE_ADMIN = 'admin' as const;
 
+// master の parts が配列かどうかを実行時に判定して件数を算出するためのタイプガード
+const hasArrayParts = (
+  obj: unknown
+): obj is { parts: unknown[] } => {
+  if (typeof obj !== 'object' || obj === null) return false;
+  const rec = obj as { [k: string]: unknown };
+  return Array.isArray(rec.parts);
+};
+
 /**
  * ProjectListコンポーネントで使用される各種Stateの説明:
  *
@@ -95,10 +104,22 @@ const ProjectList: React.FC = () => {
   // データ変換処理
   const prototypeList = useMemo(
     () =>
-      projectsData?.map(({ project, prototypes }) => ({
-        project,
-        masterPrototype: prototypes.find(({ type }) => type === 'MASTER'),
-      })) || [],
+      projectsData?.map(({ project, prototypes }) => {
+        // MASTER プロトタイプを取得する
+        const masterPrototype = prototypes.find(({ type }) => type === 'MASTER');
+        // ルーム数をカウント（INSTANCE の数）
+        const roomCount = prototypes.filter((p) => p.type === 'INSTANCE').length;
+        // parts 配列が存在し配列である場合のみ長さを使用する
+        const partCount = hasArrayParts(masterPrototype)
+          ? masterPrototype.parts.length
+          : 0;
+        return {
+          project,
+          masterPrototype,
+          partCount,
+          roomCount,
+        };
+      }) || [],
     [projectsData]
   );
 
@@ -106,8 +127,14 @@ const ProjectList: React.FC = () => {
     () =>
       prototypeList
         .filter(
-          (item): item is { project: Project; masterPrototype: Prototype } =>
-            !!item.masterPrototype
+          (
+            item
+          ): item is {
+            project: Project;
+            masterPrototype: Prototype;
+            partCount: number;
+            roomCount: number;
+          } => !!item.masterPrototype
         )
         .sort((a, b) => {
           if (sortKey === 'name') {
@@ -486,8 +513,14 @@ const ProjectList: React.FC = () => {
       {viewMode === 'card' ? (
         <ProjectCardList
           prototypeList={prototypeList.filter(
-            (item): item is { project: Project; masterPrototype: Prototype } =>
-              !!item.masterPrototype
+            (
+              item
+            ): item is {
+              project: Project;
+              masterPrototype: Prototype;
+              partCount: number;
+              roomCount: number;
+            } => !!item.masterPrototype
           )}
           projectAdminMap={projectAdminMap}
           isNameEditing={(prototypeId) => isEditing(prototypeId)}

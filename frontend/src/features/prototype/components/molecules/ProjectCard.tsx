@@ -15,6 +15,10 @@ type ProjectCardProps = {
   project: Project;
   // マスタープロトタイプ情報
   masterPrototype: Prototype;
+  // パーツ数
+  partCount: number;
+  // ルーム数（INSTANCEプロトタイプ数）
+  roomCount: number;
   // 管理者権限を持つかどうか
   isProjectAdmin: boolean;
   // 編集関連
@@ -39,6 +43,8 @@ type ProjectCardProps = {
 export const ProjectCard: React.FC<ProjectCardProps> = ({
   project,
   masterPrototype,
+  partCount,
+  roomCount,
   isProjectAdmin,
   onCardClick,
   onContextMenu,
@@ -85,7 +91,11 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           </div>
         </div>
         {/* 詳細情報 */}
-        <div className="flex justify-end mt-2">
+        <div className="flex justify-between mt-2">
+          <div className="text-left text-xs text-kibako-secondary">
+            <div>パーツ数: {partCount}</div>
+            <div>ルーム数: {roomCount}</div>
+          </div>
           <div className="text-right text-xs text-kibako-secondary">
             <div>
               作成者:{' '}
