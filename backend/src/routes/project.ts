@@ -6,6 +6,7 @@ import { ensureAuthenticated } from '../middlewares/auth';
 import {
   checkProjectReadPermission,
   checkProjectManagePermission,
+  checkProjectWritePermission,
   checkProjectAdminRole,
 } from '../middlewares/permissions';
 import { getAccessiblePrototypes } from '../helpers/prototypeHelper';
@@ -570,7 +571,7 @@ router.get(
  */
 router.post(
   '/:projectId/invite',
-  checkProjectReadPermission,
+  checkProjectManagePermission,
   async (req: Request, res: Response, next: NextFunction) => {
     const projectId = req.params.projectId;
     const guestIds = req.body.guestIds;
@@ -668,7 +669,7 @@ router.post(
  */
 router.delete(
   '/:projectId/invite/:guestId',
-  checkProjectReadPermission,
+  checkProjectManagePermission,
   async (req: Request, res: Response, next: NextFunction) => {
     const projectId = req.params.projectId;
     const guestId = req.params.guestId;
@@ -735,7 +736,7 @@ router.delete(
  */
 router.post(
   '/:projectId/duplicate',
-  checkProjectReadPermission,
+  checkProjectWritePermission,
   async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user as UserModel;
     const { projectId } = req.params;

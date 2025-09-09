@@ -240,6 +240,16 @@ export const checkProjectManagePermission: AsyncMiddleware = checkPermission(
 );
 
 /**
+ * プロジェクトの編集権限ミドルウェア
+ * @returns Express ミドルウェア
+ */
+export const checkProjectWritePermission: AsyncMiddleware = checkPermission(
+  RESOURCE_TYPES.PROJECT,
+  PERMISSION_ACTIONS.WRITE,
+  'projectId'
+);
+
+/**
  * プロトタイプの編集権限ミドルウェア
  * @returns Express ミドルウェア
  */

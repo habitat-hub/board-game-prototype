@@ -28,11 +28,11 @@ import {
 
 // 役割名の定数（マジックストリング回避）
 const ROLE_ADMIN = 'admin' as const;
+const ROLE_EDITOR = 'editor' as const;
+const ROLE_VIEWER = 'viewer' as const;
 
 // master の parts が配列かどうかを実行時に判定して件数を算出するためのタイプガード
-const hasArrayParts = (
-  obj: unknown
-): obj is { parts: unknown[] } => {
+const hasArrayParts = (obj: unknown): obj is { parts: unknown[] } => {
   if (typeof obj !== 'object' || obj === null) return false;
   const rec = obj as { [k: string]: unknown };
   return Array.isArray(rec.parts);
@@ -79,10 +79,21 @@ const ProjectList: React.FC = () => {
   // リロードアイコンのワンショットアニメーション制御
   const [isReloadAnimating, setIsReloadAnimating] = useState<boolean>(false);
 
-  // プロジェクトごとの管理者権限マップ
-  const [projectAdminMap, setProjectAdminMap] = useState<
-    Record<string, boolean>
+  // プロジェクトごとのユーザーロールマップ
+  const [projectRoleMap, setProjectRoleMap] = useState<
+    Record<string, typeof ROLE_ADMIN | typeof ROLE_EDITOR | typeof ROLE_VIEWER>
   >({});
+
+  const projectAdminMap = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(projectRoleMap).map(([id, role]) => [
+          id,
+          role === ROLE_ADMIN,
+        ])
+      ),
+    [projectRoleMap]
+  );
 
   // 表示モードとソート設定（永続値を安全に復元）
   const [viewMode, setViewMode] = useState<ProjectListView>(() => {
@@ -106,9 +117,13 @@ const ProjectList: React.FC = () => {
     () =>
       projectsData?.map(({ project, prototypes }) => {
         // MASTER プロトタイプを取得する
-        const masterPrototype = prototypes.find(({ type }) => type === 'MASTER');
+        const masterPrototype = prototypes.find(
+          ({ type }) => type === 'MASTER'
+        );
         // ルーム数をカウント（INSTANCE の数）
-        const roomCount = prototypes.filter((p) => p.type === 'INSTANCE').length;
+        const roomCount = prototypes.filter(
+          (p) => p.type === 'INSTANCE'
+        ).length;
         // parts 配列が存在し配列である場合のみ長さを使用する
         const partCount = hasArrayParts(masterPrototype)
           ? masterPrototype.parts.length
@@ -156,11 +171,10 @@ const ProjectList: React.FC = () => {
     [prototypeList, sortKey, sortOrder]
   );
 
-  // ユーザーが管理者かどうかを取得
+  // プロジェクトごとのユーザーロールを取得
   useEffect(() => {
-    // projectsData または user が未定義の場合は全て非管理者として扱う
     if (!projectsData || !user) {
-      setProjectAdminMap({});
+      setProjectRoleMap({});
       return;
     }
 
@@ -170,24 +184,27 @@ const ProjectList: React.FC = () => {
         projectsData.map(async ({ project }) => {
           try {
             const roles = await getProjectRoles(project.id);
-            const isAdmin = roles.some(
-              (r) =>
-                r.userId === user.id &&
-                r.roles.some((role) => role.name === ROLE_ADMIN)
-            );
-            return [project.id, isAdmin] as const;
+            const userRole = roles.find((r) => r.userId === user.id);
+            const roleName = userRole?.roles.some(
+              (role) => role.name === ROLE_ADMIN
+            )
+              ? ROLE_ADMIN
+              : userRole?.roles.some((role) => role.name === ROLE_EDITOR)
+                ? ROLE_EDITOR
+                : ROLE_VIEWER;
+            return [project.id, roleName] as const;
           } catch (e) {
-            // 予期しないエラーはログに記録し、UI 側は非管理者として扱う
+            // 予期しないエラーはログに記録し、UI 側は閲覧者として扱う
             console.error('プロジェクトのロール取得に失敗しました:', {
               projectId: project.id,
               error: e,
             });
-            return [project.id, false] as const;
+            return [project.id, ROLE_VIEWER] as const;
           }
         })
       );
       if (!cancelled.current) {
-        setProjectAdminMap(Object.fromEntries(entries));
+        setProjectRoleMap(Object.fromEntries(entries));
       }
     };
     fetchRoles();
@@ -367,8 +384,11 @@ const ProjectList: React.FC = () => {
     project: Project,
     _masterPrototype: Prototype
   ) => {
-    const items = [
-      {
+    const role = projectRoleMap[project.id];
+    const items: { id: string; text: string; action: () => void }[] = [];
+
+    if (role !== ROLE_VIEWER) {
+      items.push({
         id: 'duplicate',
         text: '複製',
         action: async () => {
@@ -385,16 +405,17 @@ const ProjectList: React.FC = () => {
             alert('プロジェクトの複製に失敗しました。');
           }
         },
-      },
-      {
+      });
+    }
+
+    if (role === ROLE_ADMIN) {
+      items.push({
         id: 'permissions',
         text: '権限設定',
         action: () => {
           router.push(`/projects/${project.id}/roles`);
         },
-      },
-    ];
-    if (projectAdminMap[project.id]) {
+      });
       items.push({
         id: 'delete',
         text: '削除',
@@ -403,6 +424,7 @@ const ProjectList: React.FC = () => {
         },
       });
     }
+
     return items;
   };
 
@@ -550,6 +572,7 @@ const ProjectList: React.FC = () => {
             router.push(`/projects/${projectId}/prototypes/${prototypeId}`)
           }
           projectAdminMap={projectAdminMap}
+          projectRoleMap={projectRoleMap}
         />
       )}
 
