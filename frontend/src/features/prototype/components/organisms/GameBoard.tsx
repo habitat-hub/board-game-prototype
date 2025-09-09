@@ -138,6 +138,14 @@ export default function GameBoard({
     [userRoles, connectedUsers]
   );
 
+  const currentRole = useMemo(
+    () =>
+      userRoles?.find((ur) => ur.userId === currentUserId)?.roles[0]?.name ||
+      null,
+    [userRoles, currentUserId]
+  );
+  const canEdit = currentRole !== 'viewer';
+
   // 自分のユーザー情報（色付けに使用）
   const selfUser = useMemo(() => {
     return connectedUsers.find((u) => u.userId === currentUserId) || null;
@@ -195,6 +203,7 @@ export default function GameBoard({
       canvasSize,
       gameBoardMode,
       stageRef: stageRef as React.RefObject<Konva.Stage>,
+      canEdit,
     });
 
   const [images, setImages] = useState<Record<string, string>>({});
@@ -393,7 +402,11 @@ export default function GameBoard({
   ]);
 
   // 削除処理のキーボードショートカット
-  useGameBoardShortcuts(handleDeleteParts, handleDuplicatePart, gameBoardMode);
+  useGameBoardShortcuts(
+    canEdit ? handleDeleteParts : () => {},
+    canEdit ? handleDuplicatePart : () => {},
+    canEdit ? gameBoardMode : GameBoardMode.PREVIEW
+  );
 
   // スペースキー検出とモード切り替え
   useEffect(() => {
@@ -563,7 +576,8 @@ export default function GameBoard({
           handlePartDragStart={handlePartDragStart}
           handlePartDragMove={handlePartDragMove}
           handlePartDragEnd={handlePartDragEnd}
-          handlePartContextMenu={handlePartContextMenu}
+          handlePartContextMenu={canEdit ? handlePartContextMenu : () => {}}
+          canEdit={canEdit}
           rectForSelection={rectForSelection}
         />
 
@@ -587,24 +601,26 @@ export default function GameBoard({
           />
         )}
 
-        {gameBoardMode === GameBoardMode.CREATE && (
+        {canEdit && gameBoardMode === GameBoardMode.CREATE && (
           <PartCreateMenu
             onAddPart={handleAddPart}
             camera={camera}
             viewportSize={viewportSize}
-            parts={parts} // 追加
+            parts={parts}
           />
         )}
 
-        <PartPropertyMenu
-          selectedPartIds={selectedPartIds}
-          parts={parts}
-          properties={properties}
-          onDuplicatePart={handleDuplicatePart}
-          onDeletePart={handleDeleteParts}
-          onDeleteImage={handleDeleteImage}
-          gameBoardMode={gameBoardMode}
-        />
+        {canEdit && (
+          <PartPropertyMenu
+            selectedPartIds={selectedPartIds}
+            parts={parts}
+            properties={properties}
+            onDuplicatePart={handleDuplicatePart}
+            onDeletePart={handleDeleteParts}
+            onDeleteImage={handleDeleteImage}
+            gameBoardMode={gameBoardMode}
+          />
+        )}
 
         {/* プレイルーム時のサイドバー */}
         {gameBoardMode === GameBoardMode.PLAY && (
