@@ -100,7 +100,11 @@ export default function PartPropertyMenuMulti({
     if (cardParts.length === 0) return 'front';
     const frontCount = cardParts.filter((p) => p.frontSide !== 'back').length;
     const backCount = cardParts.length - frontCount;
-    return frontCount >= backCount ? 'front' : 'back';
+    if (frontCount === 0) return 'front';
+    if (backCount === 0) return 'back';
+    if (frontCount > backCount) return 'front';
+    if (backCount > frontCount) return 'back';
+    return 'front';
   }, [cardParts]);
 
   const cardSideTargetLabel = useMemo(
