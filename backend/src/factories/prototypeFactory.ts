@@ -109,7 +109,7 @@ export async function duplicateProject({
   const masterPrototype = await PrototypeModel.create(
     {
       projectId: project.id,
-      name: originalMaster.name,
+      name: `${originalMaster.name}-copy`,
       type: 'MASTER',
     },
     { transaction }

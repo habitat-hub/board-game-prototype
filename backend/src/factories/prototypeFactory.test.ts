@@ -72,7 +72,7 @@ describe('duplicateProject', () => {
     prototypeCreate.mockResolvedValue({
       id: 'new-master',
       projectId: 'new-project',
-      name: 'Master',
+      name: 'Master-copy',
       type: 'MASTER',
     });
     partFindAll.mockResolvedValue([
@@ -110,6 +110,10 @@ describe('duplicateProject', () => {
 
     expect(projectCreate).toHaveBeenCalled();
     expect(prototypeCreate).toHaveBeenCalled();
+    expect(prototypeCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Master-copy' }),
+      expect.anything()
+    );
     expect(partCreate).toHaveBeenCalled();
     expect(partPropertyCreate).toHaveBeenCalled();
     expect(assignRoleMock).toHaveBeenCalled();
