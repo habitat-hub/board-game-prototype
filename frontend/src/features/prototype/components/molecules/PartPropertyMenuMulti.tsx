@@ -302,14 +302,14 @@ export default function PartPropertyMenuMulti({
           text=""
           ariaLabel="横に展開する"
           title="横方向に、重ならないように広げる"
-          icon={<LuStretchHorizontal className="h-5 w-5" />}
+          icon={<LuStretchVertical className="h-5 w-5" />}
           onClick={handleSpreadHorizontal}
         />
         <PartPropertyMenuButton
           text=""
           ariaLabel="縦に展開する"
           title="縦方向に、重ならないように広げる"
-          icon={<LuStretchVertical className="h-5 w-5" />}
+          icon={<LuStretchHorizontal className="h-5 w-5" />}
           onClick={handleSpreadVertical}
         />
       </div>
