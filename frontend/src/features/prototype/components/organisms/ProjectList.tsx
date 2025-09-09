@@ -30,9 +30,7 @@ import {
 const ROLE_ADMIN = 'admin' as const;
 
 // master の parts が配列かどうかを実行時に判定して件数を算出するためのタイプガード
-const hasArrayParts = (
-  obj: unknown
-): obj is { parts: unknown[] } => {
+const hasArrayParts = (obj: unknown): obj is { parts: unknown[] } => {
   if (typeof obj !== 'object' || obj === null) return false;
   const rec = obj as { [k: string]: unknown };
   return Array.isArray(rec.parts);
@@ -83,6 +81,10 @@ const ProjectList: React.FC = () => {
   const [projectAdminMap, setProjectAdminMap] = useState<
     Record<string, boolean>
   >({});
+  // プロジェクト作成者名のマップ
+  const [projectCreatorMap, setProjectCreatorMap] = useState<
+    Record<string, string>
+  >({});
 
   // 表示モードとソート設定（永続値を安全に復元）
   const [viewMode, setViewMode] = useState<ProjectListView>(() => {
@@ -106,9 +108,13 @@ const ProjectList: React.FC = () => {
     () =>
       projectsData?.map(({ project, prototypes }) => {
         // MASTER プロトタイプを取得する
-        const masterPrototype = prototypes.find(({ type }) => type === 'MASTER');
+        const masterPrototype = prototypes.find(
+          ({ type }) => type === 'MASTER'
+        );
         // ルーム数をカウント（INSTANCE の数）
-        const roomCount = prototypes.filter((p) => p.type === 'INSTANCE').length;
+        const roomCount = prototypes.filter(
+          (p) => p.type === 'INSTANCE'
+        ).length;
         // parts 配列が存在し配列である場合のみ長さを使用する
         const partCount = hasArrayParts(masterPrototype)
           ? masterPrototype.parts.length
@@ -161,12 +167,13 @@ const ProjectList: React.FC = () => {
     // projectsData または user が未定義の場合は全て非管理者として扱う
     if (!projectsData || !user) {
       setProjectAdminMap({});
+      setProjectCreatorMap({});
       return;
     }
 
     const cancelled = { current: false } as const as { current: boolean };
     const fetchRoles = async (): Promise<void> => {
-      const entries = await Promise.all(
+      const results = await Promise.all(
         projectsData.map(async ({ project }) => {
           try {
             const roles = await getProjectRoles(project.id);
@@ -175,19 +182,28 @@ const ProjectList: React.FC = () => {
                 r.userId === user.id &&
                 r.roles.some((role) => role.name === ROLE_ADMIN)
             );
-            return [project.id, isAdmin] as const;
+            const creator = roles.find((r) => r.userId === project.userId);
+            const creatorName = creator?.user?.username ?? '';
+            return [project.id, { isAdmin, creatorName }] as const;
           } catch (e) {
             // 予期しないエラーはログに記録し、UI 側は非管理者として扱う
             console.error('プロジェクトのロール取得に失敗しました:', {
               projectId: project.id,
               error: e,
             });
-            return [project.id, false] as const;
+            return [project.id, { isAdmin: false, creatorName: '' }] as const;
           }
         })
       );
       if (!cancelled.current) {
-        setProjectAdminMap(Object.fromEntries(entries));
+        const adminMap: Record<string, boolean> = {};
+        const creatorMap: Record<string, string> = {};
+        results.forEach(([projectId, { isAdmin, creatorName }]) => {
+          adminMap[projectId] = isAdmin;
+          creatorMap[projectId] = creatorName;
+        });
+        setProjectAdminMap(adminMap);
+        setProjectCreatorMap(creatorMap);
       }
     };
     fetchRoles();
@@ -523,6 +539,7 @@ const ProjectList: React.FC = () => {
             } => !!item.masterPrototype
           )}
           projectAdminMap={projectAdminMap}
+          projectCreatorMap={projectCreatorMap}
           isNameEditing={(prototypeId) => isEditing(prototypeId)}
           editedName={editedName}
           setEditedName={setEditedName}
@@ -550,6 +567,7 @@ const ProjectList: React.FC = () => {
             router.push(`/projects/${projectId}/prototypes/${prototypeId}`)
           }
           projectAdminMap={projectAdminMap}
+          projectCreatorMap={projectCreatorMap}
         />
       )}
 
