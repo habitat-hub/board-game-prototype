@@ -115,10 +115,12 @@ export default function PartPropertyMenuMulti({
     [alignInfo, selectedParts, dispatch]
   );
 
+  /** 横方向に展開する */
   const handleSpreadHorizontal = useCallback(
     () => spreadParts('horizontal'),
     [spreadParts]
   );
+  /** 縦方向に展開する */
   const handleSpreadVertical = useCallback(
     () => spreadParts('vertical'),
     [spreadParts]
