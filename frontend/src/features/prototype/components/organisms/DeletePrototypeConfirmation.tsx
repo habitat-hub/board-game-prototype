@@ -3,6 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { IoArrowBack, IoTrash } from 'react-icons/io5';
+import { RiLoaderLine } from 'react-icons/ri';
 
 import { projectService } from '@/api/endpoints/project';
 import { useProject } from '@/api/hooks/useProject';
@@ -174,10 +175,18 @@ const DeletePrototypeConfirmation = () => {
             onClick={handleDelete}
             disabled={!isAdmin || isDeleting}
             title={!isAdmin ? '管理者権限が必要です' : undefined}
-            isLoading={isDeleting}
           >
-            <IoTrash className="w-5 h-5" />
-            削除する
+            {isDeleting ? (
+              <>
+                <RiLoaderLine className="w-5 h-5 animate-spin" />
+                <span className="text-sm">削除する</span>
+              </>
+            ) : (
+              <>
+                <IoTrash className="w-5 h-5" />
+                <span className="text-sm">削除する</span>
+              </>
+            )}
           </KibakoButton>
         </div>
         {!isAdmin && (
