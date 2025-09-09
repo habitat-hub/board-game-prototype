@@ -202,10 +202,12 @@ export default function PartPropertyMenuSingle({
                 : 'text-red-800 bg-red-200'
             }`}
           >
-            {selectedPart.frontSide === 'front' ? '表面の設定' : '裏面の設定'}
+            {selectedPart.frontSide === 'front' ? '表面' : '裏面'}
           </span>
           <PartPropertyMenuButton
-            text="表裏を切り替え"
+            text=""
+            ariaLabel="表裏を切り替え"
+            title="表裏を切り替え"
             icon={<LuArrowLeftRight className="h-3 w-3" />}
             onClick={() =>
               dispatch({
