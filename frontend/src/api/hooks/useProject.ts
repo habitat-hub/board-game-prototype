@@ -41,6 +41,18 @@ export const useProject = () => {
   );
 
   /**
+   * プロジェクト複製
+   */
+  const duplicateProject = useCallback(
+    async (projectId: string) => {
+      const result = await projectService.duplicateProject(projectId);
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      return result;
+    },
+    [queryClient]
+  );
+
+  /**
    * プロトタイプバージョン作成
    */
   const createPrototypeVersion = useCallback(
@@ -155,5 +167,6 @@ export const useProject = () => {
     updateRoleInProject,
     createPrototypeVersion,
     deletePrototypeVersion,
+    duplicateProject,
   };
 };

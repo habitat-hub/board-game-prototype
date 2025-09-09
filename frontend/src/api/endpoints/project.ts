@@ -35,6 +35,17 @@ export const projectService = {
     return response.data;
   },
   /**
+   * プロジェクト複製
+   */
+  duplicateProject: async (
+    projectId: string
+  ): Promise<{ project: Project; prototypes: Array<Prototype> }> => {
+    const response = await axiosInstance.post(
+      `/api/projects/${projectId}/duplicate`
+    );
+    return response.data;
+  },
+  /**
    * プロトタイプバージョン作成
    */
   createPrototypeVersion: async (

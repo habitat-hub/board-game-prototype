@@ -6,8 +6,10 @@ import {
   FaSortUp,
   FaTrash,
   FaUsers,
+  FaCopy,
 } from 'react-icons/fa';
 
+import { useProject } from '@/api/hooks/useProject';
 import { Prototype, Project } from '@/api/types';
 import { UserContext } from '@/contexts/UserContext';
 import PrototypeNameEditor from '@/features/prototype/components/atoms/PrototypeNameEditor';
@@ -39,6 +41,7 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
   // 即時反映用: 名前更新が完了した行の一時表示名
   const [updatedNames, setUpdatedNames] = useState<Record<string, string>>({});
   const userContext = useContext(UserContext);
+  const { duplicateProject } = useProject();
 
   // プロジェクト行で使用するアイコン（IDベースで安定）
   const renderIcon = (id: string) => {
@@ -147,6 +150,26 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                   }
                 >
                   <FaFolderOpen className="h-4 w-4" />
+                </RowIconButton>
+                <RowIconButton
+                  ariaLabel="複製"
+                  title="複製"
+                  onClick={async () => {
+                    try {
+                      const result = await duplicateProject(project.id);
+                      const master = result.prototypes.find(
+                        (p) => p.type === 'MASTER'
+                      );
+                      if (master) {
+                        onSelectPrototype(result.project.id, master.id);
+                      }
+                    } catch (error) {
+                      console.error('Failed to duplicate project', error);
+                      alert('プロジェクトの複製に失敗しました。');
+                    }
+                  }}
+                >
+                  <FaCopy className="h-4 w-4" />
                 </RowIconButton>
                 <RowIconLink
                   href={`/projects/${project.id}/roles`}

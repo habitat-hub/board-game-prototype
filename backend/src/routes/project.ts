@@ -13,6 +13,7 @@ import sequelize from '../models';
 import {
   createProject,
   createPrototypeVersion,
+  duplicateProject,
 } from '../factories/prototypeFactory';
 import { Op } from 'sequelize';
 import { getAccessibleUsers } from '../helpers/userHelper';
@@ -27,7 +28,6 @@ import {
   NotFoundError,
   ValidationError,
   ConflictError,
-  NotImplementedError,
 } from '../errors/CustomError';
 
 const router = express.Router();
@@ -737,12 +737,21 @@ router.post(
   '/:projectId/duplicate',
   checkProjectReadPermission,
   async (req: Request, res: Response, next: NextFunction) => {
-    // const projectId = req.params.projectId;
+    const user = req.user as UserModel;
+    const { projectId } = req.params;
 
+    const transaction = await sequelize.transaction();
     try {
-      // TODO: プロジェクトの複製
-      throw new NotImplementedError('未実装');
+      const duplicated = await duplicateProject({
+        projectId,
+        userId: user.id,
+        transaction,
+      });
+
+      await transaction.commit();
+      res.json(duplicated);
     } catch (error) {
+      await transaction.rollback();
       next(error);
     }
   }
