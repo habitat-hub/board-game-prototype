@@ -6,6 +6,7 @@ import { IoArrowBack, IoTrash } from 'react-icons/io5';
 
 import { useProject } from '@/api/hooks/useProject';
 import { Prototype, Project } from '@/api/types';
+import KibakoButton from '@/components/atoms/KibakoButton';
 import { useUser } from '@/hooks/useUser';
 
 const DeletePrototypeConfirmation = () => {
@@ -67,12 +68,14 @@ const DeletePrototypeConfirmation = () => {
 
   if (isLoading) {
     return (
-      <div className="max-w-3xl mx-auto mt-16 p-8 bg-kibako-white rounded-xl shadow-lg">
-        <div className="animate-pulse flex flex-col space-y-4">
-          <div className="h-8 bg-slate-200 rounded w-1/2"></div>
-          <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-          <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-          <div className="h-24 bg-slate-200 rounded"></div>
+      <div className="max-w-4xl mx-auto py-16 px-4">
+        <div className="p-6 overflow-visible rounded-xl bg-gradient-to-r from-kibako-white via-kibako-white to-kibako-tertiary shadow-lg border border-kibako-tertiary/30">
+          <div className="animate-pulse flex flex-col space-y-4">
+            <div className="h-8 bg-slate-200 rounded w-1/2"></div>
+            <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+            <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+            <div className="h-24 bg-slate-200 rounded"></div>
+          </div>
         </div>
       </div>
     );
@@ -80,100 +83,88 @@ const DeletePrototypeConfirmation = () => {
 
   if (error) {
     return (
-      <div className="max-w-3xl mx-auto mt-16 p-8 bg-kibako-white rounded-xl shadow-lg">
-        <div className="text-kibako-danger mb-4">{error}</div>
-        <button
-          onClick={() => router.back()}
-          className="px-4 py-2 bg-kibako-secondary/20 rounded-md hover:bg-kibako-secondary/30 transition-colors"
-        >
-          戻る
-        </button>
+      <div className="max-w-4xl mx-auto py-16 px-4">
+        <div className="p-6 overflow-visible rounded-xl bg-gradient-to-r from-kibako-white via-kibako-white to-kibako-tertiary shadow-lg border border-kibako-tertiary/30">
+          <div className="mb-4 text-kibako-primary">{error}</div>
+          <KibakoButton onClick={() => router.back()}>戻る</KibakoButton>
+        </div>
       </div>
     );
   }
 
   if (!project) {
     return (
-      <div className="max-w-3xl mx-auto mt-16 p-8 bg-kibako-white rounded-xl shadow-lg">
-        <div className="text-center text-kibako-primary/70">
-          プロジェクトが見つかりません
-        </div>
-        <div className="mt-4 text-center">
-          <button
-            onClick={() => router.push('/projects')}
-            className="px-4 py-2 bg-kibako-secondary/20 rounded-md hover:bg-kibako-secondary/30 transition-colors"
-          >
+      <div className="max-w-4xl mx-auto py-16 px-4">
+        <div className="p-6 overflow-visible rounded-xl bg-gradient-to-r from-kibako-white via-kibako-white to-kibako-tertiary shadow-lg border border-kibako-tertiary/30 text-center">
+          <div className="text-kibako-primary/70 mb-4">
+            プロジェクトが見つかりません
+          </div>
+          <KibakoButton onClick={() => router.push('/projects')}>
             プロジェクト一覧へ戻る
-          </button>
+          </KibakoButton>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto mt-16 p-8 bg-kibako-white rounded-xl shadow-lg">
-      <div className="mb-6">
+    <div className="max-w-4xl mx-auto py-16 relative px-4">
+      <div className="sticky top-20 z-sticky bg-transparent backdrop-blur-sm flex items-center gap-3 mb-8 py-4 rounded-lg">
         <button
           onClick={() => router.back()}
-          className="p-2 hover:bg-kibako-tertiary/20 rounded-full transition-colors"
+          className="p-2 hover:bg-kibako-tertiary rounded-full transition-colors"
           title="戻る"
         >
           <IoArrowBack className="h-5 w-5 text-kibako-primary hover:text-kibako-primary transition-colors" />
         </button>
-      </div>
-
-      <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold text-kibako-danger mb-2">
+        <h1 className="text-3xl text-kibako-primary font-bold mb-0">
           プロジェクトを削除
         </h1>
-        <div className="bg-kibako-danger/10 rounded-lg p-4 text-kibako-danger/80 mb-6">
+      </div>
+
+      <div className="p-6 overflow-visible rounded-xl bg-gradient-to-r from-kibako-white via-kibako-white to-kibako-tertiary shadow-lg border border-kibako-tertiary/30">
+        <div className="mb-6 rounded-lg bg-kibako-tertiary/20 p-4 border border-kibako-secondary/30 text-kibako-primary/80">
           <p className="mb-2">
-            <span className="font-bold">警告:</span> 削除操作は取り消せません。
+            <span className="font-bold">注意:</span> 削除操作は取り消せません。
           </p>
           <p>このプロジェクトに関連する全てのデータが完全に削除されます。</p>
         </div>
-      </div>
 
-      <div className="bg-kibako-tertiary/20 p-6 rounded-lg mb-8 border border-kibako-secondary/20">
-        <h2 className="text-xl font-semibold mb-4">削除するプロジェクト</h2>
-        <div className="mb-4">
-          <div className="text-sm text-kibako-primary/60">プロジェクト名</div>
-          <div className="text-lg font-medium">{masterPrototype?.name}</div>
+        <div className="bg-kibako-secondary/10 p-6 rounded-lg mb-8 border border-kibako-secondary/20">
+          <h2 className="text-xl font-semibold mb-4">削除するプロジェクト</h2>
+          <div className="mb-4">
+            <div className="text-sm text-kibako-primary/60">プロジェクト名</div>
+            <div className="text-lg font-medium">{masterPrototype?.name}</div>
+          </div>
         </div>
-      </div>
 
-      <div className="flex justify-between gap-4">
-        <button
-          onClick={() => router.back()}
-          className="flex-1 py-3 px-6 bg-kibako-secondary/20 rounded-lg hover:bg-kibako-secondary/30 transition-colors font-medium"
-          disabled={isDeleting}
-        >
-          キャンセル
-        </button>
-        <button
-          onClick={handleDelete}
-          className="flex-1 py-3 px-6 bg-kibako-danger text-kibako-white rounded-lg hover:bg-kibako-danger/80 transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-          disabled={!isAdmin || isDeleting}
-          title={!isAdmin ? '管理者権限が必要です' : undefined}
-        >
-          {isDeleting ? (
-            <>
-              <div className="w-5 h-5 border-2 border-kibako-white/30 border-t-kibako-white rounded-full animate-spin"></div>
-              削除中...
-            </>
-          ) : (
-            <>
-              <IoTrash className="w-5 h-5" />
-              削除する
-            </>
-          )}
-        </button>
+        <div className="flex justify-between gap-4">
+          <KibakoButton
+            className="flex-1"
+            variant="outline"
+            onClick={() => router.back()}
+            disabled={isDeleting}
+          >
+            キャンセル
+          </KibakoButton>
+          <KibakoButton
+            className="flex-1 flex items-center justify-center gap-2"
+            variant="danger"
+            onClick={handleDelete}
+            disabled={!isAdmin || isDeleting}
+            title={!isAdmin ? '管理者権限が必要です' : undefined}
+            isLoading={isDeleting}
+          >
+            <IoTrash className="w-5 h-5" />
+            削除する
+          </KibakoButton>
+        </div>
+        {!isAdmin && (
+          <p className="text-kibako-primary/70 text-sm mt-4">
+            プロジェクトを削除するには管理者権限が必要です。
+          </p>
+        )}
       </div>
-      {!isAdmin && (
-        <p className="text-kibako-danger text-sm mt-4">
-          プロジェクトを削除するには管理者権限が必要です。
-        </p>
-      )}
     </div>
   );
 };
