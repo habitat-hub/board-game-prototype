@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { Transaction } from 'sequelize';
 
 import { duplicateProject } from './prototypeFactory';
 import PrototypeModel from '../models/Prototype';
@@ -104,7 +105,7 @@ describe('duplicateProject', () => {
     const result = await duplicateProject({
       projectId: 'proj1',
       userId: 'user2',
-      transaction: {} as any,
+      transaction: {} as unknown as Transaction,
     });
 
     expect(projectCreate).toHaveBeenCalled();
