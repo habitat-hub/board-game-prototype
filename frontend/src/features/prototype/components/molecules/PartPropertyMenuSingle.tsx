@@ -2,6 +2,7 @@
 import axios from 'axios';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { FaRegCopy, FaRegTrashAlt, FaImage, FaSpinner } from 'react-icons/fa';
+import { LuArrowLeftRight } from 'react-icons/lu';
 
 import { useImages } from '@/api/hooks/useImages';
 import { Part } from '@/api/types';
@@ -193,7 +194,7 @@ export default function PartPropertyMenuSingle({
         </div>
       )}
       {!isPlayMode && selectedPart.type === 'card' && (
-        <div className="flex items-center justify-center mb-2">
+        <div className="flex items-center justify-center mb-2 gap-2">
           <span
             className={`text-xs font-medium px-3 py-1 rounded-full ${
               selectedPart.frontSide === 'front'
@@ -203,6 +204,22 @@ export default function PartPropertyMenuSingle({
           >
             {selectedPart.frontSide === 'front' ? '表面の設定' : '裏面の設定'}
           </span>
+          <PartPropertyMenuButton
+            text="表裏を切り替え"
+            icon={<LuArrowLeftRight className="h-3 w-3" />}
+            onClick={() =>
+              dispatch({
+                type: 'UPDATE_PART',
+                payload: {
+                  partId: selectedPart.id,
+                  updatePart: {
+                    frontSide:
+                      selectedPart.frontSide === 'front' ? 'back' : 'front',
+                  },
+                },
+              })
+            }
+          />
         </div>
       )}
       <div className="flex flex-col gap-1">
