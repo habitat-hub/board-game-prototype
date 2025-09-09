@@ -45,7 +45,8 @@ export default function PartPropertyMenuMulti({
     () => selectedParts.filter((p) => p.type === 'card'),
     [selectedParts]
   );
-  const showActionSection = selectedParts.length >= 2;
+  // カード関連アクションの表示はカードが含まれるときのみ
+  const showActionSection = cardParts.length > 0;
 
   const alignParts = useCallback(
     (type: AlignmentType): void => {
@@ -195,25 +196,11 @@ export default function PartPropertyMenuMulti({
           <p className="text-kibako-white">アクション</p>
           <div className="grid grid-cols-1 gap-2">
             <PartPropertyMenuButton
-              text="水平方向に等間隔に配置"
-              ariaLabel="水平方向に等間隔に配置"
-              icon={<LuAlignHorizontalSpaceBetween className="h-5 w-5" />}
-              onClick={handleDistributeHorizontalEvenly}
+              text={cardSideTargetLabel}
+              ariaLabel={cardSideTargetLabel}
+              icon={<LuFlipHorizontal className="h-5 w-5" />}
+              onClick={handleUnifyCardSides}
             />
-            <PartPropertyMenuButton
-              text="垂直方向に等間隔に配置"
-              ariaLabel="垂直方向に等間隔に配置"
-              icon={<LuAlignVerticalSpaceBetween className="h-5 w-5" />}
-              onClick={handleDistributeVerticalEvenly}
-            />
-            {cardParts.length > 0 && (
-              <PartPropertyMenuButton
-                text={cardSideTargetLabel}
-                ariaLabel={cardSideTargetLabel}
-                icon={<LuFlipHorizontal className="h-5 w-5" />}
-                onClick={handleUnifyCardSides}
-              />
-            )}
             {cardParts.length >= 2 && (
               <PartPropertyMenuButton
                 text="カードをシャッフル"
@@ -226,7 +213,7 @@ export default function PartPropertyMenuMulti({
         </>
       )}
       <p className="text-kibako-white">整列</p>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-4 gap-2">
         <PartPropertyMenuButton
           text=""
           ariaLabel="水平: 左揃え"
@@ -253,6 +240,13 @@ export default function PartPropertyMenuMulti({
         />
         <PartPropertyMenuButton
           text=""
+          ariaLabel="水平方向に等間隔に配置"
+          title="水平方向に等間隔に配置"
+          icon={<LuAlignHorizontalSpaceBetween className="h-5 w-5" />}
+          onClick={handleDistributeHorizontalEvenly}
+        />
+        <PartPropertyMenuButton
+          text=""
           ariaLabel="垂直: 上揃え"
           title="上揃え（垂直）"
           icon={<LuAlignStartHorizontal className="h-5 w-5" />}
@@ -274,6 +268,13 @@ export default function PartPropertyMenuMulti({
           icon={<LuAlignEndHorizontal className="h-5 w-5" />}
           onClick={handleAlignBottom}
           disabled={alignInfo?.isBottom}
+        />
+        <PartPropertyMenuButton
+          text=""
+          ariaLabel="垂直方向に等間隔に配置"
+          title="垂直方向に等間隔に配置"
+          icon={<LuAlignVerticalSpaceBetween className="h-5 w-5" />}
+          onClick={handleDistributeVerticalEvenly}
         />
       </div>
     </div>
