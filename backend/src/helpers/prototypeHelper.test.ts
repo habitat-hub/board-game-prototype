@@ -1,11 +1,28 @@
-import { describe, it, expect, vi, afterEach, beforeAll } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  afterEach,
+  beforeAll,
+  type Mock,
+} from 'vitest';
+
+const mockProjectScope = vi.fn();
+const mockGetAccessibleResourceIds = vi.fn();
 
 vi.mock('../models/Part', () => ({
-  default: { update: vi.fn() },
+  default: { update: vi.fn(), findAll: vi.fn() },
 }));
-vi.mock('../config/env', () => ({ default: {} }));
-vi.mock('../models/Project', () => ({ default: {} }));
-vi.mock('./roleHelper', () => ({ getAccessibleResourceIds: vi.fn() }));
+vi.mock('../models/PartProperty', () => ({ default: {} }));
+vi.mock('../models/Image', () => ({ default: {} }));
+vi.mock('../config/env', () => ({
+  default: { DATABASE_URL: 'postgres://test' },
+}));
+vi.mock('../models/Project', () => ({ default: { scope: mockProjectScope } }));
+vi.mock('./roleHelper', () => ({
+  getAccessibleResourceIds: mockGetAccessibleResourceIds,
+}));
 vi.mock('../const', () => ({ RESOURCE_TYPES: {}, PERMISSION_ACTIONS: {} }));
 
 type PartModelType = typeof import('../models/Part').default;
@@ -13,6 +30,8 @@ let PartModel: PartModelType;
 let shuffleArray: typeof import('./prototypeHelper').shuffleArray;
 let shuffleDeck: typeof import('./prototypeHelper').shuffleDeck;
 let persistDeckOrder: typeof import('./prototypeHelper').persistDeckOrder;
+let getAccessiblePrototypes: typeof import('./prototypeHelper').getAccessiblePrototypes;
+let helperModule: typeof import('./prototypeHelper');
 
 beforeAll(async () => {
   process.env.DATABASE_URL = 'postgres://test';
@@ -28,13 +47,119 @@ beforeAll(async () => {
   process.env.AWS_S3_BUCKET_NAME = 'bucket';
 
   PartModel = (await import('../models/Part')).default;
-  ({ shuffleArray, shuffleDeck, persistDeckOrder } = await import(
-    './prototypeHelper'
-  ));
+  helperModule = await import('./prototypeHelper');
+  ({ shuffleArray, shuffleDeck, persistDeckOrder, getAccessiblePrototypes } =
+    helperModule);
 });
 
 afterEach(() => {
   vi.restoreAllMocks();
+});
+
+describe('getAccessiblePrototypes', () => {
+  it('returns parts, properties, and images for each prototype', async () => {
+    const project = {
+      id: 'proj1',
+      userId: 'user1',
+      toJSON: () => ({
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-02',
+        prototypes: [
+          {
+            id: 'master1',
+            name: 'Master',
+            type: 'MASTER',
+            createdAt: '2024-01-01',
+            updatedAt: '2024-01-01',
+          },
+          {
+            id: 'version1',
+            name: 'Version',
+            type: 'VERSION',
+            createdAt: '2024-01-01',
+            updatedAt: '2024-01-01',
+          },
+        ],
+      }),
+    };
+
+    mockGetAccessibleResourceIds.mockResolvedValue(['proj1']);
+    mockProjectScope.mockReturnValue({
+      findAll: vi.fn().mockResolvedValue([project]),
+    });
+
+    (PartModel.findAll as unknown as Mock).mockResolvedValue([
+      {
+        prototypeId: 'master1',
+        toJSON: () => ({
+          id: 1,
+          prototypeId: 'master1',
+          partProperties: [{ side: 'front', image: { id: 'img1' } }],
+        }),
+      },
+      {
+        prototypeId: 'version1',
+        toJSON: () => ({
+          id: 2,
+          prototypeId: 'version1',
+          partProperties: [{ side: 'front', image: { id: 'img2' } }],
+        }),
+      },
+    ] as unknown as InstanceType<PartModelType>[]);
+
+    const result = await getAccessiblePrototypes({ userId: 'user1' });
+
+    expect(result).toEqual([
+      {
+        project: {
+          id: 'proj1',
+          userId: 'user1',
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-02',
+        },
+        prototypes: [
+          {
+            id: 'master1',
+            name: 'Master',
+            type: 'MASTER',
+            createdAt: '2024-01-01',
+            updatedAt: '2024-01-01',
+            parts: [
+              {
+                id: 1,
+                prototypeId: 'master1',
+                partProperties: [
+                  {
+                    side: 'front',
+                    image: { id: 'img1' },
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'version1',
+            name: 'Version',
+            type: 'VERSION',
+            createdAt: '2024-01-01',
+            updatedAt: '2024-01-01',
+            parts: [
+              {
+                id: 2,
+                prototypeId: 'version1',
+                partProperties: [
+                  {
+                    side: 'front',
+                    image: { id: 'img2' },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]);
+  });
 });
 
 describe('shuffleArray', () => {
