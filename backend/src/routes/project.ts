@@ -433,7 +433,7 @@ router.get(
  */
 router.delete(
   '/:projectId',
-  checkProjectManagePermission,
+  checkProjectAdminRole,
   async (req: Request, res: Response, next: NextFunction) => {
     const projectId = req.params.projectId;
 

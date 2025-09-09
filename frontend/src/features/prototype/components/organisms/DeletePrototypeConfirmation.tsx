@@ -12,7 +12,7 @@ const DeletePrototypeConfirmation = () => {
   const router = useRouter();
   const { user } = useUser();
   const { projectId } = useParams<{ projectId: string }>();
-  const { getProject, deleteProject } = useProject();
+  const { getProject, deleteProject, getProjectRoles } = useProject();
   const [project, setProject] = useState<Project | null>(null);
   const [masterPrototype, setMasterPrototype] = useState<Prototype | null>(
     null
@@ -20,6 +20,7 @@ const DeletePrototypeConfirmation = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -30,6 +31,13 @@ const DeletePrototypeConfirmation = () => {
         setMasterPrototype(
           project.prototypes.find(({ type }) => type === 'MASTER') || null
         );
+        const roles = await getProjectRoles(projectId);
+        const admin = roles.some(
+          (r) =>
+            r.userId === user?.id &&
+            r.roles.some((role) => role.name === 'admin')
+        );
+        setIsAdmin(admin);
       } catch (err) {
         setError('プロトタイプの取得に失敗しました');
         console.error('Error fetching prototype:', err);
@@ -43,7 +51,7 @@ const DeletePrototypeConfirmation = () => {
     } else {
       fetchProject();
     }
-  }, [projectId, getProject, user, router]);
+  }, [projectId, getProject, getProjectRoles, user, router]);
 
   const handleDelete = async () => {
     try {
@@ -145,7 +153,8 @@ const DeletePrototypeConfirmation = () => {
         <button
           onClick={handleDelete}
           className="flex-1 py-3 px-6 bg-kibako-danger text-kibako-white rounded-lg hover:bg-kibako-danger/80 transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-          disabled={isDeleting}
+          disabled={!isAdmin || isDeleting}
+          title={!isAdmin ? '管理者権限が必要です' : undefined}
         >
           {isDeleting ? (
             <>
@@ -160,6 +169,11 @@ const DeletePrototypeConfirmation = () => {
           )}
         </button>
       </div>
+      {!isAdmin && (
+        <p className="text-kibako-danger text-sm mt-4">
+          プロジェクトを削除するには管理者権限が必要です。
+        </p>
+      )}
     </div>
   );
 };

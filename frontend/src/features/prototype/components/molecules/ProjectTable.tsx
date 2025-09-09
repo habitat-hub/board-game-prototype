@@ -25,6 +25,7 @@ type ProjectTableProps = {
   sortOrder: 'asc' | 'desc';
   onSort: (key: ProjectTableSortKey) => void;
   onSelectPrototype: (projectId: string, prototypeId: string) => void;
+  projectAdminMap: Record<string, boolean>;
 };
 
 export const ProjectTable: React.FC<ProjectTableProps> = ({
@@ -33,6 +34,7 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
   sortOrder,
   onSort,
   onSelectPrototype,
+  projectAdminMap,
 }) => {
   // 即時反映用: 名前更新が完了した行の一時表示名
   const [updatedNames, setUpdatedNames] = useState<Record<string, string>>({});
@@ -148,14 +150,16 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                 >
                   <FaUsers className="h-4 w-4" />
                 </RowIconLink>
-                <RowIconLink
-                  href={`/projects/${project.id}/delete`}
-                  ariaLabel="削除"
-                  title="削除"
-                  variant="danger"
-                >
-                  <FaTrash className="h-4 w-4" />
-                </RowIconLink>
+                {projectAdminMap[project.id] && (
+                  <RowIconLink
+                    href={`/projects/${project.id}/delete`}
+                    ariaLabel="削除"
+                    title="削除"
+                    variant="danger"
+                  >
+                    <FaTrash className="h-4 w-4" />
+                  </RowIconLink>
+                )}
               </div>
             </td>
           </tr>
