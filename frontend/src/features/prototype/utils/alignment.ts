@@ -1,5 +1,5 @@
 import { Part } from '@/api/types';
-import { GAME_BOARD_SIZE } from '@/features/prototype/constants';
+import { GAME_BOARD_SIZE } from '@/features/prototype/constants/gameBoard';
 
 export type AlignmentType =
   | 'left'
