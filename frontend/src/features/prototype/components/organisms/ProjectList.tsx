@@ -26,6 +26,9 @@ import {
   ProjectListView,
 } from '@/utils/uiPreferences';
 
+// 役割名の定数（マジックストリング回避）
+const ROLE_ADMIN = 'admin' as const;
+
 /**
  * ProjectListコンポーネントで使用される各種Stateの説明:
  *
@@ -127,8 +130,14 @@ const ProjectList: React.FC = () => {
 
   // ユーザーが管理者かどうかを取得
   useEffect(() => {
-    const fetchRoles = async () => {
-      if (!projectsData || !user) return;
+    // projectsData または user が未定義の場合は全て非管理者として扱う
+    if (!projectsData || !user) {
+      setProjectAdminMap({});
+      return;
+    }
+
+    const cancelled = { current: false } as const as { current: boolean };
+    const fetchRoles = async (): Promise<void> => {
       const entries = await Promise.all(
         projectsData.map(async ({ project }) => {
           try {
@@ -136,17 +145,27 @@ const ProjectList: React.FC = () => {
             const isAdmin = roles.some(
               (r) =>
                 r.userId === user.id &&
-                r.roles.some((role) => role.name === 'admin')
+                r.roles.some((role) => role.name === ROLE_ADMIN)
             );
             return [project.id, isAdmin] as const;
-          } catch {
+          } catch (e) {
+            // 予期しないエラーはログに記録し、UI 側は非管理者として扱う
+            console.error('プロジェクトのロール取得に失敗しました:', {
+              projectId: project.id,
+              error: e,
+            });
             return [project.id, false] as const;
           }
         })
       );
-      setProjectAdminMap(Object.fromEntries(entries));
+      if (!cancelled.current) {
+        setProjectAdminMap(Object.fromEntries(entries));
+      }
     };
     fetchRoles();
+    return () => {
+      cancelled.current = true;
+    };
   }, [projectsData, user, getProjectRoles]);
 
   // コンテキストメニューの状態
