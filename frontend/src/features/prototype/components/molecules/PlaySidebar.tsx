@@ -113,6 +113,10 @@ export default function PlaySidebar({
     setSelectedHandId(selectedPart?.type === 'hand' ? selectedPartId : null);
   }, [selectedPartId, parts]);
 
+  if (hands.length === 0) {
+    return null;
+  }
+
   return (
     <div className="fixed top-20 left-4 flex w-[18rem] flex-col rounded-xl shadow-lg border border-kibako-tertiary/40 bg-gradient-to-r from-kibako-white to-kibako-tertiary max-h-[calc(100vh-32px)] overflow-y-auto">
       {/* ヘッダー */}
