@@ -182,19 +182,33 @@ export const getSpreadUpdates = (
   );
   if (sorted.length === 0) return [];
 
-  const totalSize =
-    sorted.reduce(
-      (sum, p) => sum + (axis === 'horizontal' ? p.width : p.height),
-      0
-    ) +
-    gap * (sorted.length - 1);
+  // ベースサイズ合計（パーツそのものの幅/高さの合計）
+  const baseSumSizes = sorted.reduce(
+    (sum, p) => sum + (axis === 'horizontal' ? p.width : p.height),
+    0
+  );
+
+  // ボード全体に収まるように、必要であれば gap を縮める（重なり＝負のギャップも許可）
+  const boardSize = GAME_BOARD_SIZE;
+  const count = sorted.length;
+  const maxGap =
+    count > 1 ? Math.floor((boardSize - baseSumSizes) / (count - 1)) : 0;
+  // 要求ギャップが大きすぎてはみ出す場合は、最大許容ギャップ（maxGap）まで縮める。
+  // maxGap は負にもなり得る（重なってでも収める）。
+  const effectiveGap = Math.min(gap, maxGap);
+
+  const totalSize = baseSumSizes + effectiveGap * (count - 1);
 
   // 展開開始位置を中央から計算し、ボード内に収める
   let startCoord =
     axis === 'horizontal'
       ? Math.round(info.centerX - totalSize / 2)
       : Math.round(info.centerY - totalSize / 2);
-  startCoord = Math.max(0, Math.min(GAME_BOARD_SIZE - totalSize, startCoord));
+  // totalSize がボードより大きい場合は 0 から詰める。収まる場合は中央基準でクランプ
+  startCoord =
+    totalSize > boardSize
+      ? 0
+      : Math.max(0, Math.min(boardSize - totalSize, startCoord));
 
   const updates: AlignmentUpdate[] = [];
   let current = startCoord;
@@ -217,7 +231,8 @@ export const getSpreadUpdates = (
       });
     }
 
-    current += (axis === 'horizontal' ? p.width : p.height) + gap;
+    current +=
+      (axis === 'horizontal' ? p.width : p.height) + effectiveGap;
   });
 
   return updates;
