@@ -1,6 +1,9 @@
 import { Part } from '@/api/types';
 import { GAME_BOARD_SIZE } from '@/features/prototype/constants/gameBoard';
 
+/** スプレッド時のデフォルト間隔(px) */
+export const DEFAULT_SPREAD_GAP = 20;
+
 export type AlignmentType =
   | 'left'
   | 'right'
@@ -173,7 +176,7 @@ export const getSpreadUpdates = (
   axis: DistributionAxis,
   parts: Part[],
   info: AlignmentInfo,
-  gap = 20
+  gap = DEFAULT_SPREAD_GAP
 ): AlignmentUpdate[] => {
   const sorted = [...parts].sort((a, b) =>
     axis === 'horizontal'
