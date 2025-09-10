@@ -89,17 +89,33 @@ const SortDropdown: React.FC<SortDropdownProps> = ({
   };
 
   return (
-    <select
-      value={currentValue}
-      onChange={handleChange}
-      className="rounded border border-kibako-secondary/30 bg-white px-2 py-1 text-sm"
-    >
-      {sortOptions.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
+    <div className="relative inline-block">
+      <select
+        value={currentValue}
+        onChange={handleChange}
+        aria-label="並び替え"
+        className="appearance-none rounded-md border border-kibako-secondary/30 bg-kibako-white px-3 py-2 pr-9 text-sm text-kibako-primary shadow-sm hover:border-kibako-accent/60 focus:outline-none focus:ring-2 focus:ring-kibako-accent/40 focus:border-kibako-accent/70 transition-colors"
+      >
+        {sortOptions.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      <svg
+        className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-kibako-secondary"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          fillRule="evenodd"
+          d="M5.23 7.21a.75.75 0 011.06.02L10 10.17l3.71-2.94a.75.75 0 11.94 1.16l-4.24 3.36a.75.75 0 01-.94 0L5.21 8.39a.75.75 0 01.02-1.18z"
+          clipRule="evenodd"
+        />
+      </svg>
+    </div>
   );
 };
 
