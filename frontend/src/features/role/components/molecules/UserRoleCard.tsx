@@ -1,8 +1,7 @@
-import React from 'react';
-import { AiOutlineUserSwitch } from 'react-icons/ai';
+import React, { useEffect, useState } from 'react';
 import { FaInfoCircle, FaTrash } from 'react-icons/fa';
 
-import RoleBadge from '../atoms/RoleBadge';
+import { getRoleConfig } from '../atoms/RoleBadge';
 import UserAvatar from '../atoms/UserAvatar';
 
 interface UserRoleWithDetails {
@@ -23,35 +22,30 @@ interface UserRoleCardProps {
   isLastAdmin: boolean;
   canRemove: boolean;
   removeReason: string;
-  onEdit: (userId: string, username: string, roleName: string) => void;
+  onRoleChange: (newRole: 'admin' | 'editor' | 'viewer') => void;
   onRemove: (userId: string) => void;
   loading: boolean;
-  editMode: boolean;
+  canManageRole: boolean;
 }
 
 /**
- * 編集ボタンのタイトルを返す
- * @returns タイトル文字列
+ * ドロップダウンのタイトルを返す
  */
-const getEditButtonTitle = ({
+const getRoleDropdownTitle = ({
   isCreator,
   isSelf,
   loading,
-  editMode,
+  canManageRole,
 }: {
   isCreator: boolean;
   isSelf: boolean;
   loading: boolean;
-  editMode: boolean;
+  canManageRole: boolean;
 }): string => {
-  // プロジェクト作成者の場合
   if (isCreator) return 'プロジェクト作成者の権限は変更できません';
-  // 自分自身の場合
   if (isSelf) return '自分の権限は変更できません';
-  // ローディング中の場合
+  if (!canManageRole) return '権限を設定できるのはAdminユーザーのみです';
   if (loading) return '処理中...';
-  // 編集モード中の場合
-  if (editMode) return '編集モード中は変更できません';
   return '権限を変更';
 };
 
@@ -59,15 +53,12 @@ const getRemoveButtonTitle = ({
   canRemove,
   removeReason,
   loading,
-  editMode,
 }: {
   canRemove: boolean;
   removeReason: string;
   loading: boolean;
-  editMode: boolean;
 }) => {
   if (loading) return '処理中...';
-  if (editMode) return '編集モード中は削除できません';
   if (canRemove) return '権限を削除';
   return removeReason;
 };
@@ -79,30 +70,41 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
   isLastAdmin: _isLastAdmin, // 現在未使用のため_プレフィックスを追加
   canRemove,
   removeReason,
-  onEdit,
+  onRoleChange,
   onRemove,
   loading,
-  editMode,
+  canManageRole,
 }) => {
   const primaryRole = userRole.roles[0];
-  const editTitle = getEditButtonTitle({
+  const [selectedRole, setSelectedRole] = useState(primaryRole.name);
+  useEffect(() => {
+    setSelectedRole(primaryRole.name);
+  }, [primaryRole.name]);
+  const dropdownTitle = getRoleDropdownTitle({
     isCreator,
     isSelf,
     loading,
-    editMode,
+    canManageRole,
   });
   const removeTitle = getRemoveButtonTitle({
     canRemove,
     removeReason,
     loading,
-    editMode,
   });
+  const currentConfig = getRoleConfig(selectedRole);
+  const roles = ['admin', 'editor', 'viewer'] as const;
+
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newRole = e.target.value as 'admin' | 'editor' | 'viewer';
+    setSelectedRole(newRole);
+    onRoleChange(newRole);
+  };
 
   return (
     <div
-      className={`bg-kibako-white border border-kibako-secondary/20 rounded-lg p-4 transition-all ${
-        !editMode ? 'hover:shadow-md' : ''
-      } ${loading ? 'opacity-60' : ''}`}
+      className={`bg-kibako-white border border-kibako-secondary/20 rounded-lg p-4 transition-all hover:shadow-md ${
+        loading ? 'opacity-60' : ''
+      }`}
     >
       {/* ヘッダー：ユーザー情報 */}
       <div className="flex items-center gap-3 mb-3">
@@ -115,43 +117,42 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({
             </div>
           </div>
 
-          {/* 現在の権限表示 */}
-          <div className="mt-1">
-            <RoleBadge roleName={primaryRole.name} />
+          {/* 権限ドロップダウン */}
+          <div className="mt-1 flex items-center gap-2">
+            <span className={currentConfig.textColor}>
+              {currentConfig.icon}
+            </span>
+            <select
+              value={selectedRole}
+              onChange={handleChange}
+              disabled={isCreator || isSelf || loading || !canManageRole}
+              title={dropdownTitle}
+              aria-label={dropdownTitle}
+              className="border border-kibako-secondary/20 rounded px-2 py-1 text-sm text-kibako-primary bg-kibako-white disabled:opacity-50"
+            >
+              {roles.map((role) => (
+                <option key={role} value={role}>
+                  {getRoleConfig(role).label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
         {/* アクションボタン群 */}
         <div className="flex gap-1">
-          {/* 変更ボタン */}
-          <button
-            onClick={() =>
-              onEdit(userRole.userId, userRole.user.username, primaryRole.name)
-            }
-            className={`p-2 rounded transition-colors ${
-              !isCreator && !isSelf && !loading && !editMode
-                ? 'text-kibako-primary/60 hover:text-kibako-secondary hover:bg-kibako-tertiary/40'
-                : 'text-kibako-secondary/50 cursor-not-allowed'
-            }`}
-            title={editTitle}
-            aria-label={editTitle}
-            disabled={loading || isCreator || isSelf || editMode}
-          >
-            <AiOutlineUserSwitch className="h-4 w-4" />
-          </button>
-
           {/* 削除ボタン */}
           <button
             type="button"
             onClick={() => onRemove(userRole.userId)}
             className={`p-2 rounded transition-colors ${
-              canRemove && !loading && !editMode
+              canRemove && !loading && canManageRole
                 ? 'text-kibako-primary/60 hover:text-kibako-danger hover:bg-kibako-danger/30'
                 : 'text-kibako-secondary/50 cursor-not-allowed'
             }`}
             title={removeTitle}
             aria-label={removeTitle}
-            disabled={loading || !canRemove || editMode}
+            disabled={loading || !canRemove || !canManageRole}
           >
             {loading ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-kibako-secondary"></div>

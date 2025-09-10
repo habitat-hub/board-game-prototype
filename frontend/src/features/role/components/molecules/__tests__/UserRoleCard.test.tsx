@@ -25,18 +25,18 @@ describe('UserRoleCard', () => {
         isLastAdmin={false}
         canRemove={false}
         removeReason="自分の権限は削除できません"
-        onEdit={vi.fn()}
+        onRoleChange={vi.fn()}
         onRemove={vi.fn()}
         loading={false}
-        editMode={false}
+        canManageRole={true}
       />
     );
 
-    const editButton = screen.getByRole('button', {
+    const dropdown = screen.getByRole('combobox', {
       name: '自分の権限は変更できません',
     });
-    expect(editButton).toBeDisabled();
-    expect(editButton).toHaveAttribute('title', '自分の権限は変更できません');
+    expect(dropdown).toBeDisabled();
+    expect(dropdown).toHaveAttribute('title', '自分の権限は変更できません');
   });
 
   it('disables deleting your own role with explanation', () => {
@@ -48,10 +48,10 @@ describe('UserRoleCard', () => {
         isLastAdmin={false}
         canRemove={false}
         removeReason="自分の権限は削除できません"
-        onEdit={vi.fn()}
+        onRoleChange={vi.fn()}
         onRemove={vi.fn()}
         loading={false}
-        editMode={false}
+        canManageRole={true}
       />
     );
 
