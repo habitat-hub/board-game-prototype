@@ -10,7 +10,11 @@ export const metadata: Metadata = {
     'KIBAKO のさらなる開発を支援する寄付ページです。いただいた寄付は機能開発や運営費に充てられます。',
 };
 
-const DonatePage: React.FC = () => {
+/**
+ * 寄付ページ（/donate）のApp Routerページコンポーネント。
+ * @returns ページ要素
+ */
+const DonatePage: React.FC = (): JSX.Element => {
   return <DonationTemplate />;
 };
 
