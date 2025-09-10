@@ -359,6 +359,8 @@ export default function PartOnGameBoard({
   const handleDoubleClick = () => {
     const isInteractivePart = isCard || isDeck;
     if (!isInteractivePart) return;
+    // Viewers (cannot edit) are not allowed to trigger double-click actions
+    if (!canEdit) return;
 
     if (isDeck) {
       if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);
