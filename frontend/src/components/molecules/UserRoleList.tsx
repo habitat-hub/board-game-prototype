@@ -6,6 +6,14 @@ import { ConnectedUser } from '@/features/prototype/types';
 import { getUserColor } from '@/features/prototype/utils/userColor';
 import { getRoleConfig } from '@/features/role/components/atoms/RoleBadge';
 
+// ロールバッジ表示の設定型
+type RoleConfig = {
+  icon: ReactElement;
+  bgColor: string;
+  textColor: string;
+  label: string;
+};
+
 interface UserRoleListProps {
   /** 表示対象のユーザー一覧（イミュータブル） */
   users: ReadonlyArray<ConnectedUser>;
@@ -13,13 +21,18 @@ interface UserRoleListProps {
   activeUserIds?: ReadonlySet<string>;
 }
 
+/**
+ * ユーザーの役割リストを表示する
+ * @param users 表示対象のユーザー一覧（イミュータブル）
+ * @param activeUserIds 接続中ユーザーIDの集合（既定: 空の集合）
+ * @returns ユーザー名と役割バッジのリスト要素
+ */
 export default function UserRoleList({
   users,
-  activeUserIds,
+  activeUserIds = new Set<string>(),
 }: UserRoleListProps): ReactElement {
   const readonlyUsers: ReadonlyArray<ConnectedUser> = users;
-  const readonlyActiveUserIds: ReadonlySet<string> =
-    activeUserIds ?? new Set<string>();
+  const readonlyActiveUserIds: ReadonlySet<string> = activeUserIds;
   return (
     <ul className="flex gap-1 flex-col">
       {readonlyUsers.map((user) => {
@@ -27,7 +40,7 @@ export default function UserRoleList({
         const color: string | undefined = isActive
           ? getUserColor(user.userId, readonlyUsers)
           : undefined;
-        const roleConfig: ReturnType<typeof getRoleConfig> | null = user.roleName
+        const roleConfig: RoleConfig | null = user.roleName
           ? getRoleConfig(user.roleName)
           : null;
         const roleLabel: string | undefined = roleConfig
