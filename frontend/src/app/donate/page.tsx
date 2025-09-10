@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import React from 'react';
+import React, { ReactElement } from 'react';
 
 import DonationTemplate from '@/features/donation/components/templates/DonationTemplate';
 
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
  * 寄付ページ（/donate）のApp Routerページコンポーネント。
  * @returns ページ要素
  */
-const DonatePage: React.FC = (): JSX.Element => {
+const DonatePage: React.FC = (): ReactElement => {
   return <DonationTemplate />;
 };
 
