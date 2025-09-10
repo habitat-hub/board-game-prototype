@@ -7,24 +7,33 @@ import { getUserColor } from '@/features/prototype/utils/userColor';
 import { getRoleConfig } from '@/features/role/components/atoms/RoleBadge';
 
 interface UserRoleListProps {
-  users: ConnectedUser[];
-  activeUserIds?: Set<string>;
+  /** 表示対象のユーザー一覧（イミュータブル） */
+  users: ReadonlyArray<ConnectedUser>;
+  /** 接続中ユーザーIDの集合 */
+  activeUserIds?: ReadonlySet<string>;
 }
 
 export default function UserRoleList({
   users,
-  activeUserIds = new Set(),
+  activeUserIds,
 }: UserRoleListProps): ReactElement {
+  const readonlyUsers: ReadonlyArray<ConnectedUser> = users;
+  const readonlyActiveUserIds: ReadonlySet<string> =
+    activeUserIds ?? new Set<string>();
   return (
     <ul className="flex gap-1 flex-col">
-      {users.map((user) => {
-        const isActive = activeUserIds.has(user.userId);
+      {readonlyUsers.map((user) => {
+        const isActive: boolean = readonlyActiveUserIds.has(user.userId);
         const color: string | undefined = isActive
-          ? getUserColor(user.userId, users)
+          ? getUserColor(user.userId, readonlyUsers)
           : undefined;
-        const roleConfig = user.roleName ? getRoleConfig(user.roleName) : null;
-        const roleLabel = roleConfig ? roleConfig.label : user.roleName;
-        const title = roleLabel
+        const roleConfig: ReturnType<typeof getRoleConfig> | null = user.roleName
+          ? getRoleConfig(user.roleName)
+          : null;
+        const roleLabel: string | undefined = roleConfig
+          ? roleConfig.label
+          : user.roleName;
+        const title: string = roleLabel
           ? `${roleLabel} - ${user.username}`
           : user.username;
         return (
