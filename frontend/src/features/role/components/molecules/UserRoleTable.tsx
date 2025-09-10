@@ -130,6 +130,16 @@ const UserRoleRow: React.FC<UserRoleRowProps> = ({
           </div>
         </div>
       </td>
+      <td
+        className="px-4 py-2 text-center"
+        title={isCreator ? 'プロジェクト作成者' : ''}
+      >
+        {isCreator && (
+          <span className="text-kibako-primary" aria-label="作成者">
+            ✓
+          </span>
+        )}
+      </td>
       <td className="px-4 py-2">
         <RoleSelect
           value={selectedRole as RoleValue}
@@ -194,6 +204,9 @@ const UserRoleTable: React.FC<UserRoleTableProps> = ({
           <tr>
             <th className="px-4 py-2 text-left text-sm font-medium text-kibako-primary">
               ユーザー
+            </th>
+            <th className="px-4 py-2 text-center text-sm font-medium text-kibako-primary">
+              作成者
             </th>
             <th className="px-4 py-2 text-left text-sm font-medium text-kibako-primary">
               権限

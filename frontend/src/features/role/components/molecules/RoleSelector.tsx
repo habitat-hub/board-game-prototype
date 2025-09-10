@@ -26,7 +26,7 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
       value: 'editor',
       name: 'Editor',
       icon: <FaEdit className="h-6 w-6" />,
-      color: 'text-kibako-primary/60',
+      color: 'text-kibako-info',
       description: '編集権限',
       detailDescription:
         'プロジェクトの内容を編集できますが権限変更はできません',
