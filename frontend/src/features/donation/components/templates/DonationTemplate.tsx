@@ -1,6 +1,10 @@
 import React from 'react';
 import KibakoButton from '@/components/atoms/KibakoButton';
 
+/**
+ * 寄付ページのテンプレート。KIBAKOへの支援内容と今後の案内を表示する静的コンポーネント。
+ * @returns ページ要素
+ */
 const DonationTemplate: React.FC = () => {
   return (
     <main className="relative mx-auto max-w-3xl px-4 py-10">
