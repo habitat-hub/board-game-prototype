@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import { IoArrowBack, IoTrash } from 'react-icons/io5';
 import { RiLoaderLine } from 'react-icons/ri';
 
@@ -13,7 +13,14 @@ import Loading from '@/components/organisms/Loading';
 import { useUser } from '@/hooks/useUser';
 import formatDate from '@/utils/dateFormat';
 
-const DeletePrototypeConfirmation = () => {
+/**
+ * プロトタイプ削除確認画面コンポーネント。
+ * 対象プロジェクト / プロトタイプ情報を取得し、管理者のみ削除操作を実行できます。
+ * 未ログイン時はログインページへリダイレクトします。
+ *
+ * @returns JSX.Element 削除確認画面
+ */
+const DeletePrototypeConfirmation = (): ReactElement => {
   const router = useRouter();
   const { user } = useUser();
   const { projectId } = useParams<{ projectId: string }>();
@@ -77,7 +84,8 @@ const DeletePrototypeConfirmation = () => {
     }
   }, [projectId, getProjectRoles, user, router]);
 
-  const handleDelete = async () => {
+  /** プロジェクト削除処理 */
+  const handleDelete = async (): Promise<void> => {
     try {
       setIsDeleting(true);
       await deleteProject(projectId);
