@@ -88,7 +88,7 @@ const SortDropdown: React.FC<SortDropdownProps> = ({
 }) => {
   const currentValue = `${sortKey}_${sortOrder}` as const;
 
-  const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLSelectElement>): void => {
     const selected = sortOptions.find((o) => o.value === e.target.value);
     if (selected) {
       onChange(selected.key, selected.order);
