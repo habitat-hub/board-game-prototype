@@ -46,6 +46,15 @@ interface UserRoleRowProps {
   canManageRole: boolean;
 }
 
+/**
+ * 権限ドロップダウンのツールチップ文言を返す
+ * - 変更不可のケースを優先して判定
+ * @param isCreator プロジェクト作成者かどうか
+ * @param isSelf 対象ユーザーが自分自身かどうか
+ * @param loading ローディング中かどうか
+ * @param canManageRole 権限管理が可能かどうか
+ * @returns 表示用のタイトル文字列
+ */
 const getRoleDropdownTitle = ({
   isCreator,
   isSelf,
@@ -57,13 +66,24 @@ const getRoleDropdownTitle = ({
   loading: boolean;
   canManageRole: boolean;
 }): string => {
+  // プロジェクト作成者の場合（変更不可）
   if (isCreator) return 'プロジェクト作成者の権限は変更できません';
+  // 自分自身の場合（変更不可）
   if (isSelf) return '自分の権限は変更できません';
+  // 権限管理不可の場合（Admin以外は変更不可）
   if (!canManageRole) return '権限を設定できるのはAdminユーザーのみです';
+  // ローディング中は操作不可
   if (loading) return '処理中...';
   return '権限を変更';
 };
 
+/**
+ * 削除ボタンのツールチップ文言を返す
+ * @param canRemove 権限削除が可能かどうか
+ * @param removeReason 削除不可時の理由
+ * @param loading ローディング中かどうか
+ * @returns 表示用のタイトル文字列
+ */
 const getRemoveButtonTitle = ({
   canRemove,
   removeReason,
@@ -73,7 +93,9 @@ const getRemoveButtonTitle = ({
   removeReason: string;
   loading: boolean;
 }) => {
+  // ローディング中は操作不可
   if (loading) return '処理中...';
+  // 削除可能な場合
   if (canRemove) return '権限を削除';
   return removeReason;
 };
@@ -175,6 +197,16 @@ const UserRoleRow: React.FC<UserRoleRowProps> = ({
   );
 };
 
+/**
+ * プロジェクトのユーザー権限を表形式で表示するコンポーネント
+ * @param userRoles 表示対象のユーザーと権限リスト
+ * @param creator プロジェクト作成者（null の場合もあり）
+ * @param canRemoveUserRole 権限削除可否と理由を判定する関数
+ * @param onRoleChange 権限変更時のハンドラ
+ * @param onRemove 権限削除時のハンドラ
+ * @param loading ローディング状態
+ * @param canManageRole 権限管理が可能かどうか
+ */
 const UserRoleTable: React.FC<UserRoleTableProps> = ({
   userRoles,
   creator,
@@ -185,6 +217,7 @@ const UserRoleTable: React.FC<UserRoleTableProps> = ({
   canManageRole,
 }) => {
   const { user: currentUser } = useUser();
+  // ユーザー権限が未設定かつロード完了の場合の空状態
   if (userRoles.length === 0 && !loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-kibako-secondary">
