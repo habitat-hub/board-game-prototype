@@ -10,6 +10,7 @@ export type SortKey =
 // 並び順の型（昇順 or 降順）
 export type SortOrder = 'asc' | 'desc';
 
+/** ドロップダウンの選択肢定義（表示ラベルとキー/順の組） */
 export interface SortOption {
   label: string;
   value: `${SortKey}_${SortOrder}`;
