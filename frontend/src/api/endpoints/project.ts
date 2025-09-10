@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 import axiosInstance from '../client';
 import {
   Prototype,
@@ -47,11 +49,19 @@ export const projectService = {
         `/api/projects/${projectId}/duplicate`
       );
       return response.data;
-    } catch (error: any) {
-      const status = error?.response?.status as number | undefined;
-      const msg = error?.response?.data?.message ?? error?.message ?? '';
+    } catch (error: unknown) {
+      let status: number | undefined;
+      let msg = '';
+      if (axios.isAxiosError<{ message?: string }, unknown>(error)) {
+        status = error.response?.status;
+        msg = error.response?.data?.message ?? error.message ?? '';
+      } else if (error instanceof Error) {
+        msg = error.message;
+      }
       const note = status ? ` (HTTP ${status})` : '';
-      throw new Error(`プロジェクトの複製に失敗しました${note}: ${String(msg)}`);
+      throw new Error(
+        `プロジェクトの複製に失敗しました${note}: ${String(msg)}`
+      );
     }
   },
   /**
