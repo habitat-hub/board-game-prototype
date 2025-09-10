@@ -9,7 +9,7 @@ import { useRoleManagement } from '@/features/role/hooks/useRoleManagement';
 
 import Toast from '../atoms/Toast';
 import RoleManagementForm from '../molecules/RoleManagementForm';
-import UserRolesList from '../molecules/UserRolesList';
+import UserRoleTable from '../molecules/UserRoleTable';
 
 const RoleManagement: React.FC = () => {
   const router = useRouter();
@@ -166,11 +166,11 @@ const RoleManagement: React.FC = () => {
           </h2>
         </div>
         <div
-          className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 transition-all ${
+          className={`transition-all overflow-x-auto ${
             !isCurrentUserAdmin ? 'opacity-40 pointer-events-none' : ''
           }`}
         >
-          <UserRolesList
+          <UserRoleTable
             userRoles={userRoles}
             creator={creator}
             canRemoveUserRole={canRemoveUserRole}
