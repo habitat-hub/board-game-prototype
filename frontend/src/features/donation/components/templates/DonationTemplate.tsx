@@ -1,4 +1,9 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
 import React from 'react';
+import { IoArrowBack } from 'react-icons/io5';
+
 import KibakoButton from '@/components/atoms/KibakoButton';
 
 /**
@@ -6,6 +11,8 @@ import KibakoButton from '@/components/atoms/KibakoButton';
  * @returns ページ要素
  */
 const DonationTemplate: React.FC = () => {
+  const router = useRouter();
+
   return (
     <main className="relative mx-auto max-w-3xl px-4 py-10">
       {/* Decorative background gradient */}
@@ -13,6 +20,17 @@ const DonationTemplate: React.FC = () => {
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-kibako-primary/10 via-transparent to-kibako-accent/10"
       />
+
+      {/* Sticky header with back button */}
+      <div className="sticky top-20 z-sticky bg-transparent backdrop-blur-sm flex items-center gap-3 py-4 rounded-lg">
+        <button
+          onClick={() => router.back()}
+          className="p-2 hover:bg-kibako-tertiary rounded-full transition-colors"
+          title="前のページに戻る"
+        >
+          <IoArrowBack className="h-5 w-5 text-kibako-primary hover:text-kibako-primary transition-colors" />
+        </button>
+      </div>
 
       {/* Hero */}
       <section className="mb-6 text-center">
@@ -24,7 +42,8 @@ const DonationTemplate: React.FC = () => {
           KIBAKO を支援する
         </h1>
         <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-gray-600">
-          KIBAKO はボードゲームのアイデアを試して直してまた遊ぶことができるオンライン
+          KIBAKO
+          はボードゲームのアイデアを試して直してまた遊ぶことができるオンライン
           サービスです。さらに発展させるため、日々機能の追加や改善に取り組んでいます。
         </p>
       </section>
