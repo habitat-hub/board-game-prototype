@@ -11,6 +11,7 @@ import { Prototype, Project } from '@/api/types';
 import KibakoButton from '@/components/atoms/KibakoButton';
 import Loading from '@/components/organisms/Loading';
 import { useUser } from '@/hooks/useUser';
+import formatDate from '@/utils/dateFormat';
 
 const DeletePrototypeConfirmation = () => {
   const router = useRouter();
@@ -27,6 +28,7 @@ const DeletePrototypeConfirmation = () => {
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [creatorName, setCreatorName] = useState<string>('');
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -54,6 +56,12 @@ const DeletePrototypeConfirmation = () => {
             r.roles.some((role) => role.name === 'admin')
         );
         setIsAdmin(admin);
+        if (current) {
+          const creator = roles.find(
+            (r) => r.userId === current.project.userId
+          );
+          setCreatorName(creator?.user?.username ?? '');
+        }
       } catch (err) {
         setError('プロトタイプの取得に失敗しました');
         console.error('Error fetching prototype:', err);
@@ -144,9 +152,21 @@ const DeletePrototypeConfirmation = () => {
             <div className="text-sm text-kibako-primary/60">パーツ数</div>
             <div className="text-lg font-medium">{partCount}</div>
           </div>
-          <div>
+          <div className="mb-4">
             <div className="text-sm text-kibako-primary/60">ルーム数</div>
             <div className="text-lg font-medium">{roomCount}</div>
+          </div>
+          <div className="mb-4">
+            <div className="text-sm text-kibako-primary/60">作成者</div>
+            <div className="text-lg font-medium">{creatorName}</div>
+          </div>
+          <div>
+            <div className="text-sm text-kibako-primary/60">作成日時</div>
+            <div className="text-lg font-medium">
+              {masterPrototype
+                ? formatDate(masterPrototype.createdAt, true)
+                : ''}
+            </div>
           </div>
         </div>
 
