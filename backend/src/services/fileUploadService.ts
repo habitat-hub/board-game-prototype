@@ -10,25 +10,25 @@ import {
   IMAGE_MAX_SIZE,
   IMAGE_MAX_SIZE_MB,
 } from '../constants/file';
-import ImageModel from '../models/Image';
+import FileModel from '../models/File';
 import { handleAWSError } from '../utils/awsErrorHandler';
 import env from '../config/env';
 import path from 'path';
 
 const bucketName = env.AWS_S3_BUCKET_NAME;
 
-// 戻り値型を定義（ImageModelから必要なプロパティを抽出）
+// 戻り値型を定義（FileModelから必要なプロパティを抽出）
 type UploadResult = Pick<
-  ImageModel,
+  FileModel,
   'displayName' | 'storagePath' | 'contentType' | 'fileSize'
 >;
 
 /**
- * S3に画像をアップロードするサービス
- * @param file - アップロードする画像ファイル
- * @returns - アップロードした画像の情報
+ * S3にファイルをアップロードするサービス
+ * @param file - アップロードするファイル
+ * @returns - アップロードしたファイルの情報
  */
-export const uploadImageToS3 = async (
+export const uploadFileToS3 = async (
   file: Express.Multer.File
 ): Promise<UploadResult> => {
   //最低限のチェック（ファイルサイズ、MIMEタイプ）

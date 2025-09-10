@@ -10,7 +10,7 @@ import {
   persistDeckOrder,
   isOverlapping,
 } from '../helpers/prototypeHelper';
-import ImageModel from '../models/Image';
+import FileModel from '../models/File';
 import {
   ORDER_MAX_EXCLUSIVE,
   ORDER_MIN_EXCLUSIVE,
@@ -52,9 +52,9 @@ async function fetchPropertiesWithImagesByPartIds(
     where: { partId: partIds }, // IN句として解釈される
     include: [
       {
-        model: ImageModel,
+        model: FileModel,
         required: false, // LEFT JOIN
-        as: 'image',
+        as: 'file',
       },
     ],
   });
@@ -80,9 +80,9 @@ export async function fetchPartsAndProperties(prototypeId: string) {
           as: 'part',
         },
         {
-          model: ImageModel,
+          model: FileModel,
           required: false, // LEFT JOIN
-          as: 'image',
+          as: 'file',
         },
       ],
     }),

@@ -96,7 +96,7 @@ describe('duplicateProject', () => {
         description: 'desc',
         color: '#fff',
         textColor: '#000',
-        imageId: null,
+        fileId: null,
       },
     ]);
     partCreate.mockResolvedValue({ id: 2 });

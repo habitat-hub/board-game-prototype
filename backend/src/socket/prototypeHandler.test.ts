@@ -10,7 +10,7 @@ vi.mock('../models/PartProperty', () => ({
 vi.mock('../models/User', () => ({
   default: {},
 }));
-vi.mock('../models/Image', () => ({
+vi.mock('../models/File', () => ({
   default: {},
 }));
 vi.mock('../helpers/prototypeHelper', () => ({

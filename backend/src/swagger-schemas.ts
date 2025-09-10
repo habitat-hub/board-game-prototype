@@ -80,7 +80,7 @@ export const swaggerSchemas = {
             }
       }
 },
-      Image: {
+      File: {
       "type": "object",
       "properties": {
             "id": {
@@ -223,7 +223,7 @@ export const swaggerSchemas = {
             "textColor": {
                   "type": "string"
             },
-            "imageId": {
+            "fileId": {
                   "oneOf": [
                         {
                               "type": "string",

@@ -75,8 +75,8 @@ router.use(ensureAuthenticated);
  *                                             - $ref: '#/components/schemas/PartProperty'
  *                                             - type: object
  *                                               properties:
- *                                                 image:
- *                                                   $ref: '#/components/schemas/Image'
+ *                                                 file:
+ *                                                   $ref: '#/components/schemas/File'
  */
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   const user = req.user as UserModel;

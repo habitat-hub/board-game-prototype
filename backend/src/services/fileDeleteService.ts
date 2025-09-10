@@ -10,11 +10,11 @@ import env from '../config/env';
 const bucketName = env.AWS_S3_BUCKET_NAME;
 
 /**
- * S3から画像を削除するサービス
- * @param key - 削除する画像のS3キー（storagePath）
+ * S3からファイルを削除するサービス
+ * @param key - 削除するファイルのS3キー（storagePath）
  * @returns - 削除が成功した場合は何も返さない
  */
-export const deleteImageFromS3 = async (key: string): Promise<void> => {
+export const deleteFileFromS3 = async (key: string): Promise<void> => {
   const command = new DeleteObjectCommand({
     Bucket: bucketName,
     Key: key,
@@ -23,7 +23,7 @@ export const deleteImageFromS3 = async (key: string): Promise<void> => {
   try {
     const response: DeleteObjectCommandOutput = await s3Client.send(command);
     if (response.$metadata.httpStatusCode !== 204) {
-      throw new InternalServerError('S3から画像を削除できませんでした');
+      throw new InternalServerError('S3からファイルを削除できませんでした');
     }
     // S3からの削除が成功した場合、何も返さない
     return;

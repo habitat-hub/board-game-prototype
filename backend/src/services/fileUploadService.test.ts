@@ -5,7 +5,7 @@ vi.mock('../config/s3Client', () => ({
   default: { send: vi.fn() },
 }));
 
-import { uploadImageToS3 } from './imageUploadService';
+import { uploadFileToS3 } from './fileUploadService';
 import s3Client from '../config/s3Client';
 import { IMAGE_MAX_SIZE } from '../constants/file';
 import * as fileHelper from '../helpers/fileHelper';
@@ -22,7 +22,7 @@ beforeEach(() => {
   mockedGenerateKey.mockClear();
 });
 
-describe('uploadImageToS3', () => {
+describe('uploadFileToS3', () => {
   it('uploads JPEG file and returns metadata', async () => {
     const jpgBase64 =
       '/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAAQABADASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAUGB//EABUBAQEAAAAAAAAAAAAAAAAAAAEF/8QAFQEBAQAAAAAAAAAAAAAAAAAAAgP/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwD8/wD/AP/Z';
@@ -35,7 +35,7 @@ describe('uploadImageToS3', () => {
 
     mockedSend.mockResolvedValue({ $metadata: { httpStatusCode: 200 } });
 
-    const result = await uploadImageToS3(mockFile);
+    const result = await uploadFileToS3(mockFile);
 
     expect(mockedSend).toHaveBeenCalledOnce();
     expect(result).toEqual({
@@ -58,7 +58,7 @@ describe('uploadImageToS3', () => {
 
     mockedSend.mockResolvedValue({ $metadata: { httpStatusCode: 200 } });
 
-    const result = await uploadImageToS3(mockFile);
+    const result = await uploadFileToS3(mockFile);
 
     expect(mockedCleanFileName).toHaveBeenCalledWith(utf8Name);
     expect(result).toEqual({
@@ -76,7 +76,7 @@ describe('uploadImageToS3', () => {
       buffer: Buffer.alloc(1),
     } as unknown as Express.Multer.File;
 
-    await expect(uploadImageToS3(bigFile)).rejects.toMatchObject({
+    await expect(uploadFileToS3(bigFile)).rejects.toMatchObject({
       statusCode: 400,
       message: expect.stringContaining('ファイルサイズが大きすぎます'),
     });
@@ -91,7 +91,7 @@ describe('uploadImageToS3', () => {
       buffer,
     } as unknown as Express.Multer.File;
 
-    await expect(uploadImageToS3(mockFile)).rejects.toMatchObject({
+    await expect(uploadFileToS3(mockFile)).rejects.toMatchObject({
       statusCode: 400,
       message: expect.stringContaining('サポートされていない画像形式'),
     });

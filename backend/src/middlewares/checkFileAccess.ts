@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import ImageModel from '../models/Image';
+import FileModel from '../models/File';
 import PartPropertyModel from '../models/PartProperty';
 import PartModel from '../models/Part';
 import PrototypeModel from '../models/Prototype';
@@ -22,33 +22,33 @@ type PartPropertyWithPartAndPrototype = {
   };
 };
 
-export const checkImageAccess = async (
+export const checkFileAccess = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
     const user = req.user as UserModel | undefined;
-    const { imageId } = req.params;
+    const { fileId } = req.params;
 
     if (!user) {
       throw new UnauthorizedError('認証されていないユーザーです');
     }
 
-    if (!imageId) {
-      throw new ValidationError('Image ID が指定されていません');
+    if (!fileId) {
+      throw new ValidationError('File ID が指定されていません');
     }
 
-    const image = await ImageModel.findByPk(imageId);
-    if (!image) {
-      throw new NotFoundError('指定された画像が存在しません');
+    const file = await FileModel.findByPk(fileId);
+    if (!file) {
+      throw new NotFoundError('指定されたファイルが存在しません');
     }
 
     // アップロードしたユーザーは常にアクセス可能
-    if (image.uploaderUserId !== String(user.id)) {
-      // 画像を利用しているプロジェクトを取得
+    if (file.uploaderUserId !== String(user.id)) {
+      // ファイルを利用しているプロジェクトを取得
       const partProperties = (await PartPropertyModel.findAll({
-        where: { imageId },
+        where: { fileId },
         include: [
           {
             model: PartModel,
@@ -75,11 +75,11 @@ export const checkImageAccess = async (
       })();
 
       if (!hasProjectAccess) {
-        throw new ForbiddenError('この画像にアクセスする権限がありません');
+        throw new ForbiddenError('このファイルにアクセスする権限がありません');
       }
     }
 
-    res.locals.image = image;
+    res.locals.file = file;
     next();
   } catch (error) {
     next(error);
