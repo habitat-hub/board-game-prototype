@@ -1,11 +1,13 @@
 import { ChangeEvent } from 'react';
 
+// 並び替え対象キーの型（UI/ソートロジックで共有）
 export type SortKey =
   | 'name'
   | 'createdAt'
   | 'partCount'
   | 'roomCount'
   | 'creator';
+// 並び順の型（昇順 or 降順）
 export type SortOrder = 'asc' | 'desc';
 
 export interface SortOption {
