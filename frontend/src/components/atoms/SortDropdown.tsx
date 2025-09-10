@@ -71,9 +71,13 @@ const sortOptions: SortOption[] = [
   },
 ];
 
+/** ソート条件選択用ドロップダウンのProps */
 interface SortDropdownProps {
+  /** 現在のソート対象キー */
   sortKey: SortKey;
+  /** 現在のソート順（昇順/降順） */
   sortOrder: SortOrder;
+  /** 選択変更時に呼ばれるコールバック */
   onChange: (key: SortKey, order: SortOrder) => void;
 }
 
