@@ -111,11 +111,13 @@ const UserRoleRow: React.FC<UserRoleRowProps> = ({
   loading,
   canManageRole,
 }) => {
-  const primaryRole = userRole.roles[0];
-  const [selectedRole, setSelectedRole] = useState<RoleValue>(primaryRole.name);
+  // 先頭の権限名。未設定の場合は既定値にフォールバック
+  const primaryRoleName: RoleValue =
+    userRole.roles.length > 0 ? userRole.roles[0].name : DEFAULT_ROLE;
+  const [selectedRole, setSelectedRole] = useState<RoleValue>(primaryRoleName);
   useEffect(() => {
-    setSelectedRole(primaryRole.name);
-  }, [primaryRole.name]);
+    setSelectedRole(primaryRoleName);
+  }, [primaryRoleName]);
 
   const dropdownTitle = getRoleDropdownTitle({
     isCreator,
