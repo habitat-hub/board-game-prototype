@@ -4,7 +4,7 @@ import { FaUserShield, FaTrash } from 'react-icons/fa';
 import { User } from '@/api/types/data-contracts';
 import { useUser } from '@/hooks/useUser';
 
-import { getRoleConfig } from '../atoms/RoleBadge';
+import RoleSelect, { RoleValue } from '../atoms/RoleSelect';
 import UserAvatar from '../atoms/UserAvatar';
 
 interface UserRole {
@@ -104,10 +104,7 @@ const UserRoleRow: React.FC<UserRoleRowProps> = ({
     removeReason,
     loading,
   });
-  const roles = ['admin', 'editor', 'viewer'] as const;
-
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newRole = e.target.value as 'admin' | 'editor' | 'viewer';
+  const handleChange = (newRole: RoleValue) => {
     setSelectedRole(newRole);
     onRoleChange(newRole);
   };
@@ -134,20 +131,13 @@ const UserRoleRow: React.FC<UserRoleRowProps> = ({
         </div>
       </td>
       <td className="px-4 py-2">
-        <select
-          value={selectedRole}
+        <RoleSelect
+          value={selectedRole as RoleValue}
           onChange={handleChange}
           disabled={isCreator || isSelf || loading || !canManageRole}
           title={dropdownTitle}
           aria-label={dropdownTitle}
-          className="border border-kibako-secondary/20 rounded px-2 py-1 text-sm text-kibako-primary bg-kibako-white disabled:opacity-50"
-        >
-          {roles.map((role) => (
-            <option key={role} value={role}>
-              {getRoleConfig(role).label}
-            </option>
-          ))}
-        </select>
+        />
       </td>
       <td className="px-4 py-2">
         <button
