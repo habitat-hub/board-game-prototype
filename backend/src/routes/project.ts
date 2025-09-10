@@ -6,6 +6,7 @@ import { ensureAuthenticated } from '../middlewares/auth';
 import {
   checkProjectReadPermission,
   checkProjectManagePermission,
+  checkProjectWritePermission,
   checkProjectAdminRole,
 } from '../middlewares/permissions';
 import { getAccessiblePrototypes } from '../helpers/prototypeHelper';
@@ -208,7 +209,7 @@ router.post(
  */
 router.post(
   '/:projectId/versions',
-  checkProjectManagePermission,
+  checkProjectWritePermission,
   validate(projectCreationSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     const { name } = req.body;
