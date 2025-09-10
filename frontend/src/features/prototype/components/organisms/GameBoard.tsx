@@ -9,6 +9,7 @@ import React, {
 
 import { useImages } from '@/api/hooks/useImages';
 import { Part, PartProperty } from '@/api/types';
+import { ROLE_TYPE } from '@/constants/roles';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
@@ -37,7 +38,6 @@ import {
 } from '@/features/prototype/types';
 import type { ConnectedUser } from '@/features/prototype/types';
 import { useRoleManagement } from '@/features/role/hooks/useRoleManagement';
-import { ROLE_TYPE } from '@/constants/roles';
 import {
   getImageFromIndexedDb,
   resetImageParamsInIndexedDb,
@@ -147,9 +147,7 @@ export default function GameBoard({
   // ロール未取得/不明時は編集不可（デフォルト拒否）
   const canEdit = useMemo(() => {
     if (!currentRole) return false;
-    return (
-      currentRole === ROLE_TYPE.ADMIN || currentRole === ROLE_TYPE.EDITOR
-    );
+    return currentRole === ROLE_TYPE.ADMIN || currentRole === ROLE_TYPE.EDITOR;
   }, [currentRole]);
 
   // 自分のユーザー情報（色付けに使用）
