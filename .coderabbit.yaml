@@ -22,11 +22,16 @@ reviews:
 
   # ツール設定
   tools:
+    # CIで検知されるエラーは重複してコメントしないようにESLintのみ無効化
     eslint:
-      enabled: true
+      enabled: false
     semgrep:
       enabled: true
     oxc:
       enabled: true
     yamllint:
       enabled: true
+
+  # レビュー全体への追加指示
+  instructions: |
+    CIで検知されるESLintエラーにはコメントせず、高レベルなフィードバックに集中してください。
