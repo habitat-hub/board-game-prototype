@@ -177,7 +177,13 @@ export type PrototypesDeleteData = SuccessResponse;
 
 export type ProjectsListData = {
   project?: Project;
-  prototypes?: Prototype[];
+  prototypes?: (Prototype & {
+    parts?: (Part & {
+      partProperties?: (PartProperty & {
+        image?: Image;
+      })[];
+    })[];
+  })[];
 }[];
 
 export interface ProjectsCreatePayload {
