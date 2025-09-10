@@ -9,7 +9,6 @@ import React, {
 
 import { useImages } from '@/api/hooks/useImages';
 import { Part, PartProperty } from '@/api/types';
-import ModeToggleButton from '@/features/prototype/components/atoms/ModeToggleButton';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
@@ -229,6 +228,11 @@ export default function GameBoard({
     e: Konva.KonvaEventObject<MouseEvent>,
     partId: number
   ) => {
+    // ビューアーはクリック操作を無効化
+    if (!canEdit) {
+      e.cancelBubble = true;
+      return;
+    }
     e.cancelBubble = true;
     // 左クリックのみContextMenuを閉じる
     if ((e.evt as MouseEvent).button === 0) {
@@ -246,6 +250,8 @@ export default function GameBoard({
   };
 
   const handleBackgroundClick = () => {
+    // ビューアーは背景クリックも無効化（選択状態を変更しない）
+    if (!canEdit) return;
     // 矩形選択中の場合は背景クリックを無効化
     if (isSelectionInProgress) {
       return;
@@ -532,28 +538,26 @@ export default function GameBoard({
 
   // カーソルのスタイル
   const cursorStyle = useMemo(() => {
-    // スペース押下状態、または選択モードでない場合
-    if (spacePressing || !isSelectionMode) {
+    // 矩形選択を無効化するため、常に選択モードではない前提のカーソル制御にする
+    if (spacePressing) {
       return isGrabbing ? 'grabbing' : 'grab';
     }
+    // 既定は通常カーソル
     return 'default';
-  }, [spacePressing, isGrabbing, isSelectionMode]);
+  }, [spacePressing, isGrabbing]);
 
   return (
     <DebugModeProvider>
       {/* Provide overlay messages for parts (e.g., shuffle text like deck) */}
       <PartOverlayMessageProvider>
-        <ModeToggleButton
-          isSelectionMode={isSelectionMode}
-          onToggle={toggleMode}
-        />
         <GameBoardCanvas
           stageRef={stageRef}
           viewportSize={viewportSize}
           canvasSize={canvasSize}
           camera={camera}
           gameBoardMode={gameBoardMode}
-          isSelectionMode={isSelectionMode}
+          // 矩形選択を無効化し、パーツクリックのみで選択可能にする
+          isSelectionMode={false}
           cursorStyle={cursorStyle}
           grabbingHandlers={grabbingHandlers}
           handleWheel={handleWheel}
@@ -626,7 +630,10 @@ export default function GameBoard({
         {gameBoardMode === GameBoardMode.PLAY && (
           <PlaySidebar
             parts={parts}
-            onSelectPart={(partId) => selectPart(partId)}
+            onSelectPart={(partId) => {
+              if (!canEdit) return;
+              selectPart(partId);
+            }}
             selectedPartId={
               selectedPartIds.length === 1 ? selectedPartIds[0] : null
             }
