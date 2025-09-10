@@ -119,6 +119,12 @@ const UserMenu: React.FC<UserMenuProps> = ({ pathname }) => {
           >
             フィードバック
           </a>
+          <Link
+            href="/donate"
+            className="block w-full text-kibako-primary p-2 text-left hover:bg-kibako-secondary/10 transition-colors duration-200"
+          >
+            KIBAKOに寄付する
+          </Link>
           <button
             onClick={handleLogout}
             className="block w-full text-kibako-primary p-2 text-left hover:bg-kibako-secondary/10 transition-colors duration-200"
