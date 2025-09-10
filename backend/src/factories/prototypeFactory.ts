@@ -162,7 +162,7 @@ export async function duplicateProject({
         description: prop.description,
         color: prop.color,
         textColor: prop.textColor,
-        imageId: prop.imageId,
+        fileId: prop.fileId,
       },
       { transaction }
     );
@@ -277,7 +277,7 @@ export const createPrototypeVersion = async ({
           description: prop.description,
           color: prop.color,
           textColor: prop.textColor,
-          imageId: prop.imageId,
+          fileId: prop.fileId,
         },
         { transaction }
       );
@@ -332,7 +332,7 @@ export const createPrototypeVersion = async ({
           description: prop.description,
           color: prop.color,
           textColor: prop.textColor,
-          imageId: prop.imageId,
+          fileId: prop.fileId,
         },
         { transaction }
       );

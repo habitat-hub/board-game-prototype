@@ -8,11 +8,11 @@ import env from '../config/env';
 const bucketName = env.AWS_S3_BUCKET_NAME;
 
 /**
- * S3から画像を取得するサービス
- * @param key - 取得する画像のS3キー
- * @returns - 画像データのReadableストリーム
+ * S3からファイルを取得するサービス
+ * @param key - 取得するファイルのS3キー
+ * @returns - ファイルデータのReadableストリーム
  */
-export const fetchImageFromS3 = async (key: string): Promise<Readable> => {
+export const fetchFileFromS3 = async (key: string): Promise<Readable> => {
   const command = new GetObjectCommand({
     Bucket: bucketName,
     Key: key,
@@ -23,7 +23,7 @@ export const fetchImageFromS3 = async (key: string): Promise<Readable> => {
 
     // Bodyが存在しない場合はNotFoundエラーをスロー
     if (!response.Body) {
-      throw new NotFoundError('S3に指定された画像が存在しません');
+      throw new NotFoundError('S3に指定されたファイルが存在しません');
     }
 
     return response.Body as Readable;

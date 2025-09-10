@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
 import PartModel from '../models/Part';
 import PartPropertyModel from '../models/PartProperty';
-import ImageModel from '../models/Image';
+import FileModel from '../models/File';
 import ProjectModel from '../models/Project';
 import { getAccessibleResourceIds } from './roleHelper';
 import { RESOURCE_TYPES, PERMISSION_ACTIONS } from '../const';
@@ -44,7 +44,7 @@ export async function getAccessiblePrototypes({ userId }: { userId: string }) {
     return projectData.prototypes?.map((proto) => proto.id) || [];
   });
 
-  // 各プロトタイプに紐づくパーツ・パーツ設定・画像を取得
+  // 各プロトタイプに紐づくパーツ・パーツ設定・ファイルを取得
   const partsByPrototypeId: Record<string, PartModel[]> = {};
   if (prototypeIds.length > 0) {
     const parts = await PartModel.findAll({
@@ -53,7 +53,7 @@ export async function getAccessiblePrototypes({ userId }: { userId: string }) {
         {
           model: PartPropertyModel,
           as: 'partProperties',
-          include: [{ model: ImageModel, as: 'image' }],
+          include: [{ model: FileModel, as: 'file' }],
         },
       ],
     });

@@ -15,7 +15,7 @@ vi.mock('../models/Part', () => ({
   default: { update: vi.fn(), findAll: vi.fn() },
 }));
 vi.mock('../models/PartProperty', () => ({ default: {} }));
-vi.mock('../models/Image', () => ({ default: {} }));
+vi.mock('../models/File', () => ({ default: {} }));
 vi.mock('../config/env', () => ({
   default: { DATABASE_URL: 'postgres://test' },
 }));
@@ -57,7 +57,7 @@ afterEach(() => {
 });
 
 describe('getAccessiblePrototypes', () => {
-  it('returns parts, properties, and images for each prototype', async () => {
+  it('returns parts, properties, and files for each prototype', async () => {
     const project = {
       id: 'proj1',
       userId: 'user1',
@@ -94,7 +94,7 @@ describe('getAccessiblePrototypes', () => {
         toJSON: () => ({
           id: 1,
           prototypeId: 'master1',
-          partProperties: [{ side: 'front', image: { id: 'img1' } }],
+          partProperties: [{ side: 'front', file: { id: 'file1' } }],
         }),
       },
       {
@@ -102,7 +102,7 @@ describe('getAccessiblePrototypes', () => {
         toJSON: () => ({
           id: 2,
           prototypeId: 'version1',
-          partProperties: [{ side: 'front', image: { id: 'img2' } }],
+          partProperties: [{ side: 'front', file: { id: 'file2' } }],
         }),
       },
     ] as unknown as InstanceType<PartModelType>[]);
@@ -131,7 +131,7 @@ describe('getAccessiblePrototypes', () => {
                 partProperties: [
                   {
                     side: 'front',
-                    image: { id: 'img1' },
+                    file: { id: 'file1' },
                   },
                 ],
               },
@@ -150,7 +150,7 @@ describe('getAccessiblePrototypes', () => {
                 partProperties: [
                   {
                     side: 'front',
-                    image: { id: 'img2' },
+                    file: { id: 'file2' },
                   },
                 ],
               },

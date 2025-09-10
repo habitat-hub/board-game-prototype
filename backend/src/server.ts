@@ -12,7 +12,7 @@ import authRoutes from './routes/auth';
 import prototypeRoutes from './routes/prototype';
 import projectRoutes from './routes/project';
 import userRoutes from './routes/user';
-import imageRoutes from './routes/image';
+import fileRoutes from './routes/file';
 import { errorHandler } from './middlewares/errorHandler';
 
 const app = express();
@@ -47,7 +47,7 @@ app.use('/auth', authRoutes);
 app.use('/api/prototypes', prototypeRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/images', imageRoutes);
+app.use('/api/files', fileRoutes);
 
 app.use(errorHandler);
 
