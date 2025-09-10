@@ -1,7 +1,11 @@
 import { Server, Socket } from 'socket.io';
 import PartModel from '../models/Part';
 import PartPropertyModel from '../models/PartProperty';
-import { UPDATABLE_PROTOTYPE_FIELDS } from '../const';
+import {
+  UPDATABLE_PROTOTYPE_FIELDS,
+  RESOURCE_TYPES,
+  PERMISSION_ACTIONS,
+} from '../const';
 import PrototypeModel from '../models/Prototype';
 import UserModel from '../models/User';
 import { Op } from 'sequelize';
@@ -10,6 +14,7 @@ import {
   persistDeckOrder,
   isOverlapping,
 } from '../helpers/prototypeHelper';
+import { hasPermission } from '../helpers/roleHelper';
 import ImageModel from '../models/Image';
 import {
   ORDER_MAX_EXCLUSIVE,
@@ -224,9 +229,22 @@ function handleUpdateParts(socket: Socket, io: Server): void {
         updateProperties?: Partial<PartPropertyModel>[];
       }[];
     }) => {
-      const { prototypeId } = socket.data as SocketData;
+      const { prototypeId, userId } = socket.data as SocketData;
 
       try {
+        const hasAccess = await hasPermission(
+          userId,
+          RESOURCE_TYPES.PROTOTYPE,
+          PERMISSION_ACTIONS.WRITE,
+          prototypeId
+        );
+        if (!hasAccess) {
+          socket.emit(COMMON_SOCKET_EVENT.ERROR, {
+            message: 'パーツの更新権限がありません',
+          });
+          return;
+        }
+
         if (!updates || updates.length === 0) return;
 
         const updatedParts: PartModel[] = [];
@@ -347,7 +365,7 @@ function handleAddPart(socket: Socket, io: Server): void {
       part: Omit<PartModel, 'id'>;
       properties: Omit<PartPropertyModel, 'id' | 'partId'>[];
     }) => {
-      const { prototypeId } = socket.data as SocketData;
+      const { prototypeId, userId } = socket.data as SocketData;
 
       /**
        * 新しいパーツのorder値を計算する
@@ -374,6 +392,19 @@ function handleAddPart(socket: Socket, io: Server): void {
       };
 
       try {
+        const hasAccess = await hasPermission(
+          userId,
+          RESOURCE_TYPES.PROTOTYPE,
+          PERMISSION_ACTIONS.WRITE,
+          prototypeId
+        );
+        if (!hasAccess) {
+          socket.emit(COMMON_SOCKET_EVENT.ERROR, {
+            message: 'パーツの追加権限がありません',
+          });
+          return;
+        }
+
         const parts = await PartModel.findAll({
           where: { prototypeId },
           order: [['order', 'ASC']],
@@ -444,12 +475,25 @@ function handleUpdatePart(socket: Socket, io: Server): void {
       updatePart: Partial<PartModel>;
       updateProperties?: Omit<PartPropertyModel, 'id' | 'partId'>[];
     }) => {
-      const { prototypeId } = socket.data as SocketData;
+      const { prototypeId, userId } = socket.data as SocketData;
 
       let updatedPart: PartModel | null = null;
       let updatedPropertiesWithImages: PartPropertyModel[] | null = null;
 
       try {
+        const hasAccess = await hasPermission(
+          userId,
+          RESOURCE_TYPES.PROTOTYPE,
+          PERMISSION_ACTIONS.WRITE,
+          prototypeId
+        );
+        if (!hasAccess) {
+          socket.emit(COMMON_SOCKET_EVENT.ERROR, {
+            message: 'パーツの更新権限がありません',
+          });
+          return;
+        }
+
         // Partの更新
         if (updatePart && Object.keys(updatePart).length > 0) {
           const updateData = Object.entries(updatePart).reduce(
@@ -514,9 +558,22 @@ function handleDeleteParts(socket: Socket, io: Server): void {
   socket.on(
     PROTOTYPE_SOCKET_EVENT.DELETE_PARTS,
     async ({ partIds }: { partIds: number[] }) => {
-      const { prototypeId } = socket.data as SocketData;
+      const { prototypeId, userId } = socket.data as SocketData;
 
       try {
+        const hasAccess = await hasPermission(
+          userId,
+          RESOURCE_TYPES.PROTOTYPE,
+          PERMISSION_ACTIONS.WRITE,
+          prototypeId
+        );
+        if (!hasAccess) {
+          socket.emit(COMMON_SOCKET_EVENT.ERROR, {
+            message: 'パーツの削除権限がありません',
+          });
+          return;
+        }
+
         // 空の配列を防ぐためのガード
         if (!partIds || partIds.length === 0) return;
 
@@ -569,9 +626,22 @@ function handleChangeOrder(socket: Socket, io: Server): void {
       partId: number;
       type: 'back' | 'front' | 'backmost' | 'frontmost';
     }) => {
-      const { prototypeId } = socket.data as SocketData;
+      const { prototypeId, userId } = socket.data as SocketData;
 
       try {
+        const hasAccess = await hasPermission(
+          userId,
+          RESOURCE_TYPES.PROTOTYPE,
+          PERMISSION_ACTIONS.WRITE,
+          prototypeId
+        );
+        if (!hasAccess) {
+          socket.emit(COMMON_SOCKET_EVENT.ERROR, {
+            message: 'パーツの更新権限がありません',
+          });
+          return;
+        }
+
         const getPartsWithRebalanceIfNeeded = async () => {
           const parts = await PartModel.findAll({
             where: { prototypeId },
@@ -714,9 +784,22 @@ function handleShuffleDeck(socket: Socket, io: Server): void {
   socket.on(
     PROTOTYPE_SOCKET_EVENT.SHUFFLE_DECK,
     async ({ deckId }: { deckId: number }) => {
-      const { prototypeId } = socket.data as SocketData;
+      const { prototypeId, userId } = socket.data as SocketData;
 
       try {
+        const hasAccess = await hasPermission(
+          userId,
+          RESOURCE_TYPES.PROTOTYPE,
+          PERMISSION_ACTIONS.WRITE,
+          prototypeId
+        );
+        if (!hasAccess) {
+          socket.emit(COMMON_SOCKET_EVENT.ERROR, {
+            message: 'パーツの更新権限がありません',
+          });
+          return;
+        }
+
         const deck = await PartModel.findByPk(deckId);
         if (!deck || deck.type !== 'deck') return;
 
