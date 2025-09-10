@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { FaUserShield, FaTrash } from 'react-icons/fa';
+import { FaTrash, FaUserShield } from 'react-icons/fa';
 
 import { User } from '@/api/types/data-contracts';
+import RoleSelect, { RoleValue } from '@/features/role/components/atoms/RoleSelect';
+import UserAvatar from '@/features/role/components/atoms/UserAvatar';
 import { useUser } from '@/hooks/useUser';
 
-import RoleSelect, { RoleValue } from '../atoms/RoleSelect';
-import UserAvatar from '../atoms/UserAvatar';
+// 既定の権限（マジックナンバー回避）
+export const DEFAULT_ROLE: RoleValue = 'viewer';
 
 interface UserRole {
   userId: string;
