@@ -1,19 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { FaTrash, FaUserShield } from 'react-icons/fa';
+import React from 'react';
+import { FaUserShield } from 'react-icons/fa';
 
 import { User } from '@/api/types/data-contracts';
-import RoleSelect, { RoleValue } from '@/features/role/components/atoms/RoleSelect';
-import UserAvatar from '@/features/role/components/atoms/UserAvatar';
+import type { RoleValue } from '@/features/role/components/atoms/RoleSelect';
 import { useUser } from '@/hooks/useUser';
 
-// 既定の権限（マジックナンバー回避）
-export const DEFAULT_ROLE: RoleValue = 'viewer';
+import UserRoleRow, { type UserRole } from './UserRoleRow';
 
-interface UserRole {
-  userId: string;
-  user: User;
-  roles: Array<{ name: RoleValue; description: string }>;
-}
+// Types moved to UserRoleRow.tsx
 
 interface UserRoleTableProps {
   userRoles: UserRole[];
@@ -33,172 +27,6 @@ interface UserRoleTableProps {
   loading: boolean;
   canManageRole: boolean;
 }
-
-interface UserRoleRowProps {
-  userRole: UserRole;
-  isCreator: boolean;
-  isSelf: boolean;
-  canRemove: boolean;
-  removeReason: string;
-  onRoleChange: (newRole: RoleValue) => void;
-  onRemove: (userId: string) => void;
-  loading: boolean;
-  canManageRole: boolean;
-}
-
-/**
- * 権限ドロップダウンのツールチップ文言を返す
- * - 変更不可のケースを優先して判定
- * @param isCreator プロジェクト作成者かどうか
- * @param isSelf 対象ユーザーが自分自身かどうか
- * @param loading ローディング中かどうか
- * @param canManageRole 権限管理が可能かどうか
- * @returns 表示用のタイトル文字列
- */
-const getRoleDropdownTitle = ({
-  isCreator,
-  isSelf,
-  loading,
-  canManageRole,
-}: {
-  isCreator: boolean;
-  isSelf: boolean;
-  loading: boolean;
-  canManageRole: boolean;
-}): string => {
-  // プロジェクト作成者の場合（変更不可）
-  if (isCreator) return 'プロジェクト作成者の権限は変更できません';
-  // 自分自身の場合（変更不可）
-  if (isSelf) return '自分の権限は変更できません';
-  // 権限管理不可の場合（Admin以外は変更不可）
-  if (!canManageRole) return '権限を設定できるのはAdminユーザーのみです';
-  // ローディング中は操作不可
-  if (loading) return '処理中...';
-  return '権限を変更';
-};
-
-/**
- * 削除ボタンのツールチップ文言を返す
- * @param canRemove 権限削除が可能かどうか
- * @param removeReason 削除不可時の理由
- * @param loading ローディング中かどうか
- * @returns 表示用のタイトル文字列
- */
-const getRemoveButtonTitle = ({
-  canRemove,
-  removeReason,
-  loading,
-}: {
-  canRemove: boolean;
-  removeReason: string;
-  loading: boolean;
-}): string => {
-  // ローディング中は操作不可
-  if (loading) return '処理中...';
-  // 削除可能な場合
-  if (canRemove) return '権限を削除';
-  return removeReason;
-};
-
-const UserRoleRow: React.FC<UserRoleRowProps> = ({
-  userRole,
-  isCreator,
-  isSelf,
-  canRemove,
-  removeReason,
-  onRoleChange,
-  onRemove,
-  loading,
-  canManageRole,
-}) => {
-  // 先頭の権限名。未設定の場合は既定値にフォールバック
-  const primaryRoleName: RoleValue =
-    userRole.roles.length > 0 ? userRole.roles[0].name : DEFAULT_ROLE;
-  const [selectedRole, setSelectedRole] = useState<RoleValue>(primaryRoleName);
-  useEffect(() => {
-    setSelectedRole(primaryRoleName);
-  }, [primaryRoleName]);
-
-  const dropdownTitle = getRoleDropdownTitle({
-    isCreator,
-    isSelf,
-    loading,
-    canManageRole,
-  });
-  const removeTitle = getRemoveButtonTitle({
-    canRemove,
-    removeReason,
-    loading,
-  });
-  const handleChange = (newRole: RoleValue) => {
-    setSelectedRole(newRole);
-    onRoleChange(newRole);
-  };
-
-  return (
-    <tr className={loading ? 'opacity-60' : ''}>
-      <td className="px-4 py-2">
-        <div className="flex items-center gap-2">
-          <UserAvatar username={userRole.user.username} size="lg" />
-          <div>
-            <div className="font-medium text-kibako-primary">
-              {userRole.user.username}
-            </div>
-            {userRole.roles.length > 1 && (
-              <div className="text-xs text-kibako-primary/70">
-                その他の権限:{' '}
-                {userRole.roles
-                  .slice(1)
-                  .map((role) => role.name)
-                  .join(', ')}
-              </div>
-            )}
-          </div>
-        </div>
-      </td>
-      <td
-        className="px-4 py-2 text-center"
-        title={isCreator ? 'プロジェクト作成者' : ''}
-      >
-        {isCreator && (
-          <span className="text-kibako-primary" aria-label="作成者">
-            ✓
-          </span>
-        )}
-      </td>
-      <td className="px-4 py-2">
-        <RoleSelect
-          value={selectedRole}
-          onChange={handleChange}
-          disabled={isCreator || isSelf || loading || !canManageRole}
-          title={dropdownTitle}
-          aria-label={dropdownTitle}
-        />
-      </td>
-      <td className="px-4 py-2">
-        <button
-          type="button"
-          onClick={() => onRemove(userRole.userId)}
-          className={`p-2 rounded transition-colors ${
-            canRemove && !loading && canManageRole
-              ? 'text-kibako-primary/60 hover:text-kibako-danger hover:bg-kibako-danger/30'
-              : 'text-kibako-secondary/50 cursor-not-allowed'
-          }`}
-          title={removeTitle}
-          aria-label={removeTitle}
-          disabled={loading || !canRemove || !canManageRole}
-        >
-          {loading ? (
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-kibako-secondary"></div>
-          ) : (
-            <FaTrash className="h-4 w-4" />
-          )}
-        </button>
-      </td>
-    </tr>
-  );
-};
-
 /**
  * プロジェクトのユーザー権限を表形式で表示するコンポーネント
  * @param userRoles 表示対象のユーザーと権限リスト

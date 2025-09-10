@@ -1,6 +1,6 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import React from 'react';
 import { vi } from 'vitest';
 
 import UserRoleTable from '../UserRoleTable';
@@ -30,11 +30,7 @@ const makeUser = (id: string, username: string) => ({
   updatedAt: '2025-01-01T00:00:00.000Z',
 });
 
-const makeUserRole = (
-  id: string,
-  username: string,
-  roles: RoleValue[]
-) => ({
+const makeUserRole = (id: string, username: string, roles: RoleValue[]) => ({
   userId: id,
   user: makeUser(id, username),
   roles: roles.map((r) => ({ name: r, description: `${r} role` })),
@@ -87,7 +83,9 @@ describe('UserRoleTable - role change disabled states', () => {
       <UserRoleTable
         userRoles={[baseUserRole]}
         creator={creatorId ? makeUser(creatorId, 'creator') : null}
-        canRemoveUserRole={vi.fn().mockReturnValue({ canRemove: true, reason: '' })}
+        canRemoveUserRole={vi
+          .fn()
+          .mockReturnValue({ canRemove: true, reason: '' })}
         onRoleChange={vi.fn()}
         onRemove={vi.fn()}
         loading={loading}
@@ -117,7 +115,9 @@ describe('UserRoleTable - role change disabled states', () => {
     // There are two buttons with name "処理中...": RoleSelect and Remove.
     // Pick the RoleSelect one (it has aria-haspopup="listbox" / aria-expanded)
     const buttons = screen.getAllByRole('button', { name: '処理中...' });
-    const roleSelectBtn = buttons.find((el) => el.getAttribute('aria-haspopup') === 'listbox');
+    const roleSelectBtn = buttons.find(
+      (el) => el.getAttribute('aria-haspopup') === 'listbox'
+    );
     expect(roleSelectBtn).toBeDefined();
     expect(roleSelectBtn).toBeDisabled();
   });
@@ -137,7 +137,9 @@ describe('UserRoleTable - role change disabled states', () => {
       <UserRoleTable
         userRoles={[baseUserRole]}
         creator={null}
-        canRemoveUserRole={vi.fn().mockReturnValue({ canRemove: true, reason: '' })}
+        canRemoveUserRole={vi
+          .fn()
+          .mockReturnValue({ canRemove: true, reason: '' })}
         onRoleChange={onRoleChange}
         onRemove={vi.fn()}
         loading={false}
@@ -168,7 +170,9 @@ describe('UserRoleTable - remove button states and reasons', () => {
       <UserRoleTable
         userRoles={[userRole]}
         creator={null}
-        canRemoveUserRole={vi.fn().mockReturnValue({ canRemove: true, reason: '' })}
+        canRemoveUserRole={vi
+          .fn()
+          .mockReturnValue({ canRemove: true, reason: '' })}
         onRoleChange={vi.fn()}
         onRemove={onRemove}
         loading={false}
@@ -191,7 +195,10 @@ describe('UserRoleTable - remove button states and reasons', () => {
         creator={null}
         canRemoveUserRole={vi
           .fn()
-          .mockReturnValue({ canRemove: false, reason: '最後のAdminは削除できません' })}
+          .mockReturnValue({
+            canRemove: false,
+            reason: '最後のAdminは削除できません',
+          })}
         onRoleChange={vi.fn()}
         onRemove={onRemove}
         loading={false}
@@ -199,7 +206,9 @@ describe('UserRoleTable - remove button states and reasons', () => {
       />
     );
 
-    const btn = screen.getByRole('button', { name: '最後のAdminは削除できません' });
+    const btn = screen.getByRole('button', {
+      name: '最後のAdminは削除できません',
+    });
     expect(btn).toBeDisabled();
     await userEvent.click(btn);
     expect(onRemove).not.toHaveBeenCalled();
@@ -211,7 +220,9 @@ describe('UserRoleTable - remove button states and reasons', () => {
       <UserRoleTable
         userRoles={[userRole]}
         creator={null}
-        canRemoveUserRole={vi.fn().mockReturnValue({ canRemove: true, reason: '' })}
+        canRemoveUserRole={vi
+          .fn()
+          .mockReturnValue({ canRemove: true, reason: '' })}
         onRoleChange={vi.fn()}
         onRemove={onRemove}
         loading={true}
@@ -221,7 +232,9 @@ describe('UserRoleTable - remove button states and reasons', () => {
 
     // Select the remove button: it does NOT have aria-haspopup="listbox"
     const buttons = screen.getAllByRole('button', { name: '処理中...' });
-    const removeBtn = buttons.find((el) => el.getAttribute('aria-haspopup') !== 'listbox');
+    const removeBtn = buttons.find(
+      (el) => el.getAttribute('aria-haspopup') !== 'listbox'
+    );
     expect(removeBtn).toBeDefined();
     expect(removeBtn).toBeDisabled();
     await userEvent.click(removeBtn!);
@@ -234,7 +247,9 @@ describe('UserRoleTable - remove button states and reasons', () => {
       <UserRoleTable
         userRoles={[userRole]}
         creator={null}
-        canRemoveUserRole={vi.fn().mockReturnValue({ canRemove: true, reason: '' })}
+        canRemoveUserRole={vi
+          .fn()
+          .mockReturnValue({ canRemove: true, reason: '' })}
         onRoleChange={vi.fn()}
         onRemove={onRemove}
         loading={false}
@@ -262,7 +277,9 @@ describe('UserRoleTable - roles fallback', () => {
       <UserRoleTable
         userRoles={[userRoleNoRoles]}
         creator={null}
-        canRemoveUserRole={vi.fn().mockReturnValue({ canRemove: true, reason: '' })}
+        canRemoveUserRole={vi
+          .fn()
+          .mockReturnValue({ canRemove: true, reason: '' })}
         onRoleChange={vi.fn()}
         onRemove={vi.fn()}
         loading={false}
