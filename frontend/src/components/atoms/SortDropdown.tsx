@@ -10,11 +10,20 @@ export type SortKey =
 // 並び順の型（昇順 or 降順）
 export type SortOrder = 'asc' | 'desc';
 
-/** ドロップダウンの選択肢定義（表示ラベルとキー/順の組） */
+/**
+ * ドロップダウンの選択肢定義（表示ラベルとキー/順の組）
+ * UI label ↔ internal mapping.
+ * Example / 例:
+ * { label: '作成日時(新しい順)', value: 'createdAt_desc', key: 'createdAt', order: 'desc' }
+ */
 export interface SortOption {
+  /** 表示用ラベル / Display label */
   label: string;
+  /** 内部値（<SortKey>_<SortOrder>）/ Internal value template */
   value: `${SortKey}_${SortOrder}`;
+  /** 並び替え対象キー / Sort field */
   key: SortKey;
+  /** 並び順 / Sort direction */
   order: SortOrder;
 }
 
