@@ -76,6 +76,9 @@ export default function LeftSidebar({
   const masterPrototype: Prototype | undefined = prototypes.find(
     ({ type }) => type === 'MASTER'
   );
+  const currentPrototype: Prototype | undefined = prototypes.find(
+    ({ id }) => id === prototypeId
+  );
 
   /**
    * 戻るボタンの処理
@@ -353,7 +356,13 @@ export default function LeftSidebar({
       {!isLeftSidebarMinimized &&
         gameBoardMode !== GameBoardMode.PLAY &&
         renderSidebarContent()}
-      <GameBoardHelpPanel defaultExpanded={needTutorial} />
+      <GameBoardHelpPanel
+        defaultExpanded={
+          needTutorial &&
+          gameBoardMode === GameBoardMode.CREATE &&
+          currentPrototype?.type === 'MASTER'
+        }
+      />
     </div>
   );
 }
