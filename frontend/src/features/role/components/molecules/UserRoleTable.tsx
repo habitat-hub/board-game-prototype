@@ -92,7 +92,7 @@ const getRemoveButtonTitle = ({
   canRemove: boolean;
   removeReason: string;
   loading: boolean;
-}) => {
+}): string => {
   // ローディング中は操作不可
   if (loading) return '処理中...';
   // 削除可能な場合
