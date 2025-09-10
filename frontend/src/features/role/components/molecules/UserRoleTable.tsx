@@ -12,7 +12,7 @@ export const DEFAULT_ROLE: RoleValue = 'viewer';
 interface UserRole {
   userId: string;
   user: User;
-  roles: Array<{ name: string; description: string }>;
+  roles: Array<{ name: RoleValue; description: string }>;
 }
 
 interface UserRoleTableProps {
@@ -27,7 +27,7 @@ interface UserRoleTableProps {
   };
   onRoleChange: (
     userId: string,
-    newRole: 'admin' | 'editor' | 'viewer'
+    newRole: RoleValue
   ) => void;
   onRemove: (userId: string) => void;
   loading: boolean;
@@ -40,7 +40,7 @@ interface UserRoleRowProps {
   isSelf: boolean;
   canRemove: boolean;
   removeReason: string;
-  onRoleChange: (newRole: 'admin' | 'editor' | 'viewer') => void;
+  onRoleChange: (newRole: RoleValue) => void;
   onRemove: (userId: string) => void;
   loading: boolean;
   canManageRole: boolean;
@@ -90,7 +90,7 @@ const UserRoleRow: React.FC<UserRoleRowProps> = ({
   canManageRole,
 }) => {
   const primaryRole = userRole.roles[0];
-  const [selectedRole, setSelectedRole] = useState(primaryRole.name);
+  const [selectedRole, setSelectedRole] = useState<RoleValue>(primaryRole.name);
   useEffect(() => {
     setSelectedRole(primaryRole.name);
   }, [primaryRole.name]);
@@ -144,7 +144,7 @@ const UserRoleRow: React.FC<UserRoleRowProps> = ({
       </td>
       <td className="px-4 py-2">
         <RoleSelect
-          value={selectedRole as RoleValue}
+          value={selectedRole}
           onChange={handleChange}
           disabled={isCreator || isSelf || loading || !canManageRole}
           title={dropdownTitle}
