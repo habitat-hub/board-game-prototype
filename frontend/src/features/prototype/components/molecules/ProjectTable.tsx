@@ -1,13 +1,5 @@
 import React, { useState } from 'react';
-import {
-  FaFolderOpen,
-  FaSort,
-  FaSortDown,
-  FaSortUp,
-  FaTrash,
-  FaUsers,
-  FaCopy,
-} from 'react-icons/fa';
+import { FaFolderOpen, FaTrash, FaUsers, FaCopy } from 'react-icons/fa';
 
 import { useProject } from '@/api/hooks/useProject';
 import { Prototype, Project } from '@/api/types';
@@ -18,8 +10,6 @@ import RowIconLink from '@/features/prototype/components/atoms/RowIconLink';
 import { getProjectIcon } from '@/features/prototype/utils/getProjectIcon';
 import formatDate from '@/utils/dateFormat';
 
-export type ProjectTableSortKey = 'name' | 'createdAt';
-
 type ProjectTableProps = {
   prototypeList: {
     project: Project;
@@ -27,9 +17,6 @@ type ProjectTableProps = {
     partCount: number;
     roomCount: number;
   }[];
-  sortKey: ProjectTableSortKey;
-  sortOrder: 'asc' | 'desc';
-  onSort: (key: ProjectTableSortKey) => void;
   onSelectPrototype: (projectId: string, prototypeId: string) => void;
   projectAdminMap: Record<string, boolean>;
   projectCreatorMap: Record<string, string>;
@@ -37,9 +24,6 @@ type ProjectTableProps = {
 
 export const ProjectTable: React.FC<ProjectTableProps> = ({
   prototypeList,
-  sortKey,
-  sortOrder,
-  onSort,
   onSelectPrototype,
   projectAdminMap,
   projectCreatorMap,
@@ -56,47 +40,20 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
     return <Icon className="h-5 w-5 text-kibako-secondary" />;
   };
 
-  const renderSortIcon = (key: ProjectTableSortKey) => {
-    const base = 'inline align-middle text-sm';
-    if (sortKey !== key)
-      return <FaSort className={base + ' text-kibako-secondary'} />;
-    return sortOrder === 'asc' ? (
-      <FaSortUp className={base + ' text-kibako-accent'} />
-    ) : (
-      <FaSortDown className={base + ' text-kibako-accent'} />
-    );
-  };
-
   return (
     <table className="w-full table-auto text-left text-sm rounded-xl border border-kibako-secondary/30 overflow-hidden shadow-sm bg-kibako-white">
       <thead className="bg-kibako-primary text-kibako-white">
         <tr className="grid project-table-grid items-center">
           <th className="px-4 py-2">
-            <button
-              type="button"
-              onClick={() => onSort('name')}
-              className="inline-flex items-center gap-2 font-semibold"
-            >
-              <span className="inline-flex items-center gap-2">
-                <FaFolderOpen className="text-base" />
-                <span>プロジェクト名</span>
-              </span>
-              {renderSortIcon('name')}
-            </button>
+            <span className="inline-flex items-center gap-2 font-semibold">
+              <FaFolderOpen className="text-base" />
+              <span>プロジェクト名</span>
+            </span>
           </th>
           <th className="px-4 py-2">パーツ数</th>
           <th className="px-4 py-2">ルーム数</th>
           <th className="px-4 py-2">作成者</th>
-          <th className="px-4 py-2">
-            <button
-              type="button"
-              onClick={() => onSort('createdAt')}
-              className="inline-flex items-center gap-2 font-semibold"
-            >
-              <span>作成日時</span>
-              {renderSortIcon('createdAt')}
-            </button>
-          </th>
+          <th className="px-4 py-2">作成日時</th>
           <th className="px-4 py-2 text-left">操作</th>
         </tr>
       </thead>
