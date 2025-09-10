@@ -3,6 +3,7 @@ import React from 'react';
 
 import DonationTemplate from '@/features/donation/components/templates/DonationTemplate';
 
+// ページのメタデータ（SEO用）
 export const metadata: Metadata = {
   title: '寄付のお願い',
   description:
