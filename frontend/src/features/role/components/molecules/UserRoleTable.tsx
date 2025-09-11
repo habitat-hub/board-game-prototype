@@ -2,10 +2,11 @@ import React from 'react';
 import { FaUserShield } from 'react-icons/fa';
 
 import { User } from '@/api/types/data-contracts';
-import type { RoleValue } from '@/features/role/components/atoms/RoleSelect';
+import type { RoleValue } from '@/features/role/types';
 import { useUser } from '@/hooks/useUser';
 
-import UserRoleRow, { type UserRole } from './UserRoleRow';
+import type { UserRole } from '@/features/role/types';
+import UserRoleRow from './UserRoleRow';
 
 // Types moved to UserRoleRow.tsx
 

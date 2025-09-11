@@ -1,17 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { FaTrash } from 'react-icons/fa';
 
-import { User } from '@/api/types/data-contracts';
-import RoleSelect, { RoleValue } from '@/features/role/components/atoms/RoleSelect';
+import type { RoleValue, UserRole } from '@/features/role/types';
+import RoleSelect from '@/features/role/components/atoms/RoleSelect';
 import UserAvatar from '@/features/role/components/atoms/UserAvatar';
 
 import { getRemoveButtonTitle, getRoleDropdownTitle } from './userRoleTitles';
-
-export interface UserRole {
-  userId: string;
-  user: User;
-  roles: Array<{ name: RoleValue; description: string }>;
-}
 
 export const DEFAULT_ROLE: RoleValue = 'viewer';
 

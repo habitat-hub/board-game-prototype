@@ -10,8 +10,7 @@ import { createPortal } from 'react-dom';
 import { IoChevronDown } from 'react-icons/io5';
 
 import { getRoleConfig } from './RoleBadge';
-
-export type RoleValue = 'admin' | 'editor' | 'viewer';
+import type { RoleValue } from '@/features/role/types';
 
 interface RoleSelectProps {
   value: RoleValue;

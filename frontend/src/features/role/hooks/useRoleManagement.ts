@@ -3,30 +3,20 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useProject } from '@/api/hooks/useProject';
 import { useUsers } from '@/api/hooks/useUsers';
 import { User, ProjectsDetailData } from '@/api/types';
-import type { RoleValue } from '@/features/role/components/atoms/RoleSelect';
+import type {
+  RoleValue,
+  RoleFormState,
+  ToastState,
+  UserRole,
+  RemoveCheck,
+  UseRoleManagement,
+} from '@/features/role/types';
 import { useUser } from '@/hooks/useUser';
-
-interface UserRole {
-  userId: string;
-  user: User;
-  roles: Array<{ name: RoleValue; description: string }>;
-}
-
-interface ToastState {
-  message: string;
-  type: 'success' | 'error' | 'warning';
-  show: boolean;
-}
-
-interface RoleFormState {
-  selectedUserId: string | null;
-  selectedRole: RoleValue;
-}
 
 /**
  * 権限管理関連のロジックを管理するカスタムフック
  */
-export const useRoleManagement = (projectId: string) => {
+export const useRoleManagement = (projectId: string): UseRoleManagement => {
   const { user: currentUser } = useUser();
   const { searchUsers } = useUsers();
   const {
@@ -44,7 +34,7 @@ export const useRoleManagement = (projectId: string) => {
     null
   );
   const [creator, setCreator] = useState<User | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const isCurrentUserAdmin = useMemo(() => {
     if (!currentUser) return false;
     const currentUserRole = userRoles.find(
@@ -68,7 +58,7 @@ export const useRoleManagement = (projectId: string) => {
 
   // トーストメッセージを表示する関数
   const showToast = useCallback(
-    (message: string, type: 'success' | 'error' | 'warning') => {
+    (message: string, type: ToastState['type']) => {
       setToast({ message, type, show: true });
       setTimeout(() => {
         setToast((prev) => ({ ...prev, show: false }));
@@ -78,12 +68,12 @@ export const useRoleManagement = (projectId: string) => {
   );
 
   // トーストを閉じる関数
-  const closeToast = useCallback(() => {
+  const closeToast = useCallback((): void => {
     setToast((prev) => ({ ...prev, show: false }));
   }, []);
 
   // ユーザーロール一覧を取得
-  const fetchUserRoles = useCallback(async () => {
+  const fetchUserRoles: () => Promise<void> = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getProjectRoles(projectId);
@@ -112,7 +102,7 @@ export const useRoleManagement = (projectId: string) => {
   }, [getProjectRoles, projectId, showToast]);
 
   // プロジェクト詳細を取得
-  const fetchProjectDetail = useCallback(async () => {
+  const fetchProjectDetail: () => Promise<void> = useCallback(async () => {
     try {
       const project = await getProject(projectId);
       setProjectDetail(project);
@@ -138,8 +128,8 @@ export const useRoleManagement = (projectId: string) => {
 
   // 全ユーザーを取得（検索用）
   // username を渡すとそのクエリで検索する。渡さない場合は全件取得（""）
-  const fetchUsers = useCallback(
-    async (username: string = '') => {
+  const fetchUsers: (username?: string) => Promise<void> = useCallback(
+    async (username: string = ''): Promise<void> => {
       try {
         const response = await searchUsers({ username });
         setFetchedUsers(response);
@@ -151,8 +141,8 @@ export const useRoleManagement = (projectId: string) => {
   );
 
   // ロールを追加
-  const addRole = useCallback(
-    async (userId: string, roleName: RoleValue) => {
+  const addRole: (userId: string, roleName: RoleValue) => Promise<void> = useCallback(
+    async (userId: string, roleName: RoleValue): Promise<void> => {
       try {
         setLoading(true);
         await addRoleToProject(projectId, { userId, roleName });
@@ -170,8 +160,8 @@ export const useRoleManagement = (projectId: string) => {
   );
 
   // ロール更新
-  const updateRole = useCallback(
-    async (userId: string, roleName: RoleValue) => {
+  const updateRole: (userId: string, roleName: RoleValue) => Promise<void> = useCallback(
+    async (userId: string, roleName: RoleValue): Promise<void> => {
       try {
         setLoading(true);
         await updateRoleInProject(projectId, userId, { roleName });
@@ -188,7 +178,10 @@ export const useRoleManagement = (projectId: string) => {
   );
 
   // ユーザーのロール削除が可能かチェック
-  const canRemoveUserRole = useCallback(
+  const canRemoveUserRole: (
+    targetUserId: string,
+    userRoles: Array<{ userId: string; roles: Array<{ name: RoleValue | string }> }>
+  ) => RemoveCheck = useCallback(
     (
       targetUserId: string,
       userRoles: Array<{
@@ -249,8 +242,8 @@ export const useRoleManagement = (projectId: string) => {
   );
 
   // ロール削除（エラーハンドリング改善）
-  const removeRole = useCallback(
-    async (userId: string) => {
+  const removeRole: (userId: string) => Promise<void> = useCallback(
+    async (userId: string): Promise<void> => {
       try {
         setLoading(true);
         await removeRoleFromProject(projectId, userId);
@@ -269,7 +262,7 @@ export const useRoleManagement = (projectId: string) => {
   );
 
   // ハンドラー関数群
-  const handleAddRole = useCallback(async () => {
+  const handleAddRole: () => Promise<void> = useCallback(async (): Promise<void> => {
     if (roleForm.selectedUserId && roleForm.selectedRole) {
       await addRole(roleForm.selectedUserId, roleForm.selectedRole);
       setRoleForm({
@@ -279,8 +272,8 @@ export const useRoleManagement = (projectId: string) => {
     }
   }, [roleForm.selectedUserId, roleForm.selectedRole, addRole]);
 
-  const handleRemoveRole = useCallback(
-    async (userId: string) => {
+  const handleRemoveRole: (userId: string) => Promise<void> = useCallback(
+    async (userId: string): Promise<void> => {
       const removeCheck = canRemoveUserRole(userId, userRoles);
 
       if (!removeCheck.canRemove) {
@@ -293,7 +286,7 @@ export const useRoleManagement = (projectId: string) => {
     [userRoles, canRemoveUserRole, showToast, removeRole]
   );
 
-  const updateRoleForm = useCallback((updates: Partial<RoleFormState>) => {
+  const updateRoleForm = useCallback((updates: Partial<RoleFormState>): void => {
     setRoleForm((prev) => ({ ...prev, ...updates }));
   }, []);
 
