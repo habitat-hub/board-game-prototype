@@ -87,7 +87,22 @@ export const useRoleManagement = (projectId: string) => {
     try {
       setLoading(true);
       const response = await getProjectRoles(projectId);
-      setUserRoles(response);
+      // Normalize API payload (string role names) into RoleValue
+      const toRoleValue = (name: string): RoleValue => {
+        switch (name) {
+          case 'admin':
+          case 'editor':
+          case 'viewer':
+            return name;
+          default:
+            return 'viewer';
+        }
+      };
+      const normalized = response.map((ur) => ({
+        ...ur,
+        roles: ur.roles.map((r) => ({ ...r, name: toRoleValue(r.name) })),
+      }));
+      setUserRoles(normalized);
     } catch (error) {
       console.error('Error fetching user roles:', error);
       showToast('権限一覧の取得に失敗しました。', 'error');
@@ -174,7 +189,13 @@ export const useRoleManagement = (projectId: string) => {
 
   // ユーザーのロール削除が可能かチェック
   const canRemoveUserRole = useCallback(
-    (targetUserId: string, userRoles: UserRole[]) => {
+    (
+      targetUserId: string,
+      userRoles: Array<{
+        userId: string;
+        roles: Array<{ name: RoleValue | string }>;
+      }>
+    ) => {
       if (!currentUser || !projectDetail) {
         return { canRemove: false, reason: 'ユーザー情報が取得できません' };
       }
