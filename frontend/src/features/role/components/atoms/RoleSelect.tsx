@@ -9,8 +9,9 @@ import React, {
 import { createPortal } from 'react-dom';
 import { IoChevronDown } from 'react-icons/io5';
 
-import { getRoleConfig } from './RoleBadge';
 import type { RoleValue } from '@/features/role/types';
+
+import { getRoleConfig } from './RoleBadge';
 
 interface RoleSelectProps {
   value: RoleValue;

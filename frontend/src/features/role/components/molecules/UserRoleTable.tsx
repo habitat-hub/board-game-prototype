@@ -3,9 +3,9 @@ import { FaUserShield } from 'react-icons/fa';
 
 import { User } from '@/api/types/data-contracts';
 import type { RoleValue } from '@/features/role/types';
+import type { UserRole } from '@/features/role/types';
 import { useUser } from '@/hooks/useUser';
 
-import type { UserRole } from '@/features/role/types';
 import UserRoleRow from './UserRoleRow';
 
 // Types moved to UserRoleRow.tsx
@@ -20,10 +20,7 @@ interface UserRoleTableProps {
     canRemove: boolean;
     reason: string;
   };
-  onRoleChange: (
-    userId: string,
-    newRole: RoleValue
-  ) => void;
+  onRoleChange: (userId: string, newRole: RoleValue) => void;
   onRemove: (userId: string) => void;
   loading: boolean;
   canManageRole: boolean;

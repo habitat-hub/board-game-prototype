@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { FaTrash } from 'react-icons/fa';
 
-import type { RoleValue, UserRole } from '@/features/role/types';
 import RoleSelect from '@/features/role/components/atoms/RoleSelect';
 import UserAvatar from '@/features/role/components/atoms/UserAvatar';
+import type { RoleValue, UserRole } from '@/features/role/types';
 
 import { getRemoveButtonTitle, getRoleDropdownTitle } from './userRoleTitles';
 
