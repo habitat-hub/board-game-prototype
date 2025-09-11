@@ -14,7 +14,15 @@ import type {
 import { useUser } from '@/hooks/useUser';
 
 /**
- * 権限管理関連のロジックを管理するカスタムフック
+ * 権限管理のビジネスロジックを提供するカスタムフック。
+ * プロジェクトのロール一覧取得・更新、作成者情報取得、UI用状態と
+ * ハンドラーをひとまとめにして提供します。
+ *
+ * @param projectId プロジェクトID
+ * @returns 権限一覧・候補ユーザー・作成者情報・マスタープロトタイプ名・ローディング状態、
+ * ならびに addRole/removeRole/updateRole/canRemoveUserRole/isCurrentUserAdmin/
+ * refetch/fetchAllUsers、UI状態（roleForm/toast）とハンドラー（handleAddRole/
+ * handleRemoveRole/updateRoleForm/closeToast）を返します。
  */
 export const useRoleManagement = (projectId: string): UseRoleManagement => {
   const ADMIN_ROLE: RoleValue = 'admin';
