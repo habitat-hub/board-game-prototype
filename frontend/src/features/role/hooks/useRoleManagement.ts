@@ -3,12 +3,13 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useProject } from '@/api/hooks/useProject';
 import { useUsers } from '@/api/hooks/useUsers';
 import { User, ProjectsDetailData } from '@/api/types';
+import type { RoleValue } from '@/features/role/components/atoms/RoleSelect';
 import { useUser } from '@/hooks/useUser';
 
 interface UserRole {
   userId: string;
   user: User;
-  roles: Array<{ name: string; description: string }>;
+  roles: Array<{ name: RoleValue; description: string }>;
 }
 
 interface ToastState {
@@ -19,7 +20,7 @@ interface ToastState {
 
 interface RoleFormState {
   selectedUserId: string | null;
-  selectedRole: 'admin' | 'editor' | 'viewer';
+  selectedRole: RoleValue;
 }
 
 /**
@@ -136,7 +137,7 @@ export const useRoleManagement = (projectId: string) => {
 
   // ロールを追加
   const addRole = useCallback(
-    async (userId: string, roleName: 'admin' | 'editor' | 'viewer') => {
+    async (userId: string, roleName: RoleValue) => {
       try {
         setLoading(true);
         await addRoleToProject(projectId, { userId, roleName });
@@ -155,7 +156,7 @@ export const useRoleManagement = (projectId: string) => {
 
   // ロール更新
   const updateRole = useCallback(
-    async (userId: string, roleName: 'admin' | 'editor' | 'viewer') => {
+    async (userId: string, roleName: RoleValue) => {
       try {
         setLoading(true);
         await updateRoleInProject(projectId, userId, { roleName });

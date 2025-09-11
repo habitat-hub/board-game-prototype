@@ -10,7 +10,7 @@ import { getRemoveButtonTitle, getRoleDropdownTitle } from './userRoleTitles';
 export interface UserRole {
   userId: string;
   user: User;
-  roles: Array<{ name: string; description: string }>;
+  roles: Array<{ name: RoleValue; description: string }>;
 }
 
 export const DEFAULT_ROLE: RoleValue = 'viewer';
@@ -39,7 +39,7 @@ const UserRoleRow: React.FC<UserRoleRowProps> = ({
   canManageRole,
 }) => {
   const primaryRoleName: RoleValue =
-    (userRole.roles.length > 0 ? userRole.roles[0].name : DEFAULT_ROLE) as RoleValue;
+    userRole.roles.length > 0 ? userRole.roles[0].name : DEFAULT_ROLE;
   const [selectedRole, setSelectedRole] = useState<RoleValue>(primaryRoleName);
   useEffect(() => {
     setSelectedRole(primaryRoleName);
