@@ -79,14 +79,14 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
       const response = await getProjectRoles(projectId);
       // Normalize API payload (string role names) into RoleValue
       const toRoleValue = (name: string): RoleValue => {
-        switch (name) {
-          case 'admin':
-          case 'editor':
-          case 'viewer':
-            return name;
-          default:
-            return 'viewer';
+        if (name === 'admin' || name === 'editor' || name === 'viewer') {
+          return name as RoleValue;
         }
+        // 想定外のロール名の場合はフォールバックしつつ警告を出す
+        console.warn(
+          `[useRoleManagement] 未知のロール名を検出: ${name}。viewer にフォールバックします。`
+        );
+        return 'viewer';
       };
       const normalized = response.map((ur) => ({
         ...ur,
