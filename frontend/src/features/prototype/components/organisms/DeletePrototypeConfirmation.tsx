@@ -9,7 +9,9 @@ import { projectService } from '@/api/endpoints/project';
 import { useProject } from '@/api/hooks/useProject';
 import { Prototype, Project } from '@/api/types';
 import KibakoButton from '@/components/atoms/KibakoButton';
+import UserRoleList from '@/components/molecules/UserRoleList';
 import Loading from '@/components/organisms/Loading';
+import type { ConnectedUser } from '@/features/prototype/types';
 import { useUser } from '@/hooks/useUser';
 import formatDate from '@/utils/dateFormat';
 
@@ -36,6 +38,7 @@ const DeletePrototypeConfirmation = (): ReactElement => {
   const [error, setError] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [creatorName, setCreatorName] = useState<string>('');
+  const [roleUsers, setRoleUsers] = useState<ConnectedUser[]>([]);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -63,6 +66,13 @@ const DeletePrototypeConfirmation = (): ReactElement => {
             r.roles.some((role) => role.name === 'admin')
         );
         setIsAdmin(admin);
+        setRoleUsers(
+          roles.map((r) => ({
+            userId: r.userId,
+            username: r.user?.username ?? '',
+            roleName: r.roles[0]?.name,
+          }))
+        );
         if (current) {
           const creator = roles.find(
             (r) => r.userId === current.project.userId
@@ -168,13 +178,25 @@ const DeletePrototypeConfirmation = (): ReactElement => {
             <div className="text-sm text-kibako-primary/60">作成者</div>
             <div className="text-lg font-medium">{creatorName}</div>
           </div>
-          <div>
+          <div className="mb-4">
             <div className="text-sm text-kibako-primary/60">作成日時</div>
             <div className="text-lg font-medium">
               {masterPrototype
                 ? formatDate(masterPrototype.createdAt, true)
                 : ''}
             </div>
+          </div>
+          <div>
+            <div className="text-sm text-kibako-primary/60">
+              権限を持つユーザー
+            </div>
+            {roleUsers.length > 0 ? (
+              <UserRoleList users={roleUsers} />
+            ) : (
+              <div className="text-kibako-primary/60 text-sm">
+                権限を持つユーザーがいません
+              </div>
+            )}
           </div>
         </div>
 
