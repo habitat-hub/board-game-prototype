@@ -1,26 +1,32 @@
 import type { User } from '@/api/types';
 
+/** ロール名の列挙。UI と API の共通契約 */
 export type RoleValue = 'admin' | 'editor' | 'viewer';
 
+/** 権限削除可否の判定結果 */
 export type RemoveCheck = { canRemove: boolean; reason: string };
 
+/** プロジェクト内のユーザーとそのロール一覧 */
 export interface UserRole {
   userId: string;
   user: User;
   roles: Array<{ name: RoleValue; description: string }>;
 }
 
+/** トースト表示用の状態 */
 export interface ToastState {
   message: string;
   type: 'success' | 'error' | 'warning';
   show: boolean;
 }
 
+/** 権限フォーム用の状態 */
 export interface RoleFormState {
   selectedUserId: string | null;
   selectedRole: RoleValue;
 }
 
+/** 権限管理フックの公開インターフェース */
 export interface UseRoleManagement {
   userRoles: UserRole[];
   candidateUsers: User[];
@@ -44,4 +50,3 @@ export interface UseRoleManagement {
   updateRoleForm: (updates: Partial<RoleFormState>) => void;
   closeToast: () => void;
 }
-
