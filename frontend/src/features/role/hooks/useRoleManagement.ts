@@ -17,6 +17,7 @@ import { useUser } from '@/hooks/useUser';
  * 権限管理関連のロジックを管理するカスタムフック
  */
 export const useRoleManagement = (projectId: string): UseRoleManagement => {
+  const ADMIN_ROLE: RoleValue = 'admin';
   const { user: currentUser } = useUser();
   const { searchUsers } = useUsers();
   const {
@@ -41,7 +42,7 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
       (ur) => ur.userId === currentUser.id
     );
     return currentUserRole
-      ? currentUserRole.roles.some((role) => role.name === 'admin')
+      ? currentUserRole.roles.some((role) => role.name === ADMIN_ROLE)
       : false;
   }, [currentUser, userRoles]);
 
@@ -180,25 +181,25 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
   // ユーザーのロール削除が可能かチェック
   const canRemoveUserRole: (
     targetUserId: string,
-    userRoles: Array<{ userId: string; roles: Array<{ name: RoleValue | string }> }>
+    rolesList: Array<{ userId: string; roles: Array<{ name: RoleValue | string }> }>
   ) => RemoveCheck = useCallback(
     (
       targetUserId: string,
-      userRoles: Array<{
+      rolesList: Array<{
         userId: string;
         roles: Array<{ name: RoleValue | string }>;
       }>
-    ) => {
+    ): RemoveCheck => {
       if (!currentUser || !projectDetail) {
         return { canRemove: false, reason: 'ユーザー情報が取得できません' };
       }
 
-      // 自分自身の権限は削除不可（このチェックを最優先）
+      // 自分自身の場合: 権限は削除不可（最優先チェック）
       if (currentUser.id === targetUserId) {
         return { canRemove: false, reason: '自分の権限は削除できません' };
       }
 
-      // Admin 権限のみ削除操作が可能
+      // 権限設定可能なユーザーかどうか（Admin のみ）
       if (!isCurrentUserAdmin) {
         return {
           canRemove: false,
@@ -206,7 +207,7 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
         };
       }
 
-      // プロジェクトの作成者の場合は削除不可
+      // プロジェクト作成者の場合は削除不可
       if (projectDetail.userId === targetUserId) {
         return {
           canRemove: false,
@@ -214,18 +215,18 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
         };
       }
 
-      const targetUserRole = userRoles.find((ur) => ur.userId === targetUserId);
+      const targetUserRole = rolesList.find((ur) => ur.userId === targetUserId);
       if (!targetUserRole) {
         return { canRemove: false, reason: 'ユーザーが見つかりません' };
       }
 
-      const hasAdminRole = targetUserRole.roles.some(
-        (role) => role.name === 'admin'
-      );
+      // 対象ユーザーが Admin 権限を持つか
+      const hasAdminRole = targetUserRole.roles.some((role) => role.name === ADMIN_ROLE);
 
       if (hasAdminRole) {
-        const adminCount = userRoles.filter((ur) =>
-          ur.roles.some((role) => role.name === 'admin')
+        // 残存する Admin ユーザー数を確認
+        const adminCount = rolesList.filter((ur) =>
+          ur.roles.some((role) => role.name === ADMIN_ROLE)
         ).length;
 
         if (adminCount <= 1) {
