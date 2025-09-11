@@ -83,6 +83,7 @@ const UserRoleRow: React.FC<UserRoleRowProps> = ({
         className="px-4 py-2 text-center"
         title={isCreator ? 'プロジェクト作成者' : ''}
       >
+        {/* 作成者の場合: チェックを表示 */}
         {isCreator && (
           <span className="text-kibako-primary" aria-label="作成者">
             ✓
@@ -93,6 +94,7 @@ const UserRoleRow: React.FC<UserRoleRowProps> = ({
         <RoleSelect
           value={selectedRole}
           onChange={handleChange}
+          {/* 作成者/本人/処理中/権限なしの場合は変更不可 */}
           disabled={isCreator || isSelf || loading || !canManageRole}
           title={dropdownTitle}
           aria-label={dropdownTitle}
@@ -102,6 +104,7 @@ const UserRoleRow: React.FC<UserRoleRowProps> = ({
         <button
           type="button"
           onClick={() => onRemove(userRole.userId)}
+          {/* 削除可否とローディングでクラス/属性を切替 */}
           className={`p-2 rounded transition-colors ${
             canRemove && !loading && canManageRole
               ? 'text-kibako-primary/60 hover:text-kibako-danger hover:bg-kibako-danger/30'
@@ -111,6 +114,7 @@ const UserRoleRow: React.FC<UserRoleRowProps> = ({
           aria-label={removeTitle}
           disabled={loading || !canRemove || !canManageRole}
         >
+          {/* ローディング中はスピナー、未ローディングはゴミ箱アイコン */}
           {loading ? (
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-kibako-secondary"></div>
           ) : (
