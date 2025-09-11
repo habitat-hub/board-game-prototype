@@ -26,6 +26,7 @@ import { useUser } from '@/hooks/useUser';
  */
 export const useRoleManagement = (projectId: string): UseRoleManagement => {
   const ADMIN_ROLE: RoleValue = 'admin';
+  const TOAST_DURATION_MS = 3000; // トーストの表示時間(ms)
   const { user: currentUser } = useUser();
   const { searchUsers } = useUsers();
   const {
@@ -71,7 +72,7 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
       setToast({ message, type, show: true });
       setTimeout(() => {
         setToast((prev) => ({ ...prev, show: false }));
-      }, 3000);
+      }, TOAST_DURATION_MS);
     },
     []
   );
