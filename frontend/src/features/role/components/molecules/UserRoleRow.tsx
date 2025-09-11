@@ -7,8 +7,10 @@ import type { RoleValue, UserRole } from '@/features/role/types';
 
 import { getRemoveButtonTitle, getRoleDropdownTitle } from './userRoleTitles';
 
+/** デフォルト権限。ロール未設定時に使用する */
 export const DEFAULT_ROLE: RoleValue = 'viewer';
 
+/** 行コンポーネントの受け取りプロパティ */
 interface UserRoleRowProps {
   userRole: UserRole;
   isCreator: boolean;
@@ -21,6 +23,7 @@ interface UserRoleRowProps {
   canManageRole: boolean;
 }
 
+/** ユーザー1名分の権限行を表示する */
 const UserRoleRow: React.FC<UserRoleRowProps> = ({
   userRole,
   isCreator,
