@@ -1,16 +1,26 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import { IoArrowBack, IoTrash } from 'react-icons/io5';
+import { RiLoaderLine } from 'react-icons/ri';
 
 import { projectService } from '@/api/endpoints/project';
 import { useProject } from '@/api/hooks/useProject';
 import { Prototype, Project } from '@/api/types';
 import KibakoButton from '@/components/atoms/KibakoButton';
+import Loading from '@/components/organisms/Loading';
 import { useUser } from '@/hooks/useUser';
+import formatDate from '@/utils/dateFormat';
 
-const DeletePrototypeConfirmation = () => {
+/**
+ * プロトタイプ削除確認画面コンポーネント。
+ * 対象プロジェクト / プロトタイプ情報を取得し、管理者のみ削除操作を実行できます。
+ * 未ログイン時はログインページへリダイレクトします。
+ *
+ * @returns JSX.Element 削除確認画面
+ */
+const DeletePrototypeConfirmation = (): ReactElement => {
   const router = useRouter();
   const { user } = useUser();
   const { projectId } = useParams<{ projectId: string }>();
@@ -25,6 +35,7 @@ const DeletePrototypeConfirmation = () => {
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [creatorName, setCreatorName] = useState<string>('');
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -52,6 +63,12 @@ const DeletePrototypeConfirmation = () => {
             r.roles.some((role) => role.name === 'admin')
         );
         setIsAdmin(admin);
+        if (current) {
+          const creator = roles.find(
+            (r) => r.userId === current.project.userId
+          );
+          setCreatorName(creator?.user?.username ?? '');
+        }
       } catch (err) {
         setError('プロトタイプの取得に失敗しました');
         console.error('Error fetching prototype:', err);
@@ -67,7 +84,8 @@ const DeletePrototypeConfirmation = () => {
     }
   }, [projectId, getProjectRoles, user, router]);
 
-  const handleDelete = async () => {
+  /** プロジェクト削除処理 */
+  const handleDelete = async (): Promise<void> => {
     try {
       setIsDeleting(true);
       await deleteProject(projectId);
@@ -80,18 +98,7 @@ const DeletePrototypeConfirmation = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="max-w-4xl mx-auto py-16 px-4">
-        <div className="p-6 overflow-visible rounded-xl bg-gradient-to-r from-kibako-white via-kibako-white to-kibako-tertiary shadow-lg border border-kibako-tertiary/30">
-          <div className="animate-pulse flex flex-col space-y-4">
-            <div className="h-8 bg-slate-200 rounded w-1/2"></div>
-            <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-            <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-            <div className="h-24 bg-slate-200 rounded"></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (error) {
@@ -153,9 +160,21 @@ const DeletePrototypeConfirmation = () => {
             <div className="text-sm text-kibako-primary/60">パーツ数</div>
             <div className="text-lg font-medium">{partCount}</div>
           </div>
-          <div>
+          <div className="mb-4">
             <div className="text-sm text-kibako-primary/60">ルーム数</div>
             <div className="text-lg font-medium">{roomCount}</div>
+          </div>
+          <div className="mb-4">
+            <div className="text-sm text-kibako-primary/60">作成者</div>
+            <div className="text-lg font-medium">{creatorName}</div>
+          </div>
+          <div>
+            <div className="text-sm text-kibako-primary/60">作成日時</div>
+            <div className="text-lg font-medium">
+              {masterPrototype
+                ? formatDate(masterPrototype.createdAt, true)
+                : ''}
+            </div>
           </div>
         </div>
 
@@ -174,10 +193,18 @@ const DeletePrototypeConfirmation = () => {
             onClick={handleDelete}
             disabled={!isAdmin || isDeleting}
             title={!isAdmin ? '管理者権限が必要です' : undefined}
-            isLoading={isDeleting}
           >
-            <IoTrash className="w-5 h-5" />
-            削除する
+            {isDeleting ? (
+              <>
+                <RiLoaderLine className="w-5 h-5 animate-spin" />
+                <span className="text-sm">削除する</span>
+              </>
+            ) : (
+              <>
+                <IoTrash className="w-5 h-5" />
+                <span className="text-sm">削除する</span>
+              </>
+            )}
           </KibakoButton>
         </div>
         {!isAdmin && (

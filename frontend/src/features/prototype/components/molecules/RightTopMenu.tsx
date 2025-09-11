@@ -10,11 +10,10 @@ import { useEffect, useRef, useState, type ReactElement } from 'react';
 import { FaUsers, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
 import UserMenu from '@/components/molecules/UserMenu';
+import UserRoleList from '@/components/molecules/UserRoleList';
 import ConnectedUserIcon from '@/features/prototype/components/atoms/ConnectedUserIcon';
 import { MAX_DISPLAY_USERS } from '@/features/prototype/constants/presence';
 import { ConnectedUser } from '@/features/prototype/types';
-import { getUserColor } from '@/features/prototype/utils/userColor';
-import { getRoleConfig } from '@/features/role/components/atoms/RoleBadge';
 
 interface RightTopMenuProps {
   // プロジェクト識別子
@@ -104,53 +103,7 @@ export default function RightTopMenu({
           </button>
           {showUserList && (
             <div className="absolute right-0 mt-2 max-w-xs bg-kibako-white border border-kibako-secondary rounded shadow z-overlay px-3 py-2 text-xs text-kibako-primary">
-              <ul className="flex gap-1 flex-col">
-                {roleUsers.map((user) => {
-                  const isActive = activeUserIds.has(user.userId);
-                  const color: string | undefined = isActive
-                    ? getUserColor(user.userId, roleUsers)
-                    : undefined;
-                  const roleConfig = user.roleName
-                    ? getRoleConfig(user.roleName)
-                    : null;
-                  return (
-                    <li
-                      key={user.userId}
-                      className="truncate max-w-[180px] px-0 py-0 leading-6"
-                      title={user.username}
-                    >
-                      {isActive ? (
-                        <span className="inline-flex items-center gap-1">
-                          {roleConfig && (
-                            <span className={roleConfig.textColor}>
-                              {roleConfig.icon}
-                            </span>
-                          )}
-                          <span
-                            className="inline-flex items-center gap-1 px-1 rounded border"
-                            style={{ borderColor: color }}
-                          >
-                            <span
-                              className="inline-block w-2 h-2"
-                              style={{ backgroundColor: color }}
-                            />
-                            {user.username}
-                          </span>
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1">
-                          {roleConfig && (
-                            <span className={roleConfig.textColor}>
-                              {roleConfig.icon}
-                            </span>
-                          )}
-                          {user.username}
-                        </span>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
+              <UserRoleList users={roleUsers} activeUserIds={activeUserIds} />
             </div>
           )}
         </div>

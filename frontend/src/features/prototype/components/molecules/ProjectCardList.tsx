@@ -11,6 +11,7 @@ type ProjectCardListProps = {
     roomCount: number;
   }[];
   projectAdminMap: Record<string, boolean>;
+  projectCreatorMap: Record<string, string>;
   // 編集状態と値
   isNameEditing: (prototypeId: string) => boolean;
   editedName: string;
@@ -30,6 +31,7 @@ type ProjectCardListProps = {
 export const ProjectCardList: React.FC<ProjectCardListProps> = ({
   prototypeList,
   projectAdminMap,
+  projectCreatorMap,
   isNameEditing,
   editedName,
   setEditedName,
@@ -41,33 +43,37 @@ export const ProjectCardList: React.FC<ProjectCardListProps> = ({
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-      {prototypeList.map(({ masterPrototype, project, partCount, roomCount }) => {
-        if (!masterPrototype) return null;
-        const { id } = masterPrototype;
-        const nameEditing = isNameEditing(id);
-        const isProjectAdmin = projectAdminMap[project.id];
+      {prototypeList.map(
+        ({ masterPrototype, project, partCount, roomCount }) => {
+          if (!masterPrototype) return null;
+          const { id } = masterPrototype;
+          const nameEditing = isNameEditing(id);
+          const isProjectAdmin = projectAdminMap[project.id];
+          const creatorName = projectCreatorMap[project.id];
 
-        const handleCardClick = () => onCardClick(project.id, id);
+          const handleCardClick = () => onCardClick(project.id, id);
 
-        return (
-          <ProjectCard
-            key={id}
-            project={project}
-            masterPrototype={masterPrototype}
-            partCount={partCount}
-            roomCount={roomCount}
-            isProjectAdmin={isProjectAdmin}
-            isNameEditing={nameEditing}
-            editedName={editedName}
-            setEditedName={setEditedName}
-            onCardClick={handleCardClick}
-            onContextMenu={onContextMenu}
-            onSubmit={onSubmit}
-            onBlur={onBlur}
-            onKeyDown={onKeyDown}
-          />
-        );
-      })}
+          return (
+            <ProjectCard
+              key={id}
+              project={project}
+              masterPrototype={masterPrototype}
+              partCount={partCount}
+              roomCount={roomCount}
+              isProjectAdmin={isProjectAdmin}
+              creatorName={creatorName}
+              isNameEditing={nameEditing}
+              editedName={editedName}
+              setEditedName={setEditedName}
+              onCardClick={handleCardClick}
+              onContextMenu={onContextMenu}
+              onSubmit={onSubmit}
+              onBlur={onBlur}
+              onKeyDown={onKeyDown}
+            />
+          );
+        }
+      )}
     </div>
   );
 };

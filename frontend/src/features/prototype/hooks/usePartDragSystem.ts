@@ -22,6 +22,8 @@ interface UsePartDragSystemProps {
   gameBoardMode: GameBoardMode;
   // ステージのref
   stageRef: React.RefObject<Konva.Stage>;
+  // 編集可能かどうか
+  canEdit: boolean;
 }
 
 /**
@@ -32,6 +34,7 @@ export const usePartDragSystem = ({
   canvasSize,
   gameBoardMode,
   stageRef,
+  canEdit,
 }: UsePartDragSystemProps) => {
   const { dispatch } = usePartReducer();
   const { measureOperation } = usePerformanceTracker();
@@ -79,6 +82,8 @@ export const usePartDragSystem = ({
         : [partId];
       selectMultipleParts(newSelected);
 
+      if (!canEdit) return;
+
       // プレイルーム時の単一選択カード/トークンのfrontmost処理
       // 複数選択時はfrontmost処理をスキップ
       if (gameBoardMode === GameBoardMode.PLAY && newSelected.length === 1) {
@@ -108,7 +113,14 @@ export const usePartDragSystem = ({
       });
       originalPositionsRef.current = newOriginalPositions;
     },
-    [gameBoardMode, selectedPartIds, selectMultipleParts, parts, dispatch]
+    [
+      gameBoardMode,
+      selectedPartIds,
+      selectMultipleParts,
+      parts,
+      dispatch,
+      canEdit,
+    ]
   );
 
   /**
@@ -116,6 +128,8 @@ export const usePartDragSystem = ({
    */
   const handlePartDragMove = useCallback(
     (e: Konva.KonvaEventObject<DragEvent>, partId: number) => {
+      if (!canEdit) return;
+
       const stage = stageRef.current;
 
       const originalPositions = originalPositionsRef.current;
@@ -191,7 +205,7 @@ export const usePartDragSystem = ({
       // 更新処理の実行
       stage.batchDraw();
     },
-    [getConstrainedPosition, parts, selectedPartIds, stageRef]
+    [getConstrainedPosition, parts, selectedPartIds, stageRef, canEdit]
   );
 
   /**
@@ -199,7 +213,7 @@ export const usePartDragSystem = ({
    */
   const handlePartDragEnd = useCallback(
     (e: Konva.KonvaEventObject<DragEvent>, partId: number) => {
-      if (gameBoardMode === GameBoardMode.PREVIEW) return;
+      if (gameBoardMode === GameBoardMode.PREVIEW || !canEdit) return;
 
       measureOperation('Part Drag Update', () => {
         const originalPositions = originalPositionsRef.current;
@@ -261,7 +275,14 @@ export const usePartDragSystem = ({
         originalPositionsRef.current = {};
       });
     },
-    [gameBoardMode, measureOperation, parts, getConstrainedPosition, dispatch]
+    [
+      gameBoardMode,
+      measureOperation,
+      parts,
+      getConstrainedPosition,
+      dispatch,
+      canEdit,
+    ]
   );
 
   return {

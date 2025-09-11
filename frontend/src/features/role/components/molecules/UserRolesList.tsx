@@ -22,20 +22,23 @@ interface UserRolesListProps {
     canRemove: boolean;
     reason: string;
   };
-  onEdit: (userId: string, username: string, roleName: string) => void;
+  onRoleChange: (
+    userId: string,
+    newRole: 'admin' | 'editor' | 'viewer'
+  ) => void;
   onRemove: (userId: string) => void;
   loading: boolean;
-  editMode: boolean;
+  canManageRole: boolean;
 }
 
 const UserRolesList: React.FC<UserRolesListProps> = ({
   userRoles,
   creator,
   canRemoveUserRole,
-  onEdit,
+  onRoleChange,
   onRemove,
   loading,
-  editMode,
+  canManageRole,
 }) => {
   const { user: currentUser } = useUser();
   if (userRoles.length === 0 && !loading) {
@@ -75,10 +78,10 @@ const UserRolesList: React.FC<UserRolesListProps> = ({
             isLastAdmin={isLastAdmin}
             canRemove={removeCheck.canRemove}
             removeReason={removeCheck.reason}
-            onEdit={onEdit}
+            onRoleChange={(role) => onRoleChange(userRole.userId, role)}
             onRemove={onRemove}
             loading={loading}
-            editMode={editMode}
+            canManageRole={canManageRole}
           />
         );
       })}

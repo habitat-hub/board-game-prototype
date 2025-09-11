@@ -25,5 +25,12 @@ describe('PrototypeNameEditor', () => {
       'title',
       'test project - 管理者のみ名前を変更できます'
     );
+    expect(nameDisplay).toHaveClass(
+      'block',
+      'w-full',
+      'py-1.5',
+      'min-h-8',
+      'truncate'
+    );
   });
 });

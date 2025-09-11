@@ -12,6 +12,10 @@ import { usePrototypes } from '@/api/hooks/usePrototypes';
 import { Prototype, Project } from '@/api/types';
 import KibakoButton from '@/components/atoms/KibakoButton';
 import KibakoToggle from '@/components/atoms/KibakoToggle';
+import SortDropdown, {
+  SortKey,
+  SortOrder,
+} from '@/components/atoms/SortDropdown';
 import Loading from '@/components/organisms/Loading';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
 import { EmptyProjectState } from '@/features/prototype/components/molecules/EmptyProjectState';
@@ -30,9 +34,7 @@ import {
 const ROLE_ADMIN = 'admin' as const;
 
 // master の parts が配列かどうかを実行時に判定して件数を算出するためのタイプガード
-const hasArrayParts = (
-  obj: unknown
-): obj is { parts: unknown[] } => {
+const hasArrayParts = (obj: unknown): obj is { parts: unknown[] } => {
   if (typeof obj !== 'object' || obj === null) return false;
   const rec = obj as { [k: string]: unknown };
   return Array.isArray(rec.parts);
@@ -83,22 +85,22 @@ const ProjectList: React.FC = () => {
   const [projectAdminMap, setProjectAdminMap] = useState<
     Record<string, boolean>
   >({});
+  // プロジェクト作成者名のマップ
+  const [projectCreatorMap, setProjectCreatorMap] = useState<
+    Record<string, string>
+  >({});
 
   // 表示モードとソート設定（永続値を安全に復元）
   const [viewMode, setViewMode] = useState<ProjectListView>(() => {
     const v = getUIPreference('projectListView');
     return v === 'card' || v === 'table' ? v : 'card';
   });
-  const [sortKey, setSortKey] = useState<'name' | 'createdAt'>('createdAt');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [sortKey, setSortKey] = useState<SortKey>('createdAt');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
-  const handleSort = (key: 'name' | 'createdAt') => {
-    if (sortKey === key) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortKey(key);
-      setSortOrder('asc');
-    }
+  const handleSortChange = (key: SortKey, order: SortOrder) => {
+    setSortKey(key);
+    setSortOrder(order);
   };
 
   // データ変換処理
@@ -106,9 +108,13 @@ const ProjectList: React.FC = () => {
     () =>
       projectsData?.map(({ project, prototypes }) => {
         // MASTER プロトタイプを取得する
-        const masterPrototype = prototypes.find(({ type }) => type === 'MASTER');
+        const masterPrototype = prototypes.find(
+          ({ type }) => type === 'MASTER'
+        );
         // ルーム数をカウント（INSTANCE の数）
-        const roomCount = prototypes.filter((p) => p.type === 'INSTANCE').length;
+        const roomCount = prototypes.filter(
+          (p) => p.type === 'INSTANCE'
+        ).length;
         // parts 配列が存在し配列である場合のみ長さを使用する
         const partCount = hasArrayParts(masterPrototype)
           ? masterPrototype.parts.length
@@ -137,23 +143,42 @@ const ProjectList: React.FC = () => {
           } => !!item.masterPrototype
         )
         .sort((a, b) => {
-          if (sortKey === 'name') {
-            const nameA = a.masterPrototype.name ?? '';
-            const nameB = b.masterPrototype.name ?? '';
-            return sortOrder === 'asc'
-              ? nameA.localeCompare(nameB, 'ja')
-              : nameB.localeCompare(nameA, 'ja');
-          } else {
-            const tA = a.masterPrototype.createdAt
-              ? new Date(a.masterPrototype.createdAt).getTime()
-              : 0;
-            const tB = b.masterPrototype.createdAt
-              ? new Date(b.masterPrototype.createdAt).getTime()
-              : 0;
-            return sortOrder === 'asc' ? tA - tB : tB - tA;
+          switch (sortKey) {
+            case 'name': {
+              const nameA = a.masterPrototype.name ?? '';
+              const nameB = b.masterPrototype.name ?? '';
+              return sortOrder === 'asc'
+                ? nameA.localeCompare(nameB, 'ja')
+                : nameB.localeCompare(nameA, 'ja');
+            }
+            case 'partCount':
+              return sortOrder === 'asc'
+                ? a.partCount - b.partCount
+                : b.partCount - a.partCount;
+            case 'roomCount':
+              return sortOrder === 'asc'
+                ? a.roomCount - b.roomCount
+                : b.roomCount - a.roomCount;
+            case 'creator': {
+              const cA = projectCreatorMap[a.project.id] ?? '';
+              const cB = projectCreatorMap[b.project.id] ?? '';
+              return sortOrder === 'asc'
+                ? cA.localeCompare(cB, 'ja')
+                : cB.localeCompare(cA, 'ja');
+            }
+            case 'createdAt':
+            default: {
+              const tA = a.masterPrototype.createdAt
+                ? new Date(a.masterPrototype.createdAt).getTime()
+                : 0;
+              const tB = b.masterPrototype.createdAt
+                ? new Date(b.masterPrototype.createdAt).getTime()
+                : 0;
+              return sortOrder === 'asc' ? tA - tB : tB - tA;
+            }
           }
         }),
-    [prototypeList, sortKey, sortOrder]
+    [prototypeList, sortKey, sortOrder, projectCreatorMap]
   );
 
   // ユーザーが管理者かどうかを取得
@@ -161,12 +186,13 @@ const ProjectList: React.FC = () => {
     // projectsData または user が未定義の場合は全て非管理者として扱う
     if (!projectsData || !user) {
       setProjectAdminMap({});
+      setProjectCreatorMap({});
       return;
     }
 
     const cancelled = { current: false } as const as { current: boolean };
     const fetchRoles = async (): Promise<void> => {
-      const entries = await Promise.all(
+      const results = await Promise.all(
         projectsData.map(async ({ project }) => {
           try {
             const roles = await getProjectRoles(project.id);
@@ -175,19 +201,28 @@ const ProjectList: React.FC = () => {
                 r.userId === user.id &&
                 r.roles.some((role) => role.name === ROLE_ADMIN)
             );
-            return [project.id, isAdmin] as const;
+            const creator = roles.find((r) => r.userId === project.userId);
+            const creatorName = creator?.user?.username ?? '';
+            return [project.id, { isAdmin, creatorName }] as const;
           } catch (e) {
             // 予期しないエラーはログに記録し、UI 側は非管理者として扱う
             console.error('プロジェクトのロール取得に失敗しました:', {
               projectId: project.id,
               error: e,
             });
-            return [project.id, false] as const;
+            return [project.id, { isAdmin: false, creatorName: '' }] as const;
           }
         })
       );
       if (!cancelled.current) {
-        setProjectAdminMap(Object.fromEntries(entries));
+        const adminMap: Record<string, boolean> = {};
+        const creatorMap: Record<string, string> = {};
+        results.forEach(([projectId, { isAdmin, creatorName }]) => {
+          adminMap[projectId] = isAdmin;
+          creatorMap[projectId] = creatorName;
+        });
+        setProjectAdminMap(adminMap);
+        setProjectCreatorMap(creatorMap);
       }
     };
     fetchRoles();
@@ -493,36 +528,35 @@ const ProjectList: React.FC = () => {
               {sortedPrototypeList.length}
             </span>
           </div>
-          <KibakoToggle
-            checked={viewMode === 'table'}
-            onChange={(checked) => {
-              const mode = checked ? 'table' : 'card';
-              setViewMode(mode);
-              setUIPreference('projectListView', mode);
-            }}
-            labelLeft={<FaTh className="w-4 h-4" aria-hidden="true" />}
-            labelRight={<FaTable className="w-4 h-4" aria-hidden="true" />}
-            shouldChangeBackgroud={false}
-            ariaLabel={
-              viewMode === 'card' ? 'テーブル表示に切替' : 'カード表示に切替'
-            }
-          />
+          <div className="flex items-center gap-2">
+            <SortDropdown
+              sortKey={sortKey}
+              sortOrder={sortOrder}
+              onChange={handleSortChange}
+            />
+            <KibakoToggle
+              checked={viewMode === 'table'}
+              onChange={(checked) => {
+                const mode = checked ? 'table' : 'card';
+                setViewMode(mode);
+                setUIPreference('projectListView', mode);
+              }}
+              labelLeft={<FaTh className="w-4 h-4" aria-hidden="true" />}
+              labelRight={<FaTable className="w-4 h-4" aria-hidden="true" />}
+              shouldChangeBackgroud={false}
+              ariaLabel={
+                viewMode === 'card' ? 'テーブル表示に切替' : 'カード表示に切替'
+              }
+            />
+          </div>
         </div>
       </div>
 
       {viewMode === 'card' ? (
         <ProjectCardList
-          prototypeList={prototypeList.filter(
-            (
-              item
-            ): item is {
-              project: Project;
-              masterPrototype: Prototype;
-              partCount: number;
-              roomCount: number;
-            } => !!item.masterPrototype
-          )}
+          prototypeList={sortedPrototypeList}
           projectAdminMap={projectAdminMap}
+          projectCreatorMap={projectCreatorMap}
           isNameEditing={(prototypeId) => isEditing(prototypeId)}
           editedName={editedName}
           setEditedName={setEditedName}
@@ -543,13 +577,11 @@ const ProjectList: React.FC = () => {
       ) : (
         <ProjectTable
           prototypeList={sortedPrototypeList}
-          sortKey={sortKey}
-          sortOrder={sortOrder}
-          onSort={handleSort}
           onSelectPrototype={(projectId, prototypeId) =>
             router.push(`/projects/${projectId}/prototypes/${prototypeId}`)
           }
           projectAdminMap={projectAdminMap}
+          projectCreatorMap={projectCreatorMap}
         />
       )}
 
