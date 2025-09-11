@@ -53,7 +53,7 @@ const UserRoleRow: React.FC<UserRoleRowProps> = ({
     removeReason,
     loading,
   });
-  const handleChange = (newRole: RoleValue) => {
+  const handleChange = (newRole: RoleValue): void => {
     setSelectedRole(newRole);
     onRoleChange(newRole);
   };
