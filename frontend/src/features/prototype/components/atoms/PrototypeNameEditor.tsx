@@ -81,9 +81,13 @@ export default function PrototypeNameEditor({
     return (
       <div className={`w-full ${className ?? ''}`}>
         <span
-          className={`block w-full text-left ${sizeClass} ${weightClass} text-kibako-primary py-1.5 min-h-8 rounded-md ${
+          className={`w-full text-left ${sizeClass} ${weightClass} text-kibako-primary rounded-md ${
             bleedX ? 'px-2 -mx-2' : 'px-2'
-          } ${truncate ? 'truncate' : 'whitespace-normal break-words'}`}
+          } ${
+            truncate
+              ? 'flex h-8 items-center leading-none truncate'
+              : 'block py-1.5 min-h-8 whitespace-normal break-words'
+          }`}
           title={titleText}
           aria-label={titleText}
         >
