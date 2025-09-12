@@ -3,29 +3,30 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useProject } from '@/api/hooks/useProject';
 import { useUsers } from '@/api/hooks/useUsers';
 import { User, ProjectsDetailData } from '@/api/types';
+import type {
+  RoleValue,
+  RoleFormState,
+  ToastState,
+  UserRole,
+  RemoveCheck,
+  UseRoleManagement,
+} from '@/features/role/types';
 import { useUser } from '@/hooks/useUser';
 
-interface UserRole {
-  userId: string;
-  user: User;
-  roles: Array<{ name: string; description: string }>;
-}
-
-interface ToastState {
-  message: string;
-  type: 'success' | 'error' | 'warning';
-  show: boolean;
-}
-
-interface RoleFormState {
-  selectedUserId: string | null;
-  selectedRole: 'admin' | 'editor' | 'viewer';
-}
-
 /**
- * 権限管理関連のロジックを管理するカスタムフック
+ * 権限管理のビジネスロジックを提供するカスタムフック。
+ * プロジェクトのロール一覧取得・更新、作成者情報取得、UI用状態と
+ * ハンドラーをひとまとめにして提供します。
+ *
+ * @param projectId プロジェクトID
+ * @returns 権限一覧・候補ユーザー・作成者情報・マスタープロトタイプ名・ローディング状態、
+ * ならびに addRole/removeRole/updateRole/canRemoveUserRole/isCurrentUserAdmin/
+ * refetch/fetchAllUsers、UI状態（roleForm/toast）とハンドラー（handleAddRole/
+ * handleRemoveRole/updateRoleForm/closeToast）を返します。
  */
-export const useRoleManagement = (projectId: string) => {
+export const useRoleManagement = (projectId: string): UseRoleManagement => {
+  const ADMIN_ROLE: RoleValue = 'admin';
+  const TOAST_DURATION_MS = 3000; // トーストの表示時間(ms)
   const { user: currentUser } = useUser();
   const { searchUsers } = useUsers();
   const {
@@ -43,14 +44,14 @@ export const useRoleManagement = (projectId: string) => {
     null
   );
   const [creator, setCreator] = useState<User | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const isCurrentUserAdmin = useMemo(() => {
     if (!currentUser) return false;
     const currentUserRole = userRoles.find(
       (ur) => ur.userId === currentUser.id
     );
     return currentUserRole
-      ? currentUserRole.roles.some((role) => role.name === 'admin')
+      ? currentUserRole.roles.some((role) => role.name === ADMIN_ROLE)
       : false;
   }, [currentUser, userRoles]);
 
@@ -67,26 +68,41 @@ export const useRoleManagement = (projectId: string) => {
 
   // トーストメッセージを表示する関数
   const showToast = useCallback(
-    (message: string, type: 'success' | 'error' | 'warning') => {
+    (message: string, type: ToastState['type']) => {
       setToast({ message, type, show: true });
       setTimeout(() => {
         setToast((prev) => ({ ...prev, show: false }));
-      }, 3000);
+      }, TOAST_DURATION_MS);
     },
     []
   );
 
   // トーストを閉じる関数
-  const closeToast = useCallback(() => {
+  const closeToast = useCallback((): void => {
     setToast((prev) => ({ ...prev, show: false }));
   }, []);
 
   // ユーザーロール一覧を取得
-  const fetchUserRoles = useCallback(async () => {
+  const fetchUserRoles: () => Promise<void> = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getProjectRoles(projectId);
-      setUserRoles(response);
+      // Normalize API payload (string role names) into RoleValue
+      const toRoleValue = (name: string): RoleValue => {
+        if (name === 'admin' || name === 'editor' || name === 'viewer') {
+          return name as RoleValue;
+        }
+        // 想定外のロール名の場合はフォールバックしつつ警告を出す
+        console.warn(
+          `[useRoleManagement] 未知のロール名を検出: ${name}。viewer にフォールバックします。`
+        );
+        return 'viewer';
+      };
+      const normalized = response.map((ur) => ({
+        ...ur,
+        roles: ur.roles.map((r) => ({ ...r, name: toRoleValue(r.name) })),
+      }));
+      setUserRoles(normalized);
     } catch (error) {
       console.error('Error fetching user roles:', error);
       showToast('権限一覧の取得に失敗しました。', 'error');
@@ -96,7 +112,7 @@ export const useRoleManagement = (projectId: string) => {
   }, [getProjectRoles, projectId, showToast]);
 
   // プロジェクト詳細を取得
-  const fetchProjectDetail = useCallback(async () => {
+  const fetchProjectDetail: () => Promise<void> = useCallback(async () => {
     try {
       const project = await getProject(projectId);
       setProjectDetail(project);
@@ -122,8 +138,8 @@ export const useRoleManagement = (projectId: string) => {
 
   // 全ユーザーを取得（検索用）
   // username を渡すとそのクエリで検索する。渡さない場合は全件取得（""）
-  const fetchUsers = useCallback(
-    async (username: string = '') => {
+  const fetchUsers: (username?: string) => Promise<void> = useCallback(
+    async (username: string = ''): Promise<void> => {
       try {
         const response = await searchUsers({ username });
         setFetchedUsers(response);
@@ -135,8 +151,8 @@ export const useRoleManagement = (projectId: string) => {
   );
 
   // ロールを追加
-  const addRole = useCallback(
-    async (userId: string, roleName: 'admin' | 'editor' | 'viewer') => {
+  const addRole: (userId: string, roleName: RoleValue) => Promise<void> = useCallback(
+    async (userId: string, roleName: RoleValue): Promise<void> => {
       try {
         setLoading(true);
         await addRoleToProject(projectId, { userId, roleName });
@@ -154,8 +170,8 @@ export const useRoleManagement = (projectId: string) => {
   );
 
   // ロール更新
-  const updateRole = useCallback(
-    async (userId: string, roleName: 'admin' | 'editor' | 'viewer') => {
+  const updateRole: (userId: string, roleName: RoleValue) => Promise<void> = useCallback(
+    async (userId: string, roleName: RoleValue): Promise<void> => {
       try {
         setLoading(true);
         await updateRoleInProject(projectId, userId, { roleName });
@@ -172,18 +188,27 @@ export const useRoleManagement = (projectId: string) => {
   );
 
   // ユーザーのロール削除が可能かチェック
-  const canRemoveUserRole = useCallback(
-    (targetUserId: string, userRoles: UserRole[]) => {
+  const canRemoveUserRole: (
+    targetUserId: string,
+    rolesList: Array<{ userId: string; roles: Array<{ name: RoleValue | string }> }>
+  ) => RemoveCheck = useCallback(
+    (
+      targetUserId: string,
+      rolesList: Array<{
+        userId: string;
+        roles: Array<{ name: RoleValue | string }>;
+      }>
+    ): RemoveCheck => {
       if (!currentUser || !projectDetail) {
         return { canRemove: false, reason: 'ユーザー情報が取得できません' };
       }
 
-      // 自分自身の権限は削除不可（このチェックを最優先）
+      // 自分自身の場合: 権限は削除不可（最優先チェック）
       if (currentUser.id === targetUserId) {
         return { canRemove: false, reason: '自分の権限は削除できません' };
       }
 
-      // Admin 権限のみ削除操作が可能
+      // 権限設定可能なユーザーかどうか（Admin のみ）
       if (!isCurrentUserAdmin) {
         return {
           canRemove: false,
@@ -191,7 +216,7 @@ export const useRoleManagement = (projectId: string) => {
         };
       }
 
-      // プロジェクトの作成者の場合は削除不可
+      // プロジェクト作成者の場合は削除不可
       if (projectDetail.userId === targetUserId) {
         return {
           canRemove: false,
@@ -199,18 +224,18 @@ export const useRoleManagement = (projectId: string) => {
         };
       }
 
-      const targetUserRole = userRoles.find((ur) => ur.userId === targetUserId);
+      const targetUserRole = rolesList.find((ur) => ur.userId === targetUserId);
       if (!targetUserRole) {
         return { canRemove: false, reason: 'ユーザーが見つかりません' };
       }
 
-      const hasAdminRole = targetUserRole.roles.some(
-        (role) => role.name === 'admin'
-      );
+      // 対象ユーザーが Admin 権限を持つか
+      const hasAdminRole = targetUserRole.roles.some((role) => role.name === ADMIN_ROLE);
 
       if (hasAdminRole) {
-        const adminCount = userRoles.filter((ur) =>
-          ur.roles.some((role) => role.name === 'admin')
+        // 残存する Admin ユーザー数を確認
+        const adminCount = rolesList.filter((ur) =>
+          ur.roles.some((role) => role.name === ADMIN_ROLE)
         ).length;
 
         if (adminCount <= 1) {
@@ -227,8 +252,8 @@ export const useRoleManagement = (projectId: string) => {
   );
 
   // ロール削除（エラーハンドリング改善）
-  const removeRole = useCallback(
-    async (userId: string) => {
+  const removeRole: (userId: string) => Promise<void> = useCallback(
+    async (userId: string): Promise<void> => {
       try {
         setLoading(true);
         await removeRoleFromProject(projectId, userId);
@@ -247,7 +272,7 @@ export const useRoleManagement = (projectId: string) => {
   );
 
   // ハンドラー関数群
-  const handleAddRole = useCallback(async () => {
+  const handleAddRole: () => Promise<void> = useCallback(async (): Promise<void> => {
     if (roleForm.selectedUserId && roleForm.selectedRole) {
       await addRole(roleForm.selectedUserId, roleForm.selectedRole);
       setRoleForm({
@@ -257,8 +282,8 @@ export const useRoleManagement = (projectId: string) => {
     }
   }, [roleForm.selectedUserId, roleForm.selectedRole, addRole]);
 
-  const handleRemoveRole = useCallback(
-    async (userId: string) => {
+  const handleRemoveRole: (userId: string) => Promise<void> = useCallback(
+    async (userId: string): Promise<void> => {
       const removeCheck = canRemoveUserRole(userId, userRoles);
 
       if (!removeCheck.canRemove) {
@@ -271,7 +296,7 @@ export const useRoleManagement = (projectId: string) => {
     [userRoles, canRemoveUserRole, showToast, removeRole]
   );
 
-  const updateRoleForm = useCallback((updates: Partial<RoleFormState>) => {
+  const updateRoleForm = useCallback((updates: Partial<RoleFormState>): void => {
     setRoleForm((prev) => ({ ...prev, ...updates }));
   }, []);
 
