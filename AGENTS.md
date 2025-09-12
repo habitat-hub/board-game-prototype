@@ -3,7 +3,7 @@
 This document defines project structure, workflows, and conventions for contributors.
 
 ## Prerequisites
-- Node.js (see `.nvmrc` or `package.json` "engines") and a single project-wide package manager (npm, pnpm, or yarn)
+- Node.js (see `.tool-versions` or `package.json` "engines") and a single project-wide package manager (npm, pnpm, or yarn)
 - If using pnpm: `corepack enable && corepack prepare pnpm@latest --activate`
 - Docker and Docker Compose v2 (`docker compose ...`)
 - PostgreSQL client (optional, for local debugging)
