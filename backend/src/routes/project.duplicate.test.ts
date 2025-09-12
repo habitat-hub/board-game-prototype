@@ -19,10 +19,13 @@ describe('POST /api/projects/:projectId/duplicate', () => {
 
     const app = express();
     app.use(express.json());
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    app.use((req: any, _res, next) => {
-      req.isAuthenticated = () => true;
-      req.user = { id: 'user1' };
+    type AuthenticatedRequest = express.Request & {
+      user: { id: string };
+      isAuthenticated: () => boolean;
+    };
+    app.use((req, _res, next) => {
+      (req as AuthenticatedRequest).isAuthenticated = () => true;
+      (req as AuthenticatedRequest).user = { id: 'user1' };
       next();
     });
 
