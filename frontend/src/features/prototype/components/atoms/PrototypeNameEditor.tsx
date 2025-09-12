@@ -38,7 +38,7 @@ export default function PrototypeNameEditor({
   size = 'xs',
   weight = 'medium',
   editable = true,
-  notEditableReason = '管理者のみ名前を変更できます',
+  notEditableReason = 'Adminのみ名前を変更できます',
 }: PrototypeNameEditorProps) {
   const { useUpdatePrototype } = usePrototypes();
   const updatePrototypeMutation = useUpdatePrototype();
@@ -84,7 +84,11 @@ export default function PrototypeNameEditor({
           <div
             className={`w-full text-left ${sizeClass} ${weightClass} text-kibako-primary rounded-md px-2 h-8 flex items-center leading-none`}
           >
-            <span className="block w-full truncate" title={titleText} aria-label={titleText}>
+            <span
+              className="block w-full truncate"
+              title={titleText}
+              aria-label={titleText}
+            >
               {name}
             </span>
           </div>

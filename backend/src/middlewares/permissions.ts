@@ -94,7 +94,7 @@ export async function checkProjectOwner(
 }
 
 /**
- * プロジェクトの管理者ロールを持っているか確認する
+ * プロジェクトのAdminロールを持っているか確認する
  * @param req - リクエスト
  * @param res - レスポンス
  * @param next - 次のミドルウェア
@@ -134,7 +134,7 @@ export async function checkProjectAdminRole(
     if (!adminRole) {
       res
         .status(StatusCodes.FORBIDDEN)
-        .json({ message: '管理者ロールが必要です' });
+        .json({ message: 'Adminロールが必要です' });
       return;
     }
 

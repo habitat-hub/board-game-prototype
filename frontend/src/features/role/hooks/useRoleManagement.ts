@@ -67,15 +67,12 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
   });
 
   // トーストメッセージを表示する関数
-  const showToast = useCallback(
-    (message: string, type: ToastState['type']) => {
-      setToast({ message, type, show: true });
-      setTimeout(() => {
-        setToast((prev) => ({ ...prev, show: false }));
-      }, TOAST_DURATION_MS);
-    },
-    []
-  );
+  const showToast = useCallback((message: string, type: ToastState['type']) => {
+    setToast({ message, type, show: true });
+    setTimeout(() => {
+      setToast((prev) => ({ ...prev, show: false }));
+    }, TOAST_DURATION_MS);
+  }, []);
 
   // トーストを閉じる関数
   const closeToast = useCallback((): void => {
@@ -151,46 +148,51 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
   );
 
   // ロールを追加
-  const addRole: (userId: string, roleName: RoleValue) => Promise<void> = useCallback(
-    async (userId: string, roleName: RoleValue): Promise<void> => {
-      try {
-        setLoading(true);
-        await addRoleToProject(projectId, { userId, roleName });
-        await fetchUserRoles(); // 一覧を再取得
-        await fetchUsers(); // ユーザー検索用リストを再取得
-        showToast(`ユーザーに${roleName}権限を追加しました。`, 'success');
-      } catch (error) {
-        console.error('Error adding role:', error);
-        showToast('権限の追加に失敗しました。', 'error');
-      } finally {
-        setLoading(false);
-      }
-    },
-    [addRoleToProject, projectId, fetchUserRoles, fetchUsers, showToast]
-  );
+  const addRole: (userId: string, roleName: RoleValue) => Promise<void> =
+    useCallback(
+      async (userId: string, roleName: RoleValue): Promise<void> => {
+        try {
+          setLoading(true);
+          await addRoleToProject(projectId, { userId, roleName });
+          await fetchUserRoles(); // 一覧を再取得
+          await fetchUsers(); // ユーザー検索用リストを再取得
+          showToast(`ユーザーに${roleName}権限を追加しました。`, 'success');
+        } catch (error) {
+          console.error('Error adding role:', error);
+          showToast('権限の追加に失敗しました。', 'error');
+        } finally {
+          setLoading(false);
+        }
+      },
+      [addRoleToProject, projectId, fetchUserRoles, fetchUsers, showToast]
+    );
 
   // ロール更新
-  const updateRole: (userId: string, roleName: RoleValue) => Promise<void> = useCallback(
-    async (userId: string, roleName: RoleValue): Promise<void> => {
-      try {
-        setLoading(true);
-        await updateRoleInProject(projectId, userId, { roleName });
-        await fetchUserRoles(); // 一覧を再取得
-        showToast(`ユーザーの権限を${roleName}に変更しました。`, 'success');
-      } catch (error) {
-        console.error('Error updating role:', error);
-        showToast('権限の変更に失敗しました。', 'error');
-      } finally {
-        setLoading(false);
-      }
-    },
-    [updateRoleInProject, projectId, fetchUserRoles, showToast]
-  );
+  const updateRole: (userId: string, roleName: RoleValue) => Promise<void> =
+    useCallback(
+      async (userId: string, roleName: RoleValue): Promise<void> => {
+        try {
+          setLoading(true);
+          await updateRoleInProject(projectId, userId, { roleName });
+          await fetchUserRoles(); // 一覧を再取得
+          showToast(`ユーザーの権限を${roleName}に変更しました。`, 'success');
+        } catch (error) {
+          console.error('Error updating role:', error);
+          showToast('権限の変更に失敗しました。', 'error');
+        } finally {
+          setLoading(false);
+        }
+      },
+      [updateRoleInProject, projectId, fetchUserRoles, showToast]
+    );
 
   // ユーザーのロール削除が可能かチェック
   const canRemoveUserRole: (
     targetUserId: string,
-    rolesList: Array<{ userId: string; roles: Array<{ name: RoleValue | string }> }>
+    rolesList: Array<{
+      userId: string;
+      roles: Array<{ name: RoleValue | string }>;
+    }>
   ) => RemoveCheck = useCallback(
     (
       targetUserId: string,
@@ -230,7 +232,9 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
       }
 
       // 対象ユーザーが Admin 権限を持つか
-      const hasAdminRole = targetUserRole.roles.some((role) => role.name === ADMIN_ROLE);
+      const hasAdminRole = targetUserRole.roles.some(
+        (role) => role.name === ADMIN_ROLE
+      );
 
       if (hasAdminRole) {
         // 残存する Admin ユーザー数を確認
@@ -241,7 +245,7 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
         if (adminCount <= 1) {
           return {
             canRemove: false,
-            reason: '最後の管理者の権限は削除できません',
+            reason: '最後のAdminの権限は削除できません',
           };
         }
       }
@@ -272,15 +276,16 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
   );
 
   // ハンドラー関数群
-  const handleAddRole: () => Promise<void> = useCallback(async (): Promise<void> => {
-    if (roleForm.selectedUserId && roleForm.selectedRole) {
-      await addRole(roleForm.selectedUserId, roleForm.selectedRole);
-      setRoleForm({
-        selectedUserId: null,
-        selectedRole: 'editor',
-      });
-    }
-  }, [roleForm.selectedUserId, roleForm.selectedRole, addRole]);
+  const handleAddRole: () => Promise<void> =
+    useCallback(async (): Promise<void> => {
+      if (roleForm.selectedUserId && roleForm.selectedRole) {
+        await addRole(roleForm.selectedUserId, roleForm.selectedRole);
+        setRoleForm({
+          selectedUserId: null,
+          selectedRole: 'editor',
+        });
+      }
+    }, [roleForm.selectedUserId, roleForm.selectedRole, addRole]);
 
   const handleRemoveRole: (userId: string) => Promise<void> = useCallback(
     async (userId: string): Promise<void> => {
@@ -296,9 +301,12 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
     [userRoles, canRemoveUserRole, showToast, removeRole]
   );
 
-  const updateRoleForm = useCallback((updates: Partial<RoleFormState>): void => {
-    setRoleForm((prev) => ({ ...prev, ...updates }));
-  }, []);
+  const updateRoleForm = useCallback(
+    (updates: Partial<RoleFormState>): void => {
+      setRoleForm((prev) => ({ ...prev, ...updates }));
+    },
+    []
+  );
 
   // 初期化時に権限一覧、全ユーザー、プロジェクト詳細を取得
   useEffect(() => {

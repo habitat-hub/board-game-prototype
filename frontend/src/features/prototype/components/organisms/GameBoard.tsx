@@ -202,7 +202,7 @@ export default function GameBoard({
     onClearSelection: clearSelection,
   });
 
-  // ビューアーは常に選択モードを無効化
+  // Viewerは常に選択モードを無効化
   useEffect(() => {
     if (!canEdit && isSelectionMode) {
       toggleMode();
@@ -241,7 +241,7 @@ export default function GameBoard({
     e: Konva.KonvaEventObject<MouseEvent>,
     partId: number
   ) => {
-    // ビューアーはクリック操作を無効化
+    // Viewerはクリック操作を無効化
     if (!canEdit) {
       e.cancelBubble = true;
       return;
@@ -263,7 +263,7 @@ export default function GameBoard({
   };
 
   const handleBackgroundClick = () => {
-    // ビューアーは背景クリックも無効化（選択状態を変更しない）
+    // Viewerは背景クリックも無効化（選択状態を変更しない）
     if (!canEdit) return;
     // 矩形選択中の場合は背景クリックを無効化
     if (isSelectionInProgress) {

@@ -21,6 +21,7 @@ npm start      # 本番環境
 ```
 
 **動作フロー:**
+
 1. データベース接続確立
 2. ロール・権限・マッピングテーブルのデータ数をチェック
 3. データが不足している場合のみシーディングを実行
@@ -44,6 +45,7 @@ npm run seed:verify
 ## 環境別の動作
 
 ### 開発環境・本番環境共通
+
 - シーディング失敗時: アプリケーションが終了
 - データベーススキーマ: 既存構造を保護（`force: false, alter: false`）
 - エラーハンドリング: 厳密
@@ -53,18 +55,22 @@ npm run seed:verify
 ## シードデータの内容
 
 ### ロール（Roles）
-- `admin` - システム管理者（全権限）
-- `editor` - 編集者（読み書き権限）
-- `viewer` - 閲覧者（読み取り権限のみ）
+
+- `admin` - Admin（全権限）
+- `editor` - Editor（読み書き権限）
+- `viewer` - Viewer（読み取り権限のみ）
 
 ### 権限（Permissions）
+
 - プロジェクト関連
+
   - `read_project` - プロジェクトの閲覧
   - `write_project` - プロジェクトの編集
   - `delete_project` - プロジェクトの削除
   - `manage_project` - プロジェクトの管理
 
 - プロトタイプ関連
+
   - `read_prototype` - プロトタイプの閲覧
   - `write_prototype` - プロトタイプの編集
   - `delete_prototype` - プロトタイプの削除
@@ -78,16 +84,19 @@ npm run seed:verify
 データベース関連のエラーが発生した場合:
 
 1. **データベース権限の確認**
+
    - CREATE権限
    - INSERT権限
    - SELECT権限
 
 2. **データベース接続の確認**
+
    - DATABASE_URL環境変数
    - ネットワーク接続
    - データベースサーバーの状態
 
 3. **ログの確認**
+
    - アプリケーション起動ログ
    - データベースエラーログ
 

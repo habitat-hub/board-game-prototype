@@ -17,17 +17,17 @@ alwaysApply: true
 
 ```ts
 export const USER_ROLE = {
-  // 管理者
+  // Admin
   ADMIN: 1,
   // 一般ユーザー
   USER: 2,
 };
 
 /**
- * ユーザーが管理者かどうか判定する
+ * ユーザーがAdminかどうか判定する
  */
 function isAdmin(user: User): boolean {
-  // 管理者の場合
+  // Adminの場合
   if (user.role === USER_ROLE.ADMIN) {
     return true;
   }

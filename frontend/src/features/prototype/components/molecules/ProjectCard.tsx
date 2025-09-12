@@ -18,7 +18,7 @@ type ProjectCardProps = {
   partCount: number;
   // ルーム数（INSTANCEプロトタイプ数）
   roomCount: number;
-  // 管理者権限を持つかどうか
+  // Admin権限を持つかどうか
   isProjectAdmin: boolean;
   // 作成者名
   creatorName?: string;
@@ -84,7 +84,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
               bleedX={false}
               onUpdated={(newName) => setUpdatedName(newName)}
               editable={isProjectAdmin}
-              notEditableReason="管理者のみ名前を変更できます"
+              notEditableReason="Adminのみ名前を変更できます"
             />
           </div>
         </div>
