@@ -54,10 +54,9 @@ export function useSelection(
 ): UseSelectionReturn {
   const { stageRef, parts = [], onPartsSelected, onClearSelection } = options;
   // 複数選択可能モード
-  const [isSelectionMode, setIsSelectionMode] = useState<boolean>(() => {
-    const pref = getUIPreference('isSelectionMode');
-    return typeof pref === 'boolean' ? pref : true;
-  });
+  const [isSelectionMode, setIsSelectionMode] = useState<boolean>(
+    getUIPreference('isSelectionMode') as boolean
+  );
   // 複数選択用の矩形
   const [rectForSelection, setRectForSelection] = useState<SelectionRect>({
     x: 0,

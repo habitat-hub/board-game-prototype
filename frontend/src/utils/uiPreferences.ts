@@ -55,10 +55,16 @@ export const saveUIPreferences = (prefs: UIPreferences): void => {
 
 export const getUIPreference = <K extends keyof UIPreferences>(
   key: K
-): UIPreferences[K] | undefined => {
+): UIPreferences[K] => {
   const prefs = loadUIPreferences();
   const value = prefs[key];
-  return isValidPreferenceValue(key, value) ? value : undefined;
+  if (isValidPreferenceValue(key, value)) {
+    return value as UIPreferences[K];
+  }
+  if (key === 'isSelectionMode') {
+    return true as UIPreferences[K];
+  }
+  return undefined as UIPreferences[K];
 };
 
 export const setUIPreference = <K extends keyof UIPreferences>(
