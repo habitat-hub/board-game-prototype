@@ -30,7 +30,7 @@ export const COLORS = {
     '#FFD9B3', // Soft Orange (パステルオレンジ)
     '#D9B3D9', // Soft Purple (パステルパープル)
     '#C7E6C7', // Soft Dark Green (パステルダークグリーン)
-    '#F0E6F0', // Very Soft Pink (極薄ピンク)
+    '#D3D3D3', // Light Gray (ライトグレー)
   ],
   /** テキスト色 */
   TEXT: [
