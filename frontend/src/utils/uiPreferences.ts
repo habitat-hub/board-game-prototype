@@ -1,9 +1,12 @@
+import type { SortKey } from '@/components/atoms/SortDropdown';
+
 const UI_PREFERENCES_KEY = 'uiPreferences';
 
 export type ProjectListView = 'card' | 'table';
 
 export type UIPreferences = {
   projectListView?: ProjectListView;
+  projectListSortKey?: SortKey;
   // add more preferences here
 };
 
@@ -14,6 +17,15 @@ const isValidPreferenceValue = <K extends keyof UIPreferences>(
 ): boolean => {
   if (key === 'projectListView') {
     return value === 'card' || value === 'table';
+  }
+  if (key === 'projectListSortKey') {
+    return (
+      value === 'name' ||
+      value === 'createdAt' ||
+      value === 'partCount' ||
+      value === 'roomCount' ||
+      value === 'creator'
+    );
   }
   return true;
 };

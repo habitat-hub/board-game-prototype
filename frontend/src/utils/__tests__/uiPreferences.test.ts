@@ -27,4 +27,9 @@ describe('uiPreferences', () => {
     setUIPreference('projectListView', 'table');
     expect(getUIPreference('projectListView')).toBe('table');
   });
+
+  it('stores and retrieves projectListSortKey preference', () => {
+    setUIPreference('projectListSortKey', 'name');
+    expect(getUIPreference('projectListSortKey')).toBe('name');
+  });
 });
