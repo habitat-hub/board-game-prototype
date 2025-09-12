@@ -50,18 +50,16 @@ export const projectService = {
       );
       return response.data;
     } catch (error: unknown) {
-      let status: number | undefined;
-      let msg = '';
-      if (axios.isAxiosError<{ message?: string }, unknown>(error)) {
-        status = error.response?.status;
-        msg = error.response?.data?.message ?? error.message ?? '';
-      } else if (error instanceof Error) {
-        msg = error.message;
+      // Axiosエラーの場合はそのまま再スローして既存のハンドリングを維持
+      if (axios.isAxiosError(error)) {
+        throw error;
       }
-      const note = status ? ` (HTTP ${status})` : '';
-      throw new Error(
-        `プロジェクトの複製に失敗しました${note}: ${String(msg)}`
-      );
+      // 予期しないエラーの場合はユーザー向けメッセージでラップし、原因は cause に保持
+      const err = new Error('プロジェクトの複製に失敗しました。') as Error & {
+        cause?: unknown;
+      };
+      err.cause = error;
+      throw err;
     }
   },
   /**
