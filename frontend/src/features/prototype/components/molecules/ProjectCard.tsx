@@ -74,14 +74,13 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       {/* カード内容 */}
       <div className="p-3">
         {/* プロトタイプ名（インライン編集） */}
-        <div className="flex items-center">
-          <div className="w-full" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center min-w-0">
+          <div className="w-full min-w-0" onClick={(e) => e.stopPropagation()}>
             <PrototypeNameEditor
               prototypeId={id}
               name={updatedName ?? name}
               size="base"
               weight="bold"
-              truncate={false}
               bleedX={false}
               onUpdated={(newName) => setUpdatedName(newName)}
               editable={isProjectAdmin}

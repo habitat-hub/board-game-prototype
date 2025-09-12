@@ -80,19 +80,23 @@ export default function PrototypeNameEditor({
       : name;
     return (
       <div className={`w-full ${className ?? ''}`}>
-        <span
-          className={`w-full text-left ${sizeClass} ${weightClass} text-kibako-primary rounded-md ${
-            bleedX ? 'px-2 -mx-2' : 'px-2'
-          } ${
-            truncate
-              ? 'flex h-8 items-center leading-none truncate'
-              : 'block py-1.5 min-h-8 whitespace-normal break-words'
-          }`}
-          title={titleText}
-          aria-label={titleText}
-        >
-          {name}
-        </span>
+        {truncate ? (
+          <div
+            className={`w-full text-left ${sizeClass} ${weightClass} text-kibako-primary rounded-md px-2 h-8 flex items-center leading-none`}
+          >
+            <span className="block w-full truncate" title={titleText} aria-label={titleText}>
+              {name}
+            </span>
+          </div>
+        ) : (
+          <span
+            className={`w-full text-left ${sizeClass} ${weightClass} text-kibako-primary rounded-md px-2 block py-1.5 min-h-8 whitespace-normal break-words`}
+            title={titleText}
+            aria-label={titleText}
+          >
+            {name}
+          </span>
+        )}
       </div>
     );
   }
@@ -135,7 +139,8 @@ export default function PrototypeNameEditor({
             onKeyDown={(e) => handleKeyDown(e, handleComplete, validate)}
             className={`w-full text-kibako-primary ${weightClass} bg-transparent border border-transparent rounded-md py-1.5 min-h-8 focus:outline-none focus:bg-kibako-white focus:border-kibako-primary focus:shadow-sm transition-all ${sizeClass} ${
               bleedX ? 'px-2 -mx-2' : 'px-2'
-            }`}
+            } ${truncate ? 'truncate' : ''}`}
+            title={editedValue}
             autoFocus
           />
         </form>
