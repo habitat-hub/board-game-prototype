@@ -7,6 +7,7 @@ import PrototypeNameEditor from '@/features/prototype/components/atoms/Prototype
 import RowCell from '@/features/prototype/components/atoms/RowCell';
 import RowIconButton from '@/features/prototype/components/atoms/RowIconButton';
 import RowIconLink from '@/features/prototype/components/atoms/RowIconLink';
+import { DUPLICATE_DISABLED_HINT } from '@/features/prototype/constants';
 import { getProjectIcon } from '@/features/prototype/utils/getProjectIcon';
 import formatDate from '@/utils/dateFormat';
 
@@ -20,6 +21,7 @@ type ProjectTableProps = {
   onSelectPrototype: (projectId: string, prototypeId: string) => void;
   projectAdminMap: Record<string, boolean>;
   projectCreatorMap: Record<string, string>;
+  // プロジェクトごとの編集可否（管理者または編集者 = true）
   projectEditorMap: Record<string, boolean>;
 };
 
@@ -134,7 +136,7 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                     title={
                       projectEditorMap[project.id]
                         ? '複製'
-                        : '複製は管理者または編集者のみ可能です'
+                        : DUPLICATE_DISABLED_HINT
                     }
                     disabled={
                       duplicatingId === project.id ||
@@ -153,7 +155,10 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                           alert('MASTERプロトタイプが見つかりませんでした。');
                         }
                       } catch (error) {
-                        console.error('Failed to duplicate project', error);
+                        console.error(
+                          'プロジェクトの複製に失敗しました',
+                          error
+                        );
                         alert('プロジェクトの複製に失敗しました。');
                       } finally {
                         setDuplicatingId(null);
