@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { FaPlus, FaTable, FaTh } from 'react-icons/fa';
 import { IoReload } from 'react-icons/io5';
@@ -17,10 +17,13 @@ import SortDropdown, {
   SortOrder,
 } from '@/components/atoms/SortDropdown';
 import Loading from '@/components/organisms/Loading';
+import { ROLE_TYPE } from '@/constants/roles';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
+import type { ProjectContextMenuProps } from '@/features/prototype/components/atoms/ProjectContextMenu';
 import { EmptyProjectState } from '@/features/prototype/components/molecules/EmptyProjectState';
 import { ProjectCardList } from '@/features/prototype/components/molecules/ProjectCardList';
 import { ProjectTable } from '@/features/prototype/components/molecules/ProjectTable';
+import { DUPLICATE_DISABLED_HINT } from '@/features/prototype/constants';
 import useInlineEdit from '@/hooks/useInlineEdit';
 import { useUser } from '@/hooks/useUser';
 import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
@@ -30,9 +33,11 @@ import {
   ProjectListView,
 } from '@/utils/uiPreferences';
 
-// 役割名の定数（マジックストリング回避）
-const ROLE_ADMIN = 'admin' as const;
-const ROLE_EDITOR = 'editor' as const;
+type ContextMenuItem = ProjectContextMenuProps['items'][number];
+
+// コンテキストメニュー寸法
+const CONTEXT_MENU_WIDTH = 140;
+const CONTEXT_MENU_ITEM_HEIGHT = 32;
 
 // master の parts が配列かどうかを実行時に判定して件数を算出するためのタイプガード
 const hasArrayParts = (obj: unknown): obj is { parts: unknown[] } => {
@@ -94,6 +99,8 @@ const ProjectList: React.FC = () => {
   const [projectEditorMap, setProjectEditorMap] = useState<
     Record<string, boolean>
   >({});
+
+  const cancelledRef = useRef(false);
 
   // 表示モードとソート設定（永続値を安全に復元）
   const [viewMode, setViewMode] = useState<ProjectListView>(() => {
@@ -196,7 +203,6 @@ const ProjectList: React.FC = () => {
       return;
     }
 
-    const cancelled = { current: false } as const as { current: boolean };
     const fetchRoles = async (): Promise<void> => {
       const results = await Promise.all(
         projectsData.map(async ({ project }) => {
@@ -205,14 +211,15 @@ const ProjectList: React.FC = () => {
             const isAdmin = roles.some(
               (r) =>
                 r.userId === user.id &&
-                r.roles.some((role) => role.name === ROLE_ADMIN)
+                r.roles.some((role) => role.name === ROLE_TYPE.ADMIN)
             );
             const canEdit = roles.some(
               (r) =>
                 r.userId === user.id &&
                 r.roles.some(
                   (role) =>
-                    role.name === ROLE_ADMIN || role.name === ROLE_EDITOR
+                    role.name === ROLE_TYPE.ADMIN ||
+                    role.name === ROLE_TYPE.EDITOR
                 )
             );
             const creator = roles.find((r) => r.userId === project.userId);
@@ -231,7 +238,7 @@ const ProjectList: React.FC = () => {
           }
         })
       );
-      if (!cancelled.current) {
+      if (!cancelledRef.current) {
         const adminMap: Record<string, boolean> = {};
         const creatorMap: Record<string, string> = {};
         const editorMap: Record<string, boolean> = {};
@@ -247,7 +254,7 @@ const ProjectList: React.FC = () => {
     };
     fetchRoles();
     return () => {
-      cancelled.current = true;
+      cancelledRef.current = true;
     };
   }, [projectsData, user, getProjectRoles]);
 
@@ -421,8 +428,8 @@ const ProjectList: React.FC = () => {
   const getContextMenuItems = (
     project: Project,
     _masterPrototype: Prototype
-  ) => {
-    const items = [
+  ): ContextMenuItem[] => {
+    const items: ContextMenuItem[] = [
       {
         id: 'duplicate',
         text: '複製',
@@ -436,14 +443,14 @@ const ProjectList: React.FC = () => {
               );
             }
           } catch (error) {
-            console.error('Failed to duplicate project', error);
+            console.error('プロジェクトの複製に失敗しました', error);
             alert('プロジェクトの複製に失敗しました。');
           }
         },
         disabled: !projectEditorMap[project.id],
         title: projectEditorMap[project.id]
           ? undefined
-          : '複製は管理者または編集者のみ可能です',
+          : DUPLICATE_DISABLED_HINT,
       },
       {
         id: 'permissions',
@@ -453,16 +460,18 @@ const ProjectList: React.FC = () => {
         },
       },
     ];
-    if (projectAdminMap[project.id]) {
-      items.push({
-        id: 'delete',
-        text: '削除',
-        action: () => {
-          router.push(`/projects/${project.id}/delete`);
-        },
-      });
-    }
-    return items;
+    return [
+      ...items,
+      ...(projectAdminMap[project.id]
+        ? [
+            {
+              id: 'delete',
+              text: '削除',
+              action: () => router.push(`/projects/${project.id}/delete`),
+            } as const,
+          ]
+        : []),
+    ];
   };
 
   // ローディング表示
@@ -616,8 +625,8 @@ const ProjectList: React.FC = () => {
           <ProjectContextMenu
             visible={contextMenu.visible}
             position={contextMenu.position}
-            width={140}
-            itemHeight={32}
+            width={CONTEXT_MENU_WIDTH}
+            itemHeight={CONTEXT_MENU_ITEM_HEIGHT}
             items={getContextMenuItems(
               contextMenu.targetProject.project,
               contextMenu.targetProject.masterPrototype
