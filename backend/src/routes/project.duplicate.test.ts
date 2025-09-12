@@ -21,10 +21,8 @@ describe('POST /api/projects/:projectId/duplicate', () => {
     app.use(express.json());
     type AuthenticatedRequest = express.Request & {
       user: { id: string };
-      isAuthenticated: () => boolean;
     };
     app.use((req, _res, next) => {
-      (req as AuthenticatedRequest).isAuthenticated = () => true;
       (req as AuthenticatedRequest).user = { id: 'user1' };
       next();
     });
