@@ -216,10 +216,6 @@ export default function PartCreateMenu({
       name: PART_DEFAULT_CONFIG.HAND.name,
     },
     {
-      type: 'deck' as const,
-      name: PART_DEFAULT_CONFIG.DECK.name,
-    },
-    {
       type: 'area' as const,
       name: PART_DEFAULT_CONFIG.AREA.name,
     },
