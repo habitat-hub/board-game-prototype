@@ -1,15 +1,15 @@
 import React from 'react';
 import { MdPanTool } from 'react-icons/md';
 
-interface ModeToggleButtonProps {
+interface SelectionModeToggleButtonProps {
   isSelectionMode: boolean;
   onToggle: () => void;
 }
 
-export default function ModeToggleButton({
+export default function SelectionModeToggleButton({
   isSelectionMode,
   onToggle,
-}: ModeToggleButtonProps) {
+}: SelectionModeToggleButtonProps) {
   return (
     <div className="absolute bottom-4 left-4 z-overlay flex flex-col gap-2">
       <div className="relative group">

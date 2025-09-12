@@ -10,8 +10,8 @@ import React, {
 import { useImages } from '@/api/hooks/useImages';
 import { Part, PartProperty } from '@/api/types';
 import { ROLE_TYPE } from '@/constants/roles';
-import ModeToggleButton from '@/features/prototype/components/atoms/ModeToggleButton';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
+import SelectionModeToggleButton from '@/features/prototype/components/atoms/SelectionModeToggleButton';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
 import PartPropertyMenu from '@/features/prototype/components/molecules/PartPropertyMenu';
@@ -573,7 +573,7 @@ export default function GameBoard({
       {/* Provide overlay messages for parts (e.g., shuffle text like deck) */}
       <PartOverlayMessageProvider>
         {canEdit && (
-          <ModeToggleButton
+          <SelectionModeToggleButton
             isSelectionMode={isSelectionMode}
             onToggle={toggleMode}
           />
