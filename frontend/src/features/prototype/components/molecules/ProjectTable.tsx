@@ -20,6 +20,7 @@ type ProjectTableProps = {
   onSelectPrototype: (projectId: string, prototypeId: string) => void;
   projectAdminMap: Record<string, boolean>;
   projectCreatorMap: Record<string, string>;
+  projectEditorMap: Record<string, boolean>;
 };
 
 export const ProjectTable: React.FC<ProjectTableProps> = ({
@@ -27,6 +28,7 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
   onSelectPrototype,
   projectAdminMap,
   projectCreatorMap,
+  projectEditorMap,
 }) => {
   // 即時反映用: 名前更新が完了した行の一時表示名
   const [updatedNames, setUpdatedNames] = useState<Record<string, string>>({});
@@ -129,8 +131,15 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                   </RowIconButton>
                   <RowIconButton
                     ariaLabel="複製"
-                    title="複製"
-                    disabled={duplicatingId === project.id}
+                    title={
+                      projectEditorMap[project.id]
+                        ? '複製'
+                        : '複製は管理者または編集者のみ可能です'
+                    }
+                    disabled={
+                      duplicatingId === project.id ||
+                      !projectEditorMap[project.id]
+                    }
                     onClick={async () => {
                       setDuplicatingId(project.id);
                       try {

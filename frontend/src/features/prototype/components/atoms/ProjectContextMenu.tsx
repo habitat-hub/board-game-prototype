@@ -19,6 +19,8 @@ export interface ProjectContextMenuProps {
     action: () => void;
     icon?: React.ReactNode;
     danger?: boolean;
+    disabled?: boolean;
+    title?: string;
   }[];
   // メニューを閉じるコールバック
   onClose: () => void;
@@ -92,10 +94,14 @@ export const ProjectContextMenu: React.FC<ProjectContextMenuProps> = ({
       {items.map((item) => (
         <button
           key={item.id}
+          title={item.title}
+          disabled={item.disabled}
           className={`w-full px-4 text-left flex items-center gap-2 transition-colors ${
-            hoveredMenuItem === item.id
-              ? 'bg-kibako-tertiary/20'
-              : 'hover:bg-kibako-tertiary/20'
+            item.disabled
+              ? 'opacity-50 cursor-not-allowed'
+              : hoveredMenuItem === item.id
+                ? 'bg-kibako-tertiary/20'
+                : 'hover:bg-kibako-tertiary/20'
           } ${
             item.danger
               ? 'text-kibako-danger hover:text-kibako-danger/80'
@@ -108,6 +114,7 @@ export const ProjectContextMenu: React.FC<ProjectContextMenuProps> = ({
           onMouseEnter={() => setHoveredMenuItem(item.id)}
           onMouseLeave={() => setHoveredMenuItem(null)}
           onClick={() => {
+            if (item.disabled) return;
             item.action();
             onClose();
           }}
