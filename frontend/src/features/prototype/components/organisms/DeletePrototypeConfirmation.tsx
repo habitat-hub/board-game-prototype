@@ -11,7 +11,7 @@ import { Prototype, Project } from '@/api/types';
 import KibakoButton from '@/components/atoms/KibakoButton';
 import UserRoleList from '@/components/molecules/UserRoleList';
 import Loading from '@/components/organisms/Loading';
-import type { ConnectedUser } from '@/features/prototype/types';
+import type { ConnectedUser } from '@/features/prototype/types/livePrototypeInformation';
 import { useUser } from '@/hooks/useUser';
 import formatDate from '@/utils/dateFormat';
 
