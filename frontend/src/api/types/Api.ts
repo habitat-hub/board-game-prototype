@@ -331,7 +331,7 @@ export class Api<
       ...params,
     });
   /**
-   * @description 指定されたプロジェクトを複製します。
+   * @description 指定されたプロジェクトを複製します。書き込みまたはAdmin権限が必要です。
    *
    * @tags Projects
    * @name ProjectsDuplicateCreate

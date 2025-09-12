@@ -705,7 +705,7 @@ router.delete(
  *   post:
  *     tags: [Projects]
  *     summary: プロジェクトの複製
- *     description: 指定されたプロジェクトを複製します。
+ *     description: 指定されたプロジェクトを複製します。書き込みまたはAdmin権限が必要です。
  *     parameters:
  *       - name: projectId
  *         in: path
@@ -735,7 +735,7 @@ router.delete(
  */
 router.post(
   '/:projectId/duplicate',
-  checkProjectReadPermission,
+  checkProjectWritePermission,
   async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user as UserModel;
     const { projectId } = req.params;
