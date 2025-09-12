@@ -9,6 +9,7 @@ import { MdMeetingRoom, MdDelete } from 'react-icons/md';
 import { useProject } from '@/api/hooks/useProject';
 import { useUsers } from '@/api/hooks/useUsers';
 import { Prototype, ProjectsDetailData } from '@/api/types';
+import { PERMISSION_ACTIONS, RoleType } from '@/constants/roles';
 import ConnectedUserIcon from '@/features/prototype/components/atoms/ConnectedUserIcon';
 import PrototypeNameEditor from '@/features/prototype/components/atoms/PrototypeNameEditor';
 import GameBoardHelpPanel from '@/features/prototype/components/molecules/GameBoardHelpPanel';
@@ -17,6 +18,7 @@ import { useProjectSocket } from '@/features/prototype/hooks/useProjectSocket';
 import { GameBoardMode } from '@/features/prototype/types';
 import { useUser } from '@/hooks/useUser';
 import formatDate from '@/utils/dateFormat';
+import { can } from '@/utils/permissions';
 
 type LeftSidebarProps = {
   /** プロトタイプ名（表示用） */
@@ -62,7 +64,7 @@ export default function LeftSidebar({
   const [project, setProject] = useState<ProjectsDetailData | null>(null);
   const [isRoomCreating, setIsRoomCreating] = useState(false);
   const [needTutorial, setNeedTutorial] = useState(false);
-  const [currentRole, setCurrentRole] = useState<string | null>(null);
+  const [currentRole, setCurrentRole] = useState<RoleType | null>(null);
 
   // プロジェクトデータから必要な情報を取得
   // Socket通信で更新されたプロトタイプがあればそれを優先、なければプロジェクトのプロトタイプを使用
@@ -144,7 +146,8 @@ export default function LeftSidebar({
       try {
         const roles = await getProjectRoles(projectId);
         const role =
-          roles.find((r) => r.userId === user.id)?.roles?.[0]?.name ?? null;
+          (roles.find((r) => r.userId === user.id)?.roles?.[0]
+            ?.name as RoleType | null) ?? null;
         setCurrentRole(role);
       } catch (error) {
         console.error('ロールの取得中にエラーが発生しました：', error);
@@ -155,7 +158,7 @@ export default function LeftSidebar({
 
   // プレイルーム作成（バージョン＋インスタンス）
   const handleCreateRoom = async () => {
-    if (currentRole !== 'admin' && currentRole !== 'editor') return;
+    if (!can(currentRole, PERMISSION_ACTIONS.WRITE)) return;
     if (isRoomCreating) return;
     setIsRoomCreating(true);
     try {
@@ -178,7 +181,7 @@ export default function LeftSidebar({
 
   // プレイルーム削除
   const handleDeleteRoom = async (instanceId: string) => {
-    if (currentRole !== 'admin' && currentRole !== 'editor') return;
+    if (!can(currentRole, PERMISSION_ACTIONS.DELETE)) return;
     if (!window.confirm('本当にこのプレイルームを削除しますか？')) return;
 
     try {
@@ -225,7 +228,7 @@ export default function LeftSidebar({
       <div className="p-2 overflow-y-auto scrollbar-hide space-y-4">
         <div className="flex flex-col gap-2 py-0.5 px-0">
           {/* 新しいプレイルーム作成ボタン */}
-          {currentRole && currentRole !== 'viewer' && (
+          {can(currentRole, PERMISSION_ACTIONS.WRITE) && (
             <button
               onClick={handleCreateRoom}
               disabled={isRoomCreating}
@@ -299,7 +302,7 @@ export default function LeftSidebar({
                       </div>
                     </div>
                   </Link>
-                  {currentRole && currentRole !== 'viewer' && (
+                  {can(currentRole, PERMISSION_ACTIONS.DELETE) && (
                     <button
                       onClick={() => handleDeleteRoom(instance.id)}
                       className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full group/delete hover:bg-kibako-accent/20 focus:outline-none flex items-center justify-center"
@@ -335,7 +338,7 @@ export default function LeftSidebar({
             prototypeId={prototypeId}
             name={prototypeName}
             onUpdated={handlePrototypeNameUpdated}
-            editable={currentRole === 'admin'}
+            editable={can(currentRole, PERMISSION_ACTIONS.MANAGE)}
             notEditableReason="Adminのみ名前を変更できます"
           />
         </div>

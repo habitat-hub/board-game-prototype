@@ -11,9 +11,11 @@ import { Prototype, Project } from '@/api/types';
 import KibakoButton from '@/components/atoms/KibakoButton';
 import UserRoleList from '@/components/molecules/UserRoleList';
 import Loading from '@/components/organisms/Loading';
+import { PERMISSION_ACTIONS, RoleType } from '@/constants/roles';
 import type { ConnectedUser } from '@/features/prototype/types/livePrototypeInformation';
 import { useUser } from '@/hooks/useUser';
 import formatDate from '@/utils/dateFormat';
+import { can } from '@/utils/permissions';
 
 /**
  * プロトタイプ削除確認画面コンポーネント。
@@ -36,7 +38,7 @@ const DeletePrototypeConfirmation = (): ReactElement => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [canDelete, setCanDelete] = useState<boolean>(false);
   const [creatorName, setCreatorName] = useState<string>('');
   const [roleUsers, setRoleUsers] = useState<ConnectedUser[]>([]);
 
@@ -60,12 +62,14 @@ const DeletePrototypeConfirmation = (): ReactElement => {
           );
         }
         const roles = await getProjectRoles(projectId);
-        const admin = roles.some(
+        const deletable = roles.some(
           (r) =>
             r.userId === user?.id &&
-            r.roles.some((role) => role.name === 'admin')
+            r.roles.some((role) =>
+              can(role.name as RoleType, PERMISSION_ACTIONS.DELETE)
+            )
         );
-        setIsAdmin(admin);
+        setCanDelete(deletable);
         setRoleUsers(
           roles.map((r) => ({
             userId: r.userId,
@@ -213,8 +217,8 @@ const DeletePrototypeConfirmation = (): ReactElement => {
             className="flex-1 flex items-center justify-center gap-2"
             variant="danger"
             onClick={handleDelete}
-            disabled={!isAdmin || isDeleting}
-            title={!isAdmin ? 'Admin権限が必要です' : undefined}
+            disabled={!canDelete || isDeleting}
+            title={!canDelete ? 'Admin権限が必要です' : undefined}
           >
             {isDeleting ? (
               <>
@@ -229,7 +233,7 @@ const DeletePrototypeConfirmation = (): ReactElement => {
             )}
           </KibakoButton>
         </div>
-        {!isAdmin && (
+        {!canDelete && (
           <p className="text-kibako-primary/70 text-sm mt-4">
             プロジェクトを削除するにはAdmin権限が必要です。
           </p>
