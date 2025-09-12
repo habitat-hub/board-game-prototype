@@ -16,9 +16,13 @@ export interface ProjectContextMenuProps {
   items: {
     id: string;
     text: string;
-    action: () => void;
+    action: () => void | Promise<void>;
     icon?: React.ReactNode;
     danger?: boolean;
+    // 無効化フラグ（true の場合はクリック不可・スタイル変更）
+    disabled?: boolean;
+    // ツールチップに表示する補助説明
+    title?: string;
   }[];
   // メニューを閉じるコールバック
   onClose: () => void;
@@ -40,6 +44,7 @@ export const ProjectContextMenu: React.FC<ProjectContextMenuProps> = ({
 
   // メニューの高さを計算
   const menuHeight = items.length * itemHeight;
+  const MENU_VERTICAL_PADDING = 8; // py-1 (上下4pxずつ) に相当
 
   // 外部クリック時にメニューを閉じる
   useEffect(() => {
@@ -85,17 +90,22 @@ export const ProjectContextMenu: React.FC<ProjectContextMenuProps> = ({
         left: position.x + window.scrollX,
         top: position.y + window.scrollY,
         width: `${width}px`,
-        height: `${menuHeight + 8}px`, // py-1 (上下4pxずつ) を考慮
+        height: `${menuHeight + MENU_VERTICAL_PADDING}px`,
       }}
       onClick={(e) => e.stopPropagation()}
     >
       {items.map((item) => (
         <button
+          type="button"
           key={item.id}
+          title={item.title}
+          disabled={item.disabled}
           className={`w-full px-4 text-left flex items-center gap-2 transition-colors ${
-            hoveredMenuItem === item.id
-              ? 'bg-kibako-tertiary/20'
-              : 'hover:bg-kibako-tertiary/20'
+            item.disabled
+              ? 'opacity-50 cursor-not-allowed'
+              : hoveredMenuItem === item.id
+                ? 'bg-kibako-tertiary/20'
+                : 'hover:bg-kibako-tertiary/20'
           } ${
             item.danger
               ? 'text-kibako-danger hover:text-kibako-danger/80'
@@ -105,9 +115,12 @@ export const ProjectContextMenu: React.FC<ProjectContextMenuProps> = ({
             height: `${itemHeight}px`,
             fontSize: `${itemHeight * 0.5}px`,
           }}
-          onMouseEnter={() => setHoveredMenuItem(item.id)}
+          onMouseEnter={() => {
+            if (!item.disabled) setHoveredMenuItem(item.id);
+          }}
           onMouseLeave={() => setHoveredMenuItem(null)}
           onClick={() => {
+            if (item.disabled) return;
             item.action();
             onClose();
           }}

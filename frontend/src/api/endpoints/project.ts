@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 import axiosInstance from '../client';
 import {
   Prototype,
@@ -47,11 +49,17 @@ export const projectService = {
         `/api/projects/${projectId}/duplicate`
       );
       return response.data;
-    } catch (error: any) {
-      const status = error?.response?.status as number | undefined;
-      const msg = error?.response?.data?.message ?? error?.message ?? '';
-      const note = status ? ` (HTTP ${status})` : '';
-      throw new Error(`プロジェクトの複製に失敗しました${note}: ${String(msg)}`);
+    } catch (error: unknown) {
+      // Axiosエラーの場合はそのまま再スローして既存のハンドリングを維持
+      if (axios.isAxiosError(error)) {
+        throw error;
+      }
+      // 予期しないエラーの場合はユーザー向けメッセージでラップし、原因は cause に保持
+      const err = new Error('プロジェクトの複製に失敗しました。') as Error & {
+        cause?: unknown;
+      };
+      err.cause = error;
+      throw err;
     }
   },
   /**

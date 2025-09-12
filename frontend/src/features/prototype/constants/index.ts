@@ -5,3 +5,4 @@ export * from './helpInfo';
 export * from './shortcutKeys';
 export * from './part';
 export * from './presence';
+export * from './project';

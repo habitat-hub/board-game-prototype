@@ -7,6 +7,7 @@ import { useCallback, useRef, useState, useEffect, RefObject } from 'react';
 
 import { Part } from '@/api/types';
 import { isRectOverlap } from '@/features/prototype/utils/overlap';
+import { getUIPreference, setUIPreference } from '@/utils/uiPreferences';
 
 interface SelectionRect {
   x: number;
@@ -53,7 +54,10 @@ export function useSelection(
 ): UseSelectionReturn {
   const { stageRef, parts = [], onPartsSelected, onClearSelection } = options;
   // 複数選択可能モード
-  const [isSelectionMode, setIsSelectionMode] = useState<boolean>(true);
+  const [isSelectionMode, setIsSelectionMode] = useState<boolean>(() => {
+    const pref = getUIPreference('isSelectionMode');
+    return typeof pref === 'boolean' ? pref : true;
+  });
   // 複数選択用の矩形
   const [rectForSelection, setRectForSelection] = useState<SelectionRect>({
     x: 0,
@@ -232,7 +236,11 @@ export function useSelection(
   );
 
   const toggleMode = useCallback(() => {
-    setIsSelectionMode((prev) => !prev);
+    setIsSelectionMode((prev) => {
+      const next = !prev;
+      setUIPreference('isSelectionMode', next);
+      return next;
+    });
   }, []);
 
   const consumeJustFinishedSelection = useCallback(() => {

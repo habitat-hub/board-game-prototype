@@ -11,6 +11,7 @@ import { useImages } from '@/api/hooks/useImages';
 import { Part, PartProperty } from '@/api/types';
 import { ROLE_TYPE } from '@/constants/roles';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
+import SelectionModeToggleButton from '@/features/prototype/components/atoms/SelectionModeToggleButton';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
 import PartCreateMenu from '@/features/prototype/components/molecules/PartCreateMenu';
 import PartPropertyMenu from '@/features/prototype/components/molecules/PartPropertyMenu';
@@ -200,6 +201,13 @@ export default function GameBoard({
     },
     onClearSelection: clearSelection,
   });
+
+  // ビューアーは常に選択モードを無効化
+  useEffect(() => {
+    if (!canEdit && isSelectionMode) {
+      toggleMode();
+    }
+  }, [canEdit, isSelectionMode, toggleMode]);
   // ドラッグ機能
   const { handlePartDragStart, handlePartDragMove, handlePartDragEnd } =
     usePartDragSystem({
@@ -419,8 +427,10 @@ export default function GameBoard({
     canEdit ? gameBoardMode : GameBoardMode.PREVIEW
   );
 
-  // スペースキー検出とモード切り替え
+  // スペースキー検出とモード切り替え（編集可能なユーザーのみ）
   useEffect(() => {
+    if (!canEdit) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       // スペースキー以外のイベント、またはスペースキー押下中の場合は無視
       if (e.code !== 'Space' || spacePressing) return;
@@ -461,7 +471,13 @@ export default function GameBoard({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [spacePressing, isSelectionMode, needToReturnToSelectionMode, toggleMode]);
+  }, [
+    canEdit,
+    spacePressing,
+    isSelectionMode,
+    needToReturnToSelectionMode,
+    toggleMode,
+  ]);
 
   useEffect(() => {
     const loadImages = async () => {
@@ -541,28 +557,34 @@ export default function GameBoard({
     [handleStageClickFromHook, isSelectionInProgress]
   );
 
+  const effectiveSelectionMode = canEdit ? isSelectionMode : false;
+
   // カーソルのスタイル
   const cursorStyle = useMemo(() => {
-    // 矩形選択を無効化するため、常に選択モードではない前提のカーソル制御にする
-    if (spacePressing) {
+    // スペース押下状態、または選択モードでない場合
+    if (spacePressing || !effectiveSelectionMode) {
       return isGrabbing ? 'grabbing' : 'grab';
     }
-    // 既定は通常カーソル
     return 'default';
-  }, [spacePressing, isGrabbing]);
+  }, [spacePressing, isGrabbing, effectiveSelectionMode]);
 
   return (
     <DebugModeProvider>
       {/* Provide overlay messages for parts (e.g., shuffle text like deck) */}
       <PartOverlayMessageProvider>
+        {canEdit && (
+          <SelectionModeToggleButton
+            isSelectionMode={isSelectionMode}
+            onToggle={toggleMode}
+          />
+        )}
         <GameBoardCanvas
           stageRef={stageRef}
           viewportSize={viewportSize}
           canvasSize={canvasSize}
           camera={camera}
           gameBoardMode={gameBoardMode}
-          // 矩形選択を無効化し、パーツクリックのみで選択可能にする
-          isSelectionMode={false}
+          isSelectionMode={effectiveSelectionMode}
           cursorStyle={cursorStyle}
           grabbingHandlers={grabbingHandlers}
           handleWheel={handleWheel}
