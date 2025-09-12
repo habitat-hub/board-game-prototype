@@ -9,7 +9,7 @@ import React, {
 
 import { useImages } from '@/api/hooks/useImages';
 import { Part, PartProperty } from '@/api/types';
-import { ROLE_TYPE } from '@/constants/roles';
+import { PERMISSION_ACTIONS, RoleType } from '@/constants/roles';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
 import SelectionModeToggleButton from '@/features/prototype/components/atoms/SelectionModeToggleButton';
 import LeftSidebar from '@/features/prototype/components/molecules/LeftSidebar';
@@ -47,6 +47,7 @@ import {
 } from '@/utils/db';
 import { revokeMultipleObjectURLsAndCleanCache } from '@/utils/imageCache';
 import { isInputFieldFocused } from '@/utils/inputFocus';
+import { can } from '@/utils/permissions';
 
 import GameBoardCanvas from './GameBoardCanvas';
 
@@ -139,17 +140,17 @@ export default function GameBoard({
     [userRoles, connectedUsers]
   );
 
-  const currentRole = useMemo(
+  const currentRole: RoleType | null = useMemo(
     () =>
-      userRoles?.find((ur) => ur.userId === currentUserId)?.roles[0]?.name ||
-      null,
+      (userRoles?.find((ur) => ur.userId === currentUserId)?.roles[0]
+        ?.name as RoleType | null) || null,
     [userRoles, currentUserId]
   );
   // ロール未取得/不明時は編集不可（デフォルト拒否）
-  const canEdit = useMemo(() => {
-    if (!currentRole) return false;
-    return currentRole === ROLE_TYPE.ADMIN || currentRole === ROLE_TYPE.EDITOR;
-  }, [currentRole]);
+  const canEdit = useMemo(
+    () => can(currentRole, PERMISSION_ACTIONS.WRITE),
+    [currentRole]
+  );
 
   // 自分のユーザー情報（色付けに使用）
   const selfUser = useMemo(() => {

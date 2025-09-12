@@ -17,7 +17,7 @@ import SortDropdown, {
   SortOrder,
 } from '@/components/atoms/SortDropdown';
 import Loading from '@/components/organisms/Loading';
-import { ROLE_TYPE } from '@/constants/roles';
+import { PERMISSION_ACTIONS, RoleType } from '@/constants/roles';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
 import type { ProjectContextMenuProps } from '@/features/prototype/components/atoms/ProjectContextMenu';
 import { EmptyProjectState } from '@/features/prototype/components/molecules/EmptyProjectState';
@@ -27,6 +27,7 @@ import { DUPLICATE_DISABLED_HINT } from '@/features/prototype/constants';
 import useInlineEdit from '@/hooks/useInlineEdit';
 import { useUser } from '@/hooks/useUser';
 import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
+import { can } from '@/utils/permissions';
 import {
   getUIPreference,
   setUIPreference,
@@ -216,15 +217,15 @@ const ProjectList: React.FC = () => {
             const isAdmin = roles.some(
               (r) =>
                 r.userId === user.id &&
-                r.roles.some((role) => role.name === ROLE_TYPE.ADMIN)
+                r.roles.some((role) =>
+                  can(role.name as RoleType, PERMISSION_ACTIONS.MANAGE)
+                )
             );
             const canEdit = roles.some(
               (r) =>
                 r.userId === user.id &&
-                r.roles.some(
-                  (role) =>
-                    role.name === ROLE_TYPE.ADMIN ||
-                    role.name === ROLE_TYPE.EDITOR
+                r.roles.some((role) =>
+                  can(role.name as RoleType, PERMISSION_ACTIONS.WRITE)
                 )
             );
             const creator = roles.find((r) => r.userId === project.userId);

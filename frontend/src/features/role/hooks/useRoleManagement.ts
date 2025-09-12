@@ -3,6 +3,7 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useProject } from '@/api/hooks/useProject';
 import { useUsers } from '@/api/hooks/useUsers';
 import { User, ProjectsDetailData } from '@/api/types';
+import { PERMISSION_ACTIONS, RoleType } from '@/constants/roles';
 import type {
   RoleValue,
   RoleFormState,
@@ -12,6 +13,7 @@ import type {
   UseRoleManagement,
 } from '@/features/role/types';
 import { useUser } from '@/hooks/useUser';
+import { can } from '@/utils/permissions';
 
 /**
  * 権限管理のビジネスロジックを提供するカスタムフック。
@@ -25,7 +27,6 @@ import { useUser } from '@/hooks/useUser';
  * handleRemoveRole/updateRoleForm/closeToast）を返します。
  */
 export const useRoleManagement = (projectId: string): UseRoleManagement => {
-  const ADMIN_ROLE: RoleValue = 'admin';
   const TOAST_DURATION_MS = 3000; // トーストの表示時間(ms)
   const { user: currentUser } = useUser();
   const { searchUsers } = useUsers();
@@ -51,7 +52,9 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
       (ur) => ur.userId === currentUser.id
     );
     return currentUserRole
-      ? currentUserRole.roles.some((role) => role.name === ADMIN_ROLE)
+      ? currentUserRole.roles.some((role) =>
+          can(role.name as RoleType, PERMISSION_ACTIONS.MANAGE)
+        )
       : false;
   }, [currentUser, userRoles]);
 
@@ -231,15 +234,17 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
         return { canRemove: false, reason: 'ユーザーが見つかりません' };
       }
 
-      // 対象ユーザーが Admin 権限を持つか
-      const hasAdminRole = targetUserRole.roles.some(
-        (role) => role.name === ADMIN_ROLE
+      // 対象ユーザーが管理権限を持つか
+      const hasAdminRole = targetUserRole.roles.some((role) =>
+        can(role.name as RoleType, PERMISSION_ACTIONS.MANAGE)
       );
 
       if (hasAdminRole) {
-        // 残存する Admin ユーザー数を確認
+        // 残存する管理権限ユーザー数を確認
         const adminCount = rolesList.filter((ur) =>
-          ur.roles.some((role) => role.name === ADMIN_ROLE)
+          ur.roles.some((role) =>
+            can(role.name as RoleType, PERMISSION_ACTIONS.MANAGE)
+          )
         ).length;
 
         if (adminCount <= 1) {
