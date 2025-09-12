@@ -336,7 +336,7 @@ export default function LeftSidebar({
             name={prototypeName}
             onUpdated={handlePrototypeNameUpdated}
             editable={currentRole === 'admin'}
-            notEditableReason="管理者のみ名前を変更できます"
+            notEditableReason="Adminのみ名前を変更できます"
           />
         </div>
         {/* プレイルームを開いている時は開閉ボタンを非表示 */}

@@ -216,7 +216,7 @@ export interface ProjectsInviteCreatePayload {
   /** 招待するユーザーのIDリスト */
   guestIds?: string[];
   /**
-   * 付与するロールタイプ（admin：管理者、editor：編集者、viewer：閲覧者）
+   * 付与するロールタイプ（Admin, Editor, Viewer）
    * @default "editor"
    */
   roleType?: 'admin' | 'editor' | 'viewer';

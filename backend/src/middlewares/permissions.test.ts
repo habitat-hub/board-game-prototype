@@ -199,7 +199,7 @@ describe('checkProjectAdminRole', () => {
 
     expect(res.status).toHaveBeenCalledWith(403);
     expect(res.json).toHaveBeenCalledWith({
-      message: '管理者ロールが必要です',
+      message: 'Adminロールが必要です',
     });
     expect(next).not.toHaveBeenCalled();
   });

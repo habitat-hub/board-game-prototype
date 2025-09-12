@@ -9,15 +9,15 @@ import { ROLE_TYPE, PERMISSION_ACTIONS, RESOURCE_TYPES } from '../../const';
 const INITIAL_ROLES = [
   {
     name: ROLE_TYPE.ADMIN,
-    description: '管理者 - 全機能にアクセス可能',
+    description: 'Admin - 全機能にアクセス可能',
   },
   {
     name: ROLE_TYPE.EDITOR,
-    description: '編集者 - プロトタイプの作成・編集が可能',
+    description: 'Editor - プロトタイプの作成・編集が可能',
   },
   {
     name: ROLE_TYPE.VIEWER,
-    description: '閲覧者 - プロトタイプの閲覧のみ可能',
+    description: 'Viewer - プロトタイプの閲覧のみ可能',
   },
 ];
 
@@ -150,7 +150,7 @@ export async function seedRolesAndPermissions() {
       const rolePermissions = [];
 
       if (allowedActions === 'ALL') {
-        // 管理者は全権限
+        // Adminは全権限
         rolePermissions.push(...Array.from(permissions.values()));
       } else {
         // 指定されたアクションの権限のみ

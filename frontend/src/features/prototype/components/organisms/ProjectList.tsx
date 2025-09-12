@@ -87,7 +87,7 @@ const ProjectList: React.FC = () => {
   // リロードアイコンのワンショットアニメーション制御
   const [isReloadAnimating, setIsReloadAnimating] = useState<boolean>(false);
 
-  // プロジェクトごとの管理者権限マップ
+  // プロジェクトごとのAdmin権限マップ
   const [projectAdminMap, setProjectAdminMap] = useState<
     Record<string, boolean>
   >({});
@@ -95,7 +95,7 @@ const ProjectList: React.FC = () => {
   const [projectCreatorMap, setProjectCreatorMap] = useState<
     Record<string, string>
   >({});
-  // プロジェクトごとの編集権限マップ（管理者または編集者）
+  // プロジェクトごとの編集権限マップ（AdminまたはEditor）
   const [projectEditorMap, setProjectEditorMap] = useState<
     Record<string, boolean>
   >({});
@@ -197,10 +197,10 @@ const ProjectList: React.FC = () => {
     [prototypeList, sortKey, sortOrder, projectCreatorMap]
   );
 
-  // ユーザーが管理者または編集者かどうかを取得
+  // ユーザーがAdminまたはEditorかどうかを取得
   useEffect(() => {
     cancelledRef.current = false;
-    // projectsData または user が未定義の場合は全て非管理者として扱う
+    // projectsData または user が未定義の場合は全て非Adminとして扱う
     if (!projectsData || !user) {
       setProjectAdminMap({});
       setProjectCreatorMap({});
@@ -231,7 +231,7 @@ const ProjectList: React.FC = () => {
             const creatorName = creator?.user?.username ?? '';
             return [project.id, { isAdmin, creatorName, canEdit }] as const;
           } catch (e) {
-            // 予期しないエラーはログに記録し、UI 側は非管理者として扱う
+            // 予期しないエラーはログに記録し、UI 側は非Adminとして扱う
             console.error('プロジェクトのロール取得に失敗しました:', {
               projectId: project.id,
               error: e,
