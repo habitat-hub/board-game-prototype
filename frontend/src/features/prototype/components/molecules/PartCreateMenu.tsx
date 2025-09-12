@@ -12,6 +12,7 @@ import PartTypeIcon from '@/features/prototype/components/atoms/PartTypeIcon';
 import {
   PART_DEFAULT_CONFIG,
   GAME_BOARD_SIZE,
+  COLORS,
 } from '@/features/prototype/constants';
 import {
   POSITION_ATTEMPTS,
@@ -183,6 +184,7 @@ export default function PartCreateMenu({
               {
                 side: 'back',
                 ...commonProperties,
+                color: COLORS.BACKGROUNDS[COLORS.BACKGROUNDS.length - 1],
                 description:
                   partConfig.backDescription || partConfig.description,
               },
