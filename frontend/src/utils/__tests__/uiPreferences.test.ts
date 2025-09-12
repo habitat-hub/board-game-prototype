@@ -37,4 +37,8 @@ describe('uiPreferences', () => {
     setUIPreference('isSelectionMode', true);
     expect(getUIPreference('isSelectionMode')).toBe(true);
   });
+
+  it('returns true by default for isSelectionMode', () => {
+    expect(getUIPreference('isSelectionMode')).toBe(true);
+  });
 });
