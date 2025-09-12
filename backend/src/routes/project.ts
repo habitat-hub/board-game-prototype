@@ -517,7 +517,7 @@ router.get(
  *   post:
  *     tags: [Projects]
  *     summary: ユーザーにプロジェクトへのアクセス権を付与
- *     description: 指定されたプロジェクトにユーザーを招待します。
+ *     description: 指定されたプロジェクトにユーザーを招待します。Adminロール（またはMANAGE権限）を持つユーザーのみが利用できます。
  *     parameters:
  *       - name: projectId
  *         in: path
@@ -570,7 +570,7 @@ router.get(
  */
 router.post(
   '/:projectId/invite',
-  checkProjectReadPermission,
+  checkProjectAdminRole,
   async (req: Request, res: Response, next: NextFunction) => {
     const projectId = req.params.projectId;
     const guestIds = req.body.guestIds;
@@ -626,7 +626,7 @@ router.post(
  *   delete:
  *     tags: [Projects]
  *     summary: ユーザーのアクセス権を削除
- *     description: 指定されたプロジェクトからユーザーのアクセス権を削除します。
+ *     description: 指定されたプロジェクトからユーザーのアクセス権を削除します。Adminロール（またはMANAGE権限）を持つユーザーのみが利用できます。
  *     parameters:
  *       - name: projectId
  *         in: path
@@ -668,7 +668,7 @@ router.post(
  */
 router.delete(
   '/:projectId/invite/:guestId',
-  checkProjectReadPermission,
+  checkProjectAdminRole,
   async (req: Request, res: Response, next: NextFunction) => {
     const projectId = req.params.projectId;
     const guestId = req.params.guestId;
