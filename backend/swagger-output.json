@@ -1188,7 +1188,7 @@
           "Projects"
         ],
         "summary": "ユーザーにプロジェクトへのアクセス権を付与",
-        "description": "指定されたプロジェクトにユーザーを招待します。",
+        "description": "指定されたプロジェクトにユーザーを招待します。Adminロール（またはMANAGE権限）を持つユーザーのみが利用できます。",
         "parameters": [
           {
             "name": "projectId",
@@ -1279,7 +1279,7 @@
           "Projects"
         ],
         "summary": "ユーザーのアクセス権を削除",
-        "description": "指定されたプロジェクトからユーザーのアクセス権を削除します。",
+        "description": "指定されたプロジェクトからユーザーのアクセス権を削除します。Adminロール（またはMANAGE権限）を持つユーザーのみが利用できます。",
         "parameters": [
           {
             "name": "projectId",
