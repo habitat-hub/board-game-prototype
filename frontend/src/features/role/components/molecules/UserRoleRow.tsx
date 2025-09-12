@@ -94,7 +94,6 @@ const UserRoleRow: React.FC<UserRoleRowProps> = ({
         <RoleSelect
           value={selectedRole}
           onChange={handleChange}
-          {/* 作成者/本人/処理中/権限なしの場合は変更不可 */}
           disabled={isCreator || isSelf || loading || !canManageRole}
           title={dropdownTitle}
           aria-label={dropdownTitle}
@@ -104,7 +103,6 @@ const UserRoleRow: React.FC<UserRoleRowProps> = ({
         <button
           type="button"
           onClick={() => onRemove(userRole.userId)}
-          {/* 削除可否とローディングでクラス/属性を切替 */}
           className={`p-2 rounded transition-colors ${
             canRemove && !loading && canManageRole
               ? 'text-kibako-primary/60 hover:text-kibako-danger hover:bg-kibako-danger/30'
