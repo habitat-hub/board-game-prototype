@@ -7,6 +7,7 @@ export type ProjectListView = 'card' | 'table';
 export type UIPreferences = {
   projectListView?: ProjectListView;
   projectListSortKey?: SortKey;
+  isSelectionMode?: boolean;
   // add more preferences here
 };
 
@@ -26,6 +27,9 @@ const isValidPreferenceValue = <K extends keyof UIPreferences>(
       value === 'roomCount' ||
       value === 'creator'
     );
+  }
+  if (key === 'isSelectionMode') {
+    return typeof value === 'boolean';
   }
   return true;
 };

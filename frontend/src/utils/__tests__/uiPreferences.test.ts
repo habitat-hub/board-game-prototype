@@ -32,4 +32,9 @@ describe('uiPreferences', () => {
     setUIPreference('projectListSortKey', 'name');
     expect(getUIPreference('projectListSortKey')).toBe('name');
   });
+
+  it('stores and retrieves isSelectionMode preference', () => {
+    setUIPreference('isSelectionMode', true);
+    expect(getUIPreference('isSelectionMode')).toBe(true);
+  });
 });
