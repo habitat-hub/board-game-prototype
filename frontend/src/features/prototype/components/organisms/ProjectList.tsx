@@ -32,6 +32,7 @@ import {
 
 // 役割名の定数（マジックストリング回避）
 const ROLE_ADMIN = 'admin' as const;
+const ROLE_EDITOR = 'editor' as const;
 
 // master の parts が配列かどうかを実行時に判定して件数を算出するためのタイプガード
 const hasArrayParts = (obj: unknown): obj is { parts: unknown[] } => {
@@ -88,6 +89,10 @@ const ProjectList: React.FC = () => {
   // プロジェクト作成者名のマップ
   const [projectCreatorMap, setProjectCreatorMap] = useState<
     Record<string, string>
+  >({});
+  // プロジェクトごとの編集権限マップ（管理者または編集者）
+  const [projectEditorMap, setProjectEditorMap] = useState<
+    Record<string, boolean>
   >({});
 
   // 表示モードとソート設定（永続値を安全に復元）
@@ -181,12 +186,13 @@ const ProjectList: React.FC = () => {
     [prototypeList, sortKey, sortOrder, projectCreatorMap]
   );
 
-  // ユーザーが管理者かどうかを取得
+  // ユーザーが管理者または編集者かどうかを取得
   useEffect(() => {
     // projectsData または user が未定義の場合は全て非管理者として扱う
     if (!projectsData || !user) {
       setProjectAdminMap({});
       setProjectCreatorMap({});
+      setProjectEditorMap({});
       return;
     }
 
@@ -201,28 +207,42 @@ const ProjectList: React.FC = () => {
                 r.userId === user.id &&
                 r.roles.some((role) => role.name === ROLE_ADMIN)
             );
+            const canEdit = roles.some(
+              (r) =>
+                r.userId === user.id &&
+                r.roles.some(
+                  (role) =>
+                    role.name === ROLE_ADMIN || role.name === ROLE_EDITOR
+                )
+            );
             const creator = roles.find((r) => r.userId === project.userId);
             const creatorName = creator?.user?.username ?? '';
-            return [project.id, { isAdmin, creatorName }] as const;
+            return [project.id, { isAdmin, creatorName, canEdit }] as const;
           } catch (e) {
             // 予期しないエラーはログに記録し、UI 側は非管理者として扱う
             console.error('プロジェクトのロール取得に失敗しました:', {
               projectId: project.id,
               error: e,
             });
-            return [project.id, { isAdmin: false, creatorName: '' }] as const;
+            return [
+              project.id,
+              { isAdmin: false, creatorName: '', canEdit: false },
+            ] as const;
           }
         })
       );
       if (!cancelled.current) {
         const adminMap: Record<string, boolean> = {};
         const creatorMap: Record<string, string> = {};
-        results.forEach(([projectId, { isAdmin, creatorName }]) => {
+        const editorMap: Record<string, boolean> = {};
+        results.forEach(([projectId, { isAdmin, creatorName, canEdit }]) => {
           adminMap[projectId] = isAdmin;
           creatorMap[projectId] = creatorName;
+          editorMap[projectId] = canEdit;
         });
         setProjectAdminMap(adminMap);
         setProjectCreatorMap(creatorMap);
+        setProjectEditorMap(editorMap);
       }
     };
     fetchRoles();
@@ -420,6 +440,10 @@ const ProjectList: React.FC = () => {
             alert('プロジェクトの複製に失敗しました。');
           }
         },
+        disabled: !projectEditorMap[project.id],
+        title: projectEditorMap[project.id]
+          ? undefined
+          : '複製は管理者または編集者のみ可能です',
       },
       {
         id: 'permissions',
@@ -582,6 +606,7 @@ const ProjectList: React.FC = () => {
           }
           projectAdminMap={projectAdminMap}
           projectCreatorMap={projectCreatorMap}
+          projectEditorMap={projectEditorMap}
         />
       )}
 
