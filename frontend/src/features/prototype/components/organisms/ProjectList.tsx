@@ -195,6 +195,7 @@ const ProjectList: React.FC = () => {
 
   // ユーザーが管理者または編集者かどうかを取得
   useEffect(() => {
+    cancelledRef.current = false;
     // projectsData または user が未定義の場合は全て非管理者として扱う
     if (!projectsData || !user) {
       setProjectAdminMap({});
