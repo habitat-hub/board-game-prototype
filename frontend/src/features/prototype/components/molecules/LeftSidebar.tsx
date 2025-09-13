@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
 import { IoArrowBack, IoMenu, IoAdd } from 'react-icons/io5';
 import { MdMeetingRoom, MdDelete } from 'react-icons/md';
+import { twMerge } from 'tailwind-merge';
 
 import { useProject } from '@/api/hooks/useProject';
 import { useUsers } from '@/api/hooks/useUsers';
@@ -232,21 +233,16 @@ export default function LeftSidebar({
             <button
               onClick={handleCreateRoom}
               disabled={isRoomCreating}
-              className="relative flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 border-2 border-dashed border-kibako-secondary hover:border-kibako-accent hover:border-solid mb-2 disabled:opacity-60 disabled:cursor-not-allowed"
-              title="新しいプレイルームを作る"
+              className="relative flex items-center justify-start bg-kibako-accent text-kibako-white rounded-xl h-12 px-4 shadow-lg min-w-[120px] text-left transition-all gap-2 hover:brightness-75 active:brightness-75 mb-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              title="今のゲームボードの状態を保存して、プレイルームを作る"
             >
-              <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
+              <MdMeetingRoom className="h-12 w-12 text-kibako-white flex-shrink-0 mr-1" />
               <div className="flex flex-col min-w-0 flex-1">
-                <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[180px]">
-                  新しいプレイルームを作る
-                </span>
-                <span className="text-xs text-kibako-secondary mt-0.5 flex items-center gap-1">
-                  今のボードの状態を保存して
-                  <br />
-                  遊び場を作成します
+                <span className="text-sm font-semibold text-kibako-white truncate block max-w-[180px]">
+                  プレイルームを作る
                 </span>
               </div>
-              <IoAdd className="h-5 w-5 text-kibako-secondary ml-1 transition-colors" />
+              <IoAdd className="h-5 w-5 text-kibako-white ml-1 transition-colors" />
             </button>
           )}
           {instancePrototypes
@@ -264,10 +260,10 @@ export default function LeftSidebar({
                   <Link
                     href={`/projects/${projectId}/prototypes/${instance.id}`}
                     className="group"
-                    title={`${instance.name}のプレイルームを開く`}
+                    title={`${instance.name}に入室する`}
                   >
                     <div className="flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 group-hover:bg-kibako-accent/10 group-hover:border-kibako-accent border border-transparent">
-                      <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
+                      <MdMeetingRoom className="h-12 w-12 text-kibako-accent flex-shrink-0 mr-1" />
                       <div className="flex flex-col min-w-0 flex-1">
                         <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[180px]">
                           {instance.name}
@@ -321,9 +317,10 @@ export default function LeftSidebar({
 
   return (
     <div
-      className={`fixed left-4 top-4 flex flex-col rounded-xl border border-kibako-tertiary/40 bg-gradient-to-r from-kibako-white to-kibako-tertiary shadow-md w-[18rem] ${
-        !isLeftSidebarMinimized ? 'overflow-auto max-h-[90vh]' : 'h-[48px]'
-      }`}
+      className={twMerge(
+        'fixed left-4 top-4 flex flex-col rounded-xl border border-kibako-tertiary/40 bg-gradient-to-r from-kibako-white to-kibako-tertiary shadow-md w-[18rem]',
+        isLeftSidebarMinimized ? 'h-[48px]' : 'overflow-auto max-h-[90vh]'
+      )}
     >
       <div className="flex h-[48px] items-center justify-between p-2">
         <button
