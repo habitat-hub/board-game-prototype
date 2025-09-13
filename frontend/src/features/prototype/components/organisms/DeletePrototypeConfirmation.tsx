@@ -142,8 +142,8 @@ const DeletePrototypeConfirmation = (): ReactElement => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-16 relative px-4">
-      <div className="sticky top-20 z-sticky bg-transparent backdrop-blur-sm flex items-center gap-3 mb-8 py-4 rounded-lg">
+    <div className="max-w-4xl mx-auto h-dvh py-16 relative px-4 overflow-hidden flex flex-col">
+      <div className="sticky top-20 z-sticky bg-transparent backdrop-blur-sm flex items-center gap-3 mb-8 py-4 rounded-lg shrink-0">
         <button
           onClick={() => router.back()}
           className="p-2 hover:bg-kibako-tertiary rounded-full transition-colors"
@@ -156,15 +156,15 @@ const DeletePrototypeConfirmation = (): ReactElement => {
         </h1>
       </div>
 
-      <div className="p-6 overflow-visible rounded-xl bg-gradient-to-r from-kibako-white via-kibako-white to-kibako-tertiary shadow-lg border border-kibako-tertiary/30">
-        <div className="mb-6 rounded-lg bg-kibako-tertiary/20 p-4 border border-kibako-secondary/30 text-kibako-primary/80">
+      <div className="p-6 rounded-xl bg-gradient-to-r from-kibako-white via-kibako-white to-kibako-tertiary shadow-lg border border-kibako-tertiary/30 flex-1 flex flex-col overflow-hidden">
+        <div className="mb-6 rounded-lg bg-kibako-tertiary/20 p-4 border border-kibako-secondary/30 text-kibako-primary/80 shrink-0">
           <p className="mb-2">
             <span className="font-bold">注意:</span> 削除操作は取り消せません。
           </p>
           <p>このプロジェクトに関連する全てのデータが完全に削除されます。</p>
         </div>
 
-        <div className="bg-kibako-secondary/10 p-6 rounded-lg mb-8 border border-kibako-secondary/20">
+        <div className="bg-kibako-secondary/10 p-6 rounded-lg mb-8 border border-kibako-secondary/20 flex-1 overflow-y-auto">
           <h2 className="text-xl font-semibold mb-4">削除するプロジェクト</h2>
           <div className="mb-4">
             <div className="text-sm text-kibako-primary/60">プロジェクト名</div>
@@ -204,7 +204,7 @@ const DeletePrototypeConfirmation = (): ReactElement => {
           </div>
         </div>
 
-        <div className="flex justify-between gap-4">
+        <div className="flex justify-between gap-4 shrink-0">
           <KibakoButton
             className="flex-1"
             variant="outline"
@@ -234,7 +234,7 @@ const DeletePrototypeConfirmation = (): ReactElement => {
           </KibakoButton>
         </div>
         {!canDelete && (
-          <p className="text-kibako-primary/70 text-sm mt-4">
+          <p className="text-kibako-primary/70 text-sm mt-4 shrink-0">
             プロジェクトを削除するにはAdmin権限が必要です。
           </p>
         )}
