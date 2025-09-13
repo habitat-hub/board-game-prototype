@@ -226,6 +226,13 @@ export default function LeftSidebar({
     onPrototypeNameChange(newName);
   };
 
+  // プレイルーム名の更新完了時の処理
+  const handleRoomNameUpdated = (roomId: string, newName: string) => {
+    updatePrototypes(
+      prototypes.map((p) => (p.id === roomId ? { ...p, name: newName } : p))
+    );
+  };
+
   // サイドバーのプレイルームリスト部分のみを表示する
   const renderSidebarContent = () => {
     return (
@@ -306,9 +313,30 @@ export default function LeftSidebar({
                     <div className="flex items-center gap-2">
                       <MdMeetingRoom className="h-12 w-12 text-kibako-accent flex-shrink-0 mr-1" />
                       <div className="flex flex-col min-w-0 flex-1">
-                        <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[180px]">
-                          {instance.name}
-                        </span>
+                        {/* ルーム名（インライン編集対応、Adminのみ） */}
+                        <div
+                          className="w-[170px]"
+                          onClick={(e) => {
+                            // まず子のボタンで編集開始、ここでLinkへの伝播と遷移を止める
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                        >
+                          <PrototypeNameEditor
+                            prototypeId={instance.id}
+                            name={instance.name}
+                            onUpdated={(newName) =>
+                              handleRoomNameUpdated(instance.id, newName)
+                            }
+                            size="xs"
+                            weight="semibold"
+                            editable={can(
+                              currentRole,
+                              PERMISSION_ACTIONS.MANAGE
+                            )}
+                            notEditableReason="Adminのみ名前を変更できます"
+                          />
+                        </div>
                         <div className="text-xs text-kibako-secondary mt-0.5">
                           <div className="flex items-center gap-1 mb-1">
                             <span className="font-bold">入室する</span>

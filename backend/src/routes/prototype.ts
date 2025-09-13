@@ -5,9 +5,14 @@ import {
   checkPrototypeWritePermission,
   checkPrototypeDeletePermission,
 } from '../middlewares/permissions';
-import { UPDATABLE_PROTOTYPE_FIELDS } from '../const';
+import {
+  UPDATABLE_PROTOTYPE_FIELDS,
+  PERMISSION_ACTIONS,
+  RESOURCE_TYPES,
+} from '../const';
 import PrototypeModel from '../models/Prototype';
 import { NotFoundError, ValidationError } from '../errors/CustomError';
+import { hasPermission } from '../helpers/roleHelper';
 
 const router = express.Router();
 
@@ -124,6 +129,25 @@ router.put(
 
       if (!prototype) {
         throw new NotFoundError('プロトタイプが見つかりません');
+      }
+
+      // ルーム名（INSTANCEのname）変更は Admin（MANAGE）に限定
+      const wantsRename = typeof req.body?.name !== 'undefined';
+      if (wantsRename && prototype.type === 'INSTANCE') {
+        const user = req.user as { id?: string } | undefined;
+        const userId = String(user?.id || '');
+        const isAdminForPrototype = await hasPermission(
+          userId,
+          RESOURCE_TYPES.PROTOTYPE,
+          PERMISSION_ACTIONS.MANAGE,
+          prototypeId
+        );
+        if (!isAdminForPrototype) {
+          res.status(403).json({
+            message: 'ルーム名の変更はAdminのみ可能です',
+          });
+          return;
+        }
       }
 
       const updateData = Object.entries(req.body).reduce(
