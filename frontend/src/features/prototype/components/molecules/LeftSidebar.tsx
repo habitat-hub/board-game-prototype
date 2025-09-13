@@ -10,6 +10,7 @@ import { twMerge } from 'tailwind-merge';
 import { useProject } from '@/api/hooks/useProject';
 import { useUsers } from '@/api/hooks/useUsers';
 import { Prototype, ProjectsDetailData } from '@/api/types';
+import KibakoButton from '@/components/atoms/KibakoButton';
 import { PERMISSION_ACTIONS, RoleType } from '@/constants/roles';
 import ConnectedUserIcon from '@/features/prototype/components/atoms/ConnectedUserIcon';
 import PrototypeNameEditor from '@/features/prototype/components/atoms/PrototypeNameEditor';
@@ -66,6 +67,9 @@ export default function LeftSidebar({
   const [isRoomCreating, setIsRoomCreating] = useState(false);
   const [needTutorial, setNeedTutorial] = useState(false);
   const [currentRole, setCurrentRole] = useState<RoleType | null>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
+    null
+  );
 
   // プロジェクトデータから必要な情報を取得
   // Socket通信で更新されたプロトタイプがあればそれを優先、なければプロジェクトのプロトタイプを使用
@@ -183,7 +187,6 @@ export default function LeftSidebar({
   // プレイルーム削除
   const handleDeleteRoom = async (instanceId: string) => {
     if (!can(currentRole, PERMISSION_ACTIONS.DELETE)) return;
-    if (!window.confirm('本当にこのプレイルームを削除しますか？')) return;
 
     try {
       // インスタンスから対応するバージョンを見つける
@@ -255,14 +258,52 @@ export default function LeftSidebar({
             )
             .map((instance) => {
               const connectedUsers = roomConnectedUsers[instance.id] || [];
-              return (
-                <div key={instance.id} className="relative flex-shrink-0">
-                  <Link
-                    href={`/projects/${projectId}/prototypes/${instance.id}`}
-                    className="group"
-                    title={`${instance.name}に入室する`}
-                  >
-                    <div className="flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 group-hover:bg-kibako-accent/10 group-hover:border-kibako-accent border border-transparent">
+              const isConfirming = confirmingDeleteId === instance.id;
+              const CardInner = (
+                <div
+                  className={
+                    'bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all border ' +
+                    (isConfirming
+                      ? 'border-kibako-danger/40'
+                      : 'group-hover:bg-kibako-accent/10 group-hover:border-kibako-accent border-transparent')
+                  }
+                >
+                  {isConfirming ? (
+                    <div className="flex items-start gap-3">
+                      <MdDelete className="h-6 w-6 text-kibako-danger flex-shrink-0 mt-0.5" />
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="text-sm font-semibold text-kibako-primary whitespace-normal break-words">
+                          「{instance.name}」を削除してもよろしいですか？
+                        </span>
+                        <div className="flex items-center gap-2 mt-3">
+                          <KibakoButton
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setConfirmingDeleteId(null);
+                            }}
+                          >
+                            キャンセル
+                          </KibakoButton>
+                          <KibakoButton
+                            variant="danger"
+                            size="sm"
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              await handleDeleteRoom(instance.id);
+                              setConfirmingDeleteId(null);
+                            }}
+                          >
+                            削除する
+                          </KibakoButton>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
                       <MdMeetingRoom className="h-12 w-12 text-kibako-accent flex-shrink-0 mr-1" />
                       <div className="flex flex-col min-w-0 flex-1">
                         <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[180px]">
@@ -297,16 +338,38 @@ export default function LeftSidebar({
                         </div>
                       </div>
                     </div>
-                  </Link>
-                  {can(currentRole, PERMISSION_ACTIONS.DELETE) && (
-                    <button
-                      onClick={() => handleDeleteRoom(instance.id)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full group/delete hover:bg-kibako-accent/20 focus:outline-none flex items-center justify-center"
-                      title="プレイルームを削除"
-                    >
-                      <MdDelete className="h-5 w-5 text-kibako-secondary transition-colors" />
-                    </button>
                   )}
+                </div>
+              );
+
+              return (
+                <div key={instance.id} className="relative flex-shrink-0">
+                  {isConfirming ? (
+                    <div className="group">{CardInner}</div>
+                  ) : (
+                    <Link
+                      href={`/projects/${projectId}/prototypes/${instance.id}`}
+                      className="group"
+                      title={`${instance.name}に入室する`}
+                    >
+                      {CardInner}
+                    </Link>
+                  )}
+
+                  {can(currentRole, PERMISSION_ACTIONS.DELETE) &&
+                    !isConfirming && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setConfirmingDeleteId(instance.id);
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full group/delete hover:bg-kibako-accent/20 focus:outline-none flex items-center justify-center"
+                        title="プレイルームを削除"
+                      >
+                        <MdDelete className="h-5 w-5 text-kibako-secondary transition-colors" />
+                      </button>
+                    )}
                 </div>
               );
             })}
