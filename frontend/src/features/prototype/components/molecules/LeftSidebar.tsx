@@ -1,14 +1,17 @@
 'use client';
 
+import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
 import { IoArrowBack, IoMenu, IoAdd } from 'react-icons/io5';
 import { MdMeetingRoom, MdDelete } from 'react-icons/md';
+import { twMerge } from 'tailwind-merge';
 
 import { useProject } from '@/api/hooks/useProject';
 import { useUsers } from '@/api/hooks/useUsers';
 import { Prototype, ProjectsDetailData } from '@/api/types';
+import KibakoButton from '@/components/atoms/KibakoButton';
 import { PERMISSION_ACTIONS, RoleType } from '@/constants/roles';
 import ConnectedUserIcon from '@/features/prototype/components/atoms/ConnectedUserIcon';
 import PrototypeNameEditor from '@/features/prototype/components/atoms/PrototypeNameEditor';
@@ -65,6 +68,9 @@ export default function LeftSidebar({
   const [isRoomCreating, setIsRoomCreating] = useState(false);
   const [needTutorial, setNeedTutorial] = useState(false);
   const [currentRole, setCurrentRole] = useState<RoleType | null>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
+    null
+  );
 
   // プロジェクトデータから必要な情報を取得
   // Socket通信で更新されたプロトタイプがあればそれを優先、なければプロジェクトのプロトタイプを使用
@@ -182,7 +188,6 @@ export default function LeftSidebar({
   // プレイルーム削除
   const handleDeleteRoom = async (instanceId: string) => {
     if (!can(currentRole, PERMISSION_ACTIONS.DELETE)) return;
-    if (!window.confirm('本当にこのプレイルームを削除しますか？')) return;
 
     try {
       // インスタンスから対応するバージョンを見つける
@@ -222,6 +227,13 @@ export default function LeftSidebar({
     onPrototypeNameChange(newName);
   };
 
+  // プレイルーム名の更新完了時の処理
+  const handleRoomNameUpdated = (roomId: string, newName: string) => {
+    updatePrototypes(
+      prototypes.map((p) => (p.id === roomId ? { ...p, name: newName } : p))
+    );
+  };
+
   // サイドバーのプレイルームリスト部分のみを表示する
   const renderSidebarContent = () => {
     return (
@@ -232,88 +244,177 @@ export default function LeftSidebar({
             <button
               onClick={handleCreateRoom}
               disabled={isRoomCreating}
-              className="relative flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 border-2 border-dashed border-kibako-secondary hover:border-kibako-accent hover:border-solid mb-2 disabled:opacity-60 disabled:cursor-not-allowed"
-              title="新しいプレイルームを作る"
+              className="relative flex items-center justify-start bg-kibako-accent text-kibako-white rounded-xl h-12 px-4 shadow-lg min-w-[120px] text-left transition-all gap-2 hover:brightness-75 active:brightness-75 mb-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              title="今のゲームボードの状態を保存して、プレイルームを作る"
             >
-              <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
+              <MdMeetingRoom className="h-12 w-12 text-kibako-white flex-shrink-0 mr-1" />
               <div className="flex flex-col min-w-0 flex-1">
-                <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[180px]">
-                  新しいプレイルームを作る
-                </span>
-                <span className="text-xs text-kibako-secondary mt-0.5 flex items-center gap-1">
-                  今のボードの状態を保存して
-                  <br />
-                  遊び場を作成します
+                <span className="text-sm font-semibold text-kibako-white truncate block max-w-[180px]">
+                  プレイルームを作る
                 </span>
               </div>
-              <IoAdd className="h-5 w-5 text-kibako-secondary ml-1 transition-colors" />
+              <IoAdd className="h-5 w-5 text-kibako-white ml-1 transition-colors" />
             </button>
           )}
-          {instancePrototypes
-            .slice()
-            .sort((a, b) =>
-              b.createdAt && a.createdAt
-                ? new Date(b.createdAt).getTime() -
-                  new Date(a.createdAt).getTime()
-                : 0
-            )
-            .map((instance) => {
-              const connectedUsers = roomConnectedUsers[instance.id] || [];
-              return (
-                <div key={instance.id} className="relative flex-shrink-0">
-                  <Link
-                    href={`/projects/${projectId}/prototypes/${instance.id}`}
-                    className="group"
-                    title={`${instance.name}のプレイルームを開く`}
+          <AnimatePresence mode="popLayout" initial={false}>
+            {instancePrototypes
+              .slice()
+              .sort((a, b) =>
+                b.createdAt && a.createdAt
+                  ? new Date(b.createdAt).getTime() -
+                    new Date(a.createdAt).getTime()
+                  : 0
+              )
+              .map((instance) => {
+                const connectedUsers = roomConnectedUsers[instance.id] || [];
+                const isConfirming = confirmingDeleteId === instance.id;
+                const CardInner = (
+                  <div
+                    className={
+                      'bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all border ' +
+                      (isConfirming
+                        ? 'border-kibako-danger/40'
+                        : 'group-hover:bg-kibako-accent/10 group-hover:border-kibako-accent border-transparent')
+                    }
                   >
-                    <div className="flex items-center bg-gradient-to-br from-kibako-tertiary to-kibako-white rounded-xl px-3 py-3 shadow-md min-w-[120px] text-left transition-all gap-2 group-hover:bg-kibako-accent/10 group-hover:border-kibako-accent border border-transparent">
-                      <MdMeetingRoom className="h-7 w-7 text-kibako-accent flex-shrink-0 mr-1" />
-                      <div className="flex flex-col min-w-0 flex-1">
-                        <span className="text-sm font-semibold text-kibako-primary truncate block max-w-[180px]">
-                          {instance.name}
-                        </span>
-                        <div className="text-xs text-kibako-secondary mt-0.5">
-                          <div className="flex items-center gap-1 mb-1">
-                            <span className="font-bold">入室する</span>
+                    {isConfirming ? (
+                      <div className="flex items-start gap-3">
+                        <MdDelete className="h-6 w-6 text-kibako-danger flex-shrink-0 mt-0.5" />
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <span className="text-sm font-semibold text-kibako-primary whitespace-normal break-words">
+                            「{instance.name}」を削除してもよろしいですか？
+                          </span>
+                          <div className="flex items-center gap-2 mt-3">
+                            <KibakoButton
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setConfirmingDeleteId(null);
+                              }}
+                            >
+                              キャンセル
+                            </KibakoButton>
+                            <KibakoButton
+                              variant="danger"
+                              size="sm"
+                              onClick={async (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                await handleDeleteRoom(instance.id);
+                                setConfirmingDeleteId(null);
+                              }}
+                            >
+                              削除する
+                            </KibakoButton>
                           </div>
-                          {connectedUsers.length > 0 && (
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs">接続中:</span>
-                              <div className="flex -space-x-3">
-                                {connectedUsers
-                                  .slice(0, MAX_DISPLAY_USERS)
-                                  .map((user, idx) => (
-                                    <ConnectedUserIcon
-                                      key={user.userId}
-                                      user={user}
-                                      users={connectedUsers}
-                                      index={idx}
-                                    />
-                                  ))}
-                                {connectedUsers.length > MAX_DISPLAY_USERS && (
-                                  <span className="text-xs text-kibako-secondary ml-2">
-                                    +{connectedUsers.length - MAX_DISPLAY_USERS}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          )}
                         </div>
                       </div>
-                    </div>
-                  </Link>
-                  {can(currentRole, PERMISSION_ACTIONS.DELETE) && (
-                    <button
-                      onClick={() => handleDeleteRoom(instance.id)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full group/delete hover:bg-kibako-accent/20 focus:outline-none flex items-center justify-center"
-                      title="プレイルームを削除"
-                    >
-                      <MdDelete className="h-5 w-5 text-kibako-secondary transition-colors" />
-                    </button>
-                  )}
-                </div>
-              );
-            })}
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <MdMeetingRoom className="h-12 w-12 text-kibako-accent flex-shrink-0 mr-1" />
+                        <div className="flex flex-col min-w-0 flex-1">
+                          {/* ルーム名（インライン編集対応、Adminのみ） */}
+                          <div
+                            className="w-[170px]"
+                            onClick={(e) => {
+                              // まず子のボタンで編集開始、ここでLinkへの伝播と遷移を止める
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                          >
+                            <PrototypeNameEditor
+                              prototypeId={instance.id}
+                              name={instance.name}
+                              onUpdated={(newName) =>
+                                handleRoomNameUpdated(instance.id, newName)
+                              }
+                              size="xs"
+                              weight="semibold"
+                              editable={can(
+                                currentRole,
+                                PERMISSION_ACTIONS.MANAGE
+                              )}
+                              notEditableReason="Adminのみ名前を変更できます"
+                            />
+                          </div>
+                          <div className="text-xs text-kibako-secondary mt-0.5">
+                            <div className="flex items-center gap-1 mb-1">
+                              <span className="font-bold">入室する</span>
+                            </div>
+                            {connectedUsers.length > 0 && (
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs">接続中:</span>
+                                <div className="flex -space-x-3">
+                                  {connectedUsers
+                                    .slice(0, MAX_DISPLAY_USERS)
+                                    .map((user, idx) => (
+                                      <ConnectedUserIcon
+                                        key={user.userId}
+                                        user={user}
+                                        users={connectedUsers}
+                                        index={idx}
+                                      />
+                                    ))}
+                                  {connectedUsers.length >
+                                    MAX_DISPLAY_USERS && (
+                                    <span className="text-xs text-kibako-secondary ml-2">
+                                      +
+                                      {connectedUsers.length -
+                                        MAX_DISPLAY_USERS}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+
+                return (
+                  <motion.div
+                    key={instance.id}
+                    layout
+                    initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                    transition={{ duration: 0.2, ease: 'easeOut' }}
+                    className="relative flex-shrink-0"
+                  >
+                    {isConfirming ? (
+                      <div className="group">{CardInner}</div>
+                    ) : (
+                      <Link
+                        href={`/projects/${projectId}/prototypes/${instance.id}`}
+                        className="group"
+                        title={`${instance.name}に入室する`}
+                      >
+                        {CardInner}
+                      </Link>
+                    )}
+
+                    {can(currentRole, PERMISSION_ACTIONS.DELETE) &&
+                      !isConfirming && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setConfirmingDeleteId(instance.id);
+                          }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full group/delete hover:bg-kibako-accent/20 focus:outline-none flex items-center justify-center"
+                          title="プレイルームを削除"
+                        >
+                          <MdDelete className="h-5 w-5 text-kibako-secondary transition-colors" />
+                        </button>
+                      )}
+                  </motion.div>
+                );
+              })}
+          </AnimatePresence>
         </div>
       </div>
     );
@@ -321,9 +422,10 @@ export default function LeftSidebar({
 
   return (
     <div
-      className={`fixed left-4 top-4 flex flex-col rounded-xl border border-kibako-tertiary/40 bg-gradient-to-r from-kibako-white to-kibako-tertiary shadow-md w-[18rem] ${
-        !isLeftSidebarMinimized ? 'overflow-auto max-h-[90vh]' : 'h-[48px]'
-      }`}
+      className={twMerge(
+        'fixed left-4 top-4 flex flex-col rounded-xl border border-kibako-tertiary/40 bg-gradient-to-r from-kibako-white to-kibako-tertiary shadow-md w-[18rem]',
+        isLeftSidebarMinimized ? 'h-[48px]' : 'overflow-auto max-h-[90vh]'
+      )}
     >
       <div className="flex h-[48px] items-center justify-between p-2">
         <button
