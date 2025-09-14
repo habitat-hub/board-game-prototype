@@ -18,7 +18,7 @@ type ProjectCardProps = {
   partCount: number;
   // ルーム数（INSTANCEプロトタイプ数）
   roomCount: number;
-  // 管理者権限を持つかどうか
+  // Admin権限を持つかどうか
   isProjectAdmin: boolean;
   // 作成者名
   creatorName?: string;
@@ -74,18 +74,17 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       {/* カード内容 */}
       <div className="p-3">
         {/* プロトタイプ名（インライン編集） */}
-        <div className="flex items-center">
-          <div className="w-full" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center min-w-0">
+          <div className="w-full min-w-0" onClick={(e) => e.stopPropagation()}>
             <PrototypeNameEditor
               prototypeId={id}
               name={updatedName ?? name}
               size="base"
               weight="bold"
-              truncate={false}
               bleedX={false}
               onUpdated={(newName) => setUpdatedName(newName)}
               editable={isProjectAdmin}
-              notEditableReason="管理者のみ名前を変更できます"
+              notEditableReason="Adminのみ名前を変更できます"
             />
           </div>
         </div>

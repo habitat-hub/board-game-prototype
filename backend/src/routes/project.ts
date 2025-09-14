@@ -517,7 +517,7 @@ router.get(
  *   post:
  *     tags: [Projects]
  *     summary: ユーザーにプロジェクトへのアクセス権を付与
- *     description: 指定されたプロジェクトにユーザーを招待します。
+ *     description: 指定されたプロジェクトにユーザーを招待します。Adminロール（またはMANAGE権限）を持つユーザーのみが利用できます。
  *     parameters:
  *       - name: projectId
  *         in: path
@@ -541,7 +541,7 @@ router.get(
  *                 type: string
  *                 enum: ['admin', 'editor', 'viewer']
  *                 default: 'editor'
- *                 description: "付与するロールタイプ（admin：管理者、editor：編集者、viewer：閲覧者）"
+ *                 description: "付与するロールタイプ（Admin, Editor, Viewer）"
  *     responses:
  *       '200':
  *         description: ユーザーを招待しました
@@ -570,7 +570,7 @@ router.get(
  */
 router.post(
   '/:projectId/invite',
-  checkProjectReadPermission,
+  checkProjectAdminRole,
   async (req: Request, res: Response, next: NextFunction) => {
     const projectId = req.params.projectId;
     const guestIds = req.body.guestIds;
@@ -626,7 +626,7 @@ router.post(
  *   delete:
  *     tags: [Projects]
  *     summary: ユーザーのアクセス権を削除
- *     description: 指定されたプロジェクトからユーザーのアクセス権を削除します。
+ *     description: 指定されたプロジェクトからユーザーのアクセス権を削除します。Adminロール（またはMANAGE権限）を持つユーザーのみが利用できます。
  *     parameters:
  *       - name: projectId
  *         in: path
@@ -668,7 +668,7 @@ router.post(
  */
 router.delete(
   '/:projectId/invite/:guestId',
-  checkProjectReadPermission,
+  checkProjectAdminRole,
   async (req: Request, res: Response, next: NextFunction) => {
     const projectId = req.params.projectId;
     const guestId = req.params.guestId;
@@ -705,7 +705,7 @@ router.delete(
  *   post:
  *     tags: [Projects]
  *     summary: プロジェクトの複製
- *     description: 指定されたプロジェクトを複製します。
+ *     description: 指定されたプロジェクトを複製します。書き込みまたはAdmin権限が必要です。
  *     parameters:
  *       - name: projectId
  *         in: path
@@ -735,7 +735,7 @@ router.delete(
  */
 router.post(
   '/:projectId/duplicate',
-  checkProjectReadPermission,
+  checkProjectWritePermission,
   async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user as UserModel;
     const { projectId } = req.params;
@@ -1038,7 +1038,7 @@ router.delete(
         );
       }
 
-      // 最後の管理者かチェック
+      // 最後のAdminかチェック
       const adminRole = await RoleModel.findOne({ where: { name: 'admin' } });
       if (adminRole) {
         const adminCount = await UserRoleModel.count({
@@ -1059,7 +1059,7 @@ router.delete(
         });
 
         if (userAdminRole && adminCount <= 1) {
-          throw new ValidationError('最後の管理者のロールは削除できません');
+          throw new ValidationError('最後のAdminのロールは削除できません');
         }
       }
 
@@ -1146,7 +1146,7 @@ router.put(
         throw new NotFoundError('ロールが見つかりません');
       }
 
-      // プロジェクトの作成者の場合、管理者権限は変更不可
+      // プロジェクトの作成者の場合、Admin権限は変更不可
       const project = await ProjectModel.findByPk(projectId);
       if (project && project.userId === userId) {
         throw new ValidationError(
@@ -1170,14 +1170,14 @@ router.put(
         );
       }
 
-      // 管理者ロールを変更する場合の特別チェック
+      // Adminロールを変更する場合の特別チェック
       const adminRole = await RoleModel.findOne({ where: { name: 'admin' } });
       const hasAdminRole = currentUserRoles.some(
         (userRole) => userRole.Role && userRole.Role.name === 'admin'
       );
 
       if (hasAdminRole && roleName !== 'admin' && adminRole) {
-        // 最後の管理者かチェック
+        // 最後のAdminかチェック
         const adminCount = await UserRoleModel.count({
           where: {
             roleId: adminRole.id,
@@ -1187,7 +1187,7 @@ router.put(
         });
 
         if (adminCount <= 1) {
-          throw new ValidationError('最後の管理者のロールは変更できません');
+          throw new ValidationError('最後のAdminのロールは変更できません');
         }
       }
 

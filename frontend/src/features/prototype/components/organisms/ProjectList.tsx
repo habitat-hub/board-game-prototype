@@ -17,7 +17,7 @@ import SortDropdown, {
   SortOrder,
 } from '@/components/atoms/SortDropdown';
 import Loading from '@/components/organisms/Loading';
-import { ROLE_TYPE } from '@/constants/roles';
+import { PERMISSION_ACTIONS, RoleType } from '@/constants/roles';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
 import type { ProjectContextMenuProps } from '@/features/prototype/components/atoms/ProjectContextMenu';
 import { EmptyProjectState } from '@/features/prototype/components/molecules/EmptyProjectState';
@@ -27,6 +27,7 @@ import { DUPLICATE_DISABLED_HINT } from '@/features/prototype/constants';
 import useInlineEdit from '@/hooks/useInlineEdit';
 import { useUser } from '@/hooks/useUser';
 import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
+import { can } from '@/utils/permissions';
 import {
   getUIPreference,
   setUIPreference,
@@ -87,7 +88,7 @@ const ProjectList: React.FC = () => {
   // リロードアイコンのワンショットアニメーション制御
   const [isReloadAnimating, setIsReloadAnimating] = useState<boolean>(false);
 
-  // プロジェクトごとの管理者権限マップ
+  // プロジェクトごとのAdmin権限マップ
   const [projectAdminMap, setProjectAdminMap] = useState<
     Record<string, boolean>
   >({});
@@ -95,7 +96,7 @@ const ProjectList: React.FC = () => {
   const [projectCreatorMap, setProjectCreatorMap] = useState<
     Record<string, string>
   >({});
-  // プロジェクトごとの編集権限マップ（管理者または編集者）
+  // プロジェクトごとの編集権限マップ（AdminまたはEditor）
   const [projectEditorMap, setProjectEditorMap] = useState<
     Record<string, boolean>
   >({});
@@ -197,10 +198,10 @@ const ProjectList: React.FC = () => {
     [prototypeList, sortKey, sortOrder, projectCreatorMap]
   );
 
-  // ユーザーが管理者または編集者かどうかを取得
+  // ユーザーがAdminまたはEditorかどうかを取得
   useEffect(() => {
     cancelledRef.current = false;
-    // projectsData または user が未定義の場合は全て非管理者として扱う
+    // projectsData または user が未定義の場合は全て非Adminとして扱う
     if (!projectsData || !user) {
       setProjectAdminMap({});
       setProjectCreatorMap({});
@@ -216,22 +217,22 @@ const ProjectList: React.FC = () => {
             const isAdmin = roles.some(
               (r) =>
                 r.userId === user.id &&
-                r.roles.some((role) => role.name === ROLE_TYPE.ADMIN)
+                r.roles.some((role) =>
+                  can(role.name as RoleType, PERMISSION_ACTIONS.MANAGE)
+                )
             );
             const canEdit = roles.some(
               (r) =>
                 r.userId === user.id &&
-                r.roles.some(
-                  (role) =>
-                    role.name === ROLE_TYPE.ADMIN ||
-                    role.name === ROLE_TYPE.EDITOR
+                r.roles.some((role) =>
+                  can(role.name as RoleType, PERMISSION_ACTIONS.WRITE)
                 )
             );
             const creator = roles.find((r) => r.userId === project.userId);
             const creatorName = creator?.user?.username ?? '';
             return [project.id, { isAdmin, creatorName, canEdit }] as const;
           } catch (e) {
-            // 予期しないエラーはログに記録し、UI 側は非管理者として扱う
+            // 予期しないエラーはログに記録し、UI 側は非Adminとして扱う
             console.error('プロジェクトのロール取得に失敗しました:', {
               projectId: project.id,
               error: e,

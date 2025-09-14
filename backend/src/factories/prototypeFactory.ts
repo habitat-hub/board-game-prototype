@@ -49,7 +49,7 @@ export async function createProject({
   });
 
   if (!adminRole) {
-    throw new Error('管理者ロールが見つかりません');
+    throw new Error('Adminロールが見つかりません');
   }
 
   try {
@@ -173,7 +173,7 @@ export async function duplicateProject({
     where: { name: ROLE_TYPE.ADMIN },
   });
   if (!adminRole) {
-    throw new Error('管理者ロールが見つかりません');
+    throw new Error('Adminロールが見つかりません');
   }
   try {
     await assignRole(

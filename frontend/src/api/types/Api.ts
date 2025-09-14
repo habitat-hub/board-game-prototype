@@ -285,7 +285,7 @@ export class Api<
       ...params,
     });
   /**
-   * @description 指定されたプロジェクトにユーザーを招待します。
+   * @description 指定されたプロジェクトにユーザーを招待します。Adminロール（またはMANAGE権限）を持つユーザーのみが利用できます。
    *
    * @tags Projects
    * @name ProjectsInviteCreate
@@ -309,7 +309,7 @@ export class Api<
       ...params,
     });
   /**
-   * @description 指定されたプロジェクトからユーザーのアクセス権を削除します。
+   * @description 指定されたプロジェクトからユーザーのアクセス権を削除します。Adminロール（またはMANAGE権限）を持つユーザーのみが利用できます。
    *
    * @tags Projects
    * @name ProjectsInviteDelete
@@ -331,7 +331,7 @@ export class Api<
       ...params,
     });
   /**
-   * @description 指定されたプロジェクトを複製します。
+   * @description 指定されたプロジェクトを複製します。書き込みまたはAdmin権限が必要です。
    *
    * @tags Projects
    * @name ProjectsDuplicateCreate
