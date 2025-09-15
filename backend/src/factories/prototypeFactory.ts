@@ -1,4 +1,4 @@
-import { Transaction } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 
 import PrototypeModel from '../models/Prototype';
 import { ROLE_TYPE, RESOURCE_TYPES } from '../const';
@@ -302,6 +302,25 @@ export const createPrototypeVersion = async ({
     transaction,
   });
 
+  const versionPartIds = versionParts.map((part) => part.id);
+  const versionPartProperties = versionPartIds.length
+    ? await PartPropertyModel.findAll({
+        where: {
+          partId: {
+            [Op.in]: versionPartIds,
+          },
+        },
+        transaction,
+      })
+    : [];
+
+  const versionPartPropertyMap = new Map<number, PartPropertyModel[]>();
+  for (const property of versionPartProperties) {
+    const properties = versionPartPropertyMap.get(property.partId) ?? [];
+    properties.push(property);
+    versionPartPropertyMap.set(property.partId, properties);
+  }
+
   for (const versionPart of versionParts) {
     const instancePart = await PartModel.create(
       {
@@ -316,14 +335,8 @@ export const createPrototypeVersion = async ({
       { transaction, returning: true }
     );
 
-    // バージョンパーツのプロパティを取得
-    const versionPartProperties = await PartPropertyModel.findAll({
-      where: {
-        partId: versionPart.id,
-      },
-      transaction,
-    });
-    for (const prop of versionPartProperties) {
+    const partProperties = versionPartPropertyMap.get(versionPart.id) ?? [];
+    for (const prop of partProperties) {
       await PartPropertyModel.create(
         {
           partId: instancePart.id,
