@@ -112,12 +112,16 @@ const ProjectList: React.FC = () => {
     const k = getUIPreference('projectListSortKey');
     return k ?? 'createdAt';
   });
-  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [sortOrder, setSortOrder] = useState<SortOrder>(() => {
+    const o = getUIPreference('projectListSortOrder');
+    return o === 'asc' || o === 'desc' ? o : 'desc';
+  });
 
   const handleSortChange = (key: SortKey, order: SortOrder) => {
     setSortKey(key);
     setSortOrder(order);
     setUIPreference('projectListSortKey', key);
+    setUIPreference('projectListSortOrder', order);
   };
 
   // データ変換処理
