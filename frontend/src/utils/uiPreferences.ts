@@ -1,4 +1,4 @@
-import type { SortKey } from '@/components/atoms/SortDropdown';
+import type { SortKey, SortOrder } from '@/components/atoms/SortDropdown';
 
 const UI_PREFERENCES_KEY = 'uiPreferences';
 
@@ -7,6 +7,7 @@ export type ProjectListView = 'card' | 'table';
 export type UIPreferences = {
   projectListView?: ProjectListView;
   projectListSortKey?: SortKey;
+  projectListSortOrder?: SortOrder;
   isSelectionMode?: boolean;
   // add more preferences here
 };
@@ -27,6 +28,9 @@ const isValidPreferenceValue = <K extends keyof UIPreferences>(
       value === 'roomCount' ||
       value === 'creator'
     );
+  }
+  if (key === 'projectListSortOrder') {
+    return value === 'asc' || value === 'desc';
   }
   if (key === 'isSelectionMode') {
     return typeof value === 'boolean';
