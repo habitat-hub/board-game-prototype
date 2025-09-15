@@ -204,12 +204,14 @@ export default function GameBoard({
     onClearSelection: clearSelection,
   });
 
-  // Viewerは常に選択モードを無効化
+  // ロール読み込み完了後、閲覧者（編集不可）の場合のみ選択モードを無効化
+  const rolesLoaded: boolean = userRoles !== undefined;
   useEffect(() => {
-    if (!canEdit && isSelectionMode) {
+    // ロールが揃ってから閲覧者であれば選択モードを解除
+    if (rolesLoaded && !canEdit && isSelectionMode) {
       toggleMode();
     }
-  }, [canEdit, isSelectionMode, toggleMode]);
+  }, [rolesLoaded, canEdit, isSelectionMode, toggleMode]);
   // ドラッグ機能
   const { handlePartDragStart, handlePartDragMove, handlePartDragEnd } =
     usePartDragSystem({
