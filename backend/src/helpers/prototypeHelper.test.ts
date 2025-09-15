@@ -7,12 +7,13 @@ import {
   beforeAll,
   type Mock,
 } from 'vitest';
+import { Op } from 'sequelize';
 
 const mockProjectScope = vi.fn();
 const mockGetAccessibleResourceIds = vi.fn();
 
 vi.mock('../models/Part', () => ({
-  default: { update: vi.fn(), findAll: vi.fn() },
+  default: { update: vi.fn(), findAll: vi.fn(), bulkCreate: vi.fn() },
 }));
 vi.mock('../models/PartProperty', () => ({ default: {} }));
 vi.mock('../models/Image', () => ({ default: {} }));
@@ -200,22 +201,15 @@ describe('shuffleDeck and persistDeckOrder', () => {
 
     expect(cards.map((c) => c.order)).toEqual([1, 2, 3]);
 
-    const updateSpy = vi.spyOn(PartModel, 'update').mockImplementation((async (
-      values: { order: number },
-      options: { where: { id: number } }
-    ): Promise<[number, { dataValues: { id: number; order: number } }[]]> => {
-      return [
-        1,
-        [
-          {
-            dataValues: {
-              id: options.where.id,
-              order: values.order,
-            },
-          },
-        ],
-      ];
-    }) as unknown as PartModelType['update']);
+    const bulkCreateSpy = vi
+      .spyOn(PartModel, 'bulkCreate')
+      .mockResolvedValue([] as never);
+    const findAllSpy = vi.spyOn(PartModel, 'findAll').mockResolvedValue(
+      shuffled.map((card) => ({
+        ...card,
+        toJSON: () => card,
+      })) as unknown as InstanceType<PartModelType>[]
+    );
 
     const updated = await persistDeckOrder(shuffled);
     expect(updated).toEqual([
@@ -224,6 +218,12 @@ describe('shuffleDeck and persistDeckOrder', () => {
       { id: 2, order: 3 },
     ]);
 
-    expect(updateSpy).toHaveBeenCalledTimes(3);
+    expect(bulkCreateSpy).toHaveBeenCalledWith(shuffled, {
+      updateOnDuplicate: ['order'],
+    });
+    expect(findAllSpy).toHaveBeenCalledTimes(1);
+
+    const findAllArgs = findAllSpy.mock.calls[0][0];
+    expect(findAllArgs.where.id[Op.in]).toEqual([3, 1, 2]);
   });
 });

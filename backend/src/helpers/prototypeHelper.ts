@@ -143,14 +143,23 @@ export function shuffleDeck(
 export async function persistDeckOrder(
   cards: { id: number; order: number }[]
 ): Promise<PartModel[]> {
-  const updatedCards = await Promise.all(
-    cards.map(async (card) => {
-      const [, result] = await PartModel.update(
-        { order: card.order },
-        { where: { id: card.id }, returning: true }
-      );
-      return result[0].dataValues as PartModel;
-    })
+  if (cards.length === 0) {
+    return [];
+  }
+
+  const orderMap = new Map(cards.map((card) => [card.id, card.order]));
+
+  await PartModel.bulkCreate(cards, { updateOnDuplicate: ['order'] });
+
+  const updatedRecords = await PartModel.findAll({
+    where: { id: { [Op.in]: Array.from(orderMap.keys()) } },
+  });
+
+  const updatedMap = new Map(
+    updatedRecords.map((card) => [card.id, card.toJSON() as PartModel])
   );
-  return updatedCards;
+
+  return cards
+    .map((card) => updatedMap.get(card.id))
+    .filter((card): card is PartModel => card !== undefined);
 }
