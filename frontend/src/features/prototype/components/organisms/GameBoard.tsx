@@ -573,12 +573,6 @@ export default function GameBoard({
     <DebugModeProvider>
       {/* Provide overlay messages for parts (e.g., shuffle text like deck) */}
       <PartOverlayMessageProvider>
-        {canEdit && (
-          <SelectionModeToggleButton
-            isSelectionMode={isSelectionMode}
-            onToggle={toggleMode}
-          />
-        )}
         <GameBoardCanvas
           stageRef={stageRef}
           viewportSize={viewportSize}
@@ -669,13 +663,21 @@ export default function GameBoard({
           />
         )}
 
-        <ZoomToolbar
-          zoomIn={handleZoomIn}
-          zoomOut={handleZoomOut}
-          canZoomIn={canZoomIn}
-          canZoomOut={canZoomOut}
-          zoomLevel={camera.scale}
-        />
+        <div className="fixed bottom-4 right-4 z-overlay flex items-center gap-4">
+          {canEdit && (
+            <SelectionModeToggleButton
+              isSelectionMode={isSelectionMode}
+              onToggle={toggleMode}
+            />
+          )}
+          <ZoomToolbar
+            zoomIn={handleZoomIn}
+            zoomOut={handleZoomOut}
+            canZoomIn={canZoomIn}
+            canZoomOut={canZoomOut}
+            zoomLevel={camera.scale}
+          />
+        </div>
 
         <DebugInfo
           camera={camera}
