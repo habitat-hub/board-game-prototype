@@ -191,6 +191,7 @@ export default function GameBoard({
     toggleMode,
     isSelectionInProgress,
     isJustFinishedSelection,
+    consumeJustFinishedSelection,
   } = useSelection({
     stageRef,
     parts,
@@ -270,9 +271,12 @@ export default function GameBoard({
     if (isSelectionInProgress) {
       return;
     }
-    // 矩形選択完了直後の場合は背景クリックを無効化
+    // 矩形選択完了直後の誤操作防止: 選択モード中のみ直後クリックを無視
     if (isJustFinishedSelection) {
-      return;
+      const wasJustFinished = consumeJustFinishedSelection();
+      if (wasJustFinished && isSelectionMode) {
+        return;
+      }
     }
     // パーツの選択を解除
     clearSelection();
