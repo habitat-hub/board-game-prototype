@@ -123,7 +123,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ pathname }) => {
             href="/donate"
             className="block w-full text-kibako-primary p-2 text-left hover:bg-kibako-secondary/10 transition-colors duration-200"
           >
-            KIBAKOに寄付する
+            KIBAKOに寄付
           </Link>
           <button
             onClick={handleLogout}

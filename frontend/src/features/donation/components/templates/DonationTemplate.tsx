@@ -84,7 +84,7 @@ const DonationTemplate: React.FC = () => {
               disabled
               className="w-full max-w-xs"
             >
-              KIBAKOに寄付する
+              KIBAKOに寄付
             </KibakoButton>
             <span className="text-xs text-gray-500">近日公開予定</span>
           </div>
