@@ -103,7 +103,7 @@ const DeletePrototypeConfirmation = (): ReactElement => {
     try {
       setIsDeleting(true);
       await deleteProject(projectId);
-      router.push('/projects');
+      router.replace('/projects');
     } catch (err) {
       setError('プロトタイプの削除に失敗しました');
       console.error('Error deleting prototype:', err);
