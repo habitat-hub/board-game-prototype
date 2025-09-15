@@ -1,8 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
+const { bulkCreateMock } = vi.hoisted(() => ({
+  bulkCreateMock: vi.fn(),
+}));
+
 vi.mock('../models/Part', () => ({
-  default: {},
+  default: {
+    bulkCreate: bulkCreateMock,
+  },
 }));
 vi.mock('../models/PartProperty', () => ({
   default: {},
@@ -22,13 +28,98 @@ vi.mock('../models/Prototype', () => ({
   default: { findByPk: vi.fn() },
 }));
 
-import handlePrototype, { connectedUsersMap } from './prototypeHandler';
+import handlePrototype, {
+  connectedUsersMap,
+  rebalanceOrders,
+} from './prototypeHandler';
 import PrototypeModel from '../models/Prototype';
-import { COMMON_SOCKET_EVENT, PROJECT_SOCKET_EVENT } from '../constants/socket';
+import type PartModel from '../models/Part';
+import {
+  COMMON_SOCKET_EVENT,
+  PROJECT_SOCKET_EVENT,
+  PROTOTYPE_SOCKET_EVENT,
+} from '../constants/socket';
+import { ORDER_MIN_EXCLUSIVE, ORDER_RANGE } from '../constants/prototype';
+
+class MockPart {
+  public id: number;
+  public dataValues: { id: number; order: number };
+
+  constructor(id: number, order: number) {
+    this.id = id;
+    this.dataValues = { id, order };
+  }
+
+  get order(): number {
+    return this.dataValues.order;
+  }
+
+  set order(value: number) {
+    this.dataValues.order = value;
+  }
+}
 
 const mockedFindByPk = PrototypeModel.findByPk as unknown as ReturnType<
   typeof vi.fn
 >;
+
+describe('rebalanceOrders', () => {
+  beforeEach(() => {
+    bulkCreateMock.mockReset();
+  });
+
+  it('updates orders in bulk and emits consistent socket payload', async () => {
+    const prototypeId = 'proto-rebalance';
+    const parts = [
+      new MockPart(1, 0.1),
+      new MockPart(2, 0.2),
+      new MockPart(3, 0.3),
+    ];
+
+    const emit = vi.fn();
+    const toMock = vi.fn(() => ({ emit }));
+    const io = { to: toMock } as any;
+
+    bulkCreateMock.mockResolvedValue([]);
+
+    const partModels = parts as unknown as PartModel[];
+    const result = await rebalanceOrders(prototypeId, partModels, io);
+
+    expect(bulkCreateMock).toHaveBeenCalledTimes(1);
+    const [records, options] = bulkCreateMock.mock.calls[0];
+    expect(options).toEqual({
+      fields: ['id', 'order'],
+      updateOnDuplicate: ['order'],
+    });
+
+    const totalParts = parts.length;
+    const step = ORDER_RANGE / (totalParts + 1);
+    const expectedOrders = parts.map(
+      (_, index) => ORDER_MIN_EXCLUSIVE + step * (index + 1)
+    );
+
+    records.forEach((record: { id: number; order: number }, index: number) => {
+      expect(record.id).toBe(parts[index].id);
+      expect(record.order).toBeCloseTo(expectedOrders[index], 10);
+    });
+
+    expect(toMock).toHaveBeenCalledWith(prototypeId);
+    const emitter = toMock.mock.results[0]?.value as { emit: typeof emit };
+    expect(emitter.emit).toHaveBeenCalledWith(
+      PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS,
+      {
+        parts: parts.map((part) => part.dataValues),
+        properties: [],
+      }
+    );
+
+    expect(result).toBe(partModels);
+    parts.forEach((part, index) => {
+      expect(part.order).toBeCloseTo(expectedOrders[index], 10);
+      expect(part.dataValues.order).toBeCloseTo(expectedOrders[index], 10);
+    });
+  });
+});
 
 describe('prototypeHandler disconnect', () => {
   beforeEach(() => {
