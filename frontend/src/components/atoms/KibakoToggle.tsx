@@ -65,7 +65,7 @@ export default function KibakoToggle({
           onClick={() => !disabled && onChange(false)}
           className={twMerge(
             'inline-flex items-center gap-1 rounded px-1 py-0.5 text-xs font-medium focus:outline-none',
-            checked ? 'text-kibako-primary/70' : 'text-kibako-primary',
+            checked ? 'text-kibako-primary/30' : 'text-kibako-primary',
             disabled
               ? 'cursor-not-allowed opacity-60'
               : 'cursor-pointer hover:opacity-80'
@@ -94,7 +94,7 @@ export default function KibakoToggle({
           onClick={() => !disabled && onChange(true)}
           className={twMerge(
             'inline-flex items-center gap-1 rounded px-1 py-0.5 text-xs font-medium focus:outline-none',
-            checked ? 'text-kibako-primary' : 'text-kibako-primary/70',
+            checked ? 'text-kibako-primary' : 'text-kibako-primary/30',
             disabled
               ? 'cursor-not-allowed opacity-60'
               : 'cursor-pointer hover:opacity-80'
