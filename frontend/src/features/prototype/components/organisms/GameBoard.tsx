@@ -205,11 +205,12 @@ export default function GameBoard({
   });
 
   // Viewerは常に選択モードを無効化
+  const rolesLoaded = userRoles.length > 0;
   useEffect(() => {
-    if (!canEdit && isSelectionMode) {
+    if (rolesLoaded && !canEdit && isSelectionMode) {
       toggleMode();
     }
-  }, [canEdit, isSelectionMode, toggleMode]);
+  }, [rolesLoaded, canEdit, isSelectionMode, toggleMode]);
   // ドラッグ機能
   const { handlePartDragStart, handlePartDragMove, handlePartDragEnd } =
     usePartDragSystem({
