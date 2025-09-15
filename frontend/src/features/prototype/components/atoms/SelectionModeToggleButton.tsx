@@ -13,8 +13,10 @@ export default function SelectionModeToggleButton({
   isSelectionMode,
   onToggle,
 }: SelectionModeToggleButtonProps) {
-  const panHelp = 'ボード上をドラッグで移動';
-  const selectHelp = 'ボード上でドラッグしてパーツを選択';
+  // パン操作のツールチップ文言
+  const PAN_HELP: string = 'ボード上をドラッグで移動';
+  // 矩形選択のツールチップ文言
+  const SELECT_HELP: string = 'ボード上でドラッグしてパーツを選択';
 
   const TooltipIcon = ({
     children,
@@ -38,12 +40,12 @@ export default function SelectionModeToggleButton({
         onChange={(next) => next !== isSelectionMode && onToggle()}
         ariaLabel={isSelectionMode ? '選択モード' : 'パンモード'}
         labelLeft={
-          <TooltipIcon text={panHelp}>
+          <TooltipIcon text={PAN_HELP}>
             <MdPanTool className="h-4 w-4" />
           </TooltipIcon>
         }
         labelRight={
-          <TooltipIcon text={selectHelp}>
+          <TooltipIcon text={SELECT_HELP}>
             <PiRectangleDashedDuotone className="h-4 w-4" />
           </TooltipIcon>
         }
