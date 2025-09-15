@@ -46,7 +46,7 @@ const UserRoleTable: React.FC<UserRoleTableProps> = ({
 }) => {
   const { user: currentUser } = useUser();
   // ユーザー権限が未設定かつロード完了の場合の空状態
-  if (userRoles.length === 0 && !loading) {
+  if ((userRoles ?? []).length === 0 && !loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-kibako-secondary">
         <FaUserShield className="h-12 w-12 text-kibako-secondary/50 mb-4" />

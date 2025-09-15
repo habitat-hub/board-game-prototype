@@ -204,9 +204,10 @@ export default function GameBoard({
     onClearSelection: clearSelection,
   });
 
-  // Viewerは常に選択モードを無効化
-  const rolesLoaded = userRoles.length > 0;
+  // ロール読み込み完了後、閲覧者（編集不可）の場合のみ選択モードを無効化
+  const rolesLoaded: boolean = userRoles !== undefined;
   useEffect(() => {
+    // ロールが揃ってから閲覧者であれば選択モードを解除
     if (rolesLoaded && !canEdit && isSelectionMode) {
       toggleMode();
     }
