@@ -599,16 +599,56 @@ router.post(
         throw new NotFoundError('招待できるユーザーが見つかりません');
       }
 
-      await Promise.all(
-        guests.map(async (guest) => {
-          await assignRole(
-            guest.id,
-            role.id,
-            RESOURCE_TYPES.PROJECT,
-            projectId
-          );
-        })
+      const uniqueGuestIds = Array.from(
+        new Set(guests.map((guest) => guest.id))
       );
+
+      const buildAssignmentKey = (assignment: {
+        userId: string;
+        roleId: number;
+        resourceType: string;
+        resourceId: string;
+      }) =>
+        `${assignment.userId}:${assignment.roleId}:${assignment.resourceType}:${assignment.resourceId}`;
+
+      const existingAssignments = await UserRoleModel.findAll({
+        attributes: ['userId', 'roleId', 'resourceType', 'resourceId'],
+        where: {
+          userId: { [Op.in]: uniqueGuestIds },
+          roleId: role.id,
+          resourceType: RESOURCE_TYPES.PROJECT,
+          resourceId: projectId,
+        },
+      });
+
+      const existingAssignmentKeys = new Set(
+        existingAssignments.map((assignment) =>
+          buildAssignmentKey({
+            userId: assignment.userId,
+            roleId: assignment.roleId,
+            resourceType: assignment.resourceType,
+            resourceId: assignment.resourceId,
+          })
+        )
+      );
+
+      const assignmentsToCreate = uniqueGuestIds
+        .map((guestId) => ({
+          userId: guestId,
+          roleId: role.id,
+          resourceType: RESOURCE_TYPES.PROJECT,
+          resourceId: projectId,
+        }))
+        .filter(
+          (assignment) =>
+            !existingAssignmentKeys.has(buildAssignmentKey(assignment))
+        );
+
+      if (assignmentsToCreate.length > 0) {
+        await UserRoleModel.bulkCreate(assignmentsToCreate, {
+          ignoreDuplicates: true,
+        });
+      }
 
       res.status(200).json({
         message: `ユーザーを${roleType}ロールで招待しました`,
