@@ -864,7 +864,7 @@ function handleSelectedParts(socket: Socket): void {
  * @param io - Server
  * @returns Promise<PartModel[]> - リバランス済みのパーツ配列を返すPromise
  */
-async function rebalanceOrders(
+export async function rebalanceOrders(
   prototypeId: string,
   parts: PartModel[],
   io: Server
@@ -876,14 +876,18 @@ async function rebalanceOrders(
   const step = ORDER_RANGE / (totalParts + 1);
 
   // partsの各要素のorderを直接更新
-  parts.forEach((part, i) => {
-    part.order = ORDER_MIN_EXCLUSIVE + step * (i + 1);
+  const bulkUpdateRecords = parts.map((part, i) => {
+    const newOrder = ORDER_MIN_EXCLUSIVE + step * (i + 1);
+    part.order = newOrder;
+    return { id: part.id, order: newOrder };
   });
 
-  await Promise.all(
-    parts.map((part) =>
-      PartModel.update({ order: part.order }, { where: { id: part.id } })
-    )
+  await PartModel.bulkCreate(
+    bulkUpdateRecords as Array<{ id: number; order: number }>,
+    {
+      fields: ['id', 'order'],
+      updateOnDuplicate: ['order'],
+    }
   );
 
   io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS, {
