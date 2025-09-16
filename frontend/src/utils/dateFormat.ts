@@ -6,7 +6,7 @@
  *
  * @example
  * formatDate('2021-01-01') // '2021/01/01'
- * formatDate(new Date('2021-01-01'), true) // '2021/01/01 00:00:00'
+ * formatDate(new Date('2021-01-01'), true) // '2021/01/01 09:00:00'
  */
 export default function formatDate(
   date: string | Date | null | undefined,
@@ -25,12 +25,12 @@ export default function formatDate(
     return fallback;
   }
 
-  // Use UTC to ensure stable results regardless of execution environment's timezone.
+  // Format using JST so that results stay consistent regardless of the server runtime timezone.
   const options: Intl.DateTimeFormatOptions = {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-    timeZone: 'UTC',
+    timeZone: 'Asia/Tokyo',
     ...(withTime
       ? ({
           hour: '2-digit',
