@@ -424,7 +424,9 @@ export default function LeftSidebar({
     <div
       className={twMerge(
         'fixed left-4 top-4 flex flex-col rounded-xl border border-kibako-tertiary/40 bg-gradient-to-r from-kibako-white to-kibako-tertiary shadow-md w-[18rem]',
-        isLeftSidebarMinimized ? 'h-[48px]' : 'overflow-auto max-h-[90vh]'
+        isLeftSidebarMinimized
+          ? 'h-[48px]'
+          : 'max-h-[90vh] overflow-y-auto scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
       )}
     >
       <div className="flex h-[48px] items-center justify-between p-2">
