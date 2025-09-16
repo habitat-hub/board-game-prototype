@@ -6,8 +6,14 @@ import {
   DB_POOL_ACQUIRE,
   DB_POOL_IDLE,
 } from '../constants/database';
+import { withNeonTransactionPooler } from '../helpers/databaseUrl';
 
-const sequelize = new Sequelize(env.DATABASE_URL, {
+const connectionString = withNeonTransactionPooler(
+  env.DATABASE_URL,
+  env.NODE_ENV
+);
+
+const sequelize = new Sequelize(connectionString, {
   dialect: 'postgres',
   protocol: 'postgres',
   logging: false,
