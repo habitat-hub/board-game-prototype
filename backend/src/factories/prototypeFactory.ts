@@ -232,6 +232,17 @@ export const createPrototypeVersion = async ({
     { transaction }
   );
 
+  // インスタンスプロトタイプの作成（先に作ってIDを参照可能にする）
+  const instancePrototype = await PrototypeModel.create(
+    {
+      projectId,
+      name,
+      type: 'INSTANCE',
+      sourceVersionPrototypeId: versionPrototype.id,
+    },
+    { transaction }
+  );
+
   // マスタープロトタイプのパーツの取得
   const masterParts = await PartModel.findAll({
     where: {
@@ -248,9 +259,19 @@ export const createPrototypeVersion = async ({
     transaction,
   });
 
-  // VERSION用パーツとプロパティのコピー
-  const versionPartIdMap: Record<string, string> = {};
+  // マスターのプロパティを partId ごとにグルーピング（O(m)）
+  const masterPartPropertyMap = new Map<number, PartPropertyModel[]>();
+  for (const prop of masterPartProperties) {
+    const arr = masterPartPropertyMap.get(prop.partId) ?? [];
+    arr.push(prop);
+    masterPartPropertyMap.set(prop.partId, arr);
+  }
+
+  // VERSION/INSTANCE 用パーツとプロパティを MASTER から直接複製
   for (const masterPart of masterParts) {
+    const partProperties = masterPartPropertyMap.get(masterPart.id) ?? [];
+
+    // VERSION パーツ作成
     const versionPart = await PartModel.create(
       {
         type: masterPart.type,
@@ -263,11 +284,8 @@ export const createPrototypeVersion = async ({
       },
       { transaction, returning: true }
     );
-    versionPartIdMap[String(masterPart.id)] = String(versionPart.id);
 
-    const partProperties = masterPartProperties.filter(
-      ({ partId }) => partId === masterPart.id
-    );
+    // VERSION プロパティ作成
     for (const prop of partProperties) {
       await PartPropertyModel.create(
         {
@@ -282,48 +300,23 @@ export const createPrototypeVersion = async ({
         { transaction }
       );
     }
-  }
 
-  const instancePrototype = await PrototypeModel.create(
-    {
-      projectId,
-      name,
-      type: 'INSTANCE',
-      sourceVersionPrototypeId: versionPrototype.id,
-    },
-    { transaction }
-  );
-
-  // バージョンプロトタイプのパーツを取得
-  const versionParts = await PartModel.findAll({
-    where: {
-      prototypeId: versionPrototype.id,
-    },
-    transaction,
-  });
-
-  for (const versionPart of versionParts) {
+    // INSTANCE パーツ作成（MASTER から直接）
     const instancePart = await PartModel.create(
       {
-        type: versionPart.type,
+        type: masterPart.type,
         prototypeId: instancePrototype.id,
-        position: versionPart.position,
-        width: versionPart.width,
-        height: versionPart.height,
-        order: versionPart.order,
-        frontSide: versionPart.frontSide,
+        position: masterPart.position,
+        width: masterPart.width,
+        height: masterPart.height,
+        order: masterPart.order,
+        frontSide: masterPart.frontSide,
       },
       { transaction, returning: true }
     );
 
-    // バージョンパーツのプロパティを取得
-    const versionPartProperties = await PartPropertyModel.findAll({
-      where: {
-        partId: versionPart.id,
-      },
-      transaction,
-    });
-    for (const prop of versionPartProperties) {
+    // INSTANCE プロパティ作成（MASTER プロパティから）
+    for (const prop of partProperties) {
       await PartPropertyModel.create(
         {
           partId: instancePart.id,
@@ -338,6 +331,8 @@ export const createPrototypeVersion = async ({
       );
     }
   }
+
+  // VERSION からの再読込は不要（MASTER をソースに複製済み）
 
   return { versionPrototype, instancePrototype };
 };
