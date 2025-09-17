@@ -48,8 +48,6 @@ export default function PartPropertyMenuMulti({
     () => selectedParts.filter((p) => p.type === 'card'),
     [selectedParts]
   );
-  // カード関連アクションの表示はカードが含まれるときのみ
-  const showActionSection = cardParts.length > 0;
 
   const alignParts = useCallback(
     (type: AlignmentType): void => {
@@ -220,10 +218,24 @@ export default function PartPropertyMenuMulti({
       className="flex flex-col gap-2"
       style={{ display: hidden ? 'none' : 'flex' }}
     >
-      {showActionSection && (
-        <>
-          <p className="text-kibako-white">アクション</p>
-          <div className="grid grid-cols-1 gap-2">
+      <p className="text-kibako-white">アクション</p>
+      <div className="grid grid-cols-1 gap-2">
+        <PartPropertyMenuButton
+          text="横に広げる"
+          ariaLabel="横に広げる"
+          title="横方向に重ならないように広げる"
+          icon={<LuStretchVertical className="h-5 w-5" />}
+          onClick={handleSpreadHorizontal}
+        />
+        <PartPropertyMenuButton
+          text="縦に広げる"
+          ariaLabel="縦に広げる"
+          title="縦方向に重ならないように広げる"
+          icon={<LuStretchHorizontal className="h-5 w-5" />}
+          onClick={handleSpreadVertical}
+        />
+        {cardParts.length > 0 && (
+          <>
             <PartPropertyMenuButton
               text={cardSideTargetLabel}
               ariaLabel={cardSideTargetLabel}
@@ -238,9 +250,9 @@ export default function PartPropertyMenuMulti({
                 onClick={handleShuffleCards}
               />
             )}
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
       <p className="text-kibako-white">整列</p>
       <div className="grid grid-cols-4 gap-2">
         <PartPropertyMenuButton
@@ -304,20 +316,6 @@ export default function PartPropertyMenuMulti({
           title="垂直方向に等間隔に配置"
           icon={<LuAlignVerticalSpaceBetween className="h-5 w-5" />}
           onClick={handleDistributeVerticalEvenly}
-        />
-        <PartPropertyMenuButton
-          text=""
-          ariaLabel="横に展開する"
-          title="横方向に、重ならないように広げる"
-          icon={<LuStretchVertical className="h-5 w-5" />}
-          onClick={handleSpreadHorizontal}
-        />
-        <PartPropertyMenuButton
-          text=""
-          ariaLabel="縦に展開する"
-          title="縦方向に、重ならないように広げる"
-          icon={<LuStretchHorizontal className="h-5 w-5" />}
-          onClick={handleSpreadVertical}
         />
       </div>
     </div>
