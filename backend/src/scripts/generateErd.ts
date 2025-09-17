@@ -1,16 +1,57 @@
-import fs from 'fs';
 import path from 'path';
+import { existsSync, readdirSync, statSync, writeFileSync } from 'fs';
 import sequelizeErd from 'sequelize-erd';
 import sequelize from '../models'; // Sequelizeインスタンスをインポート
 import { setupAssociations } from '../database/associations'; // アソシエーション設定をインポート
-import { writeFileSync } from 'fs';
 
 const modelsDir = path.join(__dirname, '../models');
+const backendRootDir = path.resolve(__dirname, '..', '..');
+const erdOutputPath = path.join(backendRootDir, 'erd.svg');
+const associationsFilePath = path.join(
+  __dirname,
+  '../database/associations.ts'
+);
 
-(async function () {
-  fs.readdirSync(modelsDir)
+function shouldRegenerateErd(modelFileNames: string[]): boolean {
+  if (!existsSync(erdOutputPath)) {
+    return true;
+  }
+
+  const dependencyFiles = [
+    associationsFilePath,
+    ...modelFileNames.map((fileName) => {
+      return path.join(modelsDir, fileName);
+    }),
+  ];
+
+  const erdStat = statSync(erdOutputPath);
+  let latestDependencyMTime = 0;
+
+  dependencyFiles.forEach((filePath) => {
+    if (!existsSync(filePath)) {
+      return;
+    }
+
+    const fileStat = statSync(filePath);
+    latestDependencyMTime = Math.max(latestDependencyMTime, fileStat.mtimeMs);
+  });
+
+  return latestDependencyMTime > erdStat.mtimeMs;
+}
+
+async function generateErd(): Promise<void> {
+  const modelFileNames = readdirSync(modelsDir).filter((file) => {
+    return file.endsWith('.ts');
+  });
+
+  if (!shouldRegenerateErd(modelFileNames)) {
+    console.log('ERDは最新の状態です。再生成をスキップします。');
+    return;
+  }
+
+  modelFileNames
     .filter((file) => {
-      return file.endsWith('.ts') && file !== 'index.ts';
+      return file !== 'index.ts';
     })
     .forEach((file) => {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -37,6 +78,12 @@ const modelsDir = path.join(__dirname, '../models');
     lineWidth: 1,
     color: 'blue',
   });
-  writeFileSync('./erd.svg', svg);
+
+  writeFileSync(erdOutputPath, svg);
   console.log('ERDが正常に生成されました！');
-})();
+}
+
+generateErd().catch((error) => {
+  console.error('ERDの生成中にエラーが発生しました。', error);
+  process.exit(1);
+});
