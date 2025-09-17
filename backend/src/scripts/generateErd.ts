@@ -39,11 +39,15 @@ function shouldRegenerateErd(modelFileNames: string[]): boolean {
   return latestDependencyMTime > erdStat.mtimeMs;
 }
 
+/** ERD を生成するメイン処理 */
 async function generateErd(): Promise<void> {
-  const modelFileNames = readdirSync(modelsDir).filter((file) => {
-    return file.endsWith('.ts');
-  });
+  const modelFileNames: string[] = readdirSync(modelsDir).filter(
+    (file: string): boolean => {
+      return file.endsWith('.ts');
+    }
+  );
 
+  // ERD が最新の場合はスキップ
   if (!shouldRegenerateErd(modelFileNames)) {
     console.log('ERDは最新の状態です。再生成をスキップします。');
     return;
