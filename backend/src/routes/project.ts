@@ -612,9 +612,13 @@ router.post(
         },
       });
 
-      const existingAssignmentsByUser = new Map(
-        existingAssignments.map((assignment) => [assignment.userId, assignment])
-      );
+      const existingAssignmentsByUser = new Map<string, UserRoleModel[]>();
+      for (const assignment of existingAssignments) {
+        const assignmentsForUser =
+          existingAssignmentsByUser.get(assignment.userId) ?? [];
+        assignmentsForUser.push(assignment);
+        existingAssignmentsByUser.set(assignment.userId, assignmentsForUser);
+      }
 
       const userIdsToUpdate = Array.from(
         new Set(
