@@ -143,14 +143,66 @@ export function shuffleDeck(
 export async function persistDeckOrder(
   cards: { id: number; order: number }[]
 ): Promise<PartModel[]> {
-  const updatedCards = await Promise.all(
-    cards.map(async (card) => {
-      const [, result] = await PartModel.update(
-        { order: card.order },
-        { where: { id: card.id }, returning: true }
-      );
-      return result[0].dataValues as PartModel;
-    })
+  if (cards.length === 0) {
+    return [];
+  }
+
+  const orderMap = new Map(cards.map((card) => [card.id, card.order]));
+  const cardIds = Array.from(orderMap.keys());
+
+  const existingRecords = await PartModel.findAll({
+    where: { id: { [Op.in]: cardIds } },
+  });
+
+  if (existingRecords.length === 0) {
+    return [];
+  }
+
+  const recordMap = new Map(
+    existingRecords.map((record) => [record.id, record])
   );
-  return updatedCards;
+  const timestamp = new Date();
+
+  const payload: Array<Record<string, unknown>> = [];
+
+  existingRecords.forEach((record) => {
+    const nextOrder = orderMap.get(record.id);
+    if (nextOrder === undefined) {
+      return;
+    }
+
+    const plainRecord = record.get({ plain: true }) as Record<string, unknown>;
+
+    payload.push({
+      ...plainRecord,
+      order: nextOrder,
+      updatedAt: timestamp,
+    });
+  });
+
+  if (payload.length === 0) {
+    return [];
+  }
+
+  await PartModel.bulkCreate(
+    payload as Parameters<typeof PartModel.bulkCreate>[0],
+    {
+      updateOnDuplicate: ['order', 'updatedAt'],
+    }
+  );
+
+  return cards
+    .map((card) => {
+      const record = recordMap.get(card.id);
+      if (!record) {
+        return undefined;
+      }
+      const updatedOrder = orderMap.get(card.id);
+      if (updatedOrder !== undefined) {
+        record.set('order', updatedOrder);
+        record.set('updatedAt', timestamp);
+      }
+      return record;
+    })
+    .filter((record): record is PartModel => record !== undefined);
 }
