@@ -1,22 +1,45 @@
 import express from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import request from 'supertest';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Mock authentication to always attach a user
+type AuthenticatedRequest = Request & { user?: { id: string } };
+
 vi.mock('../middlewares/auth', () => ({
-  ensureAuthenticated: (req: any, _res: any, next: any) => {
+  ensureAuthenticated: (
+    req: AuthenticatedRequest,
+    _res: Response,
+    next: NextFunction
+  ) => {
     req.user = { id: 'user1' };
     next();
   },
 }));
 
 // Spyable admin middleware to control permission outcome
-const adminMiddleware = vi.hoisted(() =>
-  vi.fn((req: any, _res: any, next: any) => next())
-);
+const adminMiddleware = vi.hoisted(() => {
+  const handler = (
+    req: AuthenticatedRequest,
+    _res: Response,
+    next: NextFunction
+  ): void => {
+    next();
+  };
+
+  return vi.fn(handler);
+});
 vi.mock('../middlewares/permissions', () => ({
-  checkProjectReadPermission: (req: any, _res: any, next: any) => next(),
-  checkProjectWritePermission: (req: any, _res: any, next: any) => next(),
+  checkProjectReadPermission: (
+    _req: AuthenticatedRequest,
+    _res: Response,
+    next: NextFunction
+  ) => next(),
+  checkProjectWritePermission: (
+    _req: AuthenticatedRequest,
+    _res: Response,
+    next: NextFunction
+  ) => next(),
   checkProjectAdminRole: adminMiddleware,
 }));
 
@@ -40,17 +63,29 @@ app.use('/api/projects', projectRouter);
 describe('project member management routes', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
-    adminMiddleware.mockImplementation((req: any, _res: any, next: any) =>
-      next()
+    adminMiddleware.mockImplementation(
+      (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
+        next();
+      }
     );
     adminMiddleware.mockClear();
-    vi.spyOn(RoleModel, 'findOne').mockResolvedValue({ id: 'role1' } as any);
-    vi.spyOn(UserModel, 'findAll').mockResolvedValue([{ id: 'guest1' }] as any);
-    vi.spyOn(ProjectModel, 'findByPk').mockResolvedValue({
-      id: 'proj1',
-      userId: 'owner1',
-    } as any);
-    vi.spyOn(UserRoleModel, 'destroy').mockResolvedValue(1 as any);
+    vi.spyOn(RoleModel, 'findOne').mockResolvedValue(
+      RoleModel.build({ id: 1, name: 'editor', description: 'Editor role' })
+    );
+    vi.spyOn(UserModel, 'findAll').mockResolvedValue([
+      UserModel.build({
+        id: 'guest1',
+        googleId: 'guest1-google-id',
+        username: 'Guest 1',
+      }),
+    ]);
+    vi.spyOn(ProjectModel, 'findByPk').mockResolvedValue(
+      ProjectModel.build({
+        id: 'proj1',
+        userId: 'owner1',
+      })
+    );
+    vi.spyOn(UserRoleModel, 'destroy').mockResolvedValue(1);
   });
 
   it('allows admins to invite members', async () => {
@@ -61,8 +96,10 @@ describe('project member management routes', () => {
   });
 
   it('prevents non-admins from inviting members', async () => {
-    adminMiddleware.mockImplementationOnce((req: any, res: any) =>
-      res.status(403).json({ message: 'Adminロールが必要です' })
+    adminMiddleware.mockImplementationOnce(
+      (_req: AuthenticatedRequest, res: Response) => {
+        res.status(403).json({ message: 'Adminロールが必要です' });
+      }
     );
     const res = await request(app)
       .post('/api/projects/proj1/invite')
@@ -76,8 +113,10 @@ describe('project member management routes', () => {
   });
 
   it('prevents non-admins from removing members', async () => {
-    adminMiddleware.mockImplementationOnce((req: any, res: any) =>
-      res.status(403).json({ message: 'Adminロールが必要です' })
+    adminMiddleware.mockImplementationOnce(
+      (_req: AuthenticatedRequest, res: Response) => {
+        res.status(403).json({ message: 'Adminロールが必要です' });
+      }
     );
     const res = await request(app).delete('/api/projects/proj1/invite/guest1');
     expect(res.status).toBe(403);
