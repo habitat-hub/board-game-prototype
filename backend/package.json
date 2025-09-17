@@ -22,7 +22,7 @@
     "redoc": "redocly build-docs swagger-output.json --output ../docs/index.html",
     "prepare": "cd ../ && git rev-parse --is-inside-work-tree >/dev/null 2>&1 && git config core.hooksPath .husky || true",
     "generate-swagger": "ts-node src/scripts/generateSwagger.ts",
-    "generate-api-types": "npx swagger-typescript-api generate -p ./swagger-output.json -o ../frontend/src/api/types --extract-request-params --extract-request-body --extract-response-body --modular --axios --disable-strict-ssl --disable-throw-on-error",
+    "generate-api-types": "ts-node src/scripts/generateApiTypes.ts",
     "clean-up-unused-images": "ts-node src/scripts/cleanUpUnusedImages.ts",
     "seed": "ts-node src/database/seed.ts",
     "seed:force": "ts-node src/database/seed.ts --force",

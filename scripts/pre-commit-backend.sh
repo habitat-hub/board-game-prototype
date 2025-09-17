@@ -16,6 +16,16 @@ if [ -f docs/index.html ]; then
   echo "✨ Added docs/index.html to staging"
 fi
 
+if [ -f backend/.erd-metadata.json ]; then
+  git add backend/.erd-metadata.json
+  echo "✨ Added backend/.erd-metadata.json to staging"
+fi
+
+if [ -f backend/.api-types-metadata.json ]; then
+  git add backend/.api-types-metadata.json
+  echo "✨ Added backend/.api-types-metadata.json to staging"
+fi
+
 for file in frontend/src/api/types/*; do
   if [ -f "$file" ]; then
     git add "$file"

@@ -1,5 +1,11 @@
 import path from 'path';
-import { existsSync, readdirSync, statSync, writeFileSync } from 'fs';
+import {
+  existsSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  writeFileSync,
+} from 'fs';
 import sequelizeErd from 'sequelize-erd';
 import sequelize from '../models'; // Sequelizeインスタンスをインポート
 import { setupAssociations } from '../database/associations'; // アソシエーション設定をインポート
@@ -11,23 +17,123 @@ const associationsFilePath = path.join(
   __dirname,
   '../database/associations.ts'
 );
+const erdMetadataPath = path.join(backendRootDir, '.erd-metadata.json');
 
-function shouldRegenerateErd(modelFileNames: string[]): boolean {
-  if (!existsSync(erdOutputPath)) {
+interface ErdMetadata {
+  dependencies: string[];
+}
+
+function normalizeDependencies(dependencyFiles: string[]): string[] {
+  const normalizedDependencies: string[] = dependencyFiles
+    .map((filePath: string) => {
+      return path.relative(backendRootDir, filePath);
+    })
+    .sort();
+
+  return normalizedDependencies;
+}
+
+function readErdMetadata(): ErdMetadata | null {
+  if (!existsSync(erdMetadataPath)) {
+    return null;
+  }
+
+  try {
+    const metadataRaw: string = readFileSync(erdMetadataPath, 'utf-8');
+    const parsedMetadata: unknown = JSON.parse(metadataRaw);
+
+    if (
+      typeof parsedMetadata !== 'object' ||
+      parsedMetadata === null ||
+      !Array.isArray(
+        (parsedMetadata as { dependencies?: unknown }).dependencies
+      )
+    ) {
+      return null;
+    }
+
+    const dependencies: string[] = (
+      parsedMetadata as { dependencies: string[] }
+    ).dependencies;
+    return {
+      dependencies,
+    };
+  } catch (error) {
+    console.warn(
+      'ERDメタデータの読み込みに失敗しました。再生成を行います。',
+      error
+    );
+    return null;
+  }
+}
+
+function writeErdMetadata(dependencies: string[]): void {
+  const metadata: ErdMetadata = {
+    dependencies,
+  };
+
+  writeFileSync(erdMetadataPath, JSON.stringify(metadata, null, 2));
+}
+
+function haveDependenciesChanged(
+  currentDependencies: string[],
+  previousDependencies: string[]
+): boolean {
+  if (currentDependencies.length !== previousDependencies.length) {
     return true;
   }
 
-  const dependencyFiles = [
+  return currentDependencies.some((dependency: string, index: number) => {
+    return dependency !== previousDependencies[index];
+  });
+}
+
+function shouldRegenerateErd(modelFileNames: string[]): {
+  dependencies: string[];
+  shouldRegenerate: boolean;
+} {
+  const dependencyFiles: string[] = [
     associationsFilePath,
-    ...modelFileNames.map((fileName) => {
+    ...modelFileNames.map((fileName: string) => {
       return path.join(modelsDir, fileName);
     }),
   ];
 
+  const normalizedDependencies: string[] =
+    normalizeDependencies(dependencyFiles);
+
+  if (!existsSync(erdOutputPath)) {
+    return {
+      dependencies: normalizedDependencies,
+      shouldRegenerate: true,
+    };
+  }
+
+  const existingMetadata: ErdMetadata | null = readErdMetadata();
+
+  if (existingMetadata === null) {
+    return {
+      dependencies: normalizedDependencies,
+      shouldRegenerate: true,
+    };
+  }
+
+  if (
+    haveDependenciesChanged(
+      normalizedDependencies,
+      existingMetadata.dependencies
+    )
+  ) {
+    return {
+      dependencies: normalizedDependencies,
+      shouldRegenerate: true,
+    };
+  }
+
   const erdStat = statSync(erdOutputPath);
   let latestDependencyMTime = 0;
 
-  dependencyFiles.forEach((filePath) => {
+  dependencyFiles.forEach((filePath: string) => {
     if (!existsSync(filePath)) {
       return;
     }
@@ -36,7 +142,12 @@ function shouldRegenerateErd(modelFileNames: string[]): boolean {
     latestDependencyMTime = Math.max(latestDependencyMTime, fileStat.mtimeMs);
   });
 
-  return latestDependencyMTime > erdStat.mtimeMs;
+  const shouldRegenerate: boolean = latestDependencyMTime > erdStat.mtimeMs;
+
+  return {
+    dependencies: normalizedDependencies,
+    shouldRegenerate,
+  };
 }
 
 /** ERD を生成するメイン処理 */
@@ -47,17 +158,22 @@ async function generateErd(): Promise<void> {
     }
   );
 
+  const regenerationAssessment: {
+    dependencies: string[];
+    shouldRegenerate: boolean;
+  } = shouldRegenerateErd(modelFileNames);
+
   // ERD が最新の場合はスキップ
-  if (!shouldRegenerateErd(modelFileNames)) {
+  if (!regenerationAssessment.shouldRegenerate) {
     console.log('ERDは最新の状態です。再生成をスキップします。');
     return;
   }
 
   modelFileNames
-    .filter((file) => {
+    .filter((file: string) => {
       return file !== 'index.ts';
     })
-    .forEach((file) => {
+    .forEach((file: string) => {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const modelModule = require(path.join(modelsDir, file));
       const model = modelModule.default;
@@ -84,6 +200,7 @@ async function generateErd(): Promise<void> {
   });
 
   writeFileSync(erdOutputPath, svg);
+  writeErdMetadata(regenerationAssessment.dependencies);
   console.log('ERDが正常に生成されました！');
 }
 

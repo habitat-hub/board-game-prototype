@@ -1,0 +1,11 @@
+{
+  "dependencies": ["backend/swagger-output.json"],
+  "outputs": [
+    "frontend/src/api/types/Api.ts",
+    "frontend/src/api/types/Auth.ts",
+    "frontend/src/api/types/User.ts",
+    "frontend/src/api/types/data-contracts.ts",
+    "frontend/src/api/types/http-client.ts",
+    "frontend/src/api/types/index.ts"
+  ]
+}
