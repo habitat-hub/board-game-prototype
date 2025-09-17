@@ -247,7 +247,7 @@ function handleUpdateParts(socket: Socket, io: Server): void {
 
         if (!updates || updates.length === 0) return;
 
-        const updatedParts: PartModel[] = [];
+        const updatedPartIds = new Set<number>();
         const propertyPartIds = new Set<number>();
 
         // 入力IDの正規化とルーム制約
@@ -266,11 +266,34 @@ function handleUpdateParts(socket: Socket, io: Server): void {
             transaction: t,
           });
           const validIds = new Set(partsInRoom.map((p) => p.id));
+          const validPropertySides = new Map<
+            number,
+            Set<PartPropertyModel['side']>
+          >();
+          if (validIds.size > 0) {
+            const propertyRecords = await PartPropertyModel.findAll({
+              attributes: ['partId', 'side'],
+              where: { partId: { [Op.in]: Array.from(validIds) } },
+              transaction: t,
+            });
+            for (const property of propertyRecords) {
+              const sideSet =
+                validPropertySides.get(property.partId) ??
+                new Set<PartPropertyModel['side']>();
+              sideSet.add(property.side);
+              validPropertySides.set(property.partId, sideSet);
+            }
+          }
+
+          const partUpdatesById = new Map<number, Record<string, unknown>>();
+          const propertyUpdatesByPart = new Map<
+            number,
+            Map<PartPropertyModel['side'], Record<string, unknown>>
+          >();
 
           for (const { partId, updatePart, updateProperties } of updates) {
             if (!validIds.has(partId)) continue;
 
-            // 更新対象フィールドはホワイトリストから選択
             if (updatePart && Object.keys(updatePart).length > 0) {
               const updateData = Object.entries(updatePart).reduce(
                 (acc, [key, value]) => {
@@ -278,54 +301,135 @@ function handleUpdateParts(socket: Socket, io: Server): void {
                     value !== undefined &&
                     UPDATABLE_PROTOTYPE_FIELDS.PART.includes(key)
                   ) {
-                    // @ts-expect-error 動的キー
                     acc[key] = value;
                   }
                   return acc;
                 },
-                {} as Partial<PartModel>
+                {} as Record<string, unknown>
               );
 
               if (Object.keys(updateData).length > 0) {
-                const [, result] = await PartModel.update(updateData, {
-                  where: { id: partId, prototypeId },
-                  returning: true,
-                  transaction: t,
-                });
-                if (result[0]) {
-                  updatedParts.push(result[0].dataValues);
-                }
+                const existing = partUpdatesById.get(partId) ?? {};
+                partUpdatesById.set(partId, { ...existing, ...updateData });
               }
             }
 
-            // プロパティ更新：side が必須（WHERE句のキー）
             if (updateProperties && updateProperties.length > 0) {
-              const updatePromises = updateProperties
-                .filter((property) => property.side !== undefined)
-                .map((property) => {
-                  // mass-assignment防止: id / partId / side は更新しない
-                  const propertyUpdateData = Object.entries(property).reduce(
-                    (acc, [key, value]) => {
-                      if (value === undefined) return acc;
-                      if (key === 'id' || key === 'partId' || key === 'side')
-                        return acc;
-                      // @ts-expect-error 動的キーの代入
-                      acc[key] = value;
+              const propertyMap =
+                propertyUpdatesByPart.get(partId) ??
+                new Map<PartPropertyModel['side'], Record<string, unknown>>();
+              let hasUpdate = false;
+
+              for (const property of updateProperties) {
+                if (property.side === undefined) {
+                  continue;
+                }
+
+                const availableSides = validPropertySides.get(partId);
+                if (!availableSides || !availableSides.has(property.side)) {
+                  continue;
+                }
+
+                const propertyUpdateData = Object.entries(property).reduce(
+                  (acc, [key, value]) => {
+                    if (
+                      value === undefined ||
+                      key === 'id' ||
+                      key === 'partId' ||
+                      key === 'side'
+                    ) {
                       return acc;
-                    },
-                    {} as Partial<PartPropertyModel>
-                  );
-                  if (Object.keys(propertyUpdateData).length === 0) {
-                    return Promise.resolve();
-                  }
-                  return PartPropertyModel.update(propertyUpdateData, {
-                    where: { partId, side: property.side },
-                    transaction: t,
-                  });
+                    }
+                    acc[key] = value;
+                    return acc;
+                  },
+                  {} as Record<string, unknown>
+                );
+
+                if (Object.keys(propertyUpdateData).length === 0) {
+                  continue;
+                }
+
+                const sideKey = property.side as PartPropertyModel['side'];
+                const existing = propertyMap.get(sideKey) ?? {};
+                propertyMap.set(sideKey, {
+                  ...existing,
+                  ...propertyUpdateData,
                 });
-              await Promise.all(updatePromises);
-              propertyPartIds.add(partId);
+                propertyPartIds.add(partId);
+                hasUpdate = true;
+              }
+
+              if (hasUpdate) {
+                propertyUpdatesByPart.set(partId, propertyMap);
+              }
             }
+          }
+
+          const partBulkGroups = new Map<
+            string,
+            {
+              fields: string[];
+              records: Array<Record<string, unknown>>;
+            }
+          >();
+
+          partUpdatesById.forEach((data, partId) => {
+            const fields = Object.keys(data);
+            if (fields.length === 0) {
+              return;
+            }
+            const sortedFields = [...fields].sort();
+            const key = sortedFields.join('|');
+            const record = { id: partId, ...data };
+            if (!partBulkGroups.has(key)) {
+              partBulkGroups.set(key, { fields: sortedFields, records: [] });
+            }
+            partBulkGroups.get(key)!.records.push(record);
+            updatedPartIds.add(partId);
+          });
+
+          for (const group of partBulkGroups.values()) {
+            await PartModel.bulkCreate(group.records, {
+              fields: ['id', ...group.fields],
+              updateOnDuplicate: group.fields,
+              transaction: t,
+            });
+          }
+
+          const propertyBulkGroups = new Map<
+            string,
+            {
+              fields: string[];
+              records: Array<Record<string, unknown>>;
+            }
+          >();
+
+          propertyUpdatesByPart.forEach((sideMap, partId) => {
+            sideMap.forEach((data, side) => {
+              const fields = Object.keys(data);
+              if (fields.length === 0) {
+                return;
+              }
+              const sortedFields = [...fields].sort();
+              const key = sortedFields.join('|');
+              const record = { partId, side, ...data };
+              if (!propertyBulkGroups.has(key)) {
+                propertyBulkGroups.set(key, {
+                  fields: sortedFields,
+                  records: [],
+                });
+              }
+              propertyBulkGroups.get(key)!.records.push(record);
+            });
+          });
+
+          for (const group of propertyBulkGroups.values()) {
+            await PartPropertyModel.bulkCreate(group.records, {
+              fields: ['partId', 'side', ...group.fields],
+              updateOnDuplicate: group.fields,
+              transaction: t,
+            });
           }
 
           await t.commit();
@@ -334,13 +438,23 @@ function handleUpdateParts(socket: Socket, io: Server): void {
           throw e;
         }
 
+        const updatedPartInstances =
+          updatedPartIds.size > 0
+            ? await PartModel.findAll({
+                where: { id: [...updatedPartIds], prototypeId },
+              })
+            : [];
+        const updatedParts = updatedPartInstances.map(
+          (part) => part.get({ plain: true }) as PartModel
+        );
+
         const updatedPropertiesWithImages =
           propertyPartIds.size > 0
             ? await fetchPropertiesWithImagesByPartIds([...propertyPartIds])
             : [];
 
         io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS, {
-          parts: updatedParts.map((part) => part),
+          parts: updatedParts,
           properties: updatedPropertiesWithImages,
         });
       } catch (error) {
@@ -479,6 +593,7 @@ function handleUpdatePart(socket: Socket, io: Server): void {
 
       let updatedPart: PartModel | null = null;
       let updatedPropertiesWithImages: PartPropertyModel[] | null = null;
+      let shouldFetchUpdatedProperties = false;
 
       try {
         const hasAccess = await hasPermission(
@@ -494,43 +609,141 @@ function handleUpdatePart(socket: Socket, io: Server): void {
           return;
         }
 
-        // Partの更新
-        if (updatePart && Object.keys(updatePart).length > 0) {
-          const updateData = Object.entries(updatePart).reduce(
-            (acc, [key, value]) => {
-              if (
-                value !== undefined &&
-                UPDATABLE_PROTOTYPE_FIELDS.PART.includes(key)
-              ) {
-                return { ...acc, [key]: value };
-              }
-              return acc;
-            },
-            {} as Partial<PartModel>
-          );
-          const [, result] = await PartModel.update(updateData, {
-            where: { id: partId },
-            returning: true,
+        const t = await PartModel.sequelize!.transaction();
+        try {
+          const partRecord = await PartModel.findOne({
+            attributes: ['id'],
+            where: { id: partId, prototypeId },
+            transaction: t,
           });
-          updatedPart = result[0].dataValues;
+
+          if (!partRecord) {
+            await t.rollback();
+            return;
+          }
+
+          if (updatePart && Object.keys(updatePart).length > 0) {
+            const updateData = Object.entries(updatePart).reduce(
+              (acc, [key, value]) => {
+                if (
+                  value !== undefined &&
+                  UPDATABLE_PROTOTYPE_FIELDS.PART.includes(key)
+                ) {
+                  acc[key] = value;
+                }
+                return acc;
+              },
+              {} as Record<string, unknown>
+            );
+
+            if (Object.keys(updateData).length > 0) {
+              const [, result] = await PartModel.update(updateData, {
+                where: { id: partId, prototypeId },
+                returning: true,
+                transaction: t,
+              });
+              if (result[0]) {
+                updatedPart = result[0].dataValues;
+              }
+            }
+          }
+
+          if (updateProperties && updateProperties.length > 0) {
+            const propertyRecords = await PartPropertyModel.findAll({
+              attributes: ['side'],
+              where: { partId },
+              transaction: t,
+            });
+            const validSides = new Set(
+              propertyRecords.map((property) => property.side)
+            );
+
+            const propertyUpdatesBySide = new Map<
+              PartPropertyModel['side'],
+              Record<string, unknown>
+            >();
+
+            for (const property of updateProperties) {
+              if (property.side === undefined) {
+                continue;
+              }
+              if (!validSides.has(property.side)) {
+                continue;
+              }
+
+              const propertyUpdateData = Object.entries(property).reduce(
+                (acc, [key, value]) => {
+                  if (
+                    value === undefined ||
+                    key === 'id' ||
+                    key === 'partId' ||
+                    key === 'side'
+                  ) {
+                    return acc;
+                  }
+                  acc[key] = value;
+                  return acc;
+                },
+                {} as Record<string, unknown>
+              );
+
+              if (Object.keys(propertyUpdateData).length === 0) {
+                continue;
+              }
+
+              const sideKey = property.side as PartPropertyModel['side'];
+              const existing = propertyUpdatesBySide.get(sideKey) ?? {};
+              propertyUpdatesBySide.set(sideKey, {
+                ...existing,
+                ...propertyUpdateData,
+              });
+            }
+
+            const propertyBulkGroups = new Map<
+              string,
+              {
+                fields: string[];
+                records: Array<Record<string, unknown>>;
+              }
+            >();
+
+            propertyUpdatesBySide.forEach((data, side) => {
+              const fields = Object.keys(data);
+              if (fields.length === 0) {
+                return;
+              }
+              const sortedFields = [...fields].sort();
+              const key = sortedFields.join('|');
+              const record = { partId, side, ...data };
+              if (!propertyBulkGroups.has(key)) {
+                propertyBulkGroups.set(key, {
+                  fields: sortedFields,
+                  records: [],
+                });
+              }
+              propertyBulkGroups.get(key)!.records.push(record);
+            });
+
+            for (const group of propertyBulkGroups.values()) {
+              await PartPropertyModel.bulkCreate(group.records, {
+                fields: ['partId', 'side', ...group.fields],
+                updateOnDuplicate: group.fields,
+                transaction: t,
+              });
+            }
+
+            if (propertyBulkGroups.size > 0) {
+              shouldFetchUpdatedProperties = true;
+            }
+          }
+
+          await t.commit();
+        } catch (innerError) {
+          await t.rollback();
+          throw innerError;
         }
 
-        // PartPropertiesの更新
-        if (updateProperties) {
-          const updatePromises = updateProperties.map((property) => {
-            return PartPropertyModel.update(
-              { ...property, partId },
-              {
-                where: { partId, side: property.side },
-                returning: true,
-              }
-            );
-          });
-
-          // 更新処理の実行
-          await Promise.all(updatePromises);
-
-          // 更新したPartProperty及び紐づく画像を取得
+        if (shouldFetchUpdatedProperties) {
           updatedPropertiesWithImages =
             await fetchPropertiesWithImagesByPartIds([partId]);
         }

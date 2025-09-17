@@ -13,5 +13,7 @@
     "backend/src/models/index.ts",
     "backend/src/scripts/generateSwagger.ts"
   ],
-  "outputs": ["backend/src/swagger-schemas.ts"]
+  "outputs": [
+    "backend/src/swagger-schemas.ts"
+  ]
 }

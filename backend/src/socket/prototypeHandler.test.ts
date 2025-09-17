@@ -1,17 +1,40 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-const { bulkCreateMock } = vi.hoisted(() => ({
-  bulkCreateMock: vi.fn(),
+const {
+  partBulkCreateMock,
+  partFindAllMock,
+  partFindOneMock,
+  partUpdateMock,
+  partTransactionMock,
+  partPropertyBulkCreateMock,
+  partPropertyFindAllMock,
+  hasPermissionMock,
+} = vi.hoisted(() => ({
+  partBulkCreateMock: vi.fn(),
+  partFindAllMock: vi.fn(),
+  partFindOneMock: vi.fn(),
+  partUpdateMock: vi.fn(),
+  partTransactionMock: vi.fn(),
+  partPropertyBulkCreateMock: vi.fn(),
+  partPropertyFindAllMock: vi.fn(),
+  hasPermissionMock: vi.fn(),
 }));
 
 vi.mock('../models/Part', () => ({
   default: {
-    bulkCreate: bulkCreateMock,
+    bulkCreate: partBulkCreateMock,
+    findAll: partFindAllMock,
+    findOne: partFindOneMock,
+    update: partUpdateMock,
+    sequelize: { transaction: partTransactionMock },
   },
 }));
 vi.mock('../models/PartProperty', () => ({
-  default: {},
+  default: {
+    bulkCreate: partPropertyBulkCreateMock,
+    findAll: partPropertyFindAllMock,
+  },
 }));
 vi.mock('../models/User', () => ({
   default: {},
@@ -26,6 +49,9 @@ vi.mock('../helpers/prototypeHelper', () => ({
 }));
 vi.mock('../models/Prototype', () => ({
   default: { findByPk: vi.fn() },
+}));
+vi.mock('../helpers/roleHelper', () => ({
+  hasPermission: hasPermissionMock,
 }));
 
 import handlePrototype, {
@@ -145,9 +171,25 @@ const mockedFindByPk = PrototypeModel.findByPk as unknown as ReturnType<
   typeof vi.fn
 >;
 
+beforeEach(() => {
+  mockedFindByPk.mockReset();
+  partBulkCreateMock.mockReset();
+  partFindAllMock.mockReset();
+  partFindOneMock.mockReset();
+  partUpdateMock.mockReset();
+  partTransactionMock.mockReset();
+  partPropertyBulkCreateMock.mockReset();
+  partPropertyFindAllMock.mockReset();
+  hasPermissionMock.mockReset();
+  hasPermissionMock.mockResolvedValue(true);
+  for (const key in connectedUsersMap) {
+    delete connectedUsersMap[key];
+  }
+});
+
 describe('rebalanceOrders', () => {
   beforeEach(() => {
-    bulkCreateMock.mockReset();
+    partBulkCreateMock.mockReset();
   });
 
   afterEach(() => {
@@ -169,13 +211,13 @@ describe('rebalanceOrders', () => {
     const toMock = vi.fn(() => ({ emit }));
     const io = { to: toMock } as any;
 
-    bulkCreateMock.mockResolvedValue([]);
+    partBulkCreateMock.mockResolvedValue([]);
 
     const partModels = parts as unknown as PartModel[];
     const result = await rebalanceOrders(prototypeId, partModels, io);
 
-    expect(bulkCreateMock).toHaveBeenCalledTimes(1);
-    const [records, options] = bulkCreateMock.mock.calls[0];
+    expect(partBulkCreateMock).toHaveBeenCalledTimes(1);
+    const [records, options] = partBulkCreateMock.mock.calls[0];
     const expectedFields = Object.keys(records[0] as Record<string, unknown>);
     expect(options).toEqual({
       fields: expectedFields,
@@ -221,13 +263,6 @@ describe('rebalanceOrders', () => {
 });
 
 describe('prototypeHandler disconnect', () => {
-  beforeEach(() => {
-    mockedFindByPk.mockReset();
-    for (const key in connectedUsersMap) {
-      delete connectedUsersMap[key];
-    }
-  });
-
   it('emits empty user list to project room when last user disconnects', async () => {
     const handlers: Record<string, any> = {};
     const socket = {
@@ -266,6 +301,284 @@ describe('prototypeHandler disconnect', () => {
     expect(projectEmitter).toHaveBeenLastCalledWith(
       PROJECT_SOCKET_EVENT.ROOM_CONNECTED_USERS_UPDATE,
       { prototypeId: 'proto1', users: [] }
+    );
+  });
+});
+
+describe('prototypeHandler update parts', () => {
+  it('groups part and property updates into batched operations', async () => {
+    const handlers: Record<string, any> = {};
+    const socket = {
+      id: 'socket1',
+      data: { prototypeId: 'proto1', userId: 'user1', username: 'Alice' },
+      on: vi.fn((event: string, handler: any) => {
+        handlers[event] = handler;
+      }),
+      emit: vi.fn(),
+    } as any;
+
+    const emitters: Record<string, any> = {};
+    const io = {
+      to: vi.fn((room: string) => {
+        const emit = vi.fn();
+        emitters[room] = emit;
+        return { emit };
+      }),
+    } as any;
+
+    const transaction = {
+      commit: vi.fn().mockResolvedValue(undefined),
+      rollback: vi.fn().mockResolvedValue(undefined),
+    };
+    partTransactionMock.mockResolvedValue(transaction);
+
+    partFindAllMock
+      .mockResolvedValueOnce([{ id: 1 }, { id: 2 }])
+      .mockResolvedValueOnce([
+        {
+          get: vi.fn().mockReturnValue({ id: 1, width: 100, height: 200 }),
+        } as any,
+        { get: vi.fn().mockReturnValue({ id: 2, order: 10 }) } as any,
+      ]);
+
+    partPropertyFindAllMock
+      .mockResolvedValueOnce([
+        { partId: 1, side: 'front' },
+        { partId: 1, side: 'back' },
+        { partId: 2, side: 'front' },
+      ])
+      .mockResolvedValueOnce([
+        { partId: 1, side: 'front', name: 'Card', color: '#fff' },
+        { partId: 1, side: 'back', name: 'BackName' },
+      ] as any);
+
+    partBulkCreateMock.mockResolvedValue([]);
+    partPropertyBulkCreateMock.mockResolvedValue([]);
+
+    handlePrototype(socket, io);
+
+    await handlers[PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS]({
+      updates: [
+        {
+          partId: 1,
+          updatePart: { width: 100 },
+          updateProperties: [
+            { side: 'front', name: 'Card' },
+            { side: 'back', name: 'BackName' },
+          ],
+        },
+        {
+          partId: 1,
+          updatePart: { height: 200 },
+          updateProperties: [{ side: 'front', color: '#fff', partId: 999 }],
+        },
+        {
+          partId: 2,
+          updatePart: { order: 10 },
+          updateProperties: [{ side: 'back', name: 'ShouldSkip' }],
+        },
+        {
+          partId: 3,
+          updatePart: { order: 5 },
+        },
+      ],
+    });
+
+    expect(partTransactionMock).toHaveBeenCalledTimes(1);
+    expect(transaction.commit).toHaveBeenCalledTimes(1);
+    expect(transaction.rollback).not.toHaveBeenCalled();
+
+    expect(partBulkCreateMock).toHaveBeenCalledTimes(2);
+    expect(partBulkCreateMock).toHaveBeenNthCalledWith(
+      1,
+      [{ id: 1, width: 100, height: 200 }],
+      expect.objectContaining({
+        fields: ['id', 'height', 'width'],
+        updateOnDuplicate: ['height', 'width'],
+        transaction,
+      })
+    );
+    expect(partBulkCreateMock).toHaveBeenNthCalledWith(
+      2,
+      [{ id: 2, order: 10 }],
+      expect.objectContaining({
+        fields: ['id', 'order'],
+        updateOnDuplicate: ['order'],
+        transaction,
+      })
+    );
+
+    expect(partPropertyBulkCreateMock).toHaveBeenCalledTimes(2);
+    expect(partPropertyBulkCreateMock).toHaveBeenNthCalledWith(
+      1,
+      [
+        {
+          partId: 1,
+          side: 'front',
+          color: '#fff',
+          name: 'Card',
+        },
+      ],
+      expect.objectContaining({
+        fields: ['partId', 'side', 'color', 'name'],
+        updateOnDuplicate: ['color', 'name'],
+        transaction,
+      })
+    );
+    expect(partPropertyBulkCreateMock).toHaveBeenNthCalledWith(
+      2,
+      [
+        {
+          partId: 1,
+          side: 'back',
+          name: 'BackName',
+        },
+      ],
+      expect.objectContaining({
+        fields: ['partId', 'side', 'name'],
+        updateOnDuplicate: ['name'],
+        transaction,
+      })
+    );
+
+    const firstFindAllOptions = partFindAllMock.mock.calls[0][0];
+    expect(firstFindAllOptions.attributes).toEqual(['id']);
+    expect(firstFindAllOptions.where.prototypeId).toBe('proto1');
+    const [opInSymbol] = Object.getOwnPropertySymbols(
+      firstFindAllOptions.where.id
+    );
+    expect(opInSymbol).toBeDefined();
+    expect(firstFindAllOptions.where.id[opInSymbol]).toEqual([1, 2, 3]);
+    expect(firstFindAllOptions.transaction).toBe(transaction);
+
+    const secondFindAllOptions = partFindAllMock.mock.calls[1][0];
+    expect(secondFindAllOptions.where).toEqual({
+      id: [1, 2],
+      prototypeId: 'proto1',
+    });
+
+    const firstPropertyFindOptions = partPropertyFindAllMock.mock.calls[0][0];
+    expect(firstPropertyFindOptions.attributes).toEqual(['partId', 'side']);
+    expect(firstPropertyFindOptions.transaction).toBe(transaction);
+
+    const secondPropertyFindOptions = partPropertyFindAllMock.mock.calls[1][0];
+    expect(secondPropertyFindOptions.where).toEqual({ partId: [1] });
+
+    const prototypeEmitter = emitters['proto1'];
+    expect(prototypeEmitter).toHaveBeenCalledWith(
+      PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS,
+      {
+        parts: [
+          { id: 1, width: 100, height: 200 },
+          { id: 2, order: 10 },
+        ],
+        properties: [
+          { partId: 1, side: 'front', name: 'Card', color: '#fff' },
+          { partId: 1, side: 'back', name: 'BackName' },
+        ],
+      }
+    );
+  });
+});
+
+describe('prototypeHandler update part', () => {
+  it('updates a single part and its properties within a transaction', async () => {
+    const handlers: Record<string, any> = {};
+    const socket = {
+      id: 'socket1',
+      data: { prototypeId: 'proto1', userId: 'user1', username: 'Alice' },
+      on: vi.fn((event: string, handler: any) => {
+        handlers[event] = handler;
+      }),
+      emit: vi.fn(),
+    } as any;
+
+    const emitters: Record<string, any> = {};
+    const io = {
+      to: vi.fn((room: string) => {
+        const emit = vi.fn();
+        emitters[room] = emit;
+        return { emit };
+      }),
+    } as any;
+
+    const transaction = {
+      commit: vi.fn().mockResolvedValue(undefined),
+      rollback: vi.fn().mockResolvedValue(undefined),
+    };
+    partTransactionMock.mockResolvedValue(transaction);
+
+    partFindOneMock.mockResolvedValue({ id: 1 });
+    partUpdateMock.mockResolvedValue([
+      1,
+      [{ dataValues: { id: 1, width: 200 } }],
+    ]);
+
+    partPropertyFindAllMock
+      .mockResolvedValueOnce([{ side: 'front' }])
+      .mockResolvedValueOnce([
+        { partId: 1, side: 'front', name: 'Updated', color: '#000' },
+      ] as any);
+
+    partPropertyBulkCreateMock.mockResolvedValue([]);
+
+    handlePrototype(socket, io);
+
+    await handlers[PROTOTYPE_SOCKET_EVENT.UPDATE_PART]({
+      partId: 1,
+      updatePart: { width: 200, ignored: 'value' },
+      updateProperties: [
+        { side: 'front', name: 'Updated', color: '#000', id: 123 },
+        { side: 'back', name: 'Skip' },
+      ],
+    });
+
+    expect(partTransactionMock).toHaveBeenCalledTimes(1);
+    expect(transaction.commit).toHaveBeenCalledTimes(1);
+    expect(transaction.rollback).not.toHaveBeenCalled();
+
+    expect(partBulkCreateMock).not.toHaveBeenCalled();
+    expect(partFindAllMock).not.toHaveBeenCalled();
+    expect(partFindOneMock).toHaveBeenCalledWith({
+      attributes: ['id'],
+      where: { id: 1, prototypeId: 'proto1' },
+      transaction,
+    });
+
+    expect(partUpdateMock).toHaveBeenCalledWith(
+      { width: 200 },
+      expect.objectContaining({
+        where: { id: 1, prototypeId: 'proto1' },
+        transaction,
+      })
+    );
+
+    expect(partPropertyBulkCreateMock).toHaveBeenCalledTimes(1);
+    expect(partPropertyBulkCreateMock).toHaveBeenCalledWith(
+      [
+        {
+          partId: 1,
+          side: 'front',
+          color: '#000',
+          name: 'Updated',
+        },
+      ],
+      expect.objectContaining({
+        fields: ['partId', 'side', 'color', 'name'],
+        updateOnDuplicate: ['color', 'name'],
+        transaction,
+      })
+    );
+
+    const prototypeEmitter = emitters['proto1'];
+    expect(prototypeEmitter).toHaveBeenCalledWith(
+      PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS,
+      {
+        parts: [{ id: 1, width: 200 }],
+        properties: [
+          { partId: 1, side: 'front', name: 'Updated', color: '#000' },
+        ],
+      }
     );
   });
 });
