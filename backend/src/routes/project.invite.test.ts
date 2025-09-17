@@ -67,8 +67,8 @@ type UserRoleQuery = {
   where: {
     resourceId: string;
     resourceType: string;
-    roleId: number;
     userId: Record<typeof Op.in, string[]>;
+    roleId?: number;
   };
 };
 
@@ -101,6 +101,7 @@ app.use(
 describe('project member management routes', () => {
   let userFindAllSpy: MockInstance<typeof UserModel.findAll>;
   let userRoleFindAllSpy: MockInstance<typeof UserRoleModel.findAll>;
+  let userRoleUpdateSpy: MockInstance<typeof UserRoleModel.update>;
   let userRoleBulkCreateSpy: MockInstance<typeof UserRoleModel.bulkCreate>;
 
   beforeEach(() => {
@@ -130,6 +131,9 @@ describe('project member management routes', () => {
     userRoleFindAllSpy = vi
       .spyOn(UserRoleModel, 'findAll')
       .mockResolvedValue([] as unknown as UserRoleModel[]);
+    userRoleUpdateSpy = vi
+      .spyOn(UserRoleModel, 'update')
+      .mockResolvedValue([0] as unknown as [number]);
     userRoleBulkCreateSpy = vi
       .spyOn(UserRoleModel, 'bulkCreate')
       .mockResolvedValue([] as unknown as UserRoleModel[]);
@@ -156,8 +160,8 @@ describe('project member management routes', () => {
     ]);
     expect(findAllArgs.where.resourceId).toBe('proj1');
     expect(findAllArgs.where.resourceType).toBe('project');
-    expect(findAllArgs.where.roleId).toBe(2);
     expect(findAllArgs.where.userId[Op.in]).toEqual(['guest1']);
+    expect(userRoleUpdateSpy).not.toHaveBeenCalled();
     expect(userRoleBulkCreateSpy).toHaveBeenCalledWith(
       [
         {
@@ -190,6 +194,7 @@ describe('project member management routes', () => {
       .send({ guestIds: ['guest1', 'guest1', 'guest2'], roleType: 'editor' });
 
     expect(res.status).toBe(200);
+    expect(userRoleUpdateSpy).not.toHaveBeenCalled();
     expect(userRoleBulkCreateSpy).toHaveBeenCalledWith(
       [
         {
@@ -218,6 +223,7 @@ describe('project member management routes', () => {
       .send({ guestIds: ['guest1'], roleType: 'editor' });
 
     expect(res.status).toBe(200);
+    expect(userRoleUpdateSpy).not.toHaveBeenCalled();
     expect(userRoleBulkCreateSpy).not.toHaveBeenCalled();
   });
 
@@ -230,6 +236,34 @@ describe('project member management routes', () => {
 
     expect(res.status).toBe(500);
     expect(res.body).toEqual({ message: 'DB error' });
+  });
+
+  it('updates role when guest already has a different project role', async () => {
+    userRoleFindAllSpy.mockResolvedValueOnce([
+      {
+        userId: 'guest1',
+        roleId: 3,
+        resourceType: 'project',
+        resourceId: 'proj1',
+      } as unknown as UserRoleModel,
+    ]);
+
+    const res = await request(app)
+      .post('/api/projects/proj1/invite')
+      .send({ guestIds: ['guest1'], roleType: 'editor' });
+
+    expect(res.status).toBe(200);
+    expect(userRoleUpdateSpy).toHaveBeenCalledWith(
+      { roleId: 2 },
+      {
+        where: {
+          userId: { [Op.in]: ['guest1'] },
+          resourceType: 'project',
+          resourceId: 'proj1',
+        },
+      }
+    );
+    expect(userRoleBulkCreateSpy).not.toHaveBeenCalled();
   });
 
   it('prevents non-admins from inviting members', async () => {
