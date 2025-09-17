@@ -148,18 +148,61 @@ export async function persistDeckOrder(
   }
 
   const orderMap = new Map(cards.map((card) => [card.id, card.order]));
+  const cardIds = Array.from(orderMap.keys());
 
-  await PartModel.bulkCreate(cards, { updateOnDuplicate: ['order'] });
-
-  const updatedRecords = await PartModel.findAll({
-    where: { id: { [Op.in]: Array.from(orderMap.keys()) } },
+  const existingRecords = await PartModel.findAll({
+    where: { id: { [Op.in]: cardIds } },
   });
 
-  const updatedMap = new Map(
-    updatedRecords.map((card) => [card.id, card.toJSON() as PartModel])
+  if (existingRecords.length === 0) {
+    return [];
+  }
+
+  const recordMap = new Map(
+    existingRecords.map((record) => [record.id, record])
+  );
+  const timestamp = new Date();
+
+  const payload: Array<Record<string, unknown>> = [];
+
+  existingRecords.forEach((record) => {
+    const nextOrder = orderMap.get(record.id);
+    if (nextOrder === undefined) {
+      return;
+    }
+
+    const plainRecord = record.get({ plain: true }) as Record<string, unknown>;
+
+    payload.push({
+      ...plainRecord,
+      order: nextOrder,
+      updatedAt: timestamp,
+    });
+  });
+
+  if (payload.length === 0) {
+    return [];
+  }
+
+  await PartModel.bulkCreate(
+    payload as Parameters<typeof PartModel.bulkCreate>[0],
+    {
+      updateOnDuplicate: ['order', 'updatedAt'],
+    }
   );
 
   return cards
-    .map((card) => updatedMap.get(card.id))
-    .filter((card): card is PartModel => card !== undefined);
+    .map((card) => {
+      const record = recordMap.get(card.id);
+      if (!record) {
+        return undefined;
+      }
+      const updatedOrder = orderMap.get(card.id);
+      if (updatedOrder !== undefined) {
+        record.set('order', updatedOrder);
+        record.set('updatedAt', timestamp);
+      }
+      return record;
+    })
+    .filter((record): record is PartModel => record !== undefined);
 }

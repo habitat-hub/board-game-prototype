@@ -201,29 +201,86 @@ describe('shuffleDeck and persistDeckOrder', () => {
 
     expect(cards.map((c) => c.order)).toEqual([1, 2, 3]);
 
+    const createPartMock = (card: { id: number; order: number }) => {
+      const base = {
+        id: card.id,
+        order: card.order,
+        type: 'card' as const,
+        prototypeId: 'proto-1',
+        position: { x: 0, y: 0 },
+        width: 100,
+        height: 150,
+        frontSide: 'front' as const,
+        ownerId: null as string | null,
+        createdAt: new Date('2025-09-15T00:00:00Z'),
+        updatedAt: new Date('2025-09-15T00:00:00Z'),
+      };
+
+      const backing: Record<string, unknown> = { ...base };
+      const instance = backing as unknown as InstanceType<PartModelType>;
+
+      instance.get = vi.fn(() => ({
+        ...base,
+      })) as InstanceType<PartModelType>['get'];
+      instance.set = vi
+        .fn((key: string, value: unknown) => {
+          (base as Record<string, unknown>)[key] = value;
+          (backing as Record<string, unknown>)[key] = value;
+          return instance;
+        })
+        .mockName('set') as unknown as InstanceType<PartModelType>['set'];
+      instance.toJSON = vi.fn(() => ({
+        ...base,
+      })) as InstanceType<PartModelType>['toJSON'];
+
+      return instance;
+    };
+
+    const existingParts = cards.map((card) => createPartMock(card));
+
     const bulkCreateSpy = vi
       .spyOn(PartModel, 'bulkCreate')
       .mockResolvedValue([] as never);
-    const findAllSpy = vi.spyOn(PartModel, 'findAll').mockResolvedValue(
-      shuffled.map((card) => ({
-        ...card,
-        toJSON: () => card,
-      })) as unknown as InstanceType<PartModelType>[]
-    );
+    const findAllSpy = vi
+      .spyOn(PartModel, 'findAll')
+      .mockResolvedValue(existingParts);
 
     const updated = await persistDeckOrder(shuffled);
-    expect(updated).toEqual([
-      { id: 3, order: 1 },
-      { id: 1, order: 2 },
-      { id: 2, order: 3 },
-    ]);
+    expect(updated.map((part) => ({ id: part.id, order: part.order }))).toEqual(
+      [
+        { id: 3, order: 1 },
+        { id: 1, order: 2 },
+        { id: 2, order: 3 },
+      ]
+    );
 
-    expect(bulkCreateSpy).toHaveBeenCalledWith(shuffled, {
-      updateOnDuplicate: ['order'],
+    expect(bulkCreateSpy).toHaveBeenCalledTimes(1);
+    expect(bulkCreateSpy.mock.calls[0][1]).toEqual({
+      updateOnDuplicate: ['order', 'updatedAt'],
     });
-    expect(findAllSpy).toHaveBeenCalledTimes(1);
 
-    const findAllArgs = findAllSpy.mock.calls[0][0];
+    const [payload] = bulkCreateSpy.mock.calls[0];
+    expect(payload).toHaveLength(3);
+    expect(payload).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 3, order: 1, type: 'card' }),
+        expect.objectContaining({ id: 1, order: 2, type: 'card' }),
+        expect.objectContaining({ id: 2, order: 3, type: 'card' }),
+      ])
+    );
+    payload.forEach((entry: Record<string, unknown>) => {
+      expect(entry.updatedAt).toBeInstanceOf(Date);
+    });
+
+    existingParts.forEach((part) => {
+      expect(part.set).toHaveBeenCalledWith('order', expect.any(Number));
+      expect(part.set).toHaveBeenCalledWith('updatedAt', expect.any(Date));
+    });
+
+    expect(findAllSpy).toHaveBeenCalledTimes(1);
+    const findAllArgs = findAllSpy.mock.calls[0]?.[0] as {
+      where: { id: Record<typeof Op.in, number[]> };
+    };
     expect(findAllArgs.where.id[Op.in]).toEqual([3, 1, 2]);
   });
 });
