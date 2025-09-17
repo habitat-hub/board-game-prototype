@@ -5,7 +5,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { IoClose, IoInformationCircleOutline } from 'react-icons/io5';
+import { IoClose, IoHelpCircleOutline } from 'react-icons/io5';
 
 import { KEYBOARD_SHORTCUTS } from '@/features/prototype/constants';
 import {
@@ -61,7 +61,7 @@ export default function GameBoardHelpPanel({
           aria-label={isExpanded ? 'ヘルプを閉じる' : 'ヘルプを開く'}
           title={`操作ヘルプ (${KEYBOARD_SHORTCUTS.help.label})`}
         >
-          <IoInformationCircleOutline className="h-4 w-4 text-kibako-white" />
+          <IoHelpCircleOutline className="h-4 w-4 text-kibako-white" />
         </button>
 
         {isExpanded && (
