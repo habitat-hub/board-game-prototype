@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { checkImageAccess } from './checkImageAccess';
 import ImageModel from '../models/Image';
 import PartPropertyModel from '../models/PartProperty';
-import { hasPermission } from '../helpers/roleHelper';
+import { getAccessibleResourceIds } from '../helpers/roleHelper';
 import { UnauthorizedError, ForbiddenError } from '../errors/CustomError';
 
 vi.mock('../models/Image', () => ({
@@ -13,7 +13,7 @@ vi.mock('../models/PartProperty', () => ({
   default: { findAll: vi.fn() },
 }));
 vi.mock('../helpers/roleHelper', () => ({
-  hasPermission: vi.fn(),
+  getAccessibleResourceIds: vi.fn(),
 }));
 
 const mockedFindByPk = ImageModel.findByPk as unknown as ReturnType<
@@ -22,14 +22,13 @@ const mockedFindByPk = ImageModel.findByPk as unknown as ReturnType<
 const mockedFindAll = PartPropertyModel.findAll as unknown as ReturnType<
   typeof vi.fn
 >;
-const mockedHasPermission = hasPermission as unknown as ReturnType<
-  typeof vi.fn
->;
+const mockedGetAccessibleResourceIds =
+  getAccessibleResourceIds as unknown as ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   mockedFindByPk.mockReset();
   mockedFindAll.mockReset();
-  mockedHasPermission.mockReset();
+  mockedGetAccessibleResourceIds.mockReset();
 });
 
 describe('checkImageAccess middleware', () => {
@@ -84,7 +83,7 @@ describe('checkImageAccess middleware', () => {
     mockedFindAll.mockResolvedValue([
       { part: { Prototype: { projectId: 'proj1' } } },
     ]);
-    mockedHasPermission.mockResolvedValue(true);
+    mockedGetAccessibleResourceIds.mockResolvedValue(['proj1']);
 
     await checkImageAccess(req, res, next);
 
@@ -109,7 +108,7 @@ describe('checkImageAccess middleware', () => {
     mockedFindAll.mockResolvedValue([
       { part: { Prototype: { projectId: 'proj1' } } },
     ]);
-    mockedHasPermission.mockResolvedValue(false);
+    mockedGetAccessibleResourceIds.mockResolvedValue([]);
 
     await checkImageAccess(req, res, next);
 
