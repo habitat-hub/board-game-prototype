@@ -1,9 +1,23 @@
-import fs from 'fs';
 import path from 'path';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  writeFileSync,
+} from 'fs';
 import { Model, ModelStatic, DataTypes } from 'sequelize';
 
-const modelsDir = path.join(__dirname, '../models');
-const outputPath = path.join(__dirname, '../swagger-schemas.ts');
+const backendRootDir: string = path.resolve(__dirname, '..', '..');
+const modelsDir = path.join(backendRootDir, 'src', 'models');
+const swaggerSchemasOutputPath = path.join(
+  backendRootDir,
+  'src',
+  'swagger-schemas.ts'
+);
+const metadataDir = path.join(backendRootDir, 'src', 'scripts', 'metadata');
+const swaggerMetadataPath = path.join(metadataDir, 'swagger-schemas.json');
 
 // 共通レスポンススキーマ
 const commonSchemas = {
@@ -76,6 +90,163 @@ const commonSchemas = {
 
 type SwaggerType = Record<string, unknown>;
 
+interface SwaggerMetadata {
+  dependencies: string[];
+  outputs: string[];
+}
+
+type ModelWithDefaultScope = ModelStatic<Model> & {
+  options?: {
+    defaultScope?: {
+      attributes?: {
+        exclude?: string[];
+      };
+    };
+  };
+};
+
+function normalizePaths(filePaths: string[]): string[] {
+  return filePaths
+    .map((filePath: string) => {
+      return path.relative(backendRootDir, filePath).replace(/\\+/g, '/');
+    })
+    .sort();
+}
+
+function readSwaggerMetadata(): SwaggerMetadata | null {
+  if (!existsSync(swaggerMetadataPath)) {
+    return null;
+  }
+
+  try {
+    const raw: string = readFileSync(swaggerMetadataPath, 'utf-8');
+    const parsed: unknown = JSON.parse(raw);
+
+    if (
+      typeof parsed !== 'object' ||
+      parsed === null ||
+      !Array.isArray((parsed as { dependencies?: unknown }).dependencies)
+    ) {
+      return null;
+    }
+
+    const dependencies = (parsed as { dependencies: string[] }).dependencies;
+    const outputs = Array.isArray((parsed as { outputs?: unknown }).outputs)
+      ? ((parsed as { outputs: string[] }).outputs as string[])
+      : [];
+
+    return {
+      dependencies,
+      outputs,
+    };
+  } catch (error: unknown) {
+    console.warn(
+      'Failed to read Swagger metadata. Regenerating schemas.',
+      error
+    );
+    return null;
+  }
+}
+
+function writeSwaggerMetadata(dependencies: string[], outputs: string[]): void {
+  const metadata: SwaggerMetadata = {
+    dependencies,
+    outputs,
+  };
+
+  mkdirSync(metadataDir, { recursive: true });
+  writeFileSync(swaggerMetadataPath, JSON.stringify(metadata, null, 2));
+}
+
+function haveListsChanged(
+  currentList: string[],
+  previousList: string[]
+): boolean {
+  if (currentList.length !== previousList.length) {
+    return true;
+  }
+
+  return currentList.some((value: string, index: number) => {
+    return value !== previousList[index];
+  });
+}
+
+function listModelFiles(): string[] {
+  const entries: string[] = readdirSync(modelsDir);
+
+  return entries
+    .filter((fileName: string) => {
+      return fileName.endsWith('.ts');
+    })
+    .map((fileName: string) => {
+      return path.join(modelsDir, fileName);
+    });
+}
+
+function shouldRegenerateSwagger(): {
+  dependencies: string[];
+  outputs: string[];
+  shouldRegenerate: boolean;
+} {
+  const dependencyFiles: string[] = [__filename, ...listModelFiles()];
+  const normalizedDependencies: string[] = normalizePaths(dependencyFiles);
+  const outputFiles: string[] = [swaggerSchemasOutputPath];
+  const normalizedOutputs: string[] = normalizePaths(outputFiles);
+
+  if (!existsSync(swaggerSchemasOutputPath)) {
+    return {
+      dependencies: normalizedDependencies,
+      outputs: normalizedOutputs,
+      shouldRegenerate: true,
+    };
+  }
+
+  const metadata: SwaggerMetadata | null = readSwaggerMetadata();
+
+  if (metadata === null) {
+    return {
+      dependencies: normalizedDependencies,
+      outputs: normalizedOutputs,
+      shouldRegenerate: true,
+    };
+  }
+
+  if (haveListsChanged(normalizedDependencies, metadata.dependencies)) {
+    return {
+      dependencies: normalizedDependencies,
+      outputs: normalizedOutputs,
+      shouldRegenerate: true,
+    };
+  }
+
+  if (haveListsChanged(normalizedOutputs, metadata.outputs)) {
+    return {
+      dependencies: normalizedDependencies,
+      outputs: normalizedOutputs,
+      shouldRegenerate: true,
+    };
+  }
+
+  const latestDependencyMTime: number = dependencyFiles.reduce(
+    (latest: number, filePath: string) => {
+      const mtime: number = existsSync(filePath)
+        ? statSync(filePath).mtimeMs
+        : 0;
+      return Math.max(latest, mtime);
+    },
+    0
+  );
+
+  const outputStat = statSync(swaggerSchemasOutputPath);
+  const shouldRegenerate: boolean = latestDependencyMTime > outputStat.mtimeMs;
+
+  return {
+    dependencies: normalizedDependencies,
+    outputs: normalizedOutputs,
+    shouldRegenerate,
+  };
+}
+
 function getSwaggerType(
   sequelizeType: unknown,
   allowNull: boolean = false
@@ -120,7 +291,6 @@ function getSwaggerType(
     swaggerType = { type: 'string' };
   }
 
-  // allowNullがtrueの場合、nullを許容する型を返す
   if (allowNull) {
     return {
       oneOf: [swaggerType, { type: 'null' }],
@@ -129,16 +299,6 @@ function getSwaggerType(
 
   return swaggerType;
 }
-
-type ModelWithDefaultScope = ModelStatic<Model> & {
-  options?: {
-    defaultScope?: {
-      attributes?: {
-        exclude?: string[];
-      };
-    };
-  };
-};
 
 function generateSwaggerSchema(model: ModelStatic<Model>) {
   const attributes = model.getAttributes();
@@ -149,10 +309,13 @@ function generateSwaggerSchema(model: ModelStatic<Model>) {
   const required: string[] = [];
 
   for (const [key, attribute] of Object.entries(attributes)) {
-    // defaultScopeで除外されている属性はスキップ
-    if (defaultScope.includes(key)) continue;
+    if (defaultScope.includes(key)) {
+      continue;
+    }
 
-    if (key.startsWith('_')) continue;
+    if (key.startsWith('_')) {
+      continue;
+    }
 
     properties[key] = getSwaggerType(attribute.type, attribute.allowNull);
 
@@ -168,7 +331,7 @@ function generateSwaggerSchema(model: ModelStatic<Model>) {
   };
 }
 
-(async function () {
+function buildSwaggerFile(): string {
   let output = `// This file is auto-generated. DO NOT EDIT.
 /* eslint-disable */
 export const swaggerSchemas = {
@@ -176,7 +339,7 @@ export const swaggerSchemas = {
     schemas: {
       ...${JSON.stringify(commonSchemas, null, 6)},`;
 
-  fs.readdirSync(modelsDir)
+  readdirSync(modelsDir)
     .filter((file) => file.endsWith('.ts') && file !== 'index.ts')
     .forEach((file) => {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -193,7 +356,31 @@ export const swaggerSchemas = {
     }
   }
 };`;
+  return output;
+}
 
-  fs.writeFileSync(outputPath, output);
-  console.log('✨ Swagger schemas generated successfully!');
-})();
+async function generateSwagger(): Promise<void> {
+  const regenerationAssessment: {
+    dependencies: string[];
+    outputs: string[];
+    shouldRegenerate: boolean;
+  } = shouldRegenerateSwagger();
+
+  if (!regenerationAssessment.shouldRegenerate) {
+    console.log('Swagger schemas are up to date. Skipping generation.');
+    return;
+  }
+
+  const fileContents: string = buildSwaggerFile();
+  writeFileSync(swaggerSchemasOutputPath, fileContents);
+  writeSwaggerMetadata(
+    regenerationAssessment.dependencies,
+    regenerationAssessment.outputs
+  );
+  console.log('Swagger schemas generated successfully!');
+}
+
+generateSwagger().catch((error: unknown) => {
+  console.error('An error occurred while generating Swagger schemas.', error);
+  process.exit(1);
+});

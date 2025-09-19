@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('./config/swagger', () => ({ setupSwagger: vi.fn() }));
+vi.mock('./config/generateArtifacts', () => ({ generateArtifacts: vi.fn() }));
 vi.mock('./config/socket', () => ({ setupSocket: vi.fn() }));
 vi.mock('./config/database', () => ({ connectDatabase: vi.fn() }));
 vi.mock('./config/session', () => ({ setupSession: vi.fn() }));

@@ -44,7 +44,7 @@ router.use(ensureAuthenticated);
  *     description: ユーザーがアクセス可能なプロジェクトの一覧を取得します。
  *     responses:
  *       '200':
- *         description: アクセス可能なプロジェクトの一覧を返します
+ *         description: アクセス可能なプロジェクトの一覧を返します。
  *         content:
  *           application/json:
  *             schema:

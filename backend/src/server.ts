@@ -3,7 +3,7 @@ import http from 'http';
 import cors from 'cors';
 
 import env from './config/env';
-import { setupSwagger } from './config/swagger';
+import { generateArtifacts } from './config/generateArtifacts';
 import { setupSocket } from './config/socket';
 import { connectDatabase } from './config/database';
 import { setupSession } from './config/session';
@@ -24,7 +24,7 @@ console.log(`Environment: ${env.NODE_ENV}`);
 
 app.set('trust proxy', 1);
 
-setupSwagger(app);
+generateArtifacts(app);
 setupSocket(server, app);
 connectDatabase();
 
