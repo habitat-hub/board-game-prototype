@@ -11,6 +11,7 @@ import sequelizeErd from 'sequelize-erd';
 import sequelize from '../models'; // Sequelizeインスタンスをインポート
 import { setupAssociations } from '../database/associations'; // アソシエーション設定をインポート
 
+const repoRootDir: string = path.resolve(__dirname, '..', '..', '..');
 const modelsDir = path.join(__dirname, '../models');
 const backendRootDir = path.resolve(__dirname, '..', '..');
 const erdOutputPath = path.join(backendRootDir, 'erd.svg');
@@ -24,16 +25,17 @@ const generatorScriptPath = __filename;
 
 interface ErdMetadata {
   dependencies: string[];
+  outputs: string[];
 }
 
-function normalizeDependencies(dependencyFiles: string[]): string[] {
-  const normalizedDependencies: string[] = dependencyFiles
+function normalizeDependencies(filePaths: string[]): string[] {
+  const normalizedPaths: string[] = filePaths
     .map((filePath: string) => {
-      return path.relative(backendRootDir, filePath).replace(/\\+/g, '/');
+      return path.relative(repoRootDir, filePath).replace(/\\+/g, '/');
     })
     .sort();
 
-  return normalizedDependencies;
+  return normalizedPaths;
 }
 
 function readErdMetadata(): ErdMetadata | null {
@@ -50,7 +52,8 @@ function readErdMetadata(): ErdMetadata | null {
       parsedMetadata === null ||
       !Array.isArray(
         (parsedMetadata as { dependencies?: unknown }).dependencies
-      )
+      ) ||
+      !Array.isArray((parsedMetadata as { outputs?: unknown }).outputs)
     ) {
       return null;
     }
@@ -58,8 +61,10 @@ function readErdMetadata(): ErdMetadata | null {
     const dependencies: string[] = (
       parsedMetadata as { dependencies: string[] }
     ).dependencies;
+    const outputs: string[] = (parsedMetadata as { outputs: string[] }).outputs;
     return {
       dependencies,
+      outputs,
     };
   } catch (error) {
     console.warn('Failed to read ERD metadata. Regenerating artifact.', error);
@@ -67,9 +72,10 @@ function readErdMetadata(): ErdMetadata | null {
   }
 }
 
-function writeErdMetadata(dependencies: string[]): void {
+function writeErdMetadata(dependencies: string[], outputs: string[]): void {
   const metadata: ErdMetadata = {
     dependencies,
+    outputs,
   };
 
   mkdirSync(metadataDir, { recursive: true });
@@ -91,6 +97,7 @@ function haveDependenciesChanged(
 
 function shouldRegenerateErd(modelFileNames: string[]): {
   dependencies: string[];
+  outputs: string[];
   shouldRegenerate: boolean;
 } {
   const dependencyFiles: string[] = [
@@ -103,10 +110,12 @@ function shouldRegenerateErd(modelFileNames: string[]): {
 
   const normalizedDependencies: string[] =
     normalizeDependencies(dependencyFiles);
+  const normalizedOutputs: string[] = normalizeDependencies([erdOutputPath]);
 
   if (!existsSync(erdOutputPath)) {
     return {
       dependencies: normalizedDependencies,
+      outputs: normalizedOutputs,
       shouldRegenerate: true,
     };
   }
@@ -116,6 +125,7 @@ function shouldRegenerateErd(modelFileNames: string[]): {
   if (existingMetadata === null) {
     return {
       dependencies: normalizedDependencies,
+      outputs: normalizedOutputs,
       shouldRegenerate: true,
     };
   }
@@ -128,6 +138,15 @@ function shouldRegenerateErd(modelFileNames: string[]): {
   ) {
     return {
       dependencies: normalizedDependencies,
+      outputs: normalizedOutputs,
+      shouldRegenerate: true,
+    };
+  }
+
+  if (haveDependenciesChanged(normalizedOutputs, existingMetadata.outputs)) {
+    return {
+      dependencies: normalizedDependencies,
+      outputs: normalizedOutputs,
       shouldRegenerate: true,
     };
   }
@@ -148,6 +167,7 @@ function shouldRegenerateErd(modelFileNames: string[]): {
 
   return {
     dependencies: normalizedDependencies,
+    outputs: normalizedOutputs,
     shouldRegenerate,
   };
 }
@@ -162,6 +182,7 @@ async function generateErd(): Promise<void> {
 
   const regenerationAssessment: {
     dependencies: string[];
+    outputs: string[];
     shouldRegenerate: boolean;
   } = shouldRegenerateErd(modelFileNames);
 
@@ -202,7 +223,10 @@ async function generateErd(): Promise<void> {
   });
 
   writeFileSync(erdOutputPath, svg);
-  writeErdMetadata(regenerationAssessment.dependencies);
+  writeErdMetadata(
+    regenerationAssessment.dependencies,
+    regenerationAssessment.outputs
+  );
   console.log('ERD generated successfully!');
 }
 

@@ -1,13 +1,14 @@
+import { globSync } from 'glob';
 import path from 'path';
 import { swaggerSchemas } from '../swagger-schemas';
 
 const backendRootDir: string = path.resolve(__dirname, '..', '..');
-const ROUTES_GLOB: string = path.resolve(
-  backendRootDir,
-  'src',
-  'routes',
-  '*.ts'
-);
+const routesDir: string = path.resolve(backendRootDir, 'src', 'routes');
+const routeFiles: string[] = globSync('**/*.ts', {
+  cwd: routesDir,
+  absolute: true,
+  ignore: ['**/*.test.ts'],
+});
 
 const DESCRIPTION = `## 概要
 このAPIは、ボードゲームプロトタイプの作成と管理を行うためのものです。
@@ -32,6 +33,6 @@ export function buildSwaggerOptions(): {
       },
       ...swaggerSchemas,
     },
-    apis: [ROUTES_GLOB],
+    apis: routeFiles,
   };
 }

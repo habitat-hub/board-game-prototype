@@ -135,6 +135,11 @@ function collectRouteFiles(directory: string): string[] {
       return [];
     }
 
+    // Ignore test files so they do not trigger regeneration
+    if (/\.(test|spec)\.ts$/u.test(entry.name)) {
+      return [];
+    }
+
     return [entryPath];
   });
 }
