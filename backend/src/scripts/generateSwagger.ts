@@ -10,6 +10,7 @@ import {
 import { Model, ModelStatic, DataTypes } from 'sequelize';
 
 const backendRootDir: string = path.resolve(__dirname, '..', '..');
+const repoRootDir: string = path.resolve(backendRootDir, '..');
 const modelsDir = path.join(backendRootDir, 'src', 'models');
 const swaggerSchemasOutputPath = path.join(
   backendRootDir,
@@ -108,7 +109,7 @@ type ModelWithDefaultScope = ModelStatic<Model> & {
 function normalizePaths(filePaths: string[]): string[] {
   return filePaths
     .map((filePath: string) => {
-      return path.relative(backendRootDir, filePath).replace(/\\+/g, '/');
+      return path.relative(repoRootDir, filePath).replace(/\\+/g, '/');
     })
     .sort();
 }

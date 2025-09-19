@@ -1,17 +1,17 @@
 {
   "dependencies": [
-    "src/models/Image.ts",
-    "src/models/Part.ts",
-    "src/models/PartProperty.ts",
-    "src/models/Permission.ts",
-    "src/models/Project.ts",
-    "src/models/Prototype.ts",
-    "src/models/Role.ts",
-    "src/models/RolePermission.ts",
-    "src/models/User.ts",
-    "src/models/UserRole.ts",
-    "src/models/index.ts",
-    "src/scripts/generateSwagger.ts"
+    "backend/src/models/Image.ts",
+    "backend/src/models/Part.ts",
+    "backend/src/models/PartProperty.ts",
+    "backend/src/models/Permission.ts",
+    "backend/src/models/Project.ts",
+    "backend/src/models/Prototype.ts",
+    "backend/src/models/Role.ts",
+    "backend/src/models/RolePermission.ts",
+    "backend/src/models/User.ts",
+    "backend/src/models/UserRole.ts",
+    "backend/src/models/index.ts",
+    "backend/src/scripts/generateSwagger.ts"
   ],
-  "outputs": ["src/swagger-schemas.ts"]
+  "outputs": ["backend/src/swagger-schemas.ts"]
 }
