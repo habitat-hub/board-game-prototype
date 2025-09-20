@@ -51,9 +51,14 @@ describe('useRoleManagement', () => {
     const { result } = renderHook(() => useRoleManagement('project-1'));
 
     await waitFor(() => {
-      const check = result.current.canRemoveUserRole('current-user', userRoles);
-      expect(check.reason).not.toBe('ユーザー情報が取得できません');
+      expect(result.current.rolesReady).toBe(true);
     });
+
+    const readyCheck = result.current.canRemoveUserRole(
+      'current-user',
+      userRoles
+    );
+    expect(readyCheck.reason).not.toBe('ユーザー情報が取得できません');
 
     const check = result.current.canRemoveUserRole('current-user', userRoles);
     expect(check.canRemove).toBe(false);

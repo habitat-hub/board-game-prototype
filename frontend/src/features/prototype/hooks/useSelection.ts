@@ -30,6 +30,10 @@ interface UseSelectionOptions {
   onClearSelection?: () => void;
 }
 
+type SelectionModeOptions = {
+  persist?: boolean;
+};
+
 export type UseSelectionReturn = {
   isSelectionMode: boolean;
   rectForSelection: SelectionRect;
@@ -45,7 +49,8 @@ export type UseSelectionReturn = {
     camera: Camera
   ) => void;
   handleSelectionEnd: (e: KonvaEventObject<MouseEvent | PointerEvent>) => void;
-  toggleMode: () => void;
+  setSelectionMode: (value: boolean, options?: SelectionModeOptions) => void;
+  toggleMode: (options?: SelectionModeOptions) => void;
 };
 
 /** 選択状態を管理するカスタムフック */
@@ -54,8 +59,9 @@ export function useSelection(
 ): UseSelectionReturn {
   const { stageRef, parts = [], onPartsSelected, onClearSelection } = options;
   // 複数選択可能モード
+  const initialPreference = getUIPreference('isSelectionMode');
   const [isSelectionMode, setIsSelectionMode] = useState<boolean>(
-    getUIPreference('isSelectionMode') as boolean
+    typeof initialPreference === 'boolean' ? initialPreference : true
   );
   // 複数選択用の矩形
   const [rectForSelection, setRectForSelection] = useState<SelectionRect>({
@@ -234,13 +240,36 @@ export function useSelection(
     [rectForSelection, parts, onPartsSelected, onClearSelection]
   );
 
-  const toggleMode = useCallback(() => {
+  const setSelectionMode = useCallback(
+    (nextValue: boolean, options: SelectionModeOptions = {}) => {
+      setIsSelectionMode((prev) => {
+        if (prev === nextValue) return prev;
+        if (options.persist !== false) {
+          setUIPreference('isSelectionMode', nextValue);
+        }
+        return nextValue;
+      });
+    },
+    []
+  );
+
+  const toggleMode = useCallback((options: SelectionModeOptions = {}) => {
     setIsSelectionMode((prev) => {
-      const next = !prev;
-      setUIPreference('isSelectionMode', next);
-      return next;
+      const nextValue = !prev;
+      if (options.persist !== false) {
+        setUIPreference('isSelectionMode', nextValue);
+      }
+      return nextValue;
     });
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stored = getUIPreference('isSelectionMode');
+    if (typeof stored === 'boolean') {
+      setSelectionMode(stored, { persist: false });
+    }
+  }, [setSelectionMode]);
 
   const consumeJustFinishedSelection = useCallback(() => {
     const result = justFinishedFlag;
@@ -296,6 +325,7 @@ export function useSelection(
     handleSelectionStart,
     handleSelectionMove,
     handleSelectionEnd,
+    setSelectionMode,
     toggleMode,
   };
 }

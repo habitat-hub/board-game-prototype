@@ -133,7 +133,7 @@ export default function GameBoard({
   // 手札の上のカードの表示制御
   const { cardVisibilityMap } = useHandVisibility(parts, gameBoardMode);
   // ロール管理情報を取得
-  const { userRoles } = useRoleManagement(projectId);
+  const { userRoles, rolesReady } = useRoleManagement(projectId);
   // ロールユーザー一覧（接続中→非接続の順で一意化）
   const roleUsers: ConnectedUser[] = useMemo(
     () => deriveRoleUsers(userRoles, connectedUsers),
@@ -192,6 +192,7 @@ export default function GameBoard({
     isSelectionInProgress,
     isJustFinishedSelection,
     consumeJustFinishedSelection,
+    setSelectionMode,
   } = useSelection({
     stageRef,
     parts,
@@ -205,13 +206,12 @@ export default function GameBoard({
   });
 
   // ロール読み込み完了後、閲覧者（編集不可）の場合のみ選択モードを無効化
-  const rolesLoaded: boolean = userRoles !== undefined;
   useEffect(() => {
-    // ロールが揃ってから閲覧者であれば選択モードを解除
-    if (rolesLoaded && !canEdit && isSelectionMode) {
-      toggleMode();
+    if (!rolesReady) return;
+    if (!canEdit && isSelectionMode) {
+      setSelectionMode(false, { persist: false });
     }
-  }, [rolesLoaded, canEdit, isSelectionMode, toggleMode]);
+  }, [rolesReady, canEdit, isSelectionMode, setSelectionMode]);
   // ドラッグ機能
   const { handlePartDragStart, handlePartDragMove, handlePartDragEnd } =
     usePartDragSystem({
@@ -453,7 +453,7 @@ export default function GameBoard({
       // 選択モードの場合のみ、一時的にパンモードに切り替え
       if (isSelectionMode) {
         setNeedToReturnToSelectionMode(true);
-        toggleMode();
+        setSelectionMode(false, { persist: false });
       }
     };
 
@@ -467,7 +467,7 @@ export default function GameBoard({
       // 元々選択モードだった場合、選択モードに復帰
       if (needToReturnToSelectionMode && !isSelectionMode) {
         setNeedToReturnToSelectionMode(false);
-        toggleMode();
+        setSelectionMode(true, { persist: false });
       }
     };
 
@@ -483,7 +483,7 @@ export default function GameBoard({
     spacePressing,
     isSelectionMode,
     needToReturnToSelectionMode,
-    toggleMode,
+    setSelectionMode,
   ]);
 
   useEffect(() => {
