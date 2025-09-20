@@ -53,7 +53,35 @@ router.use(ensureAuthenticated);
  *                 type: object
  *                 properties:
  *                   project:
- *                     $ref: '#/components/schemas/Project'
+ *                     allOf:
+ *                       - $ref: '#/components/schemas/Project'
+ *                       - type: object
+ *                         properties:
+ *                           owner:
+ *                             nullable: true
+ *                             type: object
+ *                             properties:
+ *                               id:
+ *                                 type: string
+ *                                 format: uuid
+ *                               username:
+ *                                 type: string
+ *                           permissions:
+ *                             type: object
+ *                             properties:
+ *                               canRead:
+ *                                 type: boolean
+ *                               canWrite:
+ *                                 type: boolean
+ *                               canDelete:
+ *                                 type: boolean
+ *                               canManage:
+ *                                 type: boolean
+ *                             required:
+ *                               - canRead
+ *                               - canWrite
+ *                               - canDelete
+ *                               - canManage
  *                   prototypes:
  *                     type: array
  *                     items:

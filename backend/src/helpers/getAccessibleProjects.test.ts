@@ -10,6 +10,11 @@ vi.mock('./roleHelper', () => ({ getAccessibleResourceIds: vi.fn() }));
 vi.mock('../const', () => ({
   RESOURCE_TYPES: { PROJECT: 'project' },
   PERMISSION_ACTIONS: { READ: 'read' },
+  ROLE_TYPE: {
+    ADMIN: 'admin',
+    EDITOR: 'editor',
+    VIEWER: 'viewer',
+  },
 }));
 
 const findAll = vi.fn();
