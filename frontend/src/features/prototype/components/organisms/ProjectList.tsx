@@ -44,6 +44,14 @@ const hasArrayParts = (obj: unknown): obj is { parts: unknown[] } => {
   return Array.isArray(rec.parts);
 };
 
+/** ProjectListで並べ替え等に使う要素 */
+type PrototypeListItem = {
+  project: Project;
+  masterPrototype?: Prototype;
+  partCount: number;
+  roomCount: number;
+};
+
 /**
  * ProjectListコンポーネントで使用される各種Stateの説明:
  *
@@ -105,14 +113,16 @@ const ProjectList: React.FC = () => {
   };
 
   // データ変換処理
-  const prototypeList = useMemo(
+  const prototypeList: PrototypeListItem[] = useMemo(
     () =>
-      (projectsData || [])
-        .map(({ project, prototypes }) => {
+      (projectsData ?? [])
+        .map<PrototypeListItem | null>(({ project, prototypes }) => {
+          // プロジェクトが無い場合は除外する
           if (!project) {
             return null;
           }
-          const ensuredPrototypes = prototypes || [];
+          // プロトタイプ配列を安全に初期化
+          const ensuredPrototypes: Prototype[] = prototypes ?? [];
           // MASTER プロトタイプを取得する
           const masterPrototype = ensuredPrototypes.find(
             ({ type }) => type === 'MASTER'
@@ -125,14 +135,15 @@ const ProjectList: React.FC = () => {
           const partCount = hasArrayParts(masterPrototype)
             ? masterPrototype.parts.length
             : 0;
-          return {
+          const item: PrototypeListItem = {
             project,
             masterPrototype,
             partCount,
             roomCount,
           };
+          return item;
         })
-        .filter((value): value is NonNullable<typeof value> => value !== null),
+        .filter((value): value is PrototypeListItem => value !== null),
     [projectsData]
   );
 
@@ -145,7 +156,7 @@ const ProjectList: React.FC = () => {
     const creatorMap: Record<string, string> = {};
     const editorMap: Record<string, boolean> = {};
 
-    (projectsData || []).forEach(({ project }) => {
+    (projectsData ?? []).forEach(({ project }) => {
       if (!project?.id) {
         return;
       }
