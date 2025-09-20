@@ -27,4 +27,24 @@ describe('PrototypeNameEditor', () => {
     );
     // Avoid asserting exact CSS utility classes; behavior is verified via title.
   });
+
+  it('treats undefined editable prop as non-editable without showing a reason', () => {
+    const queryClient = new QueryClient();
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <PrototypeNameEditor
+          prototypeId="p1"
+          name="test project"
+          onUpdated={() => {}}
+        />
+      </QueryClientProvider>
+    );
+
+    const nameDisplay = screen.getByText('test project');
+    expect(nameDisplay).toHaveAttribute('title', 'test project');
+    expect(
+      screen.queryByRole('button', { name: '「test project」を編集' })
+    ).not.toBeInTheDocument();
+  });
 });
