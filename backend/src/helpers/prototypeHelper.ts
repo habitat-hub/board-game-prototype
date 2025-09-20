@@ -83,13 +83,33 @@ export async function getAccessibleProjects({ userId }: { userId: string }) {
   });
 }
 
+/** アクセス可能プロジェクトの一覧（owner/permissions付き）を取得 */
+type ProjectOwner = { id: string; username: string };
+type PrototypePlain = { id: string } & Record<string, unknown>;
+type ProjectSummary = {
+  id: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+  owner: ProjectOwner | null;
+  permissions: PermissionFlags;
+};
+type ProjectListEntry = {
+  project: ProjectSummary;
+  prototypes: Array<PrototypePlain & { parts: Array<Record<string, unknown>> }>;
+};
+
 /**
  * アクセス可能なプロトタイプを取得する（効率化版）
  *
  * @param userId - ユーザーID
  * @returns アクセス可能なプロトタイプ
  */
-export async function getAccessiblePrototypes({ userId }: { userId: string }) {
+export async function getAccessiblePrototypes({
+  userId,
+}: {
+  userId: string;
+}): Promise<ProjectListEntry[]> {
   const projects = await getAccessibleProjects({ userId });
 
   const projectRecords = projects.map((project) => ({
@@ -110,6 +130,7 @@ export async function getAccessiblePrototypes({ userId }: { userId: string }) {
 
   const permissionByProjectId: Record<string, PermissionFlags> = {};
 
+  // プロジェクトIDがある場合
   if (accessibleProjectIds.length > 0) {
     const userRoles = await UserRoleModel.findAll({
       where: {
@@ -129,6 +150,7 @@ export async function getAccessiblePrototypes({ userId }: { userId: string }) {
     userRoles.forEach((userRole) => {
       const projectId = userRole.resourceId;
       const roleName = userRole.Role?.name;
+      // 関連データが無い場合はスキップ
       if (!projectId || !roleName) {
         return;
       }
@@ -142,6 +164,16 @@ export async function getAccessiblePrototypes({ userId }: { userId: string }) {
         nextPermissions
       );
     });
+  }
+
+  // ロールが見つからないが「作成者＝オーナー」の場合はADMIN相当を付与
+  for (const { project, plain } of projectRecords) {
+    if (!permissionByProjectId[project.id] && plain.userId === userId) {
+      permissionByProjectId[project.id] = mergePermissionFlags(
+        DEFAULT_PERMISSIONS(),
+        ROLE_PERMISSION_MAP[ROLE_TYPE.ADMIN]
+      );
+    }
   }
 
   // プロトタイプIDを抽出
@@ -181,6 +213,8 @@ export async function getAccessiblePrototypes({ userId }: { userId: string }) {
     const permissions =
       permissionByProjectId[project.id] ?? DEFAULT_PERMISSIONS();
 
+    const prototypes = (plain.prototypes ?? []) as PrototypePlain[];
+
     return {
       project: {
         id: project.id,
@@ -190,7 +224,7 @@ export async function getAccessiblePrototypes({ userId }: { userId: string }) {
         owner,
         permissions,
       },
-      prototypes: (plain.prototypes || []).map((proto) => ({
+      prototypes: prototypes.map((proto) => ({
         ...proto,
         parts: (partsByPrototypeId[proto.id] || []).map((part) =>
           part.toJSON()
