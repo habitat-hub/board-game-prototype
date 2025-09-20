@@ -28,18 +28,19 @@ interface PrototypeNameEditorProps {
   notEditableReason?: string;
 }
 
-export default function PrototypeNameEditor({
-  prototypeId,
-  name,
-  onUpdated,
-  truncate = true,
-  className,
-  bleedX = true,
-  size = 'xs',
-  weight = 'medium',
-  editable = true,
-  notEditableReason = 'Adminのみ名前を変更できます',
-}: PrototypeNameEditorProps) {
+export default function PrototypeNameEditor(props: PrototypeNameEditorProps) {
+  const {
+    prototypeId,
+    name,
+    onUpdated,
+    truncate = true,
+    className,
+    bleedX = true,
+    size = 'xs',
+    weight = 'medium',
+    editable = false,
+    notEditableReason,
+  } = props;
   const { useUpdatePrototype } = usePrototypes();
   const updatePrototypeMutation = useUpdatePrototype();
   const {
@@ -74,10 +75,10 @@ export default function PrototypeNameEditor({
           ? 'font-semibold'
           : 'font-bold';
 
+  const titleText =
+    !editable && notEditableReason ? `${name} - ${notEditableReason}` : name;
+
   if (!editable) {
-    const titleText = notEditableReason
-      ? `${name} - ${notEditableReason}`
-      : name;
     return (
       <div className={`w-full ${className ?? ''}`}>
         {truncate ? (
