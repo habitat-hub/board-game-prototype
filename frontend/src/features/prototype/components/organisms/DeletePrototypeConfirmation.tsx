@@ -47,8 +47,11 @@ const DeletePrototypeConfirmation = (): ReactElement => {
       try {
         setIsLoading(true);
         const projects = await projectService.getProjects();
-        const currentEntry = projects.find((p) => p.project?.id === projectId);
+        const currentEntry = projects.find(
+          (p) => String(p.project?.id) === projectId
+        );
         const currentProject = currentEntry?.project ?? null;
+        // プロジェクトが見つかった場合
         if (currentProject) {
           setProject(currentProject);
           const prototypes =
