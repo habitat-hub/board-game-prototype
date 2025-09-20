@@ -6,6 +6,7 @@ import {
   Project,
   ProjectsCreatePayload,
   ProjectsInviteCreatePayload,
+  ProjectsListData,
   User,
   ProjectsVersionsCreatePayload,
   ProjectsVersionsCreateData,
@@ -15,12 +16,7 @@ export const projectService = {
   /**
    * プロジェクト一覧取得
    */
-  getProjects: async (): Promise<
-    Array<{
-      project: Project;
-      prototypes: Array<Prototype>;
-    }>
-  > => {
+  getProjects: async (): Promise<ProjectsListData> => {
     const response = await axiosInstance.get('/api/projects');
     return response.data;
   },

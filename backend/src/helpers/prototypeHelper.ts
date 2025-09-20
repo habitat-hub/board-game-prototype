@@ -3,8 +3,58 @@ import PartModel from '../models/Part';
 import PartPropertyModel from '../models/PartProperty';
 import ImageModel from '../models/Image';
 import ProjectModel from '../models/Project';
+import UserModel from '../models/User';
+import UserRoleModel from '../models/UserRole';
+import RoleModel from '../models/Role';
 import { getAccessibleResourceIds } from './roleHelper';
-import { RESOURCE_TYPES, PERMISSION_ACTIONS } from '../const';
+import { RESOURCE_TYPES, PERMISSION_ACTIONS, ROLE_TYPE } from '../const';
+
+type PermissionFlags = {
+  canRead: boolean;
+  canWrite: boolean;
+  canDelete: boolean;
+  canManage: boolean;
+};
+
+const DEFAULT_PERMISSIONS = (): PermissionFlags => ({
+  canRead: true,
+  canWrite: false,
+  canDelete: false,
+  canManage: false,
+});
+
+const ROLE_PERMISSION_MAP: Record<string, PermissionFlags> = {
+  [ROLE_TYPE.ADMIN]: {
+    canRead: true,
+    canWrite: true,
+    canDelete: true,
+    canManage: true,
+  },
+  [ROLE_TYPE.EDITOR]: {
+    canRead: true,
+    canWrite: true,
+    canDelete: false,
+    canManage: false,
+  },
+  [ROLE_TYPE.VIEWER]: {
+    canRead: true,
+    canWrite: false,
+    canDelete: false,
+    canManage: false,
+  },
+};
+
+function mergePermissionFlags(
+  base: PermissionFlags,
+  addition: PermissionFlags
+): PermissionFlags {
+  return {
+    canRead: base.canRead || addition.canRead,
+    canWrite: base.canWrite || addition.canWrite,
+    canDelete: base.canDelete || addition.canDelete,
+    canManage: base.canManage || addition.canManage,
+  };
+}
 
 /**
  * アクセス可能なプロジェクトを取得する（プロトタイプ付き）
@@ -24,8 +74,30 @@ export async function getAccessibleProjects({ userId }: { userId: string }) {
   return await ProjectModel.scope('withPrototypes').findAll({
     where: { id: { [Op.in]: accessibleProjectIds } },
     order: [['createdAt', 'DESC']],
+    include: [
+      {
+        model: UserModel,
+        attributes: ['id', 'username'],
+      },
+    ],
   });
 }
+
+/** アクセス可能プロジェクトの一覧（owner/permissions付き）を取得 */
+type ProjectOwner = { id: string; username: string };
+type PrototypePlain = { id: string } & Record<string, unknown>;
+type ProjectSummary = {
+  id: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+  owner: ProjectOwner | null;
+  permissions: PermissionFlags;
+};
+type ProjectListEntry = {
+  project: ProjectSummary;
+  prototypes: Array<PrototypePlain & { parts: Array<Record<string, unknown>> }>;
+};
 
 /**
  * アクセス可能なプロトタイプを取得する（効率化版）
@@ -33,16 +105,81 @@ export async function getAccessibleProjects({ userId }: { userId: string }) {
  * @param userId - ユーザーID
  * @returns アクセス可能なプロトタイプ
  */
-export async function getAccessiblePrototypes({ userId }: { userId: string }) {
+export async function getAccessiblePrototypes({
+  userId,
+}: {
+  userId: string;
+}): Promise<ProjectListEntry[]> {
   const projects = await getAccessibleProjects({ userId });
 
+  const projectRecords = projects.map((project) => ({
+    project,
+    plain: project.get({
+      plain: true,
+    }) as {
+      id: string;
+      userId: string;
+      createdAt: string;
+      updatedAt: string;
+      prototypes?: { id: string; [key: string]: unknown }[];
+      User?: { id: string; username: string } | null;
+    },
+  }));
+
+  const accessibleProjectIds = projectRecords.map(({ project }) => project.id);
+
+  const permissionByProjectId: Record<string, PermissionFlags> = {};
+
+  // プロジェクトIDがある場合
+  if (accessibleProjectIds.length > 0) {
+    const userRoles = await UserRoleModel.findAll({
+      where: {
+        userId,
+        resourceType: RESOURCE_TYPES.PROJECT,
+        resourceId: { [Op.in]: accessibleProjectIds },
+      },
+      include: [
+        {
+          model: RoleModel,
+          as: 'Role',
+          attributes: ['name'],
+        },
+      ],
+    });
+
+    userRoles.forEach((userRole) => {
+      const projectId = userRole.resourceId;
+      const roleName = userRole.Role?.name;
+      // 関連データが無い場合はスキップ
+      if (!projectId || !roleName) {
+        return;
+      }
+
+      const currentPermissions =
+        permissionByProjectId[projectId] ?? DEFAULT_PERMISSIONS();
+      const nextPermissions =
+        ROLE_PERMISSION_MAP[roleName] ?? DEFAULT_PERMISSIONS();
+      permissionByProjectId[projectId] = mergePermissionFlags(
+        currentPermissions,
+        nextPermissions
+      );
+    });
+  }
+
+  // ロールが見つからないが「作成者＝オーナー」の場合はADMIN相当を付与
+  for (const { project, plain } of projectRecords) {
+    if (!permissionByProjectId[project.id] && plain.userId === userId) {
+      permissionByProjectId[project.id] = mergePermissionFlags(
+        DEFAULT_PERMISSIONS(),
+        ROLE_PERMISSION_MAP[ROLE_TYPE.ADMIN]
+      );
+    }
+  }
+
   // プロトタイプIDを抽出
-  const prototypeIds = projects.flatMap((project) => {
-    const projectData = project.toJSON() as {
-      prototypes?: { id: string }[];
-    };
-    return projectData.prototypes?.map((proto) => proto.id) || [];
-  });
+  const prototypeIds = projectRecords.flatMap(
+    ({ plain }) => plain.prototypes?.map((proto) => proto.id) || []
+  );
 
   // 各プロトタイプに紐づくパーツ・パーツ設定・画像を取得
   const partsByPrototypeId: Record<string, PartModel[]> = {};
@@ -65,23 +202,29 @@ export async function getAccessiblePrototypes({ userId }: { userId: string }) {
   }
 
   // スコープを使って取得したデータを整形
-  return projects.map((project) => {
-    const projectData = project.toJSON() as {
-      id: string;
-      userId: string;
-      createdAt: string;
-      updatedAt: string;
-      prototypes?: { id: string; [key: string]: unknown }[];
-    };
+  return projectRecords.map(({ project, plain }) => {
+    const owner = plain.User
+      ? {
+          id: plain.User.id,
+          username: plain.User.username,
+        }
+      : null;
+
+    const permissions =
+      permissionByProjectId[project.id] ?? DEFAULT_PERMISSIONS();
+
+    const prototypes = (plain.prototypes ?? []) as PrototypePlain[];
 
     return {
       project: {
         id: project.id,
         userId: project.userId,
-        createdAt: projectData.createdAt,
-        updatedAt: projectData.updatedAt,
+        createdAt: plain.createdAt,
+        updatedAt: plain.updatedAt,
+        owner,
+        permissions,
       },
-      prototypes: (projectData.prototypes || []).map((proto) => ({
+      prototypes: prototypes.map((proto) => ({
         ...proto,
         parts: (partsByPrototypeId[proto.id] || []).map((part) =>
           part.toJSON()

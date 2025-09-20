@@ -11,12 +11,18 @@ import { Op } from 'sequelize';
 
 const mockProjectScope = vi.fn();
 const mockGetAccessibleResourceIds = vi.fn();
+const mockUserRoleFindAll = vi.fn();
 
 vi.mock('../models/Part', () => ({
   default: { update: vi.fn(), findAll: vi.fn(), bulkCreate: vi.fn() },
 }));
 vi.mock('../models/PartProperty', () => ({ default: {} }));
 vi.mock('../models/Image', () => ({ default: {} }));
+vi.mock('../models/User', () => ({ default: {} }));
+vi.mock('../models/UserRole', () => ({
+  default: { findAll: mockUserRoleFindAll },
+}));
+vi.mock('../models/Role', () => ({ default: {} }));
 vi.mock('../config/env', () => ({
   default: { DATABASE_URL: 'postgres://test' },
 }));
@@ -24,7 +30,11 @@ vi.mock('../models/Project', () => ({ default: { scope: mockProjectScope } }));
 vi.mock('./roleHelper', () => ({
   getAccessibleResourceIds: mockGetAccessibleResourceIds,
 }));
-vi.mock('../const', () => ({ RESOURCE_TYPES: {}, PERMISSION_ACTIONS: {} }));
+vi.mock('../const', () => ({
+  RESOURCE_TYPES: { PROJECT: 'project' },
+  PERMISSION_ACTIONS: {},
+  ROLE_TYPE: { ADMIN: 'admin', EDITOR: 'editor', VIEWER: 'viewer' },
+}));
 
 type PartModelType = typeof import('../models/Part').default;
 let PartModel: PartModelType;
@@ -62,7 +72,7 @@ describe('getAccessiblePrototypes', () => {
     const project = {
       id: 'proj1',
       userId: 'user1',
-      toJSON: () => ({
+      get: () => ({
         createdAt: '2024-01-01',
         updatedAt: '2024-01-02',
         prototypes: [
@@ -81,6 +91,10 @@ describe('getAccessiblePrototypes', () => {
             updatedAt: '2024-01-01',
           },
         ],
+        User: {
+          id: 'user1',
+          username: 'Owner',
+        },
       }),
     };
 
@@ -88,6 +102,12 @@ describe('getAccessiblePrototypes', () => {
     mockProjectScope.mockReturnValue({
       findAll: vi.fn().mockResolvedValue([project]),
     });
+    mockUserRoleFindAll.mockResolvedValue([
+      {
+        resourceId: 'proj1',
+        Role: { name: 'admin' },
+      },
+    ]);
 
     (PartModel.findAll as unknown as Mock).mockResolvedValue([
       {
@@ -117,6 +137,16 @@ describe('getAccessiblePrototypes', () => {
           userId: 'user1',
           createdAt: '2024-01-01',
           updatedAt: '2024-01-02',
+          owner: {
+            id: 'user1',
+            username: 'Owner',
+          },
+          permissions: {
+            canRead: true,
+            canWrite: true,
+            canDelete: true,
+            canManage: true,
+          },
         },
         prototypes: [
           {

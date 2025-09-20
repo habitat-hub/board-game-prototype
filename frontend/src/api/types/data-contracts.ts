@@ -176,7 +176,19 @@ export type PrototypesUpdateData = Prototype;
 export type PrototypesDeleteData = SuccessResponse;
 
 export type ProjectsListData = {
-  project?: Project;
+  project?: Project & {
+    owner?: {
+      /** @format uuid */
+      id?: string;
+      username?: string;
+    } | null;
+    permissions?: {
+      canRead: boolean;
+      canWrite: boolean;
+      canDelete: boolean;
+      canManage: boolean;
+    };
+  };
   prototypes?: (Prototype & {
     parts?: (Part & {
       partProperties?: (PartProperty & {
