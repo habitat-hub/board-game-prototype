@@ -47,12 +47,14 @@ const DeletePrototypeConfirmation = (): ReactElement => {
       try {
         setIsLoading(true);
         const projects = await projectService.getProjects();
-        const current = projects.find((p) => p.project.id === projectId);
-        if (current) {
-          setProject(current.project);
-          const prototypes = current.prototypes as (Prototype & {
-            parts?: unknown[];
-          })[];
+        const currentEntry = projects.find((p) => p.project?.id === projectId);
+        const currentProject = currentEntry?.project ?? null;
+        if (currentProject) {
+          setProject(currentProject);
+          const prototypes =
+            (currentEntry?.prototypes as (Prototype & {
+              parts?: unknown[];
+            })[]) ?? [];
           const master =
             prototypes.find(({ type }) => type === 'MASTER') || null;
           setMasterPrototype(master);
@@ -77,10 +79,8 @@ const DeletePrototypeConfirmation = (): ReactElement => {
             roleName: r.roles[0]?.name,
           }))
         );
-        if (current) {
-          const creator = roles.find(
-            (r) => r.userId === current.project.userId
-          );
+        if (currentProject) {
+          const creator = roles.find((r) => r.userId === currentProject.userId);
           setCreatorName(creator?.user?.username ?? '');
         }
       } catch (err) {
