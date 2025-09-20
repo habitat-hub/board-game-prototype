@@ -1,0 +1,9 @@
+{
+  "dependencies": [
+    "backend/src/scripts/generateDocs.ts",
+    "backend/swagger-output.json"
+  ],
+  "outputs": [
+    "docs/index.html"
+  ]
+}

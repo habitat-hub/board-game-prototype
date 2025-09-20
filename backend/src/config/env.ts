@@ -20,7 +20,7 @@ const baseSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'test', 'production'])
     .default('development'),
-  SKIP_SWAGGER: z.string().optional(),
+  SKIP_ARTIFACT_GENERATION: z.string().optional(),
 });
 
 // Strict schema (dev/prod): require all variables
