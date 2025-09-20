@@ -105,8 +105,8 @@ const RoleManagement: React.FC = () => {
     setSearchTerm('');
   };
 
-  // ローディング中の表示
-  if (loading && userRoles.length === 0) {
+  // ローディング中の表示（userRoles の長さに依存せず）
+  if (loading) {
     return <Loading />;
   }
 

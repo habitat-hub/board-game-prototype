@@ -44,7 +44,7 @@ router.use(ensureAuthenticated);
  *     description: ユーザーがアクセス可能なプロジェクトの一覧を取得します。
  *     responses:
  *       '200':
- *         description: アクセス可能なプロジェクトの一覧を返します
+ *         description: アクセス可能なプロジェクトの一覧を返します。
  *         content:
  *           application/json:
  *             schema:
@@ -599,16 +599,62 @@ router.post(
         throw new NotFoundError('招待できるユーザーが見つかりません');
       }
 
-      await Promise.all(
-        guests.map(async (guest) => {
-          await assignRole(
-            guest.id,
-            role.id,
-            RESOURCE_TYPES.PROJECT,
-            projectId
-          );
-        })
+      const uniqueGuestIds = Array.from(
+        new Set(guests.map((guest) => guest.id))
       );
+
+      const existingAssignments = await UserRoleModel.findAll({
+        attributes: ['userId', 'roleId', 'resourceType', 'resourceId'],
+        where: {
+          userId: { [Op.in]: uniqueGuestIds },
+          resourceType: RESOURCE_TYPES.PROJECT,
+          resourceId: projectId,
+        },
+      });
+
+      const existingAssignmentsByUser = new Map<string, UserRoleModel[]>();
+      for (const assignment of existingAssignments) {
+        const assignmentsForUser =
+          existingAssignmentsByUser.get(assignment.userId) ?? [];
+        assignmentsForUser.push(assignment);
+        existingAssignmentsByUser.set(assignment.userId, assignmentsForUser);
+      }
+
+      const userIdsToUpdate = Array.from(
+        new Set(
+          existingAssignments
+            .filter((assignment) => assignment.roleId !== role.id)
+            .map((assignment) => assignment.userId)
+        )
+      );
+
+      if (userIdsToUpdate.length > 0) {
+        await UserRoleModel.update(
+          { roleId: role.id },
+          {
+            where: {
+              userId: { [Op.in]: userIdsToUpdate },
+              resourceType: RESOURCE_TYPES.PROJECT,
+              resourceId: projectId,
+            },
+          }
+        );
+      }
+
+      const assignmentsToCreate = uniqueGuestIds
+        .filter((guestId) => !existingAssignmentsByUser.has(guestId))
+        .map((guestId) => ({
+          userId: guestId,
+          roleId: role.id,
+          resourceType: RESOURCE_TYPES.PROJECT,
+          resourceId: projectId,
+        }));
+
+      if (assignmentsToCreate.length > 0) {
+        await UserRoleModel.bulkCreate(assignmentsToCreate, {
+          ignoreDuplicates: true,
+        });
+      }
 
       res.status(200).json({
         message: `ユーザーを${roleType}ロールで招待しました`,

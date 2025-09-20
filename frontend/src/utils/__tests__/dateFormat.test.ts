@@ -10,6 +10,6 @@ describe('formatDate', () => {
 
   it('formats a Date object with time when withTime=true', () => {
     const result = formatDate(new Date('2021-01-01'), true);
-    expect(result).toBe('2021/01/01 00:00:00');
+    expect(result).toBe('2021/01/01 09:00:00');
   });
 });

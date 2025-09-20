@@ -85,29 +85,43 @@ const UserMenu: React.FC<UserMenuProps> = ({ pathname }) => {
 
   return (
     <div className="relative z-overlay" ref={menuRef}>
-      <button onClick={() => setShowMenu(!showMenu)}>
-        <UserAvatar username={user.username} size="lg" />
+      <button
+        type="button"
+        onClick={() => setShowMenu(!showMenu)}
+        aria-haspopup="menu"
+        aria-expanded={showMenu}
+        aria-controls="user-menu-dropdown"
+        aria-label={`${user.username}のユーザーメニュー`}
+        className="rounded-full transition-transform duration-150 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kibako-accent focus-visible:ring-offset-2 focus-visible:ring-offset-kibako-tertiary"
+      >
+        <UserAvatar username={user.username} size="md" />
       </button>
 
       {showMenu && (
-        <div className="absolute right-0 top-full z-overlay w-48 flex flex-col mt-2 shadow-xl rounded-lg overflow-hidden bg-kibako-tertiary border border-kibako-secondary/30">
+        <div
+          id="user-menu-dropdown"
+          role="menu"
+          className="absolute right-0 top-full z-dropdown w-40 flex flex-col mt-2 overflow-hidden rounded-lg border border-kibako-secondary/30 bg-kibako-tertiary/95 text-sm shadow-md backdrop-blur-sm"
+        >
           {/* ユーザー名表示行 */}
-          <div className="flex items-center gap-3 p-3 bg-kibako-secondary/5 border-b border-kibako-secondary/20">
-            <UserAvatar username={user.username} size="sm" />
-            <span className="font-medium text-kibako-primary">
+          <div className="flex items-center gap-2 p-2 bg-kibako-secondary/10 border-b border-kibako-secondary/20">
+            <UserAvatar username={user.username} size="sm" variant="subtle" />
+            <span className="font-medium leading-5 text-kibako-primary">
               {user.username}
             </span>
           </div>
 
           <Link
             href="/projects"
-            className="block w-full text-kibako-primary p-2 text-left hover:bg-kibako-secondary/10 transition-colors duration-200"
+            role="menuitem"
+            className="block w-full px-3 py-2 text-left text-kibako-primary transition-colors duration-200 hover:bg-kibako-secondary/10"
           >
             プロジェクト一覧
           </Link>
           <Link
             href="/profile/edit"
-            className="block w-full text-kibako-primary p-2 text-left hover:bg-kibako-secondary/10 transition-colors duration-200"
+            role="menuitem"
+            className="block w-full px-3 py-2 text-left text-kibako-primary transition-colors duration-200 hover:bg-kibako-secondary/10"
           >
             プロフィール編集
           </Link>
@@ -115,19 +129,23 @@ const UserMenu: React.FC<UserMenuProps> = ({ pathname }) => {
             href={FEEDBACK_FORM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full text-kibako-primary p-2 text-left hover:bg-kibako-secondary/10 transition-colors duration-200"
+            role="menuitem"
+            className="block w-full px-3 py-2 text-left text-kibako-primary transition-colors duration-200 hover:bg-kibako-secondary/10"
           >
             フィードバック
           </a>
           <Link
             href="/donate"
-            className="block w-full text-kibako-primary p-2 text-left hover:bg-kibako-secondary/10 transition-colors duration-200"
+            role="menuitem"
+            className="block w-full px-3 py-2 text-left text-kibako-primary transition-colors duration-200 hover:bg-kibako-secondary/10"
           >
-            KIBAKOに寄付する
+            KIBAKOに寄付
           </Link>
           <button
             onClick={handleLogout}
-            className="block w-full text-kibako-primary p-2 text-left hover:bg-kibako-secondary/10 transition-colors duration-200"
+            type="button"
+            role="menuitem"
+            className="block w-full px-3 py-2 text-left text-kibako-primary transition-colors duration-200 hover:bg-kibako-secondary/10"
           >
             ログアウト
           </button>

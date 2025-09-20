@@ -864,7 +864,9 @@ function handleSelectedParts(socket: Socket): void {
  * @param io - Server
  * @returns Promise<PartModel[]> - リバランス済みのパーツ配列を返すPromise
  */
-async function rebalanceOrders(
+type PartAttributes = InstanceType<typeof PartModel>['dataValues'];
+
+export async function rebalanceOrders(
   prototypeId: string,
   parts: PartModel[],
   io: Server
@@ -875,16 +877,42 @@ async function rebalanceOrders(
   // ORDER_RANGEを基に等間隔のステップを計算
   const step = ORDER_RANGE / (totalParts + 1);
 
+  const now = new Date();
+
   // partsの各要素のorderを直接更新
-  parts.forEach((part, i) => {
-    part.order = ORDER_MIN_EXCLUSIVE + step * (i + 1);
+  const bulkUpdateRecords = parts.map((part, i) => {
+    const newOrder = ORDER_MIN_EXCLUSIVE + step * (i + 1);
+    part.order = newOrder;
+
+    // Partテーブルは多くのNOT NULL列を持つため、bulkCreate経由のUPSERTでは
+    // 既存レコードの全必須フィールドを渡さないとINSERT段階で制約違反になる。
+    // Model#get({ plain: true })で現在の属性を丸ごと取得しておけば、将来的に
+    // 列が追加されても同じ処理で対応でき、単一クエリのbulk update利点も維持できる。
+    const plainPart = part.get({ plain: true }) as PartAttributes;
+
+    return {
+      ...plainPart,
+      order: newOrder,
+      frontSide: plainPart.frontSide ?? null,
+      ownerId: plainPart.ownerId ?? null,
+      updatedAt: now,
+    } satisfies PartAttributes;
   });
 
-  await Promise.all(
-    parts.map((part) =>
-      PartModel.update({ order: part.order }, { where: { id: part.id } })
-    )
-  );
+  const fields =
+    bulkUpdateRecords.length > 0
+      ? Object.keys(bulkUpdateRecords[0] as Record<string, unknown>)
+      : ['id', 'order', 'updatedAt'];
+
+  await PartModel.bulkCreate(bulkUpdateRecords, {
+    fields,
+    updateOnDuplicate: ['order', 'updatedAt'],
+  });
+
+  // in-memoryの更新日時も同期
+  parts.forEach((part) => {
+    part.setDataValue('updatedAt', now);
+  });
 
   io.to(prototypeId).emit(PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS, {
     parts: parts.map((part) => part.dataValues),

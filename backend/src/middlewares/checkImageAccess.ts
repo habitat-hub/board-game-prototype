@@ -10,7 +10,7 @@ import {
   NotFoundError,
   ValidationError,
 } from '../errors/CustomError';
-import { hasPermission } from '../helpers/roleHelper';
+import { getAccessibleResourceIds } from '../helpers/roleHelper';
 import { PERMISSION_ACTIONS, RESOURCE_TYPES } from '../const';
 
 /** PartProperty に紐づく Part/Prototype の最小限の型（アクセス判定に必要な項目のみ） */
@@ -58,21 +58,30 @@ export const checkImageAccess = async (
         ],
       })) as PartPropertyWithPartAndPrototype[];
 
-      const hasProjectAccess = await (async () => {
-        for (const prop of partProperties) {
-          const projectId = prop.part?.Prototype?.projectId;
-          if (projectId) {
-            const allowed = await hasPermission(
+      const projectIds = Array.from(
+        new Set(
+          partProperties
+            .map((prop) => prop.part?.Prototype?.projectId)
+            .filter(
+              (projectId): projectId is string | number =>
+                projectId !== undefined && projectId !== null
+            )
+            .map((projectId) => String(projectId))
+        )
+      );
+
+      const accessibleProjectIds =
+        projectIds.length > 0
+          ? await getAccessibleResourceIds(
               String(user.id),
               RESOURCE_TYPES.PROJECT,
-              PERMISSION_ACTIONS.READ,
-              String(projectId)
-            );
-            if (allowed) return true;
-          }
-        }
-        return false;
-      })();
+              PERMISSION_ACTIONS.READ
+            )
+          : [];
+      const accessibleProjectIdSet = new Set(accessibleProjectIds);
+      const hasProjectAccess =
+        projectIds.length > 0 &&
+        projectIds.some((projectId) => accessibleProjectIdSet.has(projectId));
 
       if (!hasProjectAccess) {
         throw new ForbiddenError('この画像にアクセスする権限がありません');

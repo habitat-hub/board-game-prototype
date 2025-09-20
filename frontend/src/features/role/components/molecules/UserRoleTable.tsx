@@ -8,8 +8,8 @@ import { useUser } from '@/hooks/useUser';
 
 import UserRoleRow from './UserRoleRow';
 
-// Types moved to UserRoleRow.tsx
-
+// ユーザー権限テーブルのプロパティ型
+// userRoles は useRoleManagement から常に配列（初期値 []）で渡される契約のため非オプショナル
 interface UserRoleTableProps {
   userRoles: UserRole[];
   creator: User | null;
