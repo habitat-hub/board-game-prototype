@@ -42,6 +42,13 @@ describe('withNeonTransactionPooler', () => {
     expect(result).toBe(url);
   });
 
+  it('does not treat notneon.tech as a Neon host (dot-boundary check)', () => {
+    const url = 'postgres://user:pass@notneon.tech:5432/dbname';
+    const result = withNeonTransactionPooler(url, 'production');
+
+    expect(result).toBe(url);
+  });
+
   it('returns the original string when the URL cannot be parsed', () => {
     const url = 'not-a-valid-url';
     const result = withNeonTransactionPooler(url, 'production');
