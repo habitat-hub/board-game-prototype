@@ -46,6 +46,7 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
   );
   const [creator, setCreator] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [rolesReady, setRolesReady] = useState<boolean>(false);
   const isCurrentUserAdmin = useMemo(() => {
     if (!currentUser) return false;
     const currentUserRole = userRoles.find(
@@ -108,6 +109,7 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
       showToast('権限一覧の取得に失敗しました。', 'error');
     } finally {
       setLoading(false);
+      setRolesReady(true);
     }
   }, [getProjectRoles, projectId, showToast]);
 
@@ -337,6 +339,7 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
     masterPrototypeName,
     creator,
     loading,
+    rolesReady,
 
     // 基本操作
     addRole,

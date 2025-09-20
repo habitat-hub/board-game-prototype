@@ -33,6 +33,7 @@ export interface UseRoleManagement {
   masterPrototypeName: string;
   creator: User | null;
   loading: boolean;
+  rolesReady: boolean;
   addRole: (userId: string, roleName: RoleValue) => Promise<void>;
   removeRole: (userId: string) => Promise<void>;
   updateRole: (userId: string, roleName: RoleValue) => Promise<void>;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { FaPlus, FaTable, FaTh } from 'react-icons/fa';
 import { IoReload } from 'react-icons/io5';
@@ -17,7 +17,6 @@ import SortDropdown, {
   SortOrder,
 } from '@/components/atoms/SortDropdown';
 import Loading from '@/components/organisms/Loading';
-import { PERMISSION_ACTIONS, RoleType } from '@/constants/roles';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
 import type { ProjectContextMenuProps } from '@/features/prototype/components/atoms/ProjectContextMenu';
 import { EmptyProjectState } from '@/features/prototype/components/molecules/EmptyProjectState';
@@ -25,9 +24,7 @@ import { ProjectCardList } from '@/features/prototype/components/molecules/Proje
 import { ProjectTable } from '@/features/prototype/components/molecules/ProjectTable';
 import { DUPLICATE_DISABLED_HINT } from '@/features/prototype/constants';
 import useInlineEdit from '@/hooks/useInlineEdit';
-import { useUser } from '@/hooks/useUser';
 import { deleteExpiredImagesFromIndexedDb } from '@/utils/db';
-import { can } from '@/utils/permissions';
 import {
   getUIPreference,
   setUIPreference,
@@ -47,6 +44,14 @@ const hasArrayParts = (obj: unknown): obj is { parts: unknown[] } => {
   return Array.isArray(rec.parts);
 };
 
+/** ProjectListで並べ替え等に使う要素 */
+type PrototypeListItem = {
+  project: Project;
+  masterPrototype?: Prototype;
+  partCount: number;
+  roomCount: number;
+};
+
 /**
  * ProjectListコンポーネントで使用される各種Stateの説明:
  *
@@ -59,9 +64,7 @@ const hasArrayParts = (obj: unknown): obj is { parts: unknown[] } => {
 const ProjectList: React.FC = () => {
   const router = useRouter();
   const { useUpdatePrototype } = usePrototypes();
-  const { useGetProjects, createProject, getProjectRoles, duplicateProject } =
-    useProject();
-  const { user } = useUser();
+  const { useGetProjects, createProject, duplicateProject } = useProject();
 
   // useQueryとuseMutationフックの使用
   const {
@@ -88,21 +91,6 @@ const ProjectList: React.FC = () => {
   // リロードアイコンのワンショットアニメーション制御
   const [isReloadAnimating, setIsReloadAnimating] = useState<boolean>(false);
 
-  // プロジェクトごとのAdmin権限マップ
-  const [projectAdminMap, setProjectAdminMap] = useState<
-    Record<string, boolean>
-  >({});
-  // プロジェクト作成者名のマップ
-  const [projectCreatorMap, setProjectCreatorMap] = useState<
-    Record<string, string>
-  >({});
-  // プロジェクトごとの編集権限マップ（AdminまたはEditor）
-  const [projectEditorMap, setProjectEditorMap] = useState<
-    Record<string, boolean>
-  >({});
-
-  const cancelledRef = useRef(false);
-
   // 表示モードとソート設定（永続値を安全に復元）
   const [viewMode, setViewMode] = useState<ProjectListView>(() => {
     const v = getUIPreference('projectListView');
@@ -125,30 +113,70 @@ const ProjectList: React.FC = () => {
   };
 
   // データ変換処理
-  const prototypeList = useMemo(
+  const prototypeList: PrototypeListItem[] = useMemo(
     () =>
-      projectsData?.map(({ project, prototypes }) => {
-        // MASTER プロトタイプを取得する
-        const masterPrototype = prototypes.find(
-          ({ type }) => type === 'MASTER'
-        );
-        // ルーム数をカウント（INSTANCE の数）
-        const roomCount = prototypes.filter(
-          (p) => p.type === 'INSTANCE'
-        ).length;
-        // parts 配列が存在し配列である場合のみ長さを使用する
-        const partCount = hasArrayParts(masterPrototype)
-          ? masterPrototype.parts.length
-          : 0;
-        return {
-          project,
-          masterPrototype,
-          partCount,
-          roomCount,
-        };
-      }) || [],
+      (projectsData ?? [])
+        .map<PrototypeListItem | null>(({ project, prototypes }) => {
+          // プロジェクトが無い場合は除外する
+          if (!project) {
+            return null;
+          }
+          // プロトタイプ配列を安全に初期化
+          const ensuredPrototypes: Prototype[] = prototypes ?? [];
+          // MASTER プロトタイプを取得する
+          const masterPrototype = ensuredPrototypes.find(
+            ({ type }) => type === 'MASTER'
+          );
+          // ルーム数をカウント（INSTANCE の数）
+          const roomCount = ensuredPrototypes.filter(
+            (p) => p.type === 'INSTANCE'
+          ).length;
+          // parts 配列が存在し配列である場合のみ長さを使用する
+          const partCount = hasArrayParts(masterPrototype)
+            ? masterPrototype.parts.length
+            : 0;
+          const item: PrototypeListItem = {
+            project,
+            masterPrototype,
+            partCount,
+            roomCount,
+          };
+          return item;
+        })
+        .filter((value): value is PrototypeListItem => value !== null),
     [projectsData]
   );
+
+  const {
+    adminMap: projectAdminMap,
+    creatorMap: projectCreatorMap,
+    editorMap: projectEditorMap,
+  } = useMemo(() => {
+    const adminMap: Record<string, boolean> = {};
+    const creatorMap: Record<string, string> = {};
+    const editorMap: Record<string, boolean> = {};
+
+    (projectsData ?? []).forEach(({ project }) => {
+      if (!project?.id) {
+        return;
+      }
+
+      const permissions = project.permissions ?? {
+        canRead: true,
+        canWrite: false,
+        canDelete: false,
+        canManage: false,
+      };
+
+      adminMap[project.id] = Boolean(permissions.canManage);
+      editorMap[project.id] = Boolean(
+        permissions.canManage || permissions.canWrite
+      );
+      creatorMap[project.id] = project.owner?.username ?? '';
+    });
+
+    return { adminMap, creatorMap, editorMap };
+  }, [projectsData]);
 
   const sortedPrototypeList = useMemo(
     () =>
@@ -201,72 +229,6 @@ const ProjectList: React.FC = () => {
         }),
     [prototypeList, sortKey, sortOrder, projectCreatorMap]
   );
-
-  // ユーザーがAdminまたはEditorかどうかを取得
-  useEffect(() => {
-    cancelledRef.current = false;
-    // projectsData または user が未定義の場合は全て非Adminとして扱う
-    if (!projectsData || !user) {
-      setProjectAdminMap({});
-      setProjectCreatorMap({});
-      setProjectEditorMap({});
-      return;
-    }
-
-    const fetchRoles = async (): Promise<void> => {
-      const results = await Promise.all(
-        projectsData.map(async ({ project }) => {
-          try {
-            const roles = await getProjectRoles(project.id);
-            const isAdmin = roles.some(
-              (r) =>
-                r.userId === user.id &&
-                r.roles.some((role) =>
-                  can(role.name as RoleType, PERMISSION_ACTIONS.MANAGE)
-                )
-            );
-            const canEdit = roles.some(
-              (r) =>
-                r.userId === user.id &&
-                r.roles.some((role) =>
-                  can(role.name as RoleType, PERMISSION_ACTIONS.WRITE)
-                )
-            );
-            const creator = roles.find((r) => r.userId === project.userId);
-            const creatorName = creator?.user?.username ?? '';
-            return [project.id, { isAdmin, creatorName, canEdit }] as const;
-          } catch (e) {
-            // 予期しないエラーはログに記録し、UI 側は非Adminとして扱う
-            console.error('プロジェクトのロール取得に失敗しました:', {
-              projectId: project.id,
-              error: e,
-            });
-            return [
-              project.id,
-              { isAdmin: false, creatorName: '', canEdit: false },
-            ] as const;
-          }
-        })
-      );
-      if (!cancelledRef.current) {
-        const adminMap: Record<string, boolean> = {};
-        const creatorMap: Record<string, string> = {};
-        const editorMap: Record<string, boolean> = {};
-        results.forEach(([projectId, { isAdmin, creatorName, canEdit }]) => {
-          adminMap[projectId] = isAdmin;
-          creatorMap[projectId] = creatorName;
-          editorMap[projectId] = canEdit;
-        });
-        setProjectAdminMap(adminMap);
-        setProjectCreatorMap(creatorMap);
-        setProjectEditorMap(editorMap);
-      }
-    };
-    fetchRoles();
-    return () => {
-      cancelledRef.current = true;
-    };
-  }, [projectsData, user, getProjectRoles]);
 
   // コンテキストメニューの状態
   const [contextMenu, setContextMenu] = useState<{
