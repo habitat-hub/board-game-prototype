@@ -245,17 +245,38 @@ function shouldRegenerateSwaggerOutput(): {
       if (!existsSync(filePath)) {
         return latest;
       }
+      try {
+        const fileStat: Stats = statSync(filePath);
+        const mtime: number = fileStat.mtimeMs;
 
-      const fileStat: Stats = statSync(filePath);
-      const mtime: number = fileStat.mtimeMs;
-
-      return Math.max(latest, mtime);
+        return Math.max(latest, mtime);
+      } catch (error: unknown) {
+        console.debug(
+          `Failed to stat dependency file: ${filePath}. Forcing regeneration.`,
+          error
+        );
+        return Number.POSITIVE_INFINITY;
+      }
     },
     0
   );
+  let outputMtime: number;
+  try {
+    const outputStat: Stats = statSync(SWAGGER_OUTPUT_PATH);
+    outputMtime = outputStat.mtimeMs;
+  } catch (error: unknown) {
+    console.debug(
+      `Failed to stat Swagger output at ${SWAGGER_OUTPUT_PATH}. Regeneration required.`,
+      error
+    );
+    return {
+      dependencies: normalizedDependencies,
+      outputs: normalizedOutputs,
+      shouldRegenerate: true,
+    };
+  }
 
-  const outputStat: Stats = statSync(SWAGGER_OUTPUT_PATH);
-  const shouldRegenerate: boolean = latestDependencyMTime > outputStat.mtimeMs;
+  const shouldRegenerate: boolean = latestDependencyMTime > outputMtime;
 
   return {
     dependencies: normalizedDependencies,
