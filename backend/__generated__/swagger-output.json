@@ -15,7 +15,9 @@
             "description": "処理成功時のメッセージ"
           }
         },
-        "required": ["message"],
+        "required": [
+          "message"
+        ],
         "example": {
           "message": "正常に処理が完了しました"
         }
@@ -28,7 +30,9 @@
             "description": "エラーメッセージ"
           }
         },
-        "required": ["error"],
+        "required": [
+          "error"
+        ],
         "example": {
           "error": "リクエストが不正です"
         }
@@ -41,7 +45,9 @@
             "description": "エラーメッセージ"
           }
         },
-        "required": ["error"],
+        "required": [
+          "error"
+        ],
         "example": {
           "error": "認証が必要です"
         }
@@ -54,7 +60,9 @@
             "description": "エラーメッセージ"
           }
         },
-        "required": ["error"],
+        "required": [
+          "error"
+        ],
         "example": {
           "error": "リソースが見つかりません"
         }
@@ -67,7 +75,9 @@
             "description": "エラーメッセージ"
           }
         },
-        "required": ["error"],
+        "required": [
+          "error"
+        ],
         "example": {
           "error": "予期せぬエラーが発生しました"
         }
@@ -121,7 +131,13 @@
           },
           "type": {
             "type": "string",
-            "enum": ["token", "card", "hand", "deck", "area"]
+            "enum": [
+              "token",
+              "card",
+              "hand",
+              "deck",
+              "area"
+            ]
           },
           "prototypeId": {
             "type": "string",
@@ -144,7 +160,10 @@
             "oneOf": [
               {
                 "type": "string",
-                "enum": ["front", "back"]
+                "enum": [
+                  "front",
+                  "back"
+                ]
               },
               {
                 "type": "null"
@@ -189,7 +208,10 @@
           },
           "side": {
             "type": "string",
-            "enum": ["front", "back"]
+            "enum": [
+              "front",
+              "back"
+            ]
           },
           "name": {
             "type": "string"
@@ -291,7 +313,12 @@
             "type": "string"
           }
         },
-        "required": ["id", "userId", "createdAt", "updatedAt"]
+        "required": [
+          "id",
+          "userId",
+          "createdAt",
+          "updatedAt"
+        ]
       },
       "Prototype": {
         "type": "object",
@@ -309,7 +336,11 @@
           },
           "type": {
             "type": "string",
-            "enum": ["MASTER", "VERSION", "INSTANCE"]
+            "enum": [
+              "MASTER",
+              "VERSION",
+              "INSTANCE"
+            ]
           },
           "sourceVersionPrototypeId": {
             "oneOf": [
@@ -364,7 +395,12 @@
             "type": "string"
           }
         },
-        "required": ["id", "name", "createdAt", "updatedAt"]
+        "required": [
+          "id",
+          "name",
+          "createdAt",
+          "updatedAt"
+        ]
       },
       "RolePermission": {
         "type": "object",
@@ -376,7 +412,10 @@
             "type": "integer"
           }
         },
-        "required": ["roleId", "permissionId"]
+        "required": [
+          "roleId",
+          "permissionId"
+        ]
       },
       "User": {
         "type": "object",
@@ -395,7 +434,12 @@
             "type": "string"
           }
         },
-        "required": ["id", "username", "createdAt", "updatedAt"]
+        "required": [
+          "id",
+          "username",
+          "createdAt",
+          "updatedAt"
+        ]
       },
       "UserRole": {
         "type": "object",
@@ -438,7 +482,9 @@
   "paths": {
     "/api/users/search": {
       "get": {
-        "tags": ["Users"],
+        "tags": [
+          "Users"
+        ],
         "summary": "ユーザー検索",
         "description": "ユーザー名でユーザーを検索します。",
         "parameters": [
@@ -471,7 +517,9 @@
     },
     "/api/users/{userId}": {
       "put": {
-        "tags": ["Users"],
+        "tags": [
+          "Users"
+        ],
         "summary": "ユーザー情報更新",
         "description": "ユーザー名を更新します。",
         "parameters": [
@@ -491,7 +539,9 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["username"],
+                "required": [
+                  "username"
+                ],
                 "properties": {
                   "username": {
                     "type": "string",
@@ -530,7 +580,9 @@
     },
     "/api/users/{userId}/need-tutorial": {
       "get": {
-        "tags": ["Users"],
+        "tags": [
+          "Users"
+        ],
         "summary": "チュートリアル必要判定",
         "description": "指定されたユーザーがチュートリアルを表示すべきか判定します。",
         "parameters": [
@@ -557,7 +609,9 @@
                       "description": "チュートリアルを表示すべきかどうか"
                     }
                   },
-                  "required": ["needTutorial"]
+                  "required": [
+                    "needTutorial"
+                  ]
                 }
               }
             }
@@ -573,7 +627,9 @@
     },
     "/api/prototypes/{prototypeId}": {
       "get": {
-        "tags": ["Prototypes"],
+        "tags": [
+          "Prototypes"
+        ],
         "summary": "特定のプロトタイプ取得",
         "description": "指定されたIDのプロトタイプを取得します。",
         "parameters": [
@@ -616,7 +672,9 @@
         }
       },
       "put": {
-        "tags": ["Prototypes"],
+        "tags": [
+          "Prototypes"
+        ],
         "summary": "プロトタイプ更新",
         "description": "指定されたIDのプロトタイプを更新します。",
         "parameters": [
@@ -675,7 +733,9 @@
         }
       },
       "delete": {
-        "tags": ["Prototypes"],
+        "tags": [
+          "Prototypes"
+        ],
         "summary": "プロトタイプ削除",
         "description": "指定されたIDのプロトタイプを削除します。",
         "parameters": [
@@ -715,7 +775,9 @@
     },
     "/api/projects": {
       "get": {
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "summary": "プロジェクト一覧取得",
         "description": "ユーザーがアクセス可能なプロジェクトの一覧を取得します。",
         "responses": {
@@ -833,7 +895,9 @@
         }
       },
       "post": {
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "summary": "プロジェクト作成",
         "description": "新しいプロジェクトを作成します。",
         "requestBody": {
@@ -887,7 +951,9 @@
     },
     "/api/projects/{projectId}/versions": {
       "post": {
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "summary": "プロトタイプルーム作成",
         "description": "指定されたプロジェクトのプロトタイプルーム（VERSIONとINSTANCE）を作成します。",
         "parameters": [
@@ -913,7 +979,9 @@
                     "description": "プロトタイプ名"
                   }
                 },
-                "required": ["name"]
+                "required": [
+                  "name"
+                ]
               }
             }
           }
@@ -972,7 +1040,9 @@
     },
     "/api/projects/{projectId}/versions/{prototypeId}": {
       "delete": {
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "summary": "プロトタイプルーム削除",
         "description": "指定されたプロジェクトのプロトタイプルーム（VERSIONとINSTANCE）を削除します。",
         "parameters": [
@@ -1031,7 +1101,9 @@
     },
     "/api/projects/{projectId}": {
       "get": {
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "summary": "特定のプロジェクトの詳細とプロトタイプ一覧取得",
         "description": "指定されたIDのプロジェクトの詳細情報と、そのプロジェクトに属するプロトタイプの一覧を取得します。",
         "parameters": [
@@ -1084,7 +1156,9 @@
         }
       },
       "delete": {
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "summary": "プロジェクト削除",
         "description": "指定されたIDのプロジェクトを削除します。",
         "parameters": [
@@ -1124,7 +1198,9 @@
     },
     "/api/projects/{projectId}/access-users": {
       "get": {
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "summary": "プロジェクトへのアクセス権を取得",
         "description": "指定されたプロジェクトにアクセス可能なユーザーを取得します。",
         "parameters": [
@@ -1157,7 +1233,9 @@
     },
     "/api/projects/{projectId}/invite": {
       "post": {
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "summary": "ユーザーにプロジェクトへのアクセス権を付与",
         "description": "指定されたプロジェクトにユーザーを招待します。Adminロール（またはMANAGE権限）を持つユーザーのみが利用できます。",
         "parameters": [
@@ -1187,7 +1265,11 @@
                   },
                   "roleType": {
                     "type": "string",
-                    "enum": ["admin", "editor", "viewer"],
+                    "enum": [
+                      "admin",
+                      "editor",
+                      "viewer"
+                    ],
                     "default": "editor",
                     "description": "付与するロールタイプ（Admin, Editor, Viewer）"
                   }
@@ -1242,7 +1324,9 @@
     },
     "/api/projects/{projectId}/invite/{guestId}": {
       "delete": {
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "summary": "ユーザーのアクセス権を削除",
         "description": "指定されたプロジェクトからユーザーのアクセス権を削除します。Adminロール（またはMANAGE権限）を持つユーザーのみが利用できます。",
         "parameters": [
@@ -1311,7 +1395,9 @@
     },
     "/api/projects/{projectId}/duplicate": {
       "post": {
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "summary": "プロジェクトの複製",
         "description": "指定されたプロジェクトを複製します。書き込みまたはAdmin権限が必要です。",
         "parameters": [
@@ -1361,7 +1447,9 @@
     },
     "/api/projects/{projectId}/members": {
       "get": {
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "summary": "プロジェクトのメンバー一覧取得",
         "description": "プロジェクトのメンバーとそのロールを取得します。",
         "parameters": [
@@ -1413,7 +1501,9 @@
     },
     "/api/projects/{projectId}/roles": {
       "get": {
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "summary": "プロジェクトのロール一覧取得",
         "description": "プロジェクトのユーザーロール一覧を取得します。",
         "parameters": [
@@ -1466,7 +1556,9 @@
         }
       },
       "post": {
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "summary": "プロジェクトにロールを追加",
         "description": "ユーザーにプロジェクトのロールを割り当てます。",
         "parameters": [
@@ -1492,7 +1584,11 @@
                   },
                   "roleName": {
                     "type": "string",
-                    "enum": ["admin", "editor", "viewer"]
+                    "enum": [
+                      "admin",
+                      "editor",
+                      "viewer"
+                    ]
                   }
                 }
               }
@@ -1517,7 +1613,9 @@
     },
     "/api/projects/{projectId}/roles/{userId}": {
       "delete": {
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "summary": "プロジェクトからロールを削除",
         "description": "ユーザーからプロジェクトのロールを削除します。",
         "parameters": [
@@ -1550,7 +1648,9 @@
         }
       },
       "put": {
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "summary": "プロジェクトのロールを更新",
         "description": "ユーザーのプロジェクトロールを変更します。",
         "parameters": [
@@ -1582,7 +1682,11 @@
                 "properties": {
                   "roleName": {
                     "type": "string",
-                    "enum": ["admin", "editor", "viewer"]
+                    "enum": [
+                      "admin",
+                      "editor",
+                      "viewer"
+                    ]
                   }
                 }
               }
@@ -1604,7 +1708,9 @@
     },
     "/api/images": {
       "post": {
-        "tags": ["Images"],
+        "tags": [
+          "Images"
+        ],
         "summary": "画像アップロード",
         "description": "S3に画像をアップロードし、画像のメタデータを保存します。",
         "requestBody": {
@@ -1671,7 +1777,9 @@
     },
     "/api/images/{imageId}": {
       "get": {
-        "tags": ["Images"],
+        "tags": [
+          "Images"
+        ],
         "summary": "画像取得",
         "description": "S3から指定された画像を取得し、画像データを直接返します。",
         "parameters": [
@@ -1740,7 +1848,9 @@
         }
       },
       "delete": {
-        "tags": ["Images"],
+        "tags": [
+          "Images"
+        ],
         "summary": "画像削除",
         "description": "S3から指定された画像を削除します。",
         "parameters": [
@@ -1778,7 +1888,10 @@
             "description": "面（front または back）",
             "schema": {
               "type": "string",
-              "enum": ["front", "back"]
+              "enum": [
+                "front",
+                "back"
+              ]
             }
           },
           {
@@ -1788,7 +1901,10 @@
             "description": "更新をemitするかどうか（デフォルトはfalse）",
             "schema": {
               "type": "string",
-              "enum": [true, false],
+              "enum": [
+                true,
+                false
+              ],
               "default": false
             }
           }
@@ -1842,7 +1958,9 @@
     },
     "/auth/google": {
       "get": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "Googleログイン",
         "description": "Googleアカウントを使用してログインします。",
         "responses": {
@@ -1863,7 +1981,9 @@
     },
     "/auth/google/callback": {
       "get": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "Googleログインコールバック",
         "description": "GoogleログインのコールバックURL。",
         "responses": {
@@ -1884,7 +2004,9 @@
     },
     "/auth/logout": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "ログアウト",
         "description": "現在のセッションを終了し、ユーザーをログアウトします。",
         "responses": {
@@ -1913,7 +2035,9 @@
     },
     "/auth/user": {
       "get": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "ユーザー情報取得",
         "description": "現在ログインしているユーザーの情報を取得します。",
         "responses": {

@@ -36,6 +36,14 @@ const strictSchema = baseSchema.extend({
   AWS_ACCESS_KEY_ID: z.string().min(1),
   AWS_SECRET_ACCESS_KEY: z.string().min(1),
   AWS_S3_BUCKET_NAME: z.string().min(1),
+  STRIPE_SECRET_KEY: z.string().min(1),
+  STRIPE_DONATION_SUCCESS_URL: z.string().url(),
+  STRIPE_DONATION_CANCEL_URL: z.string().url(),
+  STRIPE_ONE_SHORT_DONATION_JPY_100: z.string().min(1),
+  STRIPE_ONE_SHORT_DONATION_JPY_500: z.string().min(1),
+  STRIPE_ONE_SHORT_DONATION_JPY_1000: z.string().min(1),
+  STRIPE_ONE_SHORT_DONATION_JPY_5000: z.string().min(1),
+  STRIPE_ONE_SHORT_DONATION_JPY_10000: z.string().min(1),
 });
 
 // Relaxed schema (test): provide safe defaults to avoid failing on import
@@ -56,6 +64,22 @@ const relaxedSchema = baseSchema.extend({
   AWS_ACCESS_KEY_ID: z.string().default('test'),
   AWS_SECRET_ACCESS_KEY: z.string().default('test'),
   AWS_S3_BUCKET_NAME: z.string().default('test-bucket'),
+  STRIPE_SECRET_KEY: z.string().default('sk_test_dummy'),
+  STRIPE_DONATION_SUCCESS_URL: z
+    .string()
+    .url()
+    .default('http://localhost:3000/donations/success'),
+  STRIPE_DONATION_CANCEL_URL: z
+    .string()
+    .url()
+    .default('http://localhost:3000/donations/cancel'),
+  STRIPE_ONE_SHORT_DONATION_JPY_100: z.string().default('price_test_jpy_100'),
+  STRIPE_ONE_SHORT_DONATION_JPY_500: z.string().default('price_test_jpy_500'),
+  STRIPE_ONE_SHORT_DONATION_JPY_1000: z.string().default('price_test_jpy_1000'),
+  STRIPE_ONE_SHORT_DONATION_JPY_5000: z.string().default('price_test_jpy_5000'),
+  STRIPE_ONE_SHORT_DONATION_JPY_10000: z
+    .string()
+    .default('price_test_jpy_10000'),
 });
 
 const envSchema = isTest ? relaxedSchema : strictSchema;
