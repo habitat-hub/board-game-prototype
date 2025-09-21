@@ -5,7 +5,7 @@
 import Konva from 'konva';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Part } from '@/api/types';
+import { Part } from '@/__generated__/api/client';
 import { PARTS_INFO } from '@/features/prototype/constants/helpInfo';
 
 interface UsePartTooltipProps {

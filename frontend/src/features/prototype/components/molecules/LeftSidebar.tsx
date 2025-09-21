@@ -8,9 +8,9 @@ import { IoArrowBack, IoMenu, IoAdd } from 'react-icons/io5';
 import { MdMeetingRoom, MdDelete } from 'react-icons/md';
 import { twMerge } from 'tailwind-merge';
 
+import { Prototype, ProjectsDetailData } from '@/__generated__/api/client';
 import { useProject } from '@/api/hooks/useProject';
 import { useUsers } from '@/api/hooks/useUsers';
-import { Prototype, ProjectsDetailData } from '@/api/types';
 import KibakoButton from '@/components/atoms/KibakoButton';
 import { PERMISSION_ACTIONS, RoleType } from '@/constants/roles';
 import ConnectedUserIcon from '@/features/prototype/components/atoms/ConnectedUserIcon';

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 
-import { Part } from '@/api/types';
+import { Part } from '@/__generated__/api/client';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';
 

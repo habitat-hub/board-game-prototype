@@ -5,9 +5,9 @@ import { ReactElement, useEffect, useState } from 'react';
 import { IoArrowBack, IoTrash } from 'react-icons/io5';
 import { RiLoaderLine } from 'react-icons/ri';
 
+import { Prototype, Project } from '@/__generated__/api/client';
 import { projectService } from '@/api/endpoints/project';
 import { useProject } from '@/api/hooks/useProject';
-import { Prototype, Project } from '@/api/types';
 import KibakoButton from '@/components/atoms/KibakoButton';
 import UserRoleList from '@/components/molecules/UserRoleList';
 import Loading from '@/components/organisms/Loading';

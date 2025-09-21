@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-import { Part, PartProperty } from '@/api/types';
+import { Part, PartProperty } from '@/__generated__/api/client';
 import { KEYBOARD_SHORTCUTS } from '@/features/prototype/constants';
 import { useDebugMode } from '@/features/prototype/hooks/useDebugMode';
 import { GameBoardMode } from '@/features/prototype/types';

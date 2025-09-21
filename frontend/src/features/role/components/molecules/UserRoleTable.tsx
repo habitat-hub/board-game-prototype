@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaUserShield } from 'react-icons/fa';
 
-import type { User } from '@/api/types';
+import type { User } from '@/__generated__/api/client';
 import type { RoleValue } from '@/features/role/types';
 import type { UserRole } from '@/features/role/types';
 import { useUser } from '@/hooks/useUser';

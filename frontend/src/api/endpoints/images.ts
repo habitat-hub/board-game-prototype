@@ -1,10 +1,9 @@
-import axiosInstance from '@/api/client';
-
 import {
   ImagesCreateData,
   ImagesDeleteData,
   ImagesDeleteParams,
-} from '../types';
+} from '@/__generated__/api/client';
+import axiosInstance from '@/api/client';
 
 export const imagesService = {
   /*

@@ -7,7 +7,7 @@ import {
   GiStoneBlock,
 } from 'react-icons/gi';
 
-import { Part } from '@/api/types';
+import { Part } from '@/__generated__/api/client';
 
 /** パーツ種別に応じたアイコンを表示するためのプロパティ */
 export type PartTypeIconProps = {

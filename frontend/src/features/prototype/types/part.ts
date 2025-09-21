@@ -1,4 +1,4 @@
-import { Image, Part, PartProperty } from '@/api/types';
+import { Image, Part, PartProperty } from '@/__generated__/api/client';
 
 /**
  * パーツのデフォルト設定

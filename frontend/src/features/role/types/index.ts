@@ -1,4 +1,4 @@
-import type { User } from '@/api/types';
+import type { User } from '@/__generated__/api/client';
 
 /** ロール名の列挙。UI と API の共通契約 */
 export type RoleValue = 'admin' | 'editor' | 'viewer';

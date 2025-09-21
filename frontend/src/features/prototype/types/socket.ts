@@ -1,4 +1,4 @@
-import { Part, PartProperty } from '@/api/types';
+import { Part, PartProperty } from '@/__generated__/api/client';
 
 /** パーツのマップ */
 export type PartsMap = Map<number, Part>;

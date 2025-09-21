@@ -4,9 +4,9 @@ import { useParams } from 'next/navigation';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
+import { Prototype } from '@/__generated__/api/client';
 import { getApiUrl } from '@/api/client';
 import { useProject } from '@/api/hooks/useProject';
-import { Prototype } from '@/api/types';
 import SocketGameBoard from '@/features/prototype/components/organisms/SocketGameBoard';
 import { SelectedPartsProvider } from '@/features/prototype/contexts/SelectedPartsContext';
 import { SocketProvider } from '@/features/prototype/contexts/SocketContext';

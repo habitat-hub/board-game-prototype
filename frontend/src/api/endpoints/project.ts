@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-import axiosInstance from '../client';
 import {
   Prototype,
   Project,
@@ -10,7 +9,9 @@ import {
   User,
   ProjectsVersionsCreatePayload,
   ProjectsVersionsCreateData,
-} from '../types';
+} from '@/__generated__/api/client';
+
+import axiosInstance from '../client';
 
 export const projectService = {
   /**

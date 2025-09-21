@@ -4,8 +4,8 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { FaRegCopy, FaRegTrashAlt, FaImage, FaSpinner } from 'react-icons/fa';
 import { LuArrowLeftRight } from 'react-icons/lu';
 
+import { Part } from '@/__generated__/api/client';
 import { useImages } from '@/api/hooks/useImages';
-import { Part } from '@/api/types';
 import NumberInput from '@/components/atoms/NumberInput';
 import TextInput from '@/components/atoms/TextInput';
 import ColorPicker from '@/features/prototype/components/atoms/ColorPicker';
@@ -216,7 +216,9 @@ export default function PartPropertyMenuSingle({
                   partId: selectedPart.id,
                   updatePart: {
                     frontSide:
-                      (selectedPart.frontSide ?? 'front') === 'front' ? 'back' : 'front',
+                      (selectedPart.frontSide ?? 'front') === 'front'
+                        ? 'back'
+                        : 'front',
                   },
                 },
               })

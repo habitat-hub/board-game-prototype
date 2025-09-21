@@ -1,11 +1,11 @@
-import axiosInstance from '@/api/client';
 import {
   UsersSearchListData,
   UsersSearchListParams,
   User,
   UsersUpdatePayload,
   UsersNeedTutorialListData,
-} from '@/api/types';
+} from '@/__generated__/api/client';
+import axiosInstance from '@/api/client';
 
 export const usersService = {
   /**

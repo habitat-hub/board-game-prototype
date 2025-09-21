@@ -6,7 +6,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 
-import { Part } from '@/api/types';
+import { Part } from '@/__generated__/api/client';
 import KibakoButton from '@/components/atoms/KibakoButton';
 import PartTypeIcon from '@/features/prototype/components/atoms/PartTypeIcon';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';

@@ -1,4 +1,4 @@
-import { Part } from '@/api/types';
+import { Part } from '@/__generated__/api/client';
 
 // パーツ種別（API の Part.type 相当）
 export type PartType = Part['type'];

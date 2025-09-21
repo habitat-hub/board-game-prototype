@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
+import { PrototypesUpdatePayload } from '@/__generated__/api/client';
 import { prototypesService } from '@/api/endpoints/prototypes';
-import { PrototypesUpdatePayload } from '@/api/types';
 
 export const usePrototypes = () => {
   const queryClient = useQueryClient();

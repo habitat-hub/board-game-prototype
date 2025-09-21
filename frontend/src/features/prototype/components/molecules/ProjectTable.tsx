@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { FaFolderOpen, FaTrash, FaUsers, FaCopy } from 'react-icons/fa';
 
+import { Prototype, Project } from '@/__generated__/api/client';
 import { useProject } from '@/api/hooks/useProject';
-import { Prototype, Project } from '@/api/types';
 import PrototypeNameEditor from '@/features/prototype/components/atoms/PrototypeNameEditor';
 import RowCell from '@/features/prototype/components/atoms/RowCell';
 import RowIconButton from '@/features/prototype/components/atoms/RowIconButton';

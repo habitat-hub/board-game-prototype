@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react';
 import { Socket } from 'socket.io-client';
 import { vi, type Mock } from 'vitest';
 
-import { PartProperty } from '@/api/types';
+import { PartProperty } from '@/__generated__/api/client';
 import {
   COMMON_SOCKET_EVENT,
   PROTOTYPE_SOCKET_EVENT,

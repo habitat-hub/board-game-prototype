@@ -1,4 +1,4 @@
-import { Part } from '@/api/types';
+import { Part } from '@/__generated__/api/client';
 import { GAME_BOARD_SIZE } from '@/features/prototype/constants/gameBoard';
 
 /** スプレッド時のデフォルト間隔(px) */
@@ -234,8 +234,7 @@ export const getSpreadUpdates = (
       });
     }
 
-    current +=
-      (axis === 'horizontal' ? p.width : p.height) + effectiveGap;
+    current += (axis === 'horizontal' ? p.width : p.height) + effectiveGap;
   });
 
   return updates;

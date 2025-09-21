@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
 
-import { usersService } from '@/api/endpoints/users';
 import {
   UsersSearchListParams,
   UsersUpdatePayload,
   UsersNeedTutorialListData,
-} from '@/api/types';
+} from '@/__generated__/api/client';
+import { usersService } from '@/api/endpoints/users';
 
 export const useUsers = () => {
   /**
