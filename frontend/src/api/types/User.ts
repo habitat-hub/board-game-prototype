@@ -1,3 +1,1 @@
-export interface UsersNeedTutorialData {
-  needTutorial: boolean;
-}
+export * from '@/__generated__/api/types/User';

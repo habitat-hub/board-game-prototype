@@ -51,9 +51,9 @@ add_if_changed backend/src/__generated__/swagger-schemas.ts backend/src/__genera
 
 add_if_changed backend/__generated__/swagger-output.json backend/__generated__/swagger-output.json
 
-TYPES_DIFF=$(git status --porcelain=1 frontend/src/api/types 2>/dev/null)
+TYPES_DIFF=$(git status --porcelain=1 frontend/src/__generated__/api/types 2>/dev/null)
 if [ -n "$TYPES_DIFF" ]; then
-  for file in frontend/src/api/types/*; do
+  for file in frontend/src/__generated__/api/types/*; do
     if [ -f "$file" ]; then
       git add "$file"
       echo "✨ Added $file to staging"

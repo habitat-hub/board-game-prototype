@@ -330,7 +330,7 @@ function checkApiTypes(): CheckResult {
     'generateApiTypes.ts'
   );
   const outputs = collectOutputFiles(
-    path.join(repoRoot, 'frontend', 'src', 'api', 'types'),
+    path.join(repoRoot, 'frontend', 'src', '__generated__', 'api', 'types'),
     repoRoot
   );
   const dependencyFiles = [swaggerOutputPath, generatorPath];

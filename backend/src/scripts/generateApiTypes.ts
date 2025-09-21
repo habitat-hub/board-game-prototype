@@ -21,6 +21,7 @@ const typesOutputDir: string = path.join(
   projectRootDir,
   'frontend',
   'src',
+  '__generated__',
   'api',
   'types'
 );

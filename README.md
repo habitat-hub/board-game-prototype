@@ -77,10 +77,10 @@ make help
 
 以下のファイルは自動生成されるため、直接編集しないでください：
 
-- `frontend/src/api/types/Api.ts`
-- `frontend/src/api/types/Auth.ts`
-- `frontend/src/api/types/data-contracts.ts`
-- `frontend/src/api/types/http-client.ts`
+- `frontend/src/__generated__/api/types/Api.ts`
+- `frontend/src/__generated__/api/types/Auth.ts`
+- `frontend/src/__generated__/api/types/data-contracts.ts`
+- `frontend/src/__generated__/api/types/http-client.ts`
 
 ### 型定義の更新方法
 
@@ -93,7 +93,7 @@ npm run generate-swagger
 npm run generate-api-types
 ```
 
-**注意**: これらのファイルは`.eslintignore`で除外されており、lintチェックの対象外です。
+**注意**: これらのファイルは `frontend/eslint.config.js` で除外されており、lintチェックの対象外です。
 
 ## 自動生成物の配置ポリシー
 
