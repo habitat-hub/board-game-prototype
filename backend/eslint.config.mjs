@@ -24,6 +24,11 @@ export default [
     },
   },
   {
-    ignores: ['dist/**/*', 'src/__generated__/**/*', 'src/scripts/__generated__/**/*'],
+    ignores: [
+      'dist/**/*',
+      '__generated__/**/*',
+      'src/__generated__/**/*',
+      'src/scripts/__generated__/**/*',
+    ],
   },
 ];
