@@ -44,6 +44,8 @@ make ci
 cp ./frontend/.env_example ./frontend/.env.local
 ```
 
+- Stripe Checkout を利用する場合は `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` も設定してください。
+
 ### バックエンドの環境変数設定
 
 ```zsh
@@ -52,6 +54,15 @@ cp ./backend/.env_example ./backend/.env
 
 - Google Cloud の API キーを取得して、`./backend/.env` に設定する
 - postgres の接続情報が異なる場合は、`./backend/.env` の DATABASE_URL を変更する
+- Stripe Checkout を利用する場合は以下の環境変数を設定する
+  - `STRIPE_SECRET_KEY`
+  - `STRIPE_ONE_SHORT_DONATION_JPY_100`
+  - `STRIPE_ONE_SHORT_DONATION_JPY_500`
+  - `STRIPE_ONE_SHORT_DONATION_JPY_1000`
+  - `STRIPE_ONE_SHORT_DONATION_JPY_5000`
+  - `STRIPE_ONE_SHORT_DONATION_JPY_10000`
+  - `STRIPE_SUCCESS_URL`
+  - `STRIPE_CANCEL_URL`
 
 ## 開発サーバー起動方法
 

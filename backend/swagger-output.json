@@ -1838,6 +1838,74 @@
         }
       }
     },
+    "/api/donations/checkout-session": {
+      "post": {
+        "tags": ["Donations"],
+        "summary": "Stripe Checkout セッションを作成する",
+        "description": "指定した寄付金額に対する Stripe Checkout セッションを生成します。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["amount"],
+                "properties": {
+                  "amount": {
+                    "type": "integer",
+                    "enum": [100, 500, 1000, 5000, 10000],
+                    "description": "寄付金額（円）"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Stripe Checkout セッションを作成しました。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sessionId": {
+                      "type": "string",
+                      "description": "Stripe Checkout セッションID"
+                    },
+                    "sessionUrl": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Stripe Checkout のリダイレクト URL"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "無効な寄付金額が指定されました。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Stripe Checkout セッションの生成時にエラーが発生しました。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/google": {
       "get": {
         "tags": ["Auth"],

@@ -11,6 +11,8 @@
  */
 
 import {
+  DonationsCheckoutSessionCreateData,
+  DonationsCheckoutSessionCreatePayload,
   Error400Response,
   Error401Response,
   Error404Response,
@@ -494,6 +496,29 @@ export class Api<
       path: `/api/images/${imageId}`,
       method: 'DELETE',
       query: query,
+      ...params,
+    });
+  /**
+   * @description 指定した寄付金額に対する Stripe Checkout セッションを生成します。
+   *
+   * @tags Donations
+   * @name DonationsCheckoutSessionCreate
+   * @summary Stripe Checkout セッションを作成する
+   * @request POST:/api/donations/checkout-session
+   */
+  donationsCheckoutSessionCreate = (
+    data: DonationsCheckoutSessionCreatePayload,
+    params: RequestParams = {}
+  ) =>
+    this.request<
+      DonationsCheckoutSessionCreateData,
+      Error400Response | Error500Response
+    >({
+      path: `/api/donations/checkout-session`,
+      method: 'POST',
+      body: data,
+      type: ContentType.Json,
+      format: 'json',
       ...params,
     });
 }

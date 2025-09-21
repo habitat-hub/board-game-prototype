@@ -13,6 +13,7 @@ import prototypeRoutes from './routes/prototype';
 import projectRoutes from './routes/project';
 import userRoutes from './routes/user';
 import imageRoutes from './routes/image';
+import donationRoutes from './routes/donation';
 import { errorHandler } from './middlewares/errorHandler';
 
 const app = express();
@@ -48,6 +49,7 @@ app.use('/api/prototypes', prototypeRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/images', imageRoutes);
+app.use('/api/donations', donationRoutes);
 
 app.use(errorHandler);
 

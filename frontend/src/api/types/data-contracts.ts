@@ -303,6 +303,18 @@ export interface ImagesDeleteParams {
 
 export type ImagesDeleteData = any;
 
+export interface DonationsCheckoutSessionCreatePayload {
+  /** 寄付金額（円） */
+  amount: 100 | 500 | 1000 | 5000 | 10000;
+}
+
+export interface DonationsCheckoutSessionCreateData {
+  /** Stripe Checkout セッションID */
+  sessionId?: string;
+  /** Stripe Checkout のリダイレクト URL */
+  sessionUrl?: string | null;
+}
+
 export type LogoutCreateData = SuccessResponse;
 
 export interface UserListData {
