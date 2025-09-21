@@ -22,10 +22,9 @@ export function withNeonTransactionPooler(
 
     const neonDomain = 'neon.tech';
 
-    const isNeonHost =
-      hostname === neonDomain || hostname.endsWith(`.${neonDomain}`);
-
     // Neonホストでない場合
+    const isNeonHost: boolean =
+      hostname === neonDomain || hostname.endsWith(`.${neonDomain}`);
     if (!isNeonHost) {
       return databaseUrl;
     }
