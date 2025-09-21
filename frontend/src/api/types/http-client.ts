@@ -1,1 +1,1 @@
-export * from '@/__generated__/api/types/http-client';
+export * from '@/__generated__/api/client';

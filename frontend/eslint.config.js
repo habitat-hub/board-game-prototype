@@ -23,7 +23,7 @@ const config = [
     'prettier'
   ),
   {
-    ignores: ['src/__generated__/api/types/**/*', 'next-env.d.ts'],
+    ignores: ['src/__generated__/api/client/**/*', 'next-env.d.ts'],
     plugins: {
       import: importPlugin,
     },

@@ -17,13 +17,13 @@ const swaggerOutputPath: string = path.join(
   '__generated__',
   'swagger-output.json'
 );
-const typesOutputDir: string = path.join(
+const apiClientOutputDir: string = path.join(
   projectRootDir,
   'frontend',
   'src',
   '__generated__',
   'api',
-  'types'
+  'client'
 );
 const metadataDir: string = path.join(
   backendDir,
@@ -150,7 +150,7 @@ function shouldRegenerateApiTypes(): {
   const dependencyFiles: string[] = [generatorScriptPath, swaggerOutputPath];
   const normalizedDependencies: string[] = normalizePaths(dependencyFiles);
   const outputFiles: string[] = collectOutputFiles(
-    typesOutputDir,
+    apiClientOutputDir,
     projectRootDir
   );
   const normalizedOutputs: string[] = [...outputFiles];
@@ -259,14 +259,16 @@ async function generateApiTypes(): Promise<void> {
     '-p',
     swaggerOutputPath,
     '-o',
-    typesOutputDir,
+    apiClientOutputDir,
+    '--name',
+    'index.ts',
     '--extract-request-params',
     '--extract-request-body',
     '--extract-response-body',
-    '--modular',
     '--axios',
     '--disable-strict-ssl',
     '--disable-throw-on-error',
+    '--clean-output',
   ];
 
   const cliExecutablePath: string = path.join(
@@ -298,7 +300,7 @@ async function generateApiTypes(): Promise<void> {
   }
 
   const refreshedOutputs: string[] = collectOutputFiles(
-    typesOutputDir,
+    apiClientOutputDir,
     projectRootDir
   );
   writeApiTypesMetadata(regenerationAssessment.dependencies, refreshedOutputs);

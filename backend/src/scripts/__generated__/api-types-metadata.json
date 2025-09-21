@@ -4,11 +4,6 @@
     "backend/src/scripts/generateApiTypes.ts"
   ],
   "outputs": [
-    "frontend/src/__generated__/api/types/Api.ts",
-    "frontend/src/__generated__/api/types/Auth.ts",
-    "frontend/src/__generated__/api/types/User.ts",
-    "frontend/src/__generated__/api/types/data-contracts.ts",
-    "frontend/src/__generated__/api/types/http-client.ts",
-    "frontend/src/__generated__/api/types/index.ts"
+    "frontend/src/__generated__/api/client/index.ts"
   ]
 }

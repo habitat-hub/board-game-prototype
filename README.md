@@ -77,10 +77,7 @@ make help
 
 以下のファイルは自動生成されるため、直接編集しないでください：
 
-- `frontend/src/__generated__/api/types/Api.ts`
-- `frontend/src/__generated__/api/types/Auth.ts`
-- `frontend/src/__generated__/api/types/data-contracts.ts`
-- `frontend/src/__generated__/api/types/http-client.ts`
+- `frontend/src/__generated__/api/client/index.ts`
 
 ### 型定義の更新方法
 

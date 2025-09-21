@@ -10,7 +10,7 @@ This document defines project structure, workflows, and conventions for contribu
 - Local env files prepared: `cp frontend/.env_example frontend/.env.local` and `cp backend/.env_example backend/.env`
 
 ## Project Structure & Module Organization
-- `frontend/`: Next.js + TypeScript app (`src/`, `public/`). Generated API types in `frontend/src/__generated__/api/types/` (do not edit).
+- `frontend/`: Next.js + TypeScript app (`src/`, `public/`). Generated API client bundle in `frontend/src/__generated__/api/client/index.ts` (do not edit).
 - `backend/`: Express + TypeScript server (`src/`, outputs to `dist/`). Swagger files and scripts live under `backend/src/scripts/`.
 - `docs/`: Built API docs (Redoc) output path used by backend script.
 - `scripts/`: Helper scripts (e.g., `scripts/parallel-npm-ci.sh`).
@@ -32,7 +32,7 @@ This document defines project structure, workflows, and conventions for contribu
 - TypeScript, 2-space indent, Prettier enforced (`backend/.prettierrc`, frontend Prettier script).
 - ESLint active in both apps; frontend enforces import order and path alias `@/*`.
 - Components: PascalCase (e.g., `MyComponent.tsx`); hooks/utilities: camelCase; directories: kebab-case.
-- Do not edit generated files in `frontend/src/__generated__/api/types/` (ignored by ESLint).
+- Do not edit generated files in `frontend/src/__generated__/api/client/index.ts` (ignored by ESLint).
 
 ## Testing Guidelines
 - Frontend: Jest + Testing Library (`frontend/jest.config.js`). Place specs as `*.test.ts(x)` (e.g., `src/**/__tests__/*` or alongside files). Run `npm test` in `frontend/`.

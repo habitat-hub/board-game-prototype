@@ -1,1 +1,1 @@
-export * from '@/__generated__/api/types/data-contracts';
+export * from '@/__generated__/api/client';
