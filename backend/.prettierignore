@@ -1,2 +1,2 @@
-src/swagger-schemas.ts
-
+src/__generated__/
+src/scripts/__generated__/

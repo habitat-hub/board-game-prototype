@@ -11,16 +11,20 @@ import sequelizeErd from 'sequelize-erd';
 import sequelize from '../models'; // Sequelizeインスタンスをインポート
 import { setupAssociations } from '../database/associations'; // アソシエーション設定をインポート
 
-const repoRootDir: string = path.resolve(__dirname, '..', '..', '..');
 const modelsDir = path.join(__dirname, '../models');
 const backendRootDir = path.resolve(__dirname, '..', '..');
-const erdOutputPath = path.join(backendRootDir, 'erd.svg');
+const erdOutputPath = path.join(backendRootDir, '__generated__', 'erd.svg');
 const associationsFilePath = path.join(
   __dirname,
   '../database/associations.ts'
 );
-const metadataDir = path.join(backendRootDir, 'src', 'scripts', 'metadata');
-const erdMetadataPath = path.join(metadataDir, 'erd.json');
+const metadataDir = path.join(
+  backendRootDir,
+  'src',
+  'scripts',
+  '__generated__'
+);
+const erdMetadataPath = path.join(metadataDir, 'erd-metadata.json');
 const generatorScriptPath = __filename;
 
 interface ErdMetadata {
@@ -31,7 +35,7 @@ interface ErdMetadata {
 function normalizeDependencies(filePaths: string[]): string[] {
   const normalizedPaths: string[] = filePaths
     .map((filePath: string) => {
-      return path.relative(repoRootDir, filePath).replace(/\\+/g, '/');
+      return path.relative(backendRootDir, filePath).replace(/\\+/g, '/');
     })
     .sort();
 
@@ -222,6 +226,7 @@ async function generateErd(): Promise<void> {
     color: 'blue',
   });
 
+  mkdirSync(path.dirname(erdOutputPath), { recursive: true });
   writeFileSync(erdOutputPath, svg);
   writeErdMetadata(
     regenerationAssessment.dependencies,

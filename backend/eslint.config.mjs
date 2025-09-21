@@ -24,6 +24,6 @@ export default [
     },
   },
   {
-    ignores: ['dist/**/*', 'src/swagger-schemas.ts'],
+    ignores: ['dist/**/*', 'src/__generated__/**/*', 'src/scripts/__generated__/**/*'],
   },
 ];

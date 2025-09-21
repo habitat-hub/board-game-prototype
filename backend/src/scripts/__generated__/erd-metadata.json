@@ -1,0 +1,20 @@
+{
+  "dependencies": [
+    "src/database/associations.ts",
+    "src/models/Image.ts",
+    "src/models/Part.ts",
+    "src/models/PartProperty.ts",
+    "src/models/Permission.ts",
+    "src/models/Project.ts",
+    "src/models/Prototype.ts",
+    "src/models/Role.ts",
+    "src/models/RolePermission.ts",
+    "src/models/User.ts",
+    "src/models/UserRole.ts",
+    "src/models/index.ts",
+    "src/scripts/generateErd.ts"
+  ],
+  "outputs": [
+    "__generated__/erd.svg"
+  ]
+}

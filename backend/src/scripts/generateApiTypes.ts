@@ -12,7 +12,11 @@ import { spawnSync, SpawnSyncReturns } from 'child_process';
 
 const backendDir: string = path.resolve(__dirname, '..', '..');
 const projectRootDir: string = path.resolve(backendDir, '..');
-const swaggerOutputPath: string = path.join(backendDir, 'swagger-output.json');
+const swaggerOutputPath: string = path.join(
+  backendDir,
+  '__generated__',
+  'swagger-output.json'
+);
 const typesOutputDir: string = path.join(
   projectRootDir,
   'frontend',
@@ -20,8 +24,16 @@ const typesOutputDir: string = path.join(
   'api',
   'types'
 );
-const metadataDir: string = path.join(backendDir, 'src', 'scripts', 'metadata');
-const apiTypesMetadataPath: string = path.join(metadataDir, 'api-types.json');
+const metadataDir: string = path.join(
+  backendDir,
+  'src',
+  'scripts',
+  '__generated__'
+);
+const apiTypesMetadataPath: string = path.join(
+  metadataDir,
+  'api-types-metadata.json'
+);
 const generatorScriptPath: string = __filename;
 
 interface ApiTypesMetadata {

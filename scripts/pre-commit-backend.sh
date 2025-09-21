@@ -33,23 +33,23 @@ else
   printf '✅ Backend artifacts already fresh\n'
 fi
 
-add_if_changed docs/index.html docs/index.html
+add_if_changed backend/__generated__/index.html backend/__generated__/index.html
 
-add_if_changed backend/src/scripts/metadata/redoc.json backend/src/scripts/metadata/redoc.json
+add_if_changed backend/src/scripts/__generated__/redoc-metadata.json backend/src/scripts/__generated__/redoc-metadata.json
 
-add_if_changed backend/src/scripts/metadata/swagger-schemas.json backend/src/scripts/metadata/swagger-schemas.json
+add_if_changed backend/src/scripts/__generated__/swagger-schemas-metadata.json backend/src/scripts/__generated__/swagger-schemas-metadata.json
 
-add_if_changed backend/src/scripts/metadata/swagger-output.json backend/src/scripts/metadata/swagger-output.json
+add_if_changed backend/src/scripts/__generated__/swagger-output-metadata.json backend/src/scripts/__generated__/swagger-output-metadata.json
 
-add_if_changed backend/src/scripts/metadata/erd.json backend/src/scripts/metadata/erd.json
+add_if_changed backend/src/scripts/__generated__/erd-metadata.json backend/src/scripts/__generated__/erd-metadata.json
 
-add_if_changed backend/src/scripts/metadata/api-types.json backend/src/scripts/metadata/api-types.json
+add_if_changed backend/src/scripts/__generated__/api-types-metadata.json backend/src/scripts/__generated__/api-types-metadata.json
 
-add_if_changed backend/erd.svg backend/erd.svg
+add_if_changed backend/__generated__/erd.svg backend/__generated__/erd.svg
 
-add_if_changed backend/src/swagger-schemas.ts backend/src/swagger-schemas.ts
+add_if_changed backend/src/__generated__/swagger-schemas.ts backend/src/__generated__/swagger-schemas.ts
 
-add_if_changed backend/swagger-output.json backend/swagger-output.json
+add_if_changed backend/__generated__/swagger-output.json backend/__generated__/swagger-output.json
 
 TYPES_DIFF=$(git status --porcelain=1 frontend/src/api/types 2>/dev/null)
 if [ -n "$TYPES_DIFF" ]; then

@@ -10,10 +10,23 @@ import { spawnSync, SpawnSyncReturns } from 'child_process';
 
 const backendDir: string = path.resolve(__dirname, '..', '..');
 const projectRootDir: string = path.resolve(backendDir, '..');
-const swaggerOutputPath: string = path.join(backendDir, 'swagger-output.json');
-const docsOutputPath: string = path.join(projectRootDir, 'docs', 'index.html');
-const metadataDir: string = path.join(backendDir, 'src', 'scripts', 'metadata');
-const redocMetadataPath: string = path.join(metadataDir, 'redoc.json');
+const swaggerOutputPath: string = path.join(
+  backendDir,
+  '__generated__',
+  'swagger-output.json'
+);
+const docsOutputPath: string = path.join(
+  backendDir,
+  '__generated__',
+  'index.html'
+);
+const metadataDir: string = path.join(
+  backendDir,
+  'src',
+  'scripts',
+  '__generated__'
+);
+const redocMetadataPath: string = path.join(metadataDir, 'redoc-metadata.json');
 const generatorScriptPath: string = __filename;
 
 interface RedocMetadata {
@@ -166,6 +179,8 @@ async function generateDocs(): Promise<void> {
     '.bin',
     process.platform === 'win32' ? 'redocly.cmd' : 'redocly'
   );
+
+  mkdirSync(path.dirname(docsOutputPath), { recursive: true });
 
   const result: SpawnSyncReturns<Buffer> = spawnSync(
     redocCliPath,

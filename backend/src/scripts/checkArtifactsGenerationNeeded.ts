@@ -18,7 +18,7 @@ const metadataDir: string = path.join(
   backendRoot,
   'src',
   'scripts',
-  'metadata'
+  '__generated__'
 );
 
 function readJson(filePath: string): Metadata | null {
@@ -145,8 +145,8 @@ function collectRouteFiles(directory: string): string[] {
 }
 
 function checkErd(): CheckResult {
-  const metadataPath = path.join(metadataDir, 'erd.json');
-  const erdOutputPath = path.join(backendRoot, 'erd.svg');
+  const metadataPath = path.join(metadataDir, 'erd-metadata.json');
+  const erdOutputPath = path.join(backendRoot, '__generated__', 'erd.svg');
   const modelsDir = path.join(backendRoot, 'src', 'models');
   const generatorPath = path.join(
     backendRoot,
@@ -199,7 +199,7 @@ function checkErd(): CheckResult {
 }
 
 function checkSwaggerSchemas(): CheckResult {
-  const metadataPath = path.join(metadataDir, 'swagger-schemas.json');
+  const metadataPath = path.join(metadataDir, 'swagger-schemas-metadata.json');
   const metadata = readJson(metadataPath);
   const scriptPath = path.join(
     backendRoot,
@@ -217,7 +217,12 @@ function checkSwaggerSchemas(): CheckResult {
 
   const dependencyFiles = [scriptPath, ...modelFiles];
   const normalizedDependencies = normalizePaths(dependencyFiles, backendRoot);
-  const outputPath = path.join(backendRoot, 'src', 'swagger-schemas.ts');
+  const outputPath = path.join(
+    backendRoot,
+    'src',
+    '__generated__',
+    'swagger-schemas.ts'
+  );
   const normalizedOutputs = normalizePaths([outputPath], backendRoot);
 
   if (!fs.existsSync(outputPath)) {
@@ -250,7 +255,7 @@ function checkSwaggerSchemas(): CheckResult {
 }
 
 function checkSwaggerOutput(): CheckResult {
-  const metadataPath = path.join(metadataDir, 'swagger-output.json');
+  const metadataPath = path.join(metadataDir, 'swagger-output-metadata.json');
   const metadata = readJson(metadataPath);
   const generatorPath = path.join(
     backendRoot,
@@ -261,6 +266,7 @@ function checkSwaggerOutput(): CheckResult {
   const swaggerSchemasPath = path.join(
     backendRoot,
     'src',
+    '__generated__',
     'swagger-schemas.ts'
   );
   const routes = collectRouteFiles(path.join(backendRoot, 'src', 'routes'));
@@ -277,7 +283,11 @@ function checkSwaggerOutput(): CheckResult {
     ...routes,
   ];
   const normalizedDependencies = normalizePaths(dependencyFiles, backendRoot);
-  const outputPath = path.join(backendRoot, 'swagger-output.json');
+  const outputPath = path.join(
+    backendRoot,
+    '__generated__',
+    'swagger-output.json'
+  );
   const normalizedOutputs = normalizePaths([outputPath], backendRoot);
 
   if (!fs.existsSync(outputPath)) {
@@ -306,9 +316,13 @@ function checkSwaggerOutput(): CheckResult {
 }
 
 function checkApiTypes(): CheckResult {
-  const metadataPath = path.join(metadataDir, 'api-types.json');
+  const metadataPath = path.join(metadataDir, 'api-types-metadata.json');
   const metadata = readJson(metadataPath);
-  const swaggerOutputPath = path.join(backendRoot, 'swagger-output.json');
+  const swaggerOutputPath = path.join(
+    backendRoot,
+    '__generated__',
+    'swagger-output.json'
+  );
   const generatorPath = path.join(
     backendRoot,
     'src',
@@ -354,10 +368,14 @@ function checkApiTypes(): CheckResult {
 }
 
 function checkDocs(): CheckResult {
-  const metadataPath = path.join(metadataDir, 'redoc.json');
+  const metadataPath = path.join(metadataDir, 'redoc-metadata.json');
   const metadata = readJson(metadataPath);
-  const swaggerOutputPath = path.join(backendRoot, 'swagger-output.json');
-  const docsOutputPath = path.join(repoRoot, 'docs', 'index.html');
+  const swaggerOutputPath = path.join(
+    backendRoot,
+    '__generated__',
+    'swagger-output.json'
+  );
+  const docsOutputPath = path.join(backendRoot, '__generated__', 'index.html');
   const generatorPath = path.join(
     backendRoot,
     'src',
