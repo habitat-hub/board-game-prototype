@@ -12,7 +12,12 @@ export function withNeonTransactionPooler(
     const parsedUrl = new URL(databaseUrl);
     const hostname = parsedUrl.hostname.toLowerCase();
 
-    if (!hostname.endsWith('neon.tech')) {
+    const neonDomain = 'neon.tech';
+
+    const isNeonHost =
+      hostname === neonDomain || hostname.endsWith(`.${neonDomain}`);
+
+    if (!isNeonHost) {
       return databaseUrl;
     }
 
