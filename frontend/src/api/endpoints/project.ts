@@ -10,8 +10,7 @@ import {
   ProjectsVersionsCreatePayload,
   ProjectsVersionsCreateData,
 } from '@/__generated__/api/client';
-
-import axiosInstance from '../client';
+import axiosInstance from '@/api/client';
 
 export const projectService = {
   /**
