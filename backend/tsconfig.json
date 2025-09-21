@@ -13,5 +13,5 @@
     "types": ["node"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "__generated__"]
+  "exclude": ["node_modules", "dist", "**/__generated__/**"]
 }
