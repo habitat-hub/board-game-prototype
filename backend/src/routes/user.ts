@@ -180,6 +180,9 @@ router.put(
  *               properties:
  *                 needTutorial:
  *                   type: boolean
+ *                   description: チュートリアルを表示すべきかどうか
+ *               required:
+ *                 - needTutorial
  *       '401':
  *         description: アクセス権がありません
  *       '500':

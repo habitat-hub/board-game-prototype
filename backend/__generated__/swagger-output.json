@@ -553,9 +553,11 @@
                   "type": "object",
                   "properties": {
                     "needTutorial": {
-                      "type": "boolean"
+                      "type": "boolean",
+                      "description": "チュートリアルを表示すべきかどうか"
                     }
-                  }
+                  },
+                  "required": ["needTutorial"]
                 }
               }
             }

@@ -7,8 +7,8 @@ import React, {
   useMemo,
 } from 'react';
 
+import { Part, PartProperty } from '@/__generated__/api/client';
 import { useImages } from '@/api/hooks/useImages';
-import { Part, PartProperty } from '@/api/types';
 import { PERMISSION_ACTIONS, RoleType } from '@/constants/roles';
 import { ProjectContextMenu } from '@/features/prototype/components/atoms/ProjectContextMenu';
 import SelectionModeToggleButton from '@/features/prototype/components/atoms/SelectionModeToggleButton';

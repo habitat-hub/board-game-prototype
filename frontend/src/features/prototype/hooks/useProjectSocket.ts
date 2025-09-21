@@ -3,7 +3,7 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 
-import { Prototype } from '@/api/types';
+import { Prototype } from '@/__generated__/api/client';
 import { PROJECT_SOCKET_EVENT } from '@/features/prototype/constants/socket';
 import { useSocket } from '@/features/prototype/contexts/SocketContext';
 import { ConnectedUser } from '@/features/prototype/types/livePrototypeInformation';

@@ -5,7 +5,7 @@ import type Konva from 'konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
 import { useCallback, useRef, useState, useEffect, RefObject } from 'react';
 
-import { Part } from '@/api/types';
+import { Part } from '@/__generated__/api/client';
 import { isRectOverlap } from '@/features/prototype/utils/overlap';
 import { getUIPreference, setUIPreference } from '@/utils/uiPreferences';
 

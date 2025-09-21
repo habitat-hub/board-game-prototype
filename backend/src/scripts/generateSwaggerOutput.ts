@@ -18,6 +18,7 @@ const ROUTES_DIR: string = path.join(BACKEND_ROOT_DIR, 'src', 'routes');
 // 生成する Swagger 出力ファイルのパス
 const SWAGGER_OUTPUT_PATH: string = path.join(
   BACKEND_ROOT_DIR,
+  '__generated__',
   'swagger-output.json'
 );
 // Swagger メタデータの保存先ディレクトリ
@@ -25,17 +26,18 @@ const METADATA_DIR: string = path.join(
   BACKEND_ROOT_DIR,
   'src',
   'scripts',
-  'metadata'
+  '__generated__'
 );
 // Swagger 出力の依存関係メタデータのパス
 const SWAGGER_METADATA_PATH: string = path.join(
   METADATA_DIR,
-  'swagger-output.json'
+  'swagger-output-metadata.json'
 );
 // Swagger スキーマ定義ファイルのパス
 const SWAGGER_SCHEMAS_PATH: string = path.join(
   BACKEND_ROOT_DIR,
   'src',
+  '__generated__',
   'swagger-schemas.ts'
 );
 // Swagger オプション定義ファイルのパス
@@ -152,6 +154,10 @@ function collectRouteFiles(directory: string): string[] {
 
     // TypeScript ファイル以外は対象外とする
     if (!entry.name.endsWith('.ts')) {
+      return [];
+    }
+
+    if (/\.(test|spec)\.ts$/u.test(entry.name)) {
       return [];
     }
 
@@ -304,6 +310,7 @@ async function generateSwaggerOutput(): Promise<void> {
   }
 
   const swaggerSpec = swaggerJsdoc(buildSwaggerOptions());
+  mkdirSync(path.dirname(SWAGGER_OUTPUT_PATH), { recursive: true });
   writeFileSync(SWAGGER_OUTPUT_PATH, JSON.stringify(swaggerSpec, null, 2));
   writeMetadata(
     regenerationAssessment.dependencies,

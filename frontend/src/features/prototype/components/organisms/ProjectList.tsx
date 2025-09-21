@@ -7,9 +7,9 @@ import { FaPlus, FaTable, FaTh } from 'react-icons/fa';
 import { IoReload } from 'react-icons/io5';
 import { RiLoaderLine } from 'react-icons/ri';
 
+import { Prototype, Project } from '@/__generated__/api/client';
 import { useProject } from '@/api/hooks/useProject';
 import { usePrototypes } from '@/api/hooks/usePrototypes';
-import { Prototype, Project } from '@/api/types';
 import KibakoButton from '@/components/atoms/KibakoButton';
 import KibakoToggle from '@/components/atoms/KibakoToggle';
 import SortDropdown, {

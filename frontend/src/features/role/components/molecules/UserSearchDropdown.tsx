@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaSearch, FaUser, FaTimes } from 'react-icons/fa';
 
-import { User } from '@/api/types';
+import { User } from '@/__generated__/api/client';
 
 import UserAvatar from '../atoms/UserAvatar';
 

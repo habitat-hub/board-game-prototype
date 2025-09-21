@@ -1,0 +1,9 @@
+{
+  "dependencies": [
+    "backend/__generated__/swagger-output.json",
+    "backend/src/scripts/generateApiTypes.ts"
+  ],
+  "outputs": [
+    "frontend/src/__generated__/api/client/index.ts"
+  ]
+}

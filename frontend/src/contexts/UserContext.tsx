@@ -3,8 +3,8 @@
 import { useRouter } from 'next/navigation';
 import React, { ReactNode, useState, useEffect, createContext } from 'react';
 
+import { UserListData } from '@/__generated__/api/client';
 import { useAuth } from '@/api/hooks/useAuth';
-import { UserListData } from '@/api/types';
 
 // ユーザー情報コンテキスト型
 interface UserContextType {

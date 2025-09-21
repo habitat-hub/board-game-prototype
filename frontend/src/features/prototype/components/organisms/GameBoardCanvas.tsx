@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import type { CSSProperties } from 'react';
 import { Stage, Layer, Group, Rect } from 'react-konva';
 
-import { Part, PartProperty } from '@/api/types';
+import { Part, PartProperty } from '@/__generated__/api/client';
 import GridLines from '@/features/prototype/components/atoms/GridLines';
 import SelectionRect from '@/features/prototype/components/atoms/SelectionRect';
 import PartOnGameBoard from '@/features/prototype/components/molecules/PartOnGameBoard';
