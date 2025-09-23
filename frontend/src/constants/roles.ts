@@ -13,6 +13,14 @@ export const ROLE_TYPE = {
   VIEWER: 'viewer',
 } as const;
 
+export type RoleType = (typeof ROLE_TYPE)[keyof typeof ROLE_TYPE];
+
+export const ROLE_LABELS: Record<RoleType, string> = {
+  admin: '管理者',
+  editor: '編集者',
+  viewer: '閲覧者',
+};
+
 /**
  * 権限アクションの定義
  * バックエンドの `backend/src/const.ts` の `PERMISSION_ACTIONS` と同期
@@ -34,8 +42,6 @@ export const RESOURCE_TYPES = {
   USER: 'user',
 } as const;
 
-// 型定義
-export type RoleType = (typeof ROLE_TYPE)[keyof typeof ROLE_TYPE];
 export type PermissionAction =
   (typeof PERMISSION_ACTIONS)[keyof typeof PERMISSION_ACTIONS];
 export type ResourceType = (typeof RESOURCE_TYPES)[keyof typeof RESOURCE_TYPES];

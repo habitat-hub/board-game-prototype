@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { vi } from 'vitest';
 
+import { ROLE_LABELS } from '@/constants/roles';
+
 import UserRoleTable from '../UserRoleTable';
 
 // Mock useUser to control current user in each test
@@ -125,7 +127,7 @@ describe('UserRoleTable - role change disabled states', () => {
   it('disables RoleSelect when cannot manage role', async () => {
     setup({ canManageRole: false });
     const btn = screen.getByRole('button', {
-      name: '権限を設定できるのはAdminユーザーのみです',
+      name: '権限を設定できるのは管理者権限を持つユーザーのみです',
     });
     expect(btn).toBeDisabled();
   });
@@ -153,7 +155,9 @@ describe('UserRoleTable - role change disabled states', () => {
     await userEvent.click(btn);
 
     // Select a different role from the options menu
-    const adminOption = await screen.findByRole('option', { name: /Admin/i });
+    const adminOption = await screen.findByRole('option', {
+      name: ROLE_LABELS.admin,
+    });
     await userEvent.click(adminOption);
 
     expect(onRoleChange).toHaveBeenCalledWith('user-1', 'admin');
@@ -193,12 +197,10 @@ describe('UserRoleTable - remove button states and reasons', () => {
       <UserRoleTable
         userRoles={[userRole]}
         creator={null}
-        canRemoveUserRole={vi
-          .fn()
-          .mockReturnValue({
-            canRemove: false,
-            reason: '最後のAdminは削除できません',
-          })}
+        canRemoveUserRole={vi.fn().mockReturnValue({
+          canRemove: false,
+          reason: '最後の管理者の権限は削除できません',
+        })}
         onRoleChange={vi.fn()}
         onRemove={onRemove}
         loading={false}
@@ -207,7 +209,7 @@ describe('UserRoleTable - remove button states and reasons', () => {
     );
 
     const btn = screen.getByRole('button', {
-      name: '最後のAdminは削除できません',
+      name: '最後の管理者の権限は削除できません',
     });
     expect(btn).toBeDisabled();
     await userEvent.click(btn);
@@ -266,7 +268,7 @@ describe('UserRoleTable - remove button states and reasons', () => {
 });
 
 describe('UserRoleTable - roles fallback', () => {
-  it('shows Viewer when roles array is empty', () => {
+  it('shows 閲覧者 when roles array is empty', () => {
     const userRoleNoRoles = {
       userId: 'user-3',
       user: makeUser('user-3', 'user3'),
@@ -287,7 +289,7 @@ describe('UserRoleTable - roles fallback', () => {
       />
     );
 
-    // RoleSelect current label for default role should be Viewer
-    expect(screen.getByText('Viewer')).toBeInTheDocument();
+    // RoleSelect current label for default role should be the viewer label
+    expect(screen.getByText(ROLE_LABELS.viewer)).toBeInTheDocument();
   });
 });

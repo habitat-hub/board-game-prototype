@@ -19,7 +19,7 @@ import { can } from '@/utils/permissions';
 
 /**
  * プロトタイプ削除確認画面コンポーネント。
- * 対象プロジェクト / プロトタイプ情報を取得し、Adminのみ削除操作を実行できます。
+ * 対象プロジェクト / プロトタイプ情報を取得し、管理者のみ削除操作を実行できます。
  * 未ログイン時はログインページへリダイレクトします。
  *
  * @returns JSX.Element 削除確認画面
@@ -221,7 +221,7 @@ const DeletePrototypeConfirmation = (): ReactElement => {
             variant="danger"
             onClick={handleDelete}
             disabled={!canDelete || isDeleting}
-            title={!canDelete ? 'Admin権限が必要です' : undefined}
+            title={!canDelete ? '管理者権限が必要です' : undefined}
           >
             {isDeleting ? (
               <>
@@ -238,7 +238,7 @@ const DeletePrototypeConfirmation = (): ReactElement => {
         </div>
         {!canDelete && (
           <p className="text-kibako-primary/70 text-sm mt-4">
-            プロジェクトを削除するにはAdmin権限が必要です。
+            プロジェクトを削除するには管理者権限が必要です。
           </p>
         )}
       </div>
