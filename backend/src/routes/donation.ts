@@ -144,9 +144,16 @@ router.post(
       }
 
       const donationAmount: number = parsedAmount;
-      const sessionIdForIdempotency: string =
-        (req as Request & { sessionID?: string }).sessionID ?? 'anon';
-      const idempotencyKey: string = `${sessionIdForIdempotency}:donation:${donationAmount}`;
+      const headerKey: string | undefined = req.get('Idempotency-Key')?.trim();
+      const sessionKey: string | undefined = (
+        req as Request & {
+          sessionID?: string;
+        }
+      ).sessionID;
+      const baseKey: string | undefined = headerKey || sessionKey;
+      const idempotencyKey: string | undefined = baseKey
+        ? `${baseKey}:donation:${donationAmount}`
+        : undefined;
 
       const session = await stripeClient.checkout.sessions.create(
         {
@@ -163,7 +170,7 @@ router.post(
             donation_amount_jpy: String(donationAmount),
           },
         },
-        { idempotencyKey }
+        idempotencyKey ? { idempotencyKey } : undefined
       );
 
       if (!session.url) {

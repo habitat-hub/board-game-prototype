@@ -79,7 +79,7 @@ describe('donation routes', () => {
           donation_amount_jpy: '500',
         },
       },
-      { idempotencyKey: 'anon:donation:500' }
+      undefined
     );
     expect(res.body).toEqual({
       sessionId: 'cs_test_123',
