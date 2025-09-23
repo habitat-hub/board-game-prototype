@@ -41,11 +41,11 @@ const strictSchema = baseSchema.extend({
   STRIPE_APP_NAME: z.string().min(1).optional(),
   STRIPE_DONATION_SUCCESS_URL: z.string().url(),
   STRIPE_DONATION_CANCEL_URL: z.string().url(),
-  STRIPE_ONE_SHORT_DONATION_JPY_100: z.string().min(1),
-  STRIPE_ONE_SHORT_DONATION_JPY_500: z.string().min(1),
-  STRIPE_ONE_SHORT_DONATION_JPY_1000: z.string().min(1),
-  STRIPE_ONE_SHORT_DONATION_JPY_5000: z.string().min(1),
-  STRIPE_ONE_SHORT_DONATION_JPY_10000: z.string().min(1),
+  STRIPE_ONE_SHORT_DONATION_JPY_100_PRICE_ID: z.string().min(1),
+  STRIPE_ONE_SHORT_DONATION_JPY_500_PRICE_ID: z.string().min(1),
+  STRIPE_ONE_SHORT_DONATION_JPY_1000_PRICE_ID: z.string().min(1),
+  STRIPE_ONE_SHORT_DONATION_JPY_5000_PRICE_ID: z.string().min(1),
+  STRIPE_ONE_SHORT_DONATION_JPY_10000_PRICE_ID: z.string().min(1),
 });
 
 // Relaxed schema (test): provide safe defaults to avoid failing on import
@@ -77,11 +77,19 @@ const relaxedSchema = baseSchema.extend({
     .string()
     .url()
     .default('http://localhost:3000/donations/cancel'),
-  STRIPE_ONE_SHORT_DONATION_JPY_100: z.string().default('price_test_jpy_100'),
-  STRIPE_ONE_SHORT_DONATION_JPY_500: z.string().default('price_test_jpy_500'),
-  STRIPE_ONE_SHORT_DONATION_JPY_1000: z.string().default('price_test_jpy_1000'),
-  STRIPE_ONE_SHORT_DONATION_JPY_5000: z.string().default('price_test_jpy_5000'),
-  STRIPE_ONE_SHORT_DONATION_JPY_10000: z
+  STRIPE_ONE_SHORT_DONATION_JPY_100_PRICE_ID: z
+    .string()
+    .default('price_test_jpy_100'),
+  STRIPE_ONE_SHORT_DONATION_JPY_500_PRICE_ID: z
+    .string()
+    .default('price_test_jpy_500'),
+  STRIPE_ONE_SHORT_DONATION_JPY_1000_PRICE_ID: z
+    .string()
+    .default('price_test_jpy_1000'),
+  STRIPE_ONE_SHORT_DONATION_JPY_5000_PRICE_ID: z
+    .string()
+    .default('price_test_jpy_5000'),
+  STRIPE_ONE_SHORT_DONATION_JPY_10000_PRICE_ID: z
     .string()
     .default('price_test_jpy_10000'),
 });

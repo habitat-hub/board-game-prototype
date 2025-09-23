@@ -20,11 +20,11 @@ describe('env config missing variables', () => {
       'http://localhost:3000/donations/success';
     process.env.STRIPE_DONATION_CANCEL_URL =
       'http://localhost:3000/donations/cancel';
-    process.env.STRIPE_ONE_SHORT_DONATION_JPY_100 = 'price_100';
-    process.env.STRIPE_ONE_SHORT_DONATION_JPY_500 = 'price_500';
-    process.env.STRIPE_ONE_SHORT_DONATION_JPY_1000 = 'price_1000';
-    process.env.STRIPE_ONE_SHORT_DONATION_JPY_5000 = 'price_5000';
-    process.env.STRIPE_ONE_SHORT_DONATION_JPY_10000 = 'price_10000';
+    process.env.STRIPE_ONE_SHORT_DONATION_JPY_100_PRICE_ID = 'price_100';
+    process.env.STRIPE_ONE_SHORT_DONATION_JPY_500_PRICE_ID = 'price_500';
+    process.env.STRIPE_ONE_SHORT_DONATION_JPY_1000_PRICE_ID = 'price_1000';
+    process.env.STRIPE_ONE_SHORT_DONATION_JPY_5000_PRICE_ID = 'price_5000';
+    process.env.STRIPE_ONE_SHORT_DONATION_JPY_10000_PRICE_ID = 'price_10000';
   });
 
   it('throws when a required env var is missing', async () => {
