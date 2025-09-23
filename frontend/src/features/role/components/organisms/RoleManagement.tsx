@@ -136,7 +136,7 @@ const RoleManagement: React.FC = () => {
             </p>
             {!isCurrentUserAdmin && (
               <p className="text-kibako-primary/70">
-                権限を設定できるのはAdminユーザーのみです
+                権限を設定できるのは管理者権限を持つユーザーのみです
               </p>
             )}
 

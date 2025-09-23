@@ -15,7 +15,8 @@ export const getRoleDropdownTitle = ({
 }): string => {
   if (isCreator) return 'プロジェクト作成者の権限は変更できません';
   if (isSelf) return '自分の権限は変更できません';
-  if (!canManageRole) return '権限を設定できるのはAdminユーザーのみです';
+  if (!canManageRole)
+    return '権限を設定できるのは管理者権限を持つユーザーのみです';
   if (loading) return '処理中...';
   return '権限を変更';
 };
@@ -36,4 +37,3 @@ export const getRemoveButtonTitle = ({
   if (canRemove) return '権限を削除';
   return removeReason;
 };
-
