@@ -64,20 +64,23 @@ describe('donation routes', () => {
       .send({ amount: 500 });
 
     expect(res.status).toBe(201);
-    expect(createCheckoutSessionMock).toHaveBeenCalledWith({
-      mode: 'payment',
-      line_items: [
-        {
-          price: 'price_test_jpy_500',
-          quantity: 1,
+    expect(createCheckoutSessionMock).toHaveBeenCalledWith(
+      {
+        mode: 'payment',
+        line_items: [
+          {
+            price: 'price_test_jpy_500',
+            quantity: 1,
+          },
+        ],
+        success_url: 'http://localhost:3000/donations/success',
+        cancel_url: 'http://localhost:3000/donations/cancel',
+        metadata: {
+          donation_amount_jpy: '500',
         },
-      ],
-      success_url: 'http://localhost:3000/donations/success',
-      cancel_url: 'http://localhost:3000/donations/cancel',
-      metadata: {
-        donation_amount_jpy: '500',
       },
-    });
+      { idempotencyKey: 'anon:donation:500' }
+    );
     expect(res.body).toEqual({
       sessionId: 'cs_test_123',
       url: 'https://checkout.stripe.com/test-session',
