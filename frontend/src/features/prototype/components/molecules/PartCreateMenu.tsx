@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import type { ReactElement } from 'react';
+import { FaPuzzlePiece, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
 import { Part, PartProperty } from '@/__generated__/api/client';
 import PartTypeIcon from '@/features/prototype/components/atoms/PartTypeIcon';
@@ -38,6 +39,7 @@ export default function PartCreateMenu({
   const [creatingPartType, setCreatingPartType] = useState<Part['type'] | null>(
     null
   );
+  const [isOpen, setIsOpen] = useState(true);
 
   const partDescriptions = PARTS_INFO.reduce<
     Partial<Record<Part['type'], string>>
@@ -235,53 +237,85 @@ export default function PartCreateMenu({
     },
   ];
 
+  const toggleMenu = (): void => {
+    setIsOpen((prev) => !prev);
+  };
+
   return (
     <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-dropdown flex items-center justify-center">
       {/* パーツ作成メニュー */}
-      <div className="rounded-xl bg-kibako-white shadow-lg border border-kibako-secondary/30 p-3 flex flex-col items-center min-w-[140px]">
-        <div className="flex items-center gap-2">
-          {partTypes.map((partType) => (
-            <button
-              key={partType.type}
-              onClick={() => handleCreatePart(partType.type)}
-              disabled={creatingPartType !== null}
-              className={`group relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-kibako-secondary to-kibako-primary rounded-lg transition-all duration-200 ${
-                creatingPartType !== null
-                  ? 'opacity-50 cursor-not-allowed scale-95'
-                  : 'hover:from-kibako-primary hover:to-kibako-primary hover:scale-105 hover:shadow-md'
-              }`}
-              aria-label={`${partType.name}を作成${
-                partType.description ? `: ${partType.description}` : ''
-              }`}
-            >
-              {creatingPartType === partType.type ? (
-                <div className="w-5 h-5 border-2 border-kibako-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <PartTypeIcon
-                  type={partType.type}
-                  className="h-5 w-5 text-kibako-white"
-                  ariaHidden
-                />
-              )}
-              <div className="pointer-events-none absolute bottom-full left-1/2 mb-2 flex -translate-x-1/2 translate-y-1 flex-col items-center opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
-                <div className="min-w-[12rem] max-w-[20rem] rounded-md bg-kibako-primary/95 px-3 py-2 text-left text-xs leading-snug text-kibako-white shadow-[0_6px_18px_rgba(0,0,0,0.18)] ring-1 ring-kibako-black/10">
-                  {creatingPartType === partType.type ? (
-                    '作成中...'
-                  ) : (
-                    <>
-                      <span className="block text-[0.7rem] font-semibold text-kibako-white/90">
-                        {partType.name}
-                      </span>
-                      <span className="mt-1 block whitespace-pre-line">
-                        {partType.description || '説明が設定されていません。'}
-                      </span>
-                    </>
-                  )}
+      <div className="rounded-xl bg-kibako-white shadow-lg border border-kibako-secondary/30 p-3 flex flex-col items-stretch w-[220px]">
+        <button
+          type="button"
+          onClick={toggleMenu}
+          className="flex items-center justify-between gap-3 text-kibako-primary hover:text-kibako-primary/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-kibako-primary/40 rounded"
+          aria-expanded={isOpen}
+          aria-controls="part-create-menu-content"
+        >
+          <span className="flex items-center gap-2">
+            <FaPuzzlePiece className="h-4 w-4" aria-hidden />
+            <span className="text-xs font-semibold tracking-wide">
+              パーツ作成メニュー
+            </span>
+          </span>
+          {isOpen ? (
+            <FaChevronUp className="h-3 w-3" aria-hidden />
+          ) : (
+            <FaChevronDown className="h-3 w-3" aria-hidden />
+          )}
+        </button>
+        <div
+          id="part-create-menu-content"
+          className={`flex items-center gap-2 transition-all duration-300 ${
+            isOpen
+              ? 'mt-3 opacity-100'
+              : 'mt-0 max-h-0 overflow-hidden opacity-0'
+          }`}
+          aria-hidden={!isOpen}
+        >
+          {isOpen &&
+            partTypes.map((partType) => (
+              <button
+                key={partType.type}
+                onClick={() => handleCreatePart(partType.type)}
+                disabled={creatingPartType !== null}
+                className={`group relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-kibako-secondary to-kibako-primary rounded-lg transition-all duration-200 ${
+                  creatingPartType !== null
+                    ? 'opacity-50 cursor-not-allowed scale-95'
+                    : 'hover:from-kibako-primary hover:to-kibako-primary hover:scale-105 hover:shadow-md'
+                }`}
+                aria-label={`${partType.name}を作成${
+                  partType.description ? `: ${partType.description}` : ''
+                }`}
+              >
+                {creatingPartType === partType.type ? (
+                  <div className="w-5 h-5 border-2 border-kibako-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <PartTypeIcon
+                    type={partType.type}
+                    className="h-5 w-5 text-kibako-white"
+                    ariaHidden
+                  />
+                )}
+                <div className="pointer-events-none absolute bottom-full left-1/2 mb-2 flex -translate-x-1/2 translate-y-1 flex-col items-center opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
+                  <div className="min-w-[12rem] max-w-[20rem] rounded-md bg-kibako-primary/95 px-3 py-2 text-left text-xs leading-snug text-kibako-white shadow-[0_6px_18px_rgba(0,0,0,0.18)] ring-1 ring-kibako-black/10">
+                    {creatingPartType === partType.type ? (
+                      '作成中...'
+                    ) : (
+                      <>
+                        <span className="block text-[0.7rem] font-semibold text-kibako-white/90">
+                          {partType.name}
+                        </span>
+                        <span className="mt-1 block whitespace-pre-line">
+                          {partType.description || '説明が設定されていません。'}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <span className="mt-[-2px] h-3 w-3 rotate-45 bg-kibako-primary/95 opacity-90" />
                 </div>
-                <span className="mt-[-2px] h-3 w-3 rotate-45 bg-kibako-primary/95 opacity-90" />
-              </div>
-            </button>
-          ))}
+              </button>
+            ))}
         </div>
       </div>
     </div>
