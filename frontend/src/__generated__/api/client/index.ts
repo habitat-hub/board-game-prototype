@@ -304,6 +304,48 @@ export interface ImagesDeleteParams {
 
 export type ImagesDeleteData = any;
 
+export interface DonationsOptionsListData {
+  /**
+   * 寄付に使用する通貨
+   * @example "jpy"
+   */
+  currency?: string;
+  options?: {
+    /**
+     * 利用可能な寄付金額（JPY）
+     * @example 500
+     */
+    amount?: number;
+    /**
+     * Stripe Price ID
+     * @example "price_test_jpy_500"
+     */
+    priceId?: string;
+  }[];
+}
+
+export interface DonationsCheckoutSessionCreatePayload {
+  /**
+   * 寄付金額（JPY）
+   * @example 500
+   */
+  amount: number;
+}
+
+export interface DonationsCheckoutSessionCreateData {
+  /**
+   * Stripe CheckoutセッションID
+   * @example "cs_test_123"
+   */
+  sessionId?: string;
+  /**
+   * Stripe CheckoutセッションURL
+   * @format uri
+   * @example "https://checkout.stripe.com/test-session"
+   */
+  url?: string;
+}
+
 export type LogoutCreateData = SuccessResponse;
 
 export interface UserListData {
@@ -969,6 +1011,46 @@ export class Api<
         path: `/api/images/${imageId}`,
         method: 'DELETE',
         query: query,
+        ...params,
+      }),
+
+    /**
+     * @description Stripeで利用可能な寄付金額と対応するPrice IDを取得します。
+     *
+     * @tags Donations
+     * @name DonationsOptionsList
+     * @summary 寄付オプション一覧の取得
+     * @request GET:/api/donations/options
+     */
+    donationsOptionsList: (params: RequestParams = {}) =>
+      this.request<DonationsOptionsListData, Error500Response>({
+        path: `/api/donations/options`,
+        method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description 選択された寄付金額でStripe Checkoutセッションを作成します。
+     *
+     * @tags Donations
+     * @name DonationsCheckoutSessionCreate
+     * @summary 寄付用Stripe Checkoutセッションの作成
+     * @request POST:/api/donations/checkout-session
+     */
+    donationsCheckoutSessionCreate: (
+      data: DonationsCheckoutSessionCreatePayload,
+      params: RequestParams = {}
+    ) =>
+      this.request<
+        DonationsCheckoutSessionCreateData,
+        Error400Response | Error500Response
+      >({
+        path: `/api/donations/checkout-session`,
+        method: 'POST',
+        body: data,
+        type: ContentType.Json,
+        format: 'json',
         ...params,
       }),
   };
