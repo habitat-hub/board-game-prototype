@@ -91,7 +91,7 @@ describe('donation routes', () => {
 
     expect(res.status).toBe(400);
     expect(res.body).toEqual({
-      error: 'Invalid donation amount selected.',
+      error: '不正な寄付金額が選択されました。',
     });
     expect(createCheckoutSessionMock).not.toHaveBeenCalled();
   });

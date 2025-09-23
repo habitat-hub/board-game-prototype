@@ -38,7 +38,7 @@ router.post(
         !Number.isInteger(parsedAmount) ||
         !(parsedAmount in DONATION_PRICE_ID_MAP)
       ) {
-        throw new ValidationError('Invalid donation amount selected.');
+        throw new ValidationError('不正な寄付金額が選択されました。');
       }
 
       const donationAmount = parsedAmount;
