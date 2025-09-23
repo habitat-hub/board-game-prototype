@@ -37,6 +37,8 @@ const strictSchema = baseSchema.extend({
   AWS_SECRET_ACCESS_KEY: z.string().min(1),
   AWS_S3_BUCKET_NAME: z.string().min(1),
   STRIPE_SECRET_KEY: z.string().min(1),
+  STRIPE_API_VERSION: z.string().min(1).optional(),
+  STRIPE_APP_NAME: z.string().min(1).optional(),
   STRIPE_DONATION_SUCCESS_URL: z.string().url(),
   STRIPE_DONATION_CANCEL_URL: z.string().url(),
   STRIPE_ONE_SHORT_DONATION_JPY_100: z.string().min(1),
@@ -65,6 +67,8 @@ const relaxedSchema = baseSchema.extend({
   AWS_SECRET_ACCESS_KEY: z.string().default('test'),
   AWS_S3_BUCKET_NAME: z.string().default('test-bucket'),
   STRIPE_SECRET_KEY: z.string().default('sk_test_dummy'),
+  STRIPE_API_VERSION: z.string().default('2024-06-20'),
+  STRIPE_APP_NAME: z.string().default('Board Game Prototype Backend'),
   STRIPE_DONATION_SUCCESS_URL: z
     .string()
     .url()
