@@ -1,5 +1,6 @@
 import path from 'path';
 import {
+  copyFileSync,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -10,10 +11,25 @@ import { spawnSync, SpawnSyncReturns } from 'child_process';
 
 const backendDir: string = path.resolve(__dirname, '..', '..');
 const projectRootDir: string = path.resolve(backendDir, '..');
-const swaggerOutputPath: string = path.join(backendDir, 'swagger-output.json');
-const docsOutputPath: string = path.join(projectRootDir, 'docs', 'index.html');
-const metadataDir: string = path.join(backendDir, 'src', 'scripts', 'metadata');
-const redocMetadataPath: string = path.join(metadataDir, 'redoc.json');
+const swaggerOutputPath: string = path.join(
+  backendDir,
+  '__generated__',
+  'swagger-output.json'
+);
+const docsOutputPath: string = path.join(
+  backendDir,
+  '__generated__',
+  'index.html'
+);
+const docsPublishDir: string = path.join(projectRootDir, 'docs');
+const docsPublishPath: string = path.join(docsPublishDir, 'index.html');
+const metadataDir: string = path.join(
+  backendDir,
+  'src',
+  'scripts',
+  '__generated__'
+);
+const redocMetadataPath: string = path.join(metadataDir, 'redoc-metadata.json');
 const generatorScriptPath: string = __filename;
 
 interface RedocMetadata {
@@ -89,7 +105,7 @@ function shouldRegenerateDocs(): {
 } {
   const dependencyFiles: string[] = [generatorScriptPath, swaggerOutputPath];
   const normalizedDependencies: string[] = normalizePaths(dependencyFiles);
-  const outputFiles: string[] = [docsOutputPath];
+  const outputFiles: string[] = [docsOutputPath, docsPublishPath];
   const normalizedOutputs: string[] = normalizePaths(outputFiles);
 
   const metadata: RedocMetadata | null = readRedocMetadata();
@@ -118,9 +134,11 @@ function shouldRegenerateDocs(): {
     };
   }
 
-  const docsExists: boolean = existsSync(docsOutputPath);
+  const outputsExist: boolean = outputFiles.every((filePath: string) => {
+    return existsSync(filePath);
+  });
 
-  if (!docsExists) {
+  if (!outputsExist) {
     return {
       dependencies: normalizedDependencies,
       outputs: normalizedOutputs,
@@ -138,8 +156,16 @@ function shouldRegenerateDocs(): {
     0
   );
 
-  const docsStat = statSync(docsOutputPath);
-  const shouldRegenerate: boolean = latestDependencyMTime > docsStat.mtimeMs;
+  const outputStats = outputFiles.map((filePath: string) => {
+    return statSync(filePath);
+  });
+  const oldestOutputMTime: number = outputStats.reduce(
+    (oldest: number, fileStat) => {
+      return Math.min(oldest, fileStat.mtimeMs);
+    },
+    Number.POSITIVE_INFINITY
+  );
+  const shouldRegenerate: boolean = latestDependencyMTime > oldestOutputMTime;
 
   return {
     dependencies: normalizedDependencies,
@@ -167,6 +193,8 @@ async function generateDocs(): Promise<void> {
     process.platform === 'win32' ? 'redocly.cmd' : 'redocly'
   );
 
+  mkdirSync(path.dirname(docsOutputPath), { recursive: true });
+
   const result: SpawnSyncReturns<Buffer> = spawnSync(
     redocCliPath,
     ['build-docs', swaggerOutputPath, '--output', docsOutputPath],
@@ -183,6 +211,9 @@ async function generateDocs(): Promise<void> {
   if (result.status !== 0) {
     throw new Error('redocly build-docs failed.');
   }
+
+  mkdirSync(docsPublishDir, { recursive: true });
+  copyFileSync(docsOutputPath, docsPublishPath);
 
   writeRedocMetadata(
     regenerationAssessment.dependencies,

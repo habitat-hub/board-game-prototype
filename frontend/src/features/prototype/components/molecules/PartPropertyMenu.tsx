@@ -7,7 +7,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { IoMdMove } from 'react-icons/io';
 
-import { Part } from '@/api/types';
+import { Part } from '@/__generated__/api/client';
 import PartTypeIcon from '@/features/prototype/components/atoms/PartTypeIcon';
 import useDraggablePartPropertyMenu from '@/features/prototype/hooks/useDraggablePartPropertyMenu';
 import {

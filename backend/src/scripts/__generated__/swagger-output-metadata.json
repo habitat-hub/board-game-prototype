@@ -1,15 +1,15 @@
 {
   "dependencies": [
+    "src/__generated__/swagger-schemas.ts",
     "src/config/swaggerOptions.ts",
     "src/routes/auth.ts",
     "src/routes/image.ts",
-    "src/routes/project.duplicate.test.ts",
-    "src/routes/project.invite.test.ts",
     "src/routes/project.ts",
     "src/routes/prototype.ts",
     "src/routes/user.ts",
-    "src/scripts/generateSwaggerOutput.ts",
-    "src/swagger-schemas.ts"
+    "src/scripts/generateSwaggerOutput.ts"
   ],
-  "outputs": ["swagger-output.json"]
+  "outputs": [
+    "__generated__/swagger-output.json"
+  ]
 }

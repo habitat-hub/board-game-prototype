@@ -77,10 +77,7 @@ make help
 
 以下のファイルは自動生成されるため、直接編集しないでください：
 
-- `frontend/src/api/types/Api.ts`
-- `frontend/src/api/types/Auth.ts`
-- `frontend/src/api/types/data-contracts.ts`
-- `frontend/src/api/types/http-client.ts`
+- `frontend/src/__generated__/api/client/index.ts`
 
 ### 型定義の更新方法
 
@@ -93,8 +90,14 @@ npm run generate-swagger
 npm run generate-api-types
 ```
 
-**注意**: これらのファイルは`.eslintignore`で除外されており、lintチェックの対象外です。
+**注意**: これらのファイルは `frontend/eslint.config.js` で除外されており、lintチェックの対象外です。
+
+## 自動生成物の配置ポリシー
+
+- 自動生成される成果物は必ず `__generated__` ディレクトリ配下に配置します。
+- バックエンドでは `backend/__generated__`, `backend/src/__generated__`, `backend/src/scripts/__generated__` を利用します。
+- 既存の `__generated__` ディレクトリ外にある生成ファイルは順次移行し、新たに追加される生成処理も `__generated__` 配下を指すようにしてください。
 
 ## ER 図
 
-![ER図](backend/erd.svg)
+![ER図](backend/__generated__/erd.svg)

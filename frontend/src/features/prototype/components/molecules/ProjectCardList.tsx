@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Prototype, Project } from '@/api/types';
+import { Prototype, Project } from '@/__generated__/api/client';
 import { ProjectCard } from '@/features/prototype/components/molecules/ProjectCard';
 
 type ProjectCardListProps = {

@@ -4,7 +4,7 @@
 import Konva from 'konva';
 import { useCallback, useRef } from 'react';
 
-import { Part } from '@/api/types';
+import { Part } from '@/__generated__/api/client';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';
 import { usePartReducer } from '@/features/prototype/hooks/usePartReducer';
 import { usePerformanceTracker } from '@/features/prototype/hooks/usePerformanceTracker';

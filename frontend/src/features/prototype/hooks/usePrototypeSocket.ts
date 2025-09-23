@@ -3,7 +3,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { Part, PartProperty } from '@/api/types';
+import { Part, PartProperty } from '@/__generated__/api/client';
 import {
   COMMON_SOCKET_EVENT,
   PROTOTYPE_SOCKET_EVENT,

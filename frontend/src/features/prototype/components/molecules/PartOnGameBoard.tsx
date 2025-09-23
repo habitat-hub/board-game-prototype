@@ -9,7 +9,7 @@ import React, {
 import { Group, Rect, Text, Image } from 'react-konva';
 import useImage from 'use-image';
 
-import { Part, PartProperty } from '@/api/types';
+import { Part, PartProperty } from '@/__generated__/api/client';
 import {
   DEFAULT_STROKE_COLOR,
   SELECTED_SHADOW_OPACITY,

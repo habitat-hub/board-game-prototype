@@ -10,15 +10,23 @@ import {
 import { Model, ModelStatic, DataTypes } from 'sequelize';
 
 const backendRootDir: string = path.resolve(__dirname, '..', '..');
-const repoRootDir: string = path.resolve(backendRootDir, '..');
 const modelsDir = path.join(backendRootDir, 'src', 'models');
 const swaggerSchemasOutputPath = path.join(
   backendRootDir,
   'src',
+  '__generated__',
   'swagger-schemas.ts'
 );
-const metadataDir = path.join(backendRootDir, 'src', 'scripts', 'metadata');
-const swaggerMetadataPath = path.join(metadataDir, 'swagger-schemas.json');
+const metadataDir = path.join(
+  backendRootDir,
+  'src',
+  'scripts',
+  '__generated__'
+);
+const swaggerMetadataPath = path.join(
+  metadataDir,
+  'swagger-schemas-metadata.json'
+);
 
 // 共通レスポンススキーマ
 const commonSchemas = {
@@ -109,7 +117,7 @@ type ModelWithDefaultScope = ModelStatic<Model> & {
 function normalizePaths(filePaths: string[]): string[] {
   return filePaths
     .map((filePath: string) => {
-      return path.relative(repoRootDir, filePath).replace(/\\+/g, '/');
+      return path.relative(backendRootDir, filePath).replace(/\\+/g, '/');
     })
     .sort();
 }
@@ -373,6 +381,7 @@ async function generateSwagger(): Promise<void> {
   }
 
   const fileContents: string = buildSwaggerFile();
+  mkdirSync(path.dirname(swaggerSchemasOutputPath), { recursive: true });
   writeFileSync(swaggerSchemasOutputPath, fileContents);
   writeSwaggerMetadata(
     regenerationAssessment.dependencies,

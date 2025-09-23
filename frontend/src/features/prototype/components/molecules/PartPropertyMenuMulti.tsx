@@ -14,7 +14,7 @@ import {
   LuStretchVertical,
 } from 'react-icons/lu';
 
-import { Part } from '@/api/types';
+import { Part } from '@/__generated__/api/client';
 import PartPropertyMenuButton from '@/features/prototype/components/atoms/PartPropertyMenuButton';
 import { usePartOverlayMessage } from '@/features/prototype/contexts/PartOverlayMessageContext';
 import { useSelectedParts } from '@/features/prototype/contexts/SelectedPartsContext';

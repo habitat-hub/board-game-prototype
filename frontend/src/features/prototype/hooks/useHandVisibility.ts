@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { Part } from '@/api/types';
+import { Part } from '@/__generated__/api/client';
 import { GameBoardMode } from '@/features/prototype/types';
 import { isRectOverlap } from '@/features/prototype/utils/overlap';
 import { useUser } from '@/hooks/useUser';

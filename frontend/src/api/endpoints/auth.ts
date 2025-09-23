@@ -1,5 +1,5 @@
+import { UserListData } from '@/__generated__/api/client';
 import axiosInstance from '@/api/client';
-import { UserListData } from '@/api/types';
 
 export const authService = {
   /**

@@ -1,10 +1,10 @@
-import axiosInstance from '@/api/client';
 import {
   PrototypesDeleteData,
   PrototypesDetailData,
   PrototypesUpdateData,
   PrototypesUpdatePayload,
-} from '@/api/types';
+} from '@/__generated__/api/client';
+import axiosInstance from '@/api/client';
 
 export const prototypesService = {
   /**

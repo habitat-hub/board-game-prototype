@@ -1,4 +1,4 @@
-import { Part } from '@/api/types';
+import { Part } from '@/__generated__/api/client';
 
 /**
  * 全パーツの平均センター位置を計算

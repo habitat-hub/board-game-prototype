@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 
+import { User, ProjectsDetailData } from '@/__generated__/api/client';
 import { useProject } from '@/api/hooks/useProject';
 import { useUsers } from '@/api/hooks/useUsers';
-import { User, ProjectsDetailData } from '@/api/types';
 import { PERMISSION_ACTIONS, RoleType } from '@/constants/roles';
 import type {
   RoleValue,

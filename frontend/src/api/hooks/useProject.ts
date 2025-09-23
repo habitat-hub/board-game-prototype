@@ -1,12 +1,12 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
-import { projectService } from '@/api/endpoints/project';
 import {
   ProjectsCreatePayload,
   ProjectsInviteCreatePayload,
   ProjectsVersionsCreatePayload,
-} from '@/api/types';
+} from '@/__generated__/api/client';
+import { projectService } from '@/api/endpoints/project';
 
 export const useProject = () => {
   const queryClient = useQueryClient();
@@ -48,9 +48,7 @@ export const useProject = () => {
   const duplicateProject = useCallback(
     async (
       projectId: string
-    ): Promise<
-      Awaited<ReturnType<typeof projectService.duplicateProject>>
-    > => {
+    ): Promise<Awaited<ReturnType<typeof projectService.duplicateProject>>> => {
       const result = await projectService.duplicateProject(projectId);
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       return result;

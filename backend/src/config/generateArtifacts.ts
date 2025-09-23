@@ -37,12 +37,17 @@ export function generateArtifacts(app: Express): void {
     console.log('SKIP_ARTIFACT_GENERATION set: skipping artifact generation');
   }
 
-  const outputPath = path.join(BACKEND_ROOT, 'swagger-output.json');
+  const outputPath = path.join(
+    BACKEND_ROOT,
+    '__generated__',
+    'swagger-output.json'
+  );
   if (!fs.existsSync(outputPath)) {
     console.warn(
       'Swagger output file missing after artifact generation; regenerating in-process.'
     );
     const swaggerSpecFallback = swaggerJsdoc(buildSwaggerOptions());
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
     fs.writeFileSync(outputPath, JSON.stringify(swaggerSpecFallback, null, 2));
   }
 

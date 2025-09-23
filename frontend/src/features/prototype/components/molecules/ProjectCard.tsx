@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { IconType } from 'react-icons';
 
-import { Prototype, Project } from '@/api/types';
+import { Prototype, Project } from '@/__generated__/api/client';
 import PrototypeNameEditor from '@/features/prototype/components/atoms/PrototypeNameEditor';
 import { getProjectIcon } from '@/features/prototype/utils/getProjectIcon';
 import formatDate from '@/utils/dateFormat';

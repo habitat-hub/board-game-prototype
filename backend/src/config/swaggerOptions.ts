@@ -1,6 +1,6 @@
 import { globSync } from 'glob';
 import path from 'path';
-import { swaggerSchemas } from '../swagger-schemas';
+import { swaggerSchemas } from '../__generated__/swagger-schemas';
 
 const backendRootDir: string = path.resolve(__dirname, '..', '..');
 const routesDir: string = path.resolve(backendRootDir, 'src', 'routes');

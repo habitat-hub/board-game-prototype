@@ -12,16 +12,29 @@ import { spawnSync, SpawnSyncReturns } from 'child_process';
 
 const backendDir: string = path.resolve(__dirname, '..', '..');
 const projectRootDir: string = path.resolve(backendDir, '..');
-const swaggerOutputPath: string = path.join(backendDir, 'swagger-output.json');
-const typesOutputDir: string = path.join(
+const swaggerOutputPath: string = path.join(
+  backendDir,
+  '__generated__',
+  'swagger-output.json'
+);
+const apiClientOutputDir: string = path.join(
   projectRootDir,
   'frontend',
   'src',
+  '__generated__',
   'api',
-  'types'
+  'client'
 );
-const metadataDir: string = path.join(backendDir, 'src', 'scripts', 'metadata');
-const apiTypesMetadataPath: string = path.join(metadataDir, 'api-types.json');
+const metadataDir: string = path.join(
+  backendDir,
+  'src',
+  'scripts',
+  '__generated__'
+);
+const apiTypesMetadataPath: string = path.join(
+  metadataDir,
+  'api-types-metadata.json'
+);
 const generatorScriptPath: string = __filename;
 
 interface ApiTypesMetadata {
@@ -137,7 +150,7 @@ function shouldRegenerateApiTypes(): {
   const dependencyFiles: string[] = [generatorScriptPath, swaggerOutputPath];
   const normalizedDependencies: string[] = normalizePaths(dependencyFiles);
   const outputFiles: string[] = collectOutputFiles(
-    typesOutputDir,
+    apiClientOutputDir,
     projectRootDir
   );
   const normalizedOutputs: string[] = [...outputFiles];
@@ -246,14 +259,16 @@ async function generateApiTypes(): Promise<void> {
     '-p',
     swaggerOutputPath,
     '-o',
-    typesOutputDir,
+    apiClientOutputDir,
+    '--name',
+    'index.ts',
     '--extract-request-params',
     '--extract-request-body',
     '--extract-response-body',
-    '--modular',
     '--axios',
     '--disable-strict-ssl',
     '--disable-throw-on-error',
+    '--clean-output',
   ];
 
   const cliExecutablePath: string = path.join(
@@ -285,7 +300,7 @@ async function generateApiTypes(): Promise<void> {
   }
 
   const refreshedOutputs: string[] = collectOutputFiles(
-    typesOutputDir,
+    apiClientOutputDir,
     projectRootDir
   );
   writeApiTypesMetadata(regenerationAssessment.dependencies, refreshedOutputs);

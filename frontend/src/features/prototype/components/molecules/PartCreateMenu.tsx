@@ -7,7 +7,7 @@
 import { useState } from 'react';
 import type { ReactElement } from 'react';
 
-import { Part, PartProperty } from '@/api/types';
+import { Part, PartProperty } from '@/__generated__/api/client';
 import PartTypeIcon from '@/features/prototype/components/atoms/PartTypeIcon';
 import {
   PART_DEFAULT_CONFIG,

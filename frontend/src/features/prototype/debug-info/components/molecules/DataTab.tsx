@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Part, PartProperty } from '@/api/types';
+import { Part, PartProperty } from '@/__generated__/api/client';
 
 interface DataTabProps {
   parts: Part[];
