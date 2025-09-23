@@ -13,6 +13,7 @@ import {
   PART_DEFAULT_CONFIG,
   GAME_BOARD_SIZE,
   COLORS,
+  PARTS_INFO,
 } from '@/features/prototype/constants';
 import {
   POSITION_ATTEMPTS,
@@ -37,6 +38,13 @@ export default function PartCreateMenu({
   const [creatingPartType, setCreatingPartType] = useState<Part['type'] | null>(
     null
   );
+
+  const partDescriptions = PARTS_INFO.reduce<
+    Partial<Record<Part['type'], string>>
+  >((acc, part) => {
+    acc[part.id as Part['type']] = part.description;
+    return acc;
+  }, {});
 
   /**
    * 新しいパーツを作成し、中央に配置して追加します。
@@ -208,18 +216,22 @@ export default function PartCreateMenu({
     {
       type: 'token' as const,
       name: PART_DEFAULT_CONFIG.TOKEN.name,
+      description: partDescriptions.token ?? '',
     },
     {
       type: 'card' as const,
       name: PART_DEFAULT_CONFIG.CARD.name,
+      description: partDescriptions.card ?? '',
     },
     {
       type: 'hand' as const,
       name: PART_DEFAULT_CONFIG.HAND.name,
+      description: partDescriptions.hand ?? '',
     },
     {
       type: 'area' as const,
       name: PART_DEFAULT_CONFIG.AREA.name,
+      description: partDescriptions.area ?? '',
     },
   ];
 
@@ -238,7 +250,9 @@ export default function PartCreateMenu({
                   ? 'opacity-50 cursor-not-allowed scale-95'
                   : 'hover:from-kibako-primary hover:to-kibako-primary hover:scale-105 hover:shadow-md'
               }`}
-              title={`${partType.name}を作成`}
+              title={`${partType.name}を作成${
+                partType.description ? `: ${partType.description}` : ''
+              }`}
             >
               {creatingPartType === partType.type ? (
                 <div className="w-5 h-5 border-2 border-kibako-white border-t-transparent rounded-full animate-spin" />
@@ -249,10 +263,19 @@ export default function PartCreateMenu({
                   ariaHidden
                 />
               )}
-              <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-kibako-primary text-kibako-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                {creatingPartType === partType.type
-                  ? '作成中...'
-                  : partType.name}
+              <div className="absolute bottom-full left-1/2 mb-2 transform -translate-x-1/2 bg-kibako-primary text-kibako-white text-xs px-3 py-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none max-w-[18rem] text-left leading-relaxed whitespace-normal shadow-md">
+                {creatingPartType === partType.type ? (
+                  '作成中...'
+                ) : (
+                  <>
+                    <span className="block text-[0.65rem] font-semibold text-kibako-white/80">
+                      {partType.name}
+                    </span>
+                    <span className="mt-0.5 block">
+                      {partType.description || '説明が設定されていません。'}
+                    </span>
+                  </>
+                )}
               </div>
             </button>
           ))}
