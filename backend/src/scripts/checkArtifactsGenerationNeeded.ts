@@ -330,7 +330,7 @@ function checkApiTypes(): CheckResult {
     'generateApiTypes.ts'
   );
   const outputs = collectOutputFiles(
-    path.join(repoRoot, 'frontend', 'src', '__generated__', 'api', 'types'),
+    path.join(repoRoot, 'frontend', 'src', '__generated__', 'api', 'client'),
     repoRoot
   );
   const dependencyFiles = [swaggerOutputPath, generatorPath];
@@ -376,6 +376,7 @@ function checkDocs(): CheckResult {
     'swagger-output.json'
   );
   const docsOutputPath = path.join(backendRoot, '__generated__', 'index.html');
+  const docsPublishPath = path.join(repoRoot, 'docs', 'index.html');
   const generatorPath = path.join(
     backendRoot,
     'src',
@@ -387,9 +388,14 @@ function checkDocs(): CheckResult {
     [swaggerOutputPath, generatorPath],
     repoRoot
   );
-  const normalizedOutputs = normalizePaths([docsOutputPath], repoRoot);
+  const outputPaths = [docsOutputPath, docsPublishPath];
+  const normalizedOutputs = normalizePaths(outputPaths, repoRoot);
 
-  if (!fs.existsSync(docsOutputPath)) {
+  const missingOutput = outputPaths.some((filePath: string) => {
+    return !fs.existsSync(filePath);
+  });
+
+  if (missingOutput) {
     return { name: 'docs', stale: true, reason: 'missing-output' };
   }
 
@@ -402,13 +408,16 @@ function checkDocs(): CheckResult {
   }
 
   const latestDependencyMTime = latestMTime([swaggerOutputPath, generatorPath]);
-  const docsStat = fs.statSync(docsOutputPath);
+  const oldestOutputMTime = outputPaths.reduce((oldest: number, filePath) => {
+    const { mtimeMs } = fs.statSync(filePath);
+    return Math.min(oldest, mtimeMs);
+  }, Number.POSITIVE_INFINITY);
 
   return {
     name: 'docs',
-    stale: latestDependencyMTime > docsStat.mtimeMs,
+    stale: latestDependencyMTime > oldestOutputMTime,
     reason:
-      latestDependencyMTime > docsStat.mtimeMs
+      latestDependencyMTime > oldestOutputMTime
         ? 'dependency-newer-than-output'
         : null,
   };

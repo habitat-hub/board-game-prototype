@@ -4,6 +4,7 @@
     "backend/src/scripts/generateDocs.ts"
   ],
   "outputs": [
-    "backend/__generated__/index.html"
+    "backend/__generated__/index.html",
+    "docs/index.html"
   ]
 }
