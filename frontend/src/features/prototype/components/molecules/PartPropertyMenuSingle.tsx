@@ -170,6 +170,13 @@ export default function PartPropertyMenuSingle({
     return <div style={{ display: hidden ? 'none' : 'block' }} />;
   }
 
+  const isFrontSideSelected = (selectedPart.frontSide ?? 'front') === 'front';
+  const cardSideIndicatorStyle: React.CSSProperties = {
+    backgroundColor: isFrontSideSelected ? '#FFFFFF' : '#D3D3D3',
+    color: '#1F2937',
+  };
+  const cardSideLabel = isFrontSideSelected ? '表面' : '裏面';
+
   return (
     <div
       className="flex flex-col gap-2"
@@ -196,13 +203,10 @@ export default function PartPropertyMenuSingle({
       {!isPlayMode && selectedPart.type === 'card' && (
         <div className="flex items-center justify-center mb-2 gap-2">
           <span
-            className={`text-xs font-medium px-3 py-1 rounded-full ${
-              (selectedPart.frontSide ?? 'front') === 'front'
-                ? 'text-green-800 bg-green-200'
-                : 'text-red-800 bg-red-200'
-            }`}
+            className="text-xs font-medium px-3 py-1 rounded-full border border-gray-300"
+            style={cardSideIndicatorStyle}
           >
-            {(selectedPart.frontSide ?? 'front') === 'front' ? '表面' : '裏面'}
+            {cardSideLabel}
           </span>
           <PartPropertyMenuButton
             text=""
