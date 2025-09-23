@@ -30,6 +30,7 @@ const RoleManagement: React.FC = () => {
     masterPrototypeName,
     creator,
     loading,
+    rolesReady,
     canRemoveUserRole,
     isCurrentUserAdmin,
 
@@ -106,7 +107,7 @@ const RoleManagement: React.FC = () => {
   };
 
   // ローディング中の表示（userRoles の長さに依存せず）
-  if (loading) {
+  if (!rolesReady) {
     return <Loading />;
   }
 
@@ -125,60 +126,54 @@ const RoleManagement: React.FC = () => {
         </h1>
       </div>
 
-      <div className="mb-6 p-6 overflow-visible rounded-xl bg-gradient-to-r from-kibako-white via-kibako-white to-kibako-tertiary shadow-lg border border-kibako-tertiary/30">
-        <div className="flex items-center justify-between mb-4 border-b border-kibako-secondary/30 pb-2">
-          <h2 className="text-xl font-bold text-kibako-primary">権限管理</h2>
-        </div>
-        <div className="space-y-4">
-          <p className="text-kibako-primary">
-            プロジェクト
-            {masterPrototypeName && `「${masterPrototypeName}」の`}
-            ユーザー権限を管理します。
-          </p>
-          {!isCurrentUserAdmin && (
-            <p className="text-kibako-primary/70">
-              権限を設定できるのはAdminユーザーのみです
-            </p>
-          )}
-
-          <RoleManagementForm
-            searchTerm={searchTerm}
-            onSearchTermChange={setSearchTerm}
-            selectedUser={selectedUser}
-            onUserSelect={handleUserSelect}
-            onClearUser={handleClearUser}
-            showUserDropdown={showUserDropdown}
-            onToggleUserDropdown={setShowUserDropdown}
-            filteredUsers={filteredUsers}
-            selectedRole={roleForm.selectedRole}
-            onRoleChange={(role) => updateRoleForm({ selectedRole: role })}
-            onAddRole={handleAddRoleWithReset}
-            loading={loading}
-            canManageRole={isCurrentUserAdmin}
-          />
-        </div>
-      </div>
-
       <div className="mb-8 p-6 overflow-visible rounded-xl bg-gradient-to-r from-kibako-white via-kibako-white to-kibako-tertiary shadow-lg border border-kibako-tertiary/30">
-        <div className="flex items-center justify-between mb-4 border-b border-kibako-secondary/30 pb-2">
-          <h2 className="text-xl font-bold text-kibako-primary">
-            現在のユーザー権限
-          </h2>
-        </div>
-        <div
-          className={`transition-all overflow-x-auto ${
-            !isCurrentUserAdmin ? 'opacity-40 pointer-events-none' : ''
-          }`}
-        >
-          <UserRoleTable
-            userRoles={userRoles}
-            creator={creator}
-            canRemoveUserRole={canRemoveUserRole}
-            onRoleChange={(userId, role) => updateRole(userId, role)}
-            onRemove={handleRemoveRole}
-            loading={loading}
-            canManageRole={isCurrentUserAdmin}
-          />
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <p className="text-kibako-primary">
+              プロジェクト
+              {masterPrototypeName && `「${masterPrototypeName}」の`}
+              ユーザー権限を管理します。
+            </p>
+            {!isCurrentUserAdmin && (
+              <p className="text-kibako-primary/70">
+                権限を設定できるのはAdminユーザーのみです
+              </p>
+            )}
+
+            <RoleManagementForm
+              searchTerm={searchTerm}
+              onSearchTermChange={setSearchTerm}
+              selectedUser={selectedUser}
+              onUserSelect={handleUserSelect}
+              onClearUser={handleClearUser}
+              showUserDropdown={showUserDropdown}
+              onToggleUserDropdown={setShowUserDropdown}
+              filteredUsers={filteredUsers}
+              selectedRole={roleForm.selectedRole}
+              onRoleChange={(role) => updateRoleForm({ selectedRole: role })}
+              onAddRole={handleAddRoleWithReset}
+              loading={loading}
+              canManageRole={isCurrentUserAdmin}
+            />
+          </div>
+
+          <div className="pt-6 border-t border-kibako-secondary/30">
+            <div
+              className={`transition-all overflow-x-auto ${
+                !isCurrentUserAdmin ? 'opacity-40 pointer-events-none' : ''
+              }`}
+            >
+              <UserRoleTable
+                userRoles={userRoles}
+                creator={creator}
+                canRemoveUserRole={canRemoveUserRole}
+                onRoleChange={(userId, role) => updateRole(userId, role)}
+                onRemove={handleRemoveRole}
+                loading={loading}
+                canManageRole={isCurrentUserAdmin}
+              />
+            </div>
+          </div>
         </div>
       </div>
 

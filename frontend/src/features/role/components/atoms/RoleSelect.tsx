@@ -115,7 +115,7 @@ const RoleSelect: React.FC<RoleSelectProps> = ({
         type="button"
         disabled={disabled}
         onClick={toggleOpen}
-        className={`flex items-center gap-2 border border-kibako-secondary/20 rounded px-2 py-1 text-sm bg-kibako-white text-kibako-primary disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-kibako-primary/40 transition ${
+        className={`flex items-center gap-2 border border-kibako-secondary/20 rounded px-3 py-2 text-sm bg-kibako-white text-kibako-primary disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-kibako-primary/40 transition ${
           open ? 'ring-2 ring-kibako-primary/40' : ''
         }`}
         aria-haspopup="listbox"
@@ -126,7 +126,7 @@ const RoleSelect: React.FC<RoleSelectProps> = ({
           {currentConfig.icon && (
             <span className={iconColorClass}>{currentConfig.icon}</span>
           )}
-          <span className="text-xs font-medium text-kibako-primary">
+          <span className="text-sm font-medium text-kibako-primary">
             {currentConfig.label}
           </span>
         </div>
