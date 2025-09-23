@@ -1,9 +1,10 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { vi } from 'vitest';
 
 import { ROLE_LABELS } from '@/constants/roles';
+import type { RoleValue } from '@/features/role/types';
 
 import UserRoleTable from '../UserRoleTable';
 
@@ -23,8 +24,6 @@ vi.mock('@/hooks/useUser', () => ({
   useUser: () => mockUserState,
 }));
 
-type RoleValue = 'admin' | 'editor' | 'viewer';
-
 const makeUser = (id: string, username: string) => ({
   id,
   username,
@@ -32,10 +31,15 @@ const makeUser = (id: string, username: string) => ({
   updatedAt: '2025-01-01T00:00:00.000Z',
 });
 
-const makeUserRole = (id: string, username: string, roles: RoleValue[]) => ({
+type RoleName = RoleValue | string;
+
+const makeUserRole = (id: string, username: string, roles: RoleName[]) => ({
   userId: id,
   user: makeUser(id, username),
-  roles: roles.map((r) => ({ name: r, description: `${r} role` })),
+  roles: roles.map((r) => ({
+    name: r as RoleValue,
+    description: `${r} role`,
+  })),
 });
 
 describe('UserRoleTable - empty state', () => {
@@ -291,5 +295,75 @@ describe('UserRoleTable - roles fallback', () => {
 
     // RoleSelect current label for default role should be the viewer label
     expect(screen.getByText(ROLE_LABELS.viewer)).toBeInTheDocument();
+  });
+});
+
+describe('UserRoleTable - sorting order', () => {
+  it('sorts rows by creator, privilege, and name regardless of input order', () => {
+    const creatorEntry = makeUserRole('user-creator', 'Creator', ['viewer']);
+    const creator = creatorEntry.user;
+    const mixedAdmin = makeUserRole('user-mixed', 'Apollo', [
+      'viewer',
+      'admin',
+    ]);
+    const adminOnly = makeUserRole('user-admin', 'Zeus', ['admin']);
+    const editorOnly = makeUserRole('user-editor', 'Echo', ['editor']);
+    const viewerLower = makeUserRole('user-viewer-alpha', 'alpha', ['viewer']);
+    const viewerUpper = makeUserRole('user-viewer-bravo', 'Bravo', ['viewer']);
+    const unknownRole = makeUserRole('user-unknown', 'Beta', ['guest']);
+
+    const shuffledUserRoles = [
+      viewerUpper,
+      unknownRole,
+      editorOnly,
+      creatorEntry,
+      viewerLower,
+      adminOnly,
+      mixedAdmin,
+    ];
+
+    render(
+      <UserRoleTable
+        userRoles={shuffledUserRoles}
+        creator={creator}
+        canRemoveUserRole={vi
+          .fn()
+          .mockReturnValue({ canRemove: true, reason: '' })}
+        onRoleChange={vi.fn()}
+        onRemove={vi.fn()}
+        loading={false}
+        canManageRole={true}
+      />
+    );
+
+    const [, bodyRowGroup] = screen.getAllByRole('rowgroup');
+    const rows = within(bodyRowGroup).getAllByRole('row');
+    const usernames = rows.map((row) => {
+      const firstCell = within(row).getAllByRole('cell')[0];
+      const textContent = (firstCell.textContent ?? '').trim();
+      let normalized = textContent;
+      if (normalized.length > 1) {
+        const [firstChar, secondChar] = [normalized[0], normalized[1]];
+        if (
+          firstChar &&
+          secondChar &&
+          firstChar.toLocaleUpperCase() === secondChar.toLocaleUpperCase()
+        ) {
+          normalized = normalized.slice(1);
+        }
+      }
+
+      return normalized.split('その他')[0].trim();
+    });
+
+    expect(usernames).toEqual([
+      'Creator',
+      'Apollo',
+      'Zeus',
+      'Echo',
+      'alpha',
+      'Bravo',
+      'Beta',
+    ]);
   });
 });

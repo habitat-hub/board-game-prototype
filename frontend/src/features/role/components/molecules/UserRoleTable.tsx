@@ -2,6 +2,7 @@ import React from 'react';
 import { FaUserShield } from 'react-icons/fa';
 
 import type { User } from '@/__generated__/api/client';
+import { ROLE_PRIORITY, UNKNOWN_ROLE_PRIORITY } from '@/constants/roles';
 import type { RoleValue } from '@/features/role/types';
 import type { UserRole } from '@/features/role/types';
 import { useUser } from '@/hooks/useUser';
@@ -45,6 +46,56 @@ const UserRoleTable: React.FC<UserRoleTableProps> = ({
   canManageRole,
 }) => {
   const { user: currentUser } = useUser();
+  // ユーザー一覧は作成者を最優先に、その後は保持する権限の中で最上位のもの
+  // （admin → editor → viewer → 不明）→ユーザー名の小文字→ユーザーIDの順で安定的に並び替える
+  const sortedUserRoles = React.useMemo(() => {
+    const fallbackPriority = UNKNOWN_ROLE_PRIORITY;
+
+    const getHighestPrivilege = (roles: UserRole['roles']) => {
+      if (!roles || roles.length === 0) {
+        return ROLE_PRIORITY.viewer;
+      }
+
+      return roles.reduce((currentHighest, role) => {
+        const rolePriority =
+          ROLE_PRIORITY[role.name as string] ?? fallbackPriority;
+        return Math.min(currentHighest, rolePriority);
+      }, fallbackPriority);
+    };
+
+    return [...userRoles].sort((a, b) => {
+      const aIsCreator = creator?.id === a.userId;
+      const bIsCreator = creator?.id === b.userId;
+
+      if (aIsCreator !== bIsCreator) {
+        return aIsCreator ? -1 : 1;
+      }
+
+      const aHighestPrivilege = getHighestPrivilege(a.roles);
+      const bHighestPrivilege = getHighestPrivilege(b.roles);
+      if (aHighestPrivilege !== bHighestPrivilege) {
+        return aHighestPrivilege - bHighestPrivilege;
+      }
+
+      const aUsernameLowercase = a.user.username.toLowerCase();
+      const bUsernameLowercase = b.user.username.toLowerCase();
+      if (aUsernameLowercase < bUsernameLowercase) {
+        return -1;
+      }
+      if (aUsernameLowercase > bUsernameLowercase) {
+        return 1;
+      }
+
+      if (a.userId < b.userId) {
+        return -1;
+      }
+      if (a.userId > b.userId) {
+        return 1;
+      }
+
+      return 0;
+    });
+  }, [userRoles, creator]);
   // ユーザー権限が未設定かつロード完了の場合の空状態
   if (userRoles.length === 0 && !loading) {
     return (
@@ -80,7 +131,7 @@ const UserRoleTable: React.FC<UserRoleTableProps> = ({
           </tr>
         </thead>
         <tbody className="divide-y divide-kibako-secondary/10">
-          {userRoles.map((userRole) => {
+          {sortedUserRoles.map((userRole) => {
             const removeCheck = canRemoveUserRole(userRole.userId, userRoles);
             const isCreator = creator && creator.id === userRole.userId;
             const isSelf = currentUser?.id === userRole.userId;
