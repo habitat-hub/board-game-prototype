@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 describe('env config', () => {
   beforeEach(() => {
+    vi.resetModules();
     process.env.NODE_ENV = 'development';
     process.env.DATABASE_URL = 'postgres://test';
     process.env.FRONTEND_URL = 'http://localhost:3000';
