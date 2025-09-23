@@ -250,7 +250,7 @@ export default function PartCreateMenu({
                   ? 'opacity-50 cursor-not-allowed scale-95'
                   : 'hover:from-kibako-primary hover:to-kibako-primary hover:scale-105 hover:shadow-md'
               }`}
-              title={`${partType.name}を作成${
+              aria-label={`${partType.name}を作成${
                 partType.description ? `: ${partType.description}` : ''
               }`}
             >
@@ -263,19 +263,22 @@ export default function PartCreateMenu({
                   ariaHidden
                 />
               )}
-              <div className="absolute bottom-full left-1/2 mb-2 transform -translate-x-1/2 bg-kibako-primary text-kibako-white text-xs px-3 py-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none max-w-[18rem] text-left leading-relaxed whitespace-normal shadow-md">
-                {creatingPartType === partType.type ? (
-                  '作成中...'
-                ) : (
-                  <>
-                    <span className="block text-[0.65rem] font-semibold text-kibako-white/80">
-                      {partType.name}
-                    </span>
-                    <span className="mt-0.5 block">
-                      {partType.description || '説明が設定されていません。'}
-                    </span>
-                  </>
-                )}
+              <div className="pointer-events-none absolute bottom-full left-1/2 mb-2 flex -translate-x-1/2 translate-y-1 flex-col items-center opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
+                <div className="min-w-[12rem] max-w-[20rem] rounded-md bg-kibako-primary/95 px-3 py-2 text-left text-xs leading-snug text-kibako-white shadow-[0_6px_18px_rgba(0,0,0,0.18)] ring-1 ring-kibako-black/10">
+                  {creatingPartType === partType.type ? (
+                    '作成中...'
+                  ) : (
+                    <>
+                      <span className="block text-[0.7rem] font-semibold text-kibako-white/90">
+                        {partType.name}
+                      </span>
+                      <span className="mt-1 block whitespace-pre-line">
+                        {partType.description || '説明が設定されていません。'}
+                      </span>
+                    </>
+                  )}
+                </div>
+                <span className="mt-[-2px] h-3 w-3 rotate-45 bg-kibako-primary/95 opacity-90" />
               </div>
             </button>
           ))}
