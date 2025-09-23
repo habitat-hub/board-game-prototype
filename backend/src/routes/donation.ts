@@ -7,6 +7,13 @@ import { InternalServerError, ValidationError } from '../errors/CustomError';
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Donations
+ *   description: 寄付オプションやチェックアウトセッションを提供するAPI
+ */
+
 const DONATION_PRICE_ID_MAP: Record<number, string> = {
   100: env.STRIPE_ONE_SHORT_DONATION_JPY_100,
   500: env.STRIPE_ONE_SHORT_DONATION_JPY_500,
@@ -15,6 +22,45 @@ const DONATION_PRICE_ID_MAP: Record<number, string> = {
   10000: env.STRIPE_ONE_SHORT_DONATION_JPY_10000,
 };
 
+/**
+ * @swagger
+ * /api/donations/options:
+ *   get:
+ *     tags: [Donations]
+ *     summary: 寄付オプション一覧の取得
+ *     description: Stripeで利用可能な寄付金額と対応するPrice IDを取得します。
+ *     responses:
+ *       '200':
+ *         description: 寄付オプションの一覧
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 currency:
+ *                   type: string
+ *                   description: 寄付に使用する通貨
+ *                   example: jpy
+ *                 options:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       amount:
+ *                         type: integer
+ *                         description: 利用可能な寄付金額（JPY）
+ *                         example: 500
+ *                       priceId:
+ *                         type: string
+ *                         description: Stripe Price ID
+ *                         example: price_test_jpy_500
+ *       '500':
+ *         description: 寄付オプションの取得に失敗しました
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
+ */
 router.get('/options', (_req: Request, res: Response) => {
   const options = Object.entries(DONATION_PRICE_ID_MAP).map(
     ([amount, priceId]) => ({
@@ -27,6 +73,56 @@ router.get('/options', (_req: Request, res: Response) => {
 });
 
 /** 寄付用のStripe Checkoutセッションを作成する */
+/**
+ * @swagger
+ * /api/donations/checkout-session:
+ *   post:
+ *     tags: [Donations]
+ *     summary: 寄付用Stripe Checkoutセッションの作成
+ *     description: 選択された寄付金額でStripe Checkoutセッションを作成します。
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - amount
+ *             properties:
+ *               amount:
+ *                 type: integer
+ *                 description: 寄付金額（JPY）
+ *                 example: 500
+ *     responses:
+ *       '201':
+ *         description: セッションの作成に成功しました
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 sessionId:
+ *                   type: string
+ *                   description: Stripe CheckoutセッションID
+ *                   example: cs_test_123
+ *                 url:
+ *                   type: string
+ *                   format: uri
+ *                   description: Stripe CheckoutセッションURL
+ *                   example: https://checkout.stripe.com/test-session
+ *       '400':
+ *         description: 寄付金額のバリデーションエラー
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error400Response'
+ *       '500':
+ *         description: Stripeセッションの作成に失敗しました
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error500Response'
+ */
 router.post(
   '/checkout-session',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
