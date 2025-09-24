@@ -3,6 +3,7 @@ import React from 'react';
 
 import BussinessInformation from '@/features/information/conponents/template/BussinessInformation';
 
+// ページのメタデータ（タイトルや説明文など）を定義
 export const metadata: Metadata = {
   title: 'サービス情報 / 運営概要',
   description: 'KIBAKO のサービス概要・運営に関する情報を掲載するページです。',
