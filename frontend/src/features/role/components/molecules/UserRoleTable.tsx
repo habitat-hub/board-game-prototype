@@ -51,14 +51,18 @@ const UserRoleTable: React.FC<UserRoleTableProps> = ({
   const sortedUserRoles = React.useMemo(() => {
     const fallbackPriority = UNKNOWN_ROLE_PRIORITY;
 
+    const isKnownRoleName = (value: string): value is RoleValue =>
+      Object.prototype.hasOwnProperty.call(ROLE_PRIORITY, value);
+
     const getHighestPrivilege = (roles: UserRole['roles']) => {
       if (!roles || roles.length === 0) {
         return ROLE_PRIORITY.viewer;
       }
 
       return roles.reduce((currentHighest, role) => {
-        const rolePriority =
-          ROLE_PRIORITY[role.name as string] ?? fallbackPriority;
+        const rolePriority = isKnownRoleName(role.name)
+          ? ROLE_PRIORITY[role.name]
+          : fallbackPriority;
         return Math.min(currentHighest, rolePriority);
       }, fallbackPriority);
     };
