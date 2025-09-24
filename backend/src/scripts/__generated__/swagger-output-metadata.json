@@ -3,6 +3,7 @@
     "src/__generated__/swagger-schemas.ts",
     "src/config/swaggerOptions.ts",
     "src/routes/auth.ts",
+    "src/routes/donation.ts",
     "src/routes/image.ts",
     "src/routes/project.ts",
     "src/routes/prototype.ts",

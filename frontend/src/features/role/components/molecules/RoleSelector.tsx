@@ -1,6 +1,8 @@
 import React from 'react';
 import { FaUserShield, FaEdit, FaEye } from 'react-icons/fa';
 
+import { ROLE_LABELS } from '@/constants/roles';
+
 interface RoleSelectorProps {
   selectedRole: 'admin' | 'editor' | 'viewer';
   onRoleChange: (role: 'admin' | 'editor' | 'viewer') => void;
@@ -15,7 +17,7 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
   const roles = [
     {
       value: 'viewer',
-      name: 'Viewer',
+      name: ROLE_LABELS.viewer,
       icon: <FaEye className="h-6 w-6" />,
       color: 'text-kibako-primary/60',
       description: '閲覧のみ',
@@ -24,7 +26,7 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
     },
     {
       value: 'editor',
-      name: 'Editor',
+      name: ROLE_LABELS.editor,
       icon: <FaEdit className="h-6 w-6" />,
       color: 'text-kibako-info',
       description: '編集権限',
@@ -34,7 +36,7 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
     },
     {
       value: 'admin',
-      name: 'Admin',
+      name: ROLE_LABELS.admin,
       icon: <FaUserShield className="h-6 w-6" />,
       color: 'text-kibako-danger',
       description: '全ての管理権限を持つ最高権限',

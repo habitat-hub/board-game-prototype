@@ -13,6 +13,31 @@ export const ROLE_TYPE = {
   VIEWER: 'viewer',
 } as const;
 
+export type RoleType = (typeof ROLE_TYPE)[keyof typeof ROLE_TYPE];
+
+export const ROLE_LABELS: Record<RoleType, string> = {
+  admin: '管理者',
+  editor: '編集者',
+  viewer: '閲覧者',
+};
+
+/**
+ * ロールごとの優先順位。数値が小さいほど権限が高い。
+ * creator と未知のロールの比較に使うため `UNKNOWN_ROLE_PRIORITY` を併用する。
+ */
+export const ROLE_PRIORITY = {
+  [ROLE_TYPE.ADMIN]: 0,
+  [ROLE_TYPE.EDITOR]: 1,
+  [ROLE_TYPE.VIEWER]: 2,
+} as const satisfies Record<RoleType, number>;
+
+/**
+ * 未知のロール名が渡された場合のフォールバック優先度。
+ * 既知ロールよりも低い権限として末尾に配置する。
+ */
+export const UNKNOWN_ROLE_PRIORITY =
+  (Math.max(...Object.values(ROLE_PRIORITY)) || 0) + 1;
+
 /**
  * 権限アクションの定義
  * バックエンドの `backend/src/const.ts` の `PERMISSION_ACTIONS` と同期
@@ -34,8 +59,6 @@ export const RESOURCE_TYPES = {
   USER: 'user',
 } as const;
 
-// 型定義
-export type RoleType = (typeof ROLE_TYPE)[keyof typeof ROLE_TYPE];
 export type PermissionAction =
   (typeof PERMISSION_ACTIONS)[keyof typeof PERMISSION_ACTIONS];
 export type ResourceType = (typeof RESOURCE_TYPES)[keyof typeof RESOURCE_TYPES];

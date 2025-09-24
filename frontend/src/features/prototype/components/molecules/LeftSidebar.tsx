@@ -315,7 +315,7 @@ export default function LeftSidebar({
                       <div className="flex items-center gap-2">
                         <MdMeetingRoom className="h-12 w-12 text-kibako-accent flex-shrink-0 mr-1" />
                         <div className="flex flex-col min-w-0 flex-1">
-                          {/* ルーム名（インライン編集対応、Adminのみ） */}
+                          {/* ルーム名（インライン編集対応、管理者のみ） */}
                           <div
                             className="w-[170px]"
                             onClick={(e) => {
@@ -336,7 +336,7 @@ export default function LeftSidebar({
                                 currentRole,
                                 PERMISSION_ACTIONS.MANAGE
                               )}
-                              notEditableReason="Adminのみ名前を変更できます"
+                              notEditableReason="管理者のみ名前を変更できます"
                             />
                           </div>
                           <div className="text-xs text-kibako-secondary mt-0.5">
@@ -443,7 +443,7 @@ export default function LeftSidebar({
             name={prototypeName}
             onUpdated={handlePrototypeNameUpdated}
             editable={can(currentRole, PERMISSION_ACTIONS.MANAGE)}
-            notEditableReason="Adminのみ名前を変更できます"
+            notEditableReason="管理者のみ名前を変更できます"
           />
         </div>
         {/* プレイルームを開いている時は開閉ボタンを非表示 */}

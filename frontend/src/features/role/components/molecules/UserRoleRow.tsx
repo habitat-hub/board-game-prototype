@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FaTrash } from 'react-icons/fa';
 
+import { ROLE_LABELS } from '@/constants/roles';
 import RoleSelect from '@/features/role/components/atoms/RoleSelect';
 import UserAvatar from '@/features/role/components/atoms/UserAvatar';
 import type { RoleValue, UserRole } from '@/features/role/types';
@@ -72,8 +73,8 @@ const UserRoleRow: React.FC<UserRoleRowProps> = ({
                 その他の権限:{' '}
                 {userRole.roles
                   .slice(1)
-                  .map((role) => role.name)
-                  .join(', ')}
+                  .map((role) => ROLE_LABELS[role.name] ?? role.name)
+                  .join('、')}
               </div>
             )}
           </div>

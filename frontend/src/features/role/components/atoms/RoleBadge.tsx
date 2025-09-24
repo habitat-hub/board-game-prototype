@@ -1,6 +1,8 @@
 import React from 'react';
 import { FaUserShield, FaEdit, FaEye } from 'react-icons/fa';
 
+import { ROLE_LABELS, RoleType } from '@/constants/roles';
+
 interface RoleBadgeProps {
   roleName: string;
   showIcon?: boolean;
@@ -14,29 +16,33 @@ export const getRoleConfig = (role: string) => {
         icon: <FaUserShield className="h-3 w-3" />,
         bgColor: 'bg-kibako-danger/10',
         textColor: 'text-kibako-danger/80',
-        label: 'Admin',
+        label: ROLE_LABELS.admin,
       };
     case 'editor':
       return {
         icon: <FaEdit className="h-3 w-3" />,
         bgColor: 'bg-kibako-info/10',
         textColor: 'text-kibako-info/80',
-        label: 'Editor',
+        label: ROLE_LABELS.editor,
       };
     case 'viewer':
       return {
         icon: <FaEye className="h-3 w-3" />,
         bgColor: 'bg-kibako-tertiary/20',
         textColor: 'text-kibako-primary/80',
-        label: 'Viewer',
+        label: ROLE_LABELS.viewer,
       };
-    default:
+    default: {
+      const fallbackLabel =
+        ROLE_LABELS[role as RoleType] ??
+        role.charAt(0).toUpperCase() + role.slice(1);
       return {
         icon: <FaEye className="h-3 w-3" />,
         bgColor: 'bg-kibako-tertiary/20',
         textColor: 'text-kibako-primary/80',
-        label: role.charAt(0).toUpperCase() + role.slice(1),
+        label: fallbackLabel,
       };
+    }
   }
 };
 

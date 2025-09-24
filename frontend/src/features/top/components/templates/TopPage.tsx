@@ -626,6 +626,38 @@ const TopPage: React.FC = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* お問い合わせセクション */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+        className="bg-amber-50 py-12 border-t border-amber-200"
+      >
+        <div className="max-w-3xl mx-auto px-6 text-center">
+          <h2 className="text-2xl font-semibold text-amber-900 mb-4">
+            お問い合わせ
+          </h2>
+          <p className="text-amber-700 mb-2 text-sm md:text-base">
+            ご意見・不具合報告・ご要望などお気軽にお寄せください。
+          </p>
+          <a
+            href="mailto:kibako-habitat-hub@googlegroups.com"
+            className="inline-block mt-2 font-mono text-amber-800 bg-amber-100 hover:bg-amber-200 transition-colors px-4 py-2 rounded-full shadow-sm text-sm md:text-base break-all"
+          >
+            kibako-habitat-hub@googlegroups.com
+          </a>
+          <div className="mt-6 text-xs md:text-sm">
+            <Link
+              href="/bussiness-information"
+              className="text-amber-700 underline underline-offset-4 decoration-amber-400 hover:text-amber-900 hover:decoration-amber-600 transition-colors"
+            >
+              サービス情報 / 運営概要（特定商取引法に基づく表記 相当）
+            </Link>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 };

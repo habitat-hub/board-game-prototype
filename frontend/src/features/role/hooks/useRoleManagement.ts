@@ -3,7 +3,7 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import { User, ProjectsDetailData } from '@/__generated__/api/client';
 import { useProject } from '@/api/hooks/useProject';
 import { useUsers } from '@/api/hooks/useUsers';
-import { PERMISSION_ACTIONS, RoleType } from '@/constants/roles';
+import { PERMISSION_ACTIONS, ROLE_LABELS, RoleType } from '@/constants/roles';
 import type {
   RoleValue,
   RoleFormState,
@@ -161,7 +161,8 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
           await addRoleToProject(projectId, { userId, roleName });
           await fetchUserRoles(); // 一覧を再取得
           await fetchUsers(); // ユーザー検索用リストを再取得
-          showToast(`ユーザーに${roleName}権限を追加しました。`, 'success');
+          const roleLabel = ROLE_LABELS[roleName] ?? roleName;
+          showToast(`ユーザーに${roleLabel}権限を追加しました。`, 'success');
         } catch (error) {
           console.error('Error adding role:', error);
           showToast('権限の追加に失敗しました。', 'error');
@@ -180,7 +181,8 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
           setLoading(true);
           await updateRoleInProject(projectId, userId, { roleName });
           await fetchUserRoles(); // 一覧を再取得
-          showToast(`ユーザーの権限を${roleName}に変更しました。`, 'success');
+          const roleLabel = ROLE_LABELS[roleName] ?? roleName;
+          showToast(`ユーザーの権限を${roleLabel}に変更しました。`, 'success');
         } catch (error) {
           console.error('Error updating role:', error);
           showToast('権限の変更に失敗しました。', 'error');
@@ -215,11 +217,11 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
         return { canRemove: false, reason: '自分の権限は削除できません' };
       }
 
-      // 権限設定可能なユーザーかどうか（Admin のみ）
+      // 権限設定可能なユーザーかどうか（管理者のみ）
       if (!isCurrentUserAdmin) {
         return {
           canRemove: false,
-          reason: '権限を設定できるのはAdminユーザーのみです',
+          reason: '権限を設定できるのは管理者権限を持つユーザーのみです',
         };
       }
 
@@ -252,7 +254,7 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
         if (adminCount <= 1) {
           return {
             canRemove: false,
-            reason: '最後のAdminの権限は削除できません',
+            reason: '最後の管理者の権限は削除できません',
           };
         }
       }

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import dotenv from 'dotenv';
 
-// Load .env only when not running under a test runner
+// テスト実行時以外でのみ .env を読み込む
 const isTestRunner =
   process.env.NODE_ENV === 'test' ||
   !!process.env.VITEST ||
@@ -12,10 +12,10 @@ if (!isTestRunner) {
   dotenv.config();
 }
 
-// Detect test environment early to relax validation for unit tests that mock deps
+// モック依存を利用するユニットテストに備えてバリデーションを緩和できるよう、早期にテスト環境を判定する
 const isTest = process.env.NODE_ENV === 'test';
 
-// Base schema shared across environments
+// 全環境で共通のベーススキーマ
 const baseSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'test', 'production'])
@@ -23,7 +23,10 @@ const baseSchema = z.object({
   SKIP_ARTIFACT_GENERATION: z.string().optional(),
 });
 
-// Strict schema (dev/prod): require all variables
+export const STRIPE_API_VERSION_REGEX =
+  /^\d{4}-\d{2}-\d{2}(?:\.[A-Za-z0-9_-]+)?$/u;
+
+// 厳格スキーマ（開発・本番）：すべての変数を必須扱い
 const strictSchema = baseSchema.extend({
   DATABASE_URL: z.string().min(1),
   FRONTEND_URL: z.string().url(),
@@ -36,9 +39,19 @@ const strictSchema = baseSchema.extend({
   AWS_ACCESS_KEY_ID: z.string().min(1),
   AWS_SECRET_ACCESS_KEY: z.string().min(1),
   AWS_S3_BUCKET_NAME: z.string().min(1),
+  STRIPE_SECRET_KEY: z.string().min(1),
+  STRIPE_API_VERSION: z.string().regex(STRIPE_API_VERSION_REGEX).optional(),
+  STRIPE_APP_NAME: z.string().min(1).optional(),
+  STRIPE_DONATION_SUCCESS_URL: z.string().url(),
+  STRIPE_DONATION_CANCEL_URL: z.string().url(),
+  STRIPE_ONE_SHORT_DONATION_JPY_100_PRICE_ID: z.string().min(1),
+  STRIPE_ONE_SHORT_DONATION_JPY_500_PRICE_ID: z.string().min(1),
+  STRIPE_ONE_SHORT_DONATION_JPY_1000_PRICE_ID: z.string().min(1),
+  STRIPE_ONE_SHORT_DONATION_JPY_5000_PRICE_ID: z.string().min(1),
+  STRIPE_ONE_SHORT_DONATION_JPY_10000_PRICE_ID: z.string().min(1),
 });
 
-// Relaxed schema (test): provide safe defaults to avoid failing on import
+// 緩和スキーマ（テスト）：import 失敗を避ける安全なデフォルトを用意する
 const relaxedSchema = baseSchema.extend({
   DATABASE_URL: z
     .string()
@@ -56,6 +69,35 @@ const relaxedSchema = baseSchema.extend({
   AWS_ACCESS_KEY_ID: z.string().default('test'),
   AWS_SECRET_ACCESS_KEY: z.string().default('test'),
   AWS_S3_BUCKET_NAME: z.string().default('test-bucket'),
+  STRIPE_SECRET_KEY: z.string().default('sk_test_dummy'),
+  STRIPE_API_VERSION: z
+    .string()
+    .regex(STRIPE_API_VERSION_REGEX)
+    .default('2024-06-20'),
+  STRIPE_APP_NAME: z.string().default('Board Game Prototype Backend'),
+  STRIPE_DONATION_SUCCESS_URL: z
+    .string()
+    .url()
+    .default('http://localhost:3000/donations/success'),
+  STRIPE_DONATION_CANCEL_URL: z
+    .string()
+    .url()
+    .default('http://localhost:3000/donations/cancel'),
+  STRIPE_ONE_SHORT_DONATION_JPY_100_PRICE_ID: z
+    .string()
+    .default('price_test_jpy_100'),
+  STRIPE_ONE_SHORT_DONATION_JPY_500_PRICE_ID: z
+    .string()
+    .default('price_test_jpy_500'),
+  STRIPE_ONE_SHORT_DONATION_JPY_1000_PRICE_ID: z
+    .string()
+    .default('price_test_jpy_1000'),
+  STRIPE_ONE_SHORT_DONATION_JPY_5000_PRICE_ID: z
+    .string()
+    .default('price_test_jpy_5000'),
+  STRIPE_ONE_SHORT_DONATION_JPY_10000_PRICE_ID: z
+    .string()
+    .default('price_test_jpy_10000'),
 });
 
 const envSchema = isTest ? relaxedSchema : strictSchema;

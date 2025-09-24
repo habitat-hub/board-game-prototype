@@ -21,7 +21,7 @@ type ProjectTableProps = {
   onSelectPrototype: (projectId: string, prototypeId: string) => void;
   projectAdminMap: Record<string, boolean>;
   projectCreatorMap: Record<string, string>;
-  // プロジェクトごとの編集可否（AdminまたはEditor = true）
+  // プロジェクトごとの編集可否（管理者または編集者 = true）
   projectEditorMap: Record<string, boolean>;
 };
 
@@ -95,7 +95,7 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                         }))
                       }
                       editable={projectAdminMap[project.id]}
-                      notEditableReason="Adminのみ名前を変更できます"
+                      notEditableReason="管理者のみ名前を変更できます"
                     />
                   </div>
                 </div>
@@ -186,7 +186,7 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                   ) : (
                     <RowIconButton
                       ariaLabel="削除"
-                      title="削除はAdminのみ可能です"
+                      title="削除は管理者のみ可能です"
                       variant="danger"
                       disabled
                     >
