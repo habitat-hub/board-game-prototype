@@ -44,6 +44,7 @@ const createIdempotencyKey = (): string => {
 const DonationTemplate: React.FC = () => {
   const router = useRouter();
   const idempotencyKeyRef = useRef<string>(createIdempotencyKey());
+  const inFlightRef = useRef<boolean>(false);
 
   const [currency, setCurrency] = useState<string>('JPY');
   const [options, setOptions] = useState<Array<DonationOption>>([]);
@@ -154,11 +155,14 @@ const DonationTemplate: React.FC = () => {
     [currencyFormatter]
   );
 
+  /**
+   * Stripe Checkout セッションを作成してリダイレクト
+   */
   const handleCheckout = useCallback(
-    async (amount: number) => {
-      if (processingAmount !== null) {
-        return;
-      }
+    async (amount: number): Promise<void> => {
+      // 決済処理中（または同期ガード有効）なら二重送信を防止
+      if (processingAmount !== null || inFlightRef.current) return;
+      inFlightRef.current = true;
 
       setCheckoutError(null);
       setProcessingAmount(amount);
@@ -173,7 +177,7 @@ const DonationTemplate: React.FC = () => {
         );
 
         if (!session.url) {
-          throw new Error('Stripe Checkout URL is missing in the response.');
+          throw new Error('Stripe Checkout のURLが応答に含まれていません。');
         }
 
         window.location.assign(session.url);
@@ -191,6 +195,8 @@ const DonationTemplate: React.FC = () => {
         }
 
         setProcessingAmount(null);
+      } finally {
+        inFlightRef.current = false;
       }
     },
     [processingAmount]
