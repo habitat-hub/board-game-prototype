@@ -164,9 +164,12 @@ const DonationTemplate: React.FC = () => {
       setProcessingAmount(amount);
 
       try {
+        // 冪等性キーを都度生成（重複決済防止）
+        const key = createIdempotencyKey();
+        idempotencyKeyRef.current = key;
         const session = await donationService.createCheckoutSession(
           { amount },
-          { idempotencyKey: idempotencyKeyRef.current }
+          { idempotencyKey: key }
         );
 
         if (!session.url) {
