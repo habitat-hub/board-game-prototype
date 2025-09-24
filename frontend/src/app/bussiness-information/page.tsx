@@ -10,6 +10,10 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
+/**
+ * サービス情報ページを描画する。
+ * @returns {JSX.Element} サービス情報コンテンツ。
+ */
 const BussinessInformationPage: React.FC = () => {
   return <BussinessInformation />;
 };
