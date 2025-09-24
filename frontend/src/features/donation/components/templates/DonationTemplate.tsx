@@ -222,9 +222,10 @@ const DonationTemplate: React.FC = () => {
     (e: React.KeyboardEvent) => {
       if (!options.length) return;
       if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      // 決済処理中の場合はスキップ
+      if (processingAmount !== null) return;
       e.preventDefault();
       setCheckoutError(null);
-      setProcessingAmount(null);
       setSelectedOptionIndex((prev) => {
         if (prev == null) return 0;
         const next = e.key === 'ArrowRight' ? prev + 1 : prev - 1;
@@ -233,7 +234,7 @@ const DonationTemplate: React.FC = () => {
         return next;
       });
     },
-    [options]
+    [options, processingAmount]
   );
 
   return (
