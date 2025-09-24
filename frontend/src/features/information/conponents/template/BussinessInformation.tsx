@@ -1,13 +1,16 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import type { AppRouterInstance } from 'next/navigation';
 import React from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 
-// 情報提供ページテンプレート (特定商取引法に基づく表記 / 運営情報 等のまとめ)
-// 現時点ではダミー情報。実データが確定次第差し替え予定。
+/**
+ * 情報提供ページテンプレート（特定商取引法に基づく表記 / 運営情報などのまとめ）。
+ * 現時点ではダミー情報であり、実データが確定次第差し替える。
+ */
 const BussinessInformation: React.FC = () => {
-  const router = useRouter();
+  const router: AppRouterInstance = useRouter();
   return (
     <main className="relative mx-auto max-w-4xl px-4 py-10">
       <div
