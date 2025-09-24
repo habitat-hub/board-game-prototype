@@ -1,7 +1,6 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import type { AppRouterInstance } from 'next/navigation';
 import React from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 
@@ -10,7 +9,8 @@ import { IoArrowBack } from 'react-icons/io5';
  * 現時点ではダミー情報であり、実データが確定次第差し替える。
  */
 const BussinessInformation: React.FC = () => {
-  const router: AppRouterInstance = useRouter();
+  // ナビゲーション操作用のルーターインスタンス
+  const router: ReturnType<typeof useRouter> = useRouter();
   return (
     <main className="relative mx-auto max-w-4xl px-4 py-10">
       <div
