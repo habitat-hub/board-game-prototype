@@ -59,22 +59,6 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
     () =>
       [
         {
-          value: 'viewer',
-          label: ROLE_LABELS.viewer,
-          summary: '閲覧のみ',
-          description: 'プロジェクトを閲覧できますが編集はできません',
-          icon: <FaEye className="h-4 w-4" />,
-          iconColor: 'text-kibako-primary',
-        },
-        {
-          value: 'editor',
-          label: ROLE_LABELS.editor,
-          summary: '編集権限',
-          description: 'プロジェクトの内容を編集できますが権限変更はできません',
-          icon: <FaEdit className="h-4 w-4" />,
-          iconColor: 'text-kibako-info',
-        },
-        {
           value: 'admin',
           label: ROLE_LABELS.admin,
           summary: '管理者権限',
@@ -82,6 +66,22 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
             'プロトタイプ削除、ユーザー管理、権限変更、設定管理など全ての操作が可能です',
           icon: <FaUserShield className="h-4 w-4" />,
           iconColor: 'text-kibako-danger',
+        },
+        {
+          value: 'editor',
+          label: ROLE_LABELS.editor,
+          summary: '編集権限',
+          description: 'プロジェクト内のパーツやルームを編集できます',
+          icon: <FaEdit className="h-4 w-4" />,
+          iconColor: 'text-kibako-info',
+        },
+        {
+          value: 'viewer',
+          label: ROLE_LABELS.viewer,
+          summary: '閲覧のみ',
+          description: 'プロジェクトを閲覧できますが編集はできません',
+          icon: <FaEye className="h-4 w-4" />,
+          iconColor: 'text-kibako-primary',
         },
       ] satisfies Array<{
         value: RoleValue;
@@ -153,7 +153,7 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
 
           {/* 権限選択 */}
           <div className="md:w-48 w-full">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-1 mb-1">
               <label
                 id={labelId}
                 className="block text-sm font-medium text-kibako-primary"
