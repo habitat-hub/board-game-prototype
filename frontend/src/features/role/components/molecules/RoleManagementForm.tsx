@@ -1,7 +1,10 @@
-import React from 'react';
-import { FaPlus } from 'react-icons/fa';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { FaEdit, FaEye, FaPlus, FaUserShield } from 'react-icons/fa';
+import { HiOutlineQuestionMarkCircle } from 'react-icons/hi';
 
+import { ROLE_LABELS } from '@/constants/roles';
 import RoleSelect from '@/features/role/components/atoms/RoleSelect';
+import type { RoleValue } from '@/features/role/types';
 
 import UserSearchDropdown from './UserSearchDropdown';
 
@@ -46,6 +49,76 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
   loading,
   canManageRole,
 }) => {
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const helpButtonRef = useRef<HTMLButtonElement | null>(null);
+  const helpPopoverRef = useRef<HTMLDivElement | null>(null);
+  const labelId = useId();
+  const helpPopoverId = useId();
+
+  const roleHelpItems = useMemo(
+    () =>
+      [
+        {
+          value: 'viewer',
+          label: ROLE_LABELS.viewer,
+          summary: '閲覧のみ',
+          description: 'プロジェクトを閲覧できますが編集はできません',
+          icon: <FaEye className="h-4 w-4" />,
+          iconColor: 'text-kibako-primary',
+        },
+        {
+          value: 'editor',
+          label: ROLE_LABELS.editor,
+          summary: '編集権限',
+          description: 'プロジェクトの内容を編集できますが権限変更はできません',
+          icon: <FaEdit className="h-4 w-4" />,
+          iconColor: 'text-kibako-info',
+        },
+        {
+          value: 'admin',
+          label: ROLE_LABELS.admin,
+          summary: '管理者権限',
+          description:
+            'プロトタイプ削除、ユーザー管理、権限変更、設定管理など全ての操作が可能です',
+          icon: <FaUserShield className="h-4 w-4" />,
+          iconColor: 'text-kibako-danger',
+        },
+      ] satisfies Array<{
+        value: RoleValue;
+        label: string;
+        summary: string;
+        description: string;
+        icon: React.ReactElement;
+        iconColor: string;
+      }>,
+    []
+  );
+
+  useEffect(() => {
+    if (!isHelpOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (helpButtonRef.current?.contains(target)) return;
+      if (helpPopoverRef.current?.contains(target)) return;
+      setIsHelpOpen(false);
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsHelpOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isHelpOpen]);
+
   return (
     <div className="mb-4">
       <div
@@ -80,9 +153,58 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
 
           {/* 権限選択 */}
           <div className="md:w-48 w-full">
-            <label className="block text-sm font-medium text-kibako-primary mb-1">
-              権限
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label
+                id={labelId}
+                className="block text-sm font-medium text-kibako-primary"
+              >
+                権限
+              </label>
+              <div className="relative flex-shrink-0">
+                <button
+                  type="button"
+                  ref={helpButtonRef}
+                  aria-expanded={isHelpOpen}
+                  aria-controls={helpPopoverId}
+                  onClick={() => setIsHelpOpen((prev) => !prev)}
+                  className="p-1 text-kibako-secondary/80 hover:text-kibako-primary transition-colors"
+                >
+                  <span className="sr-only">権限の説明を表示</span>
+                  <HiOutlineQuestionMarkCircle className="h-4 w-4" />
+                </button>
+                {isHelpOpen && (
+                  <div
+                    ref={helpPopoverRef}
+                    id={helpPopoverId}
+                    role="dialog"
+                    aria-label="権限の説明"
+                    className="absolute right-0 z-20 mt-2 w-64 rounded-lg border border-kibako-secondary/30 bg-kibako-white p-3 shadow-lg"
+                  >
+                    <p className="mb-2 text-sm font-semibold text-kibako-primary">
+                      権限の説明
+                    </p>
+                    <ul className="space-y-2 text-xs text-kibako-secondary">
+                      {roleHelpItems.map((item) => (
+                        <li key={item.value} className="flex gap-2">
+                          <span className={`${item.iconColor} mt-0.5`}>
+                            {item.icon}
+                          </span>
+                          <div className="space-y-0.5">
+                            <p className="text-sm font-medium text-kibako-primary">
+                              {item.label}
+                            </p>
+                            <p>{item.summary}</p>
+                            <p className="text-[11px] leading-snug text-kibako-secondary/90">
+                              {item.description}
+                            </p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
             <RoleSelect
               value={selectedRole}
               onChange={onRoleChange}
@@ -92,6 +214,7 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
                   ? '権限変更する権限がありません'
                   : '付与する権限を選択'
               }
+              aria-labelledby={labelId}
               className="w-full"
             />
           </div>
