@@ -648,12 +648,18 @@ const TopPage: React.FC = () => {
           >
             kibako-habitat-hub@googlegroups.com
           </a>
-          <div className="mt-6 text-xs md:text-sm">
+          <div className="mt-6 flex flex-col items-center gap-2 text-xs md:text-sm">
             <Link
               href="/bussiness-information"
               className="text-amber-700 underline underline-offset-4 decoration-amber-400 hover:text-amber-900 hover:decoration-amber-600 transition-colors"
             >
               サービス情報 / 運営概要（特定商取引法に基づく表記 相当）
+            </Link>
+            <Link
+              href="/terms-of-service"
+              className="text-amber-700 underline underline-offset-4 decoration-amber-400 hover:text-amber-900 hover:decoration-amber-600 transition-colors"
+            >
+              利用規約
             </Link>
           </div>
         </div>
