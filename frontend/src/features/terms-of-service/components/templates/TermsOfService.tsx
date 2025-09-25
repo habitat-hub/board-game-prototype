@@ -1,14 +1,18 @@
 import React from 'react';
 
-const UPDATED_AT = '2025年9月24日';
-const CONTACT_EMAIL = 'kibako-habitat-hub@googlegroups.com';
+// 最終更新日の表示用定数
+const UPDATED_AT: string = '2025年9月24日';
+// お問い合わせメールアドレス
+const CONTACT_EMAIL: string = 'kibako-habitat-hub@googlegroups.com';
 
+// 規約セクションの型（項目の箇条書きは任意）
 type TermsSection = {
-  readonly heading: string;
-  readonly body: string;
-  readonly points?: readonly string[];
+  heading: string;
+  body: string;
+  points?: string[];
 };
 
+// 規約本文のセクション定義
 const TERMS_SECTIONS: ReadonlyArray<TermsSection> = [
   {
     heading: '第1条（本規約の適用）',
@@ -47,6 +51,9 @@ const TERMS_SECTIONS: ReadonlyArray<TermsSection> = [
   },
 ];
 
+/**
+ * 利用規約テンプレート（ダミー）。正式公開前の占位用。
+ */
 const TermsOfService: React.FC = () => {
   return (
     <div className="mx-auto flex min-h-screen max-w-5xl flex-col gap-12 px-6 py-16 text-kibako-primary">
