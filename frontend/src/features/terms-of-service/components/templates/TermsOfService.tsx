@@ -3,7 +3,13 @@ import React from 'react';
 const UPDATED_AT = '2025年9月24日';
 const CONTACT_EMAIL = 'kibako-habitat-hub@googlegroups.com';
 
-const TERMS_SECTIONS = [
+type TermsSection = {
+  readonly heading: string;
+  readonly body: string;
+  readonly points?: readonly string[];
+};
+
+const TERMS_SECTIONS: ReadonlyArray<TermsSection> = [
   {
     heading: '第1条（本規約の適用）',
     body: 'KIBAKO（以下、「本サービス」といいます。）の利用にあたり、本規約は利用者と運営者との間で適用される基本的な条件を定めるものです。本サービスの画面上で「同意する」等の意思表示を行った時点で、本規約に同意したものとみなされます。',
@@ -39,7 +45,7 @@ const TERMS_SECTIONS = [
     heading: '第6条（免責および準拠法）',
     body: '本規約の解釈には日本法を準拠法とし、本サービスに起因または関連して利用者と運営者の間で紛争が生じた場合には、運営者の所在地を管轄する裁判所を第一審の専属的合意管轄裁判所とします。',
   },
-] as const;
+];
 
 const TermsOfService: React.FC = () => {
   return (
