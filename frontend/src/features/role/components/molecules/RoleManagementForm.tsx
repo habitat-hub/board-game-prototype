@@ -95,16 +95,20 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
   );
 
   useEffect(() => {
+    // ヘルプポップオーバーが閉じている場合は処理しない
     if (!isHelpOpen) return;
 
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
+      // ヘルプボタン内をクリックした場合は閉じない
       if (helpButtonRef.current?.contains(target)) return;
+      // ポップオーバー内をクリックした場合は閉じない
       if (helpPopoverRef.current?.contains(target)) return;
       setIsHelpOpen(false);
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Escapeキーが押された場合はポップオーバーを閉じる
       if (event.key === 'Escape') {
         setIsHelpOpen(false);
       }
