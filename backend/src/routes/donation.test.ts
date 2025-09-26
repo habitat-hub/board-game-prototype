@@ -28,9 +28,16 @@ vi.mock('../config/stripe', () => ({
   },
 }));
 
+import env from '../config/env';
 import { app } from '../server';
 
 const { createCheckoutSessionMock } = stripeMocks;
+
+const DONATION_SUCCESS_URL = new URL(
+  '/donate/success',
+  env.FRONTEND_URL
+).toString();
+const DONATION_CANCEL_URL = new URL('/donate', env.FRONTEND_URL).toString();
 
 describe('donation routes', () => {
   beforeEach(() => {
@@ -73,8 +80,8 @@ describe('donation routes', () => {
             quantity: 1,
           },
         ],
-        success_url: 'http://localhost:3000/donations/success',
-        cancel_url: 'http://localhost:3000/donations/cancel',
+        success_url: DONATION_SUCCESS_URL,
+        cancel_url: DONATION_CANCEL_URL,
         metadata: {
           donation_amount_jpy: '500',
         },

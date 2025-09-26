@@ -16,10 +16,6 @@ describe('env config missing variables', () => {
     process.env.AWS_SECRET_ACCESS_KEY = 'secret';
     process.env.AWS_S3_BUCKET_NAME = 'bucket';
     process.env.STRIPE_SECRET_KEY = 'sk_test_123';
-    process.env.STRIPE_DONATION_SUCCESS_URL =
-      'http://localhost:3000/donations/success';
-    process.env.STRIPE_DONATION_CANCEL_URL =
-      'http://localhost:3000/donations/cancel';
     process.env.STRIPE_ONE_SHORT_DONATION_JPY_100_PRICE_ID = 'price_100';
     process.env.STRIPE_ONE_SHORT_DONATION_JPY_500_PRICE_ID = 'price_500';
     process.env.STRIPE_ONE_SHORT_DONATION_JPY_1000_PRICE_ID = 'price_1000';
