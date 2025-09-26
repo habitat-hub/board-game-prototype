@@ -10,6 +10,18 @@ import Loading from '@/components/organisms/Loading';
 import { useClientPathInfo } from '@/hooks/useClientPathInfo';
 import { useIsPC } from '@/hooks/useIsPC';
 
+const MOBILE_ACCESSIBLE_PATHS = new Set([
+  '/',
+  '/bussiness-information',
+  '/privacy-policy',
+  '/terms-of-service',
+]);
+
+const normalizePathname = (pathname: string) => {
+  if (pathname === '/') return pathname;
+  return pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+};
+
 // QueryClientの設定
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,19 +44,22 @@ export default function ClientLayout({
 }>) {
   const router = useRouter();
   const { pathname, isGameBoardPath } = useClientPathInfo();
+  const normalizedPathname = normalizePathname(pathname);
+  const isMobileAccessiblePath =
+    MOBILE_ACCESSIBLE_PATHS.has(normalizedPathname);
   const { isPC, isReady } = useIsPC();
 
   // 非PCデバイスはトップページへ戻す
   useEffect(() => {
     if (!isReady) return;
-    if (!isPC && pathname !== '/') {
+    if (!isPC && !isMobileAccessiblePath) {
       router.replace('/');
     }
-  }, [isPC, isReady, pathname, router]);
+  }, [isMobileAccessiblePath, isPC, isReady, router]);
 
   // デバイスチェック中は読み込み表示を返すことで、
   // サーバーサイドレンダリングとの整合性を保つ
-  if (!isReady && pathname !== '/') {
+  if (!isReady && !isMobileAccessiblePath) {
     return <Loading />;
   }
 
