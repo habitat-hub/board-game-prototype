@@ -7,6 +7,17 @@ import { InternalServerError, ValidationError } from '../errors/CustomError';
 
 const router = express.Router();
 
+/** フロントエンドの寄付完了ページURL */
+const DONATION_SUCCESS_URL: string = new URL(
+  '/donate/success',
+  env.FRONTEND_URL
+).toString();
+/** フロントエンドの寄付キャンセルページURL */
+const DONATION_CANCEL_URL: string = new URL(
+  '/donate',
+  env.FRONTEND_URL
+).toString();
+
 /**
  * @swagger
  * tags:
@@ -164,8 +175,8 @@ router.post(
               quantity: 1,
             },
           ],
-          success_url: env.STRIPE_DONATION_SUCCESS_URL,
-          cancel_url: env.STRIPE_DONATION_CANCEL_URL,
+          success_url: DONATION_SUCCESS_URL,
+          cancel_url: DONATION_CANCEL_URL,
           metadata: {
             donation_amount_jpy: String(donationAmount),
           },
