@@ -8,7 +8,7 @@ import { IoArrowBack } from 'react-icons/io5';
  * 情報提供ページテンプレート（特定商取引法に基づく表記 / 運営情報などのまとめ）。
  * 現時点ではダミー情報であり、実データが確定次第差し替える。
  */
-const BussinessInformation: React.FC = () => {
+const BusinessInformation: React.FC = () => {
   // ナビゲーション操作用のルーターインスタンス
   const router: ReturnType<typeof useRouter> = useRouter();
   return (
@@ -198,4 +198,4 @@ const BussinessInformation: React.FC = () => {
   );
 };
 
-export default BussinessInformation;
+export default BusinessInformation;
