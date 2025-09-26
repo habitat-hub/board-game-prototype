@@ -13,11 +13,13 @@ import { IoArrowBack, IoSparkles, IoShieldCheckmark } from 'react-icons/io5';
 
 import { donationService } from '@/api/endpoints/donations';
 
+/** 寄付オプションの金額とPrice ID */
 type DonationOption = {
   amount: number;
   priceId: string;
 };
 
+/** 金額別の寄付メッセージ */
 const SUPPORT_MESSAGE_BY_AMOUNT: Readonly<Record<number, string>> = {
   100: '開発者が小さなおやつを食べられます 🍪',
   500: '開発者にコーヒーを差し入れできます ☕',
@@ -26,6 +28,11 @@ const SUPPORT_MESSAGE_BY_AMOUNT: Readonly<Record<number, string>> = {
   10000: '開発チームに盛大な打ち上げをプレゼントできます 🎉',
 };
 
+/**
+ * Stripe決済リクエスト向けの冪等性キーを生成する。
+ * 利用可能な場合は `crypto.randomUUID()` を優先し、それ以外は Math.random と Date を組み合わせたキーを返す。
+ * @returns {string} 冪等性の保証に用いる一意性の高いキー文字列
+ */
 const createIdempotencyKey = (): string => {
   if (
     typeof crypto !== 'undefined' &&
