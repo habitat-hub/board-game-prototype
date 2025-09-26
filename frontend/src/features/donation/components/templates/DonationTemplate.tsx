@@ -235,7 +235,7 @@ const DonationTemplate: React.FC = () => {
     return options[selectedOptionIndex] ?? null;
   }, [options, selectedOptionIndex]);
 
-  // Keyboard navigation for option buttons (left/right arrows)
+  // 寄付オプションボタンを左右キーで操作できるようにするキーボードナビゲーション
   const optionsContainerRef = useRef<HTMLDivElement | null>(null);
 
   const handleKeyNav = useCallback(
@@ -249,8 +249,8 @@ const DonationTemplate: React.FC = () => {
       setSelectedOptionIndex((prev) => {
         if (prev == null) return 0;
         const next = e.key === 'ArrowRight' ? prev + 1 : prev - 1;
-        if (next < 0) return options.length - 1; // wrap
-        if (next >= options.length) return 0; // wrap
+        if (next < 0) return options.length - 1; // 先頭に戻って循環
+        if (next >= options.length) return 0; // 末尾まで到達したら先頭へ循環
         return next;
       });
     },
@@ -259,7 +259,7 @@ const DonationTemplate: React.FC = () => {
 
   return (
     <main className="relative mx-auto max-w-3xl px-4 pb-16 pt-24">
-      {/* Subtle layered decorative background */}
+      {/* やわらかな装飾背景 */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-20">
         <div className="absolute inset-0 bg-gradient-to-b from-white via-white to-kibako-primary/5" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(0,0,0,0.04),transparent_60%)]" />
@@ -269,7 +269,7 @@ const DonationTemplate: React.FC = () => {
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-40 bg-gradient-to-b from-kibako-primary/15 via-transparent"
       />
 
-      {/* Sticky header */}
+      {/* 固定ヘッダー */}
       <div className="fixed left-0 right-0 top-4 z-40 mx-auto flex max-w-3xl items-center justify-between px-4">
         <button
           onClick={() => router.back()}
@@ -280,7 +280,7 @@ const DonationTemplate: React.FC = () => {
         </button>
       </div>
 
-      {/* Hero */}
+      {/* ヒーローセクション */}
       <section className="mb-8 text-center">
         <div className="inline-flex items-center gap-2 rounded-full border border-kibako-primary/20 bg-white/70 px-4 py-1 text-xs font-medium text-kibako-primary backdrop-blur">
           <IoSparkles className="h-4 w-4" />
@@ -294,9 +294,9 @@ const DonationTemplate: React.FC = () => {
         </p>
       </section>
 
-      {/* Content card */}
+      {/* コンテンツカード */}
       <section className="relative rounded-3xl border border-black/5 bg-white/80 p-6 shadow-xl ring-1 ring-black/5 backdrop-blur-md sm:p-8">
-        {/* Gradient accent ring */}
+        {/* グラデーションのアクセントリング */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 rounded-3xl [mask:linear-gradient(white,transparent)]"
