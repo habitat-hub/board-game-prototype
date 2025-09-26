@@ -42,8 +42,6 @@ const strictSchema = baseSchema.extend({
   STRIPE_SECRET_KEY: z.string().min(1),
   STRIPE_API_VERSION: z.string().regex(STRIPE_API_VERSION_REGEX).optional(),
   STRIPE_APP_NAME: z.string().min(1).optional(),
-  STRIPE_DONATION_SUCCESS_URL: z.string().url(),
-  STRIPE_DONATION_CANCEL_URL: z.string().url(),
   STRIPE_ONE_SHORT_DONATION_JPY_100_PRICE_ID: z.string().min(1),
   STRIPE_ONE_SHORT_DONATION_JPY_500_PRICE_ID: z.string().min(1),
   STRIPE_ONE_SHORT_DONATION_JPY_1000_PRICE_ID: z.string().min(1),
@@ -75,14 +73,6 @@ const relaxedSchema = baseSchema.extend({
     .regex(STRIPE_API_VERSION_REGEX)
     .default('2024-06-20'),
   STRIPE_APP_NAME: z.string().default('Board Game Prototype Backend'),
-  STRIPE_DONATION_SUCCESS_URL: z
-    .string()
-    .url()
-    .default('http://localhost:3000/donations/success'),
-  STRIPE_DONATION_CANCEL_URL: z
-    .string()
-    .url()
-    .default('http://localhost:3000/donations/cancel'),
   STRIPE_ONE_SHORT_DONATION_JPY_100_PRICE_ID: z
     .string()
     .default('price_test_jpy_100'),
