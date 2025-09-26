@@ -71,6 +71,7 @@ const DonationTemplate: React.FC = () => {
         setOptionsError(null);
         const data = await donationService.getDonationOptions();
 
+        // エフェクトが無効化された場合の早期リターン
         if (!isActive) return;
 
         const normalizedCurrency =
@@ -95,10 +96,12 @@ const DonationTemplate: React.FC = () => {
 
         setOptions(normalizedOptions);
         setSelectedOptionIndex((prevIndex) => {
+          // 寄付オプションが空の場合は選択状態を解除
           if (normalizedOptions.length === 0) {
             return null;
           }
 
+          // 前回選択が有効範囲内であれば再利用
           if (prevIndex !== null && prevIndex < normalizedOptions.length) {
             return prevIndex;
           }
@@ -107,6 +110,7 @@ const DonationTemplate: React.FC = () => {
             (option) => option.amount === 100
           );
 
+          // デフォルトの100円オプションが存在する場合は初期選択に設定
           if (defaultIndex !== -1) {
             return defaultIndex;
           }
@@ -114,16 +118,19 @@ const DonationTemplate: React.FC = () => {
           return 0;
         });
 
+        // 利用可能な寄付オプションが存在しない場合はエラーメッセージを表示
         if (normalizedOptions.length === 0) {
           setOptionsError('現在、利用可能な寄付オプションがありません。');
         }
       } catch (error: unknown) {
+        // エフェクトが無効化済みの場合は以降の処理を中断
         if (!isActive) return;
         console.error('[donations] failed to fetch options', error);
         setOptionsError(
           '寄付オプションの取得に失敗しました。時間を置いて再度お試しください。'
         );
       } finally {
+        // エフェクトが有効な場合のみローディング状態を更新
         if (isActive) {
           setIsLoadingOptions(false);
         }
