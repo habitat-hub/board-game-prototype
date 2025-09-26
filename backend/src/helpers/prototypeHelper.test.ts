@@ -33,7 +33,12 @@ vi.mock('./roleHelper', () => ({
 vi.mock('../const', () => ({
   RESOURCE_TYPES: { PROJECT: 'project' },
   PERMISSION_ACTIONS: {},
-  ROLE_TYPE: { ADMIN: 'admin', EDITOR: 'editor', VIEWER: 'viewer' },
+  ROLE_TYPE: {
+    ADMIN: 'admin',
+    EDITOR: 'editor',
+    PLAYER: 'player',
+    VIEWER: 'viewer',
+  },
 }));
 
 type PartModelType = typeof import('../models/Part').default;
@@ -143,6 +148,7 @@ describe('getAccessiblePrototypes', () => {
           },
           permissions: {
             canRead: true,
+            canInteract: true,
             canWrite: true,
             canDelete: true,
             canManage: true,

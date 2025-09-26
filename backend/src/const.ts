@@ -4,11 +4,13 @@
  * Role Hierarchy (権限の階層):
  * admin:  すべての権限 (read, write, delete, manage)
  * editor: 読み書き権限 (read, write)
+ * player: インスタンスルーム内での操作権限 (read, interact)
  * viewer: 読み取り権限のみ (read) - 閲覧のみ
  */
 export const ROLE_TYPE = {
   ADMIN: 'admin',
   EDITOR: 'editor',
+  PLAYER: 'player',
   VIEWER: 'viewer',
 };
 
@@ -22,6 +24,7 @@ export const ROLE_TYPE = {
  */
 export const PERMISSION_ACTIONS = {
   READ: 'read',
+  INTERACT: 'interact',
   WRITE: 'write',
   DELETE: 'delete',
   MANAGE: 'manage',

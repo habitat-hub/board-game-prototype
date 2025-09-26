@@ -73,6 +73,8 @@ router.use(ensureAuthenticated);
  *                                 type: boolean
  *                               canWrite:
  *                                 type: boolean
+ *                               canInteract:
+ *                                 type: boolean
  *                               canDelete:
  *                                 type: boolean
  *                               canManage:
@@ -80,6 +82,7 @@ router.use(ensureAuthenticated);
  *                             required:
  *                               - canRead
  *                               - canWrite
+ *                               - canInteract
  *                               - canDelete
  *                               - canManage
  *                   prototypes:

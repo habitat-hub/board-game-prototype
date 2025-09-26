@@ -159,6 +159,9 @@ describe('UserRoleTable - role change disabled states', () => {
     await userEvent.click(btn);
 
     // Select a different role from the options menu
+    expect(
+      await screen.findByRole('option', { name: ROLE_LABELS.player })
+    ).toBeInTheDocument();
     const adminOption = await screen.findByRole('option', {
       name: ROLE_LABELS.admin,
     });

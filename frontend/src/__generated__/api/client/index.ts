@@ -186,6 +186,7 @@ export type ProjectsListData = {
     permissions?: {
       canRead: boolean;
       canWrite: boolean;
+      canInteract: boolean;
       canDelete: boolean;
       canManage: boolean;
     };

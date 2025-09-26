@@ -23,7 +23,7 @@ interface UsePartDragSystemProps {
   // ステージのref
   stageRef: React.RefObject<Konva.Stage>;
   // 編集可能かどうか
-  canEdit: boolean;
+  canInteract: boolean;
 }
 
 /**
@@ -34,7 +34,7 @@ export const usePartDragSystem = ({
   canvasSize,
   gameBoardMode,
   stageRef,
-  canEdit,
+  canInteract,
 }: UsePartDragSystemProps) => {
   const { dispatch } = usePartReducer();
   const { measureOperation } = usePerformanceTracker();
@@ -82,7 +82,7 @@ export const usePartDragSystem = ({
         : [partId];
       selectMultipleParts(newSelected);
 
-      if (!canEdit) return;
+      if (!canInteract) return;
 
       // プレイルーム時の単一選択カード/トークンのfrontmost処理
       // 複数選択時はfrontmost処理をスキップ
@@ -119,7 +119,7 @@ export const usePartDragSystem = ({
       selectMultipleParts,
       parts,
       dispatch,
-      canEdit,
+      canInteract,
     ]
   );
 
@@ -128,7 +128,7 @@ export const usePartDragSystem = ({
    */
   const handlePartDragMove = useCallback(
     (e: Konva.KonvaEventObject<DragEvent>, partId: number) => {
-      if (!canEdit) return;
+      if (!canInteract) return;
 
       const stage = stageRef.current;
 
@@ -205,7 +205,7 @@ export const usePartDragSystem = ({
       // 更新処理の実行
       stage.batchDraw();
     },
-    [getConstrainedPosition, parts, selectedPartIds, stageRef, canEdit]
+    [getConstrainedPosition, parts, selectedPartIds, stageRef, canInteract]
   );
 
   /**
@@ -213,7 +213,7 @@ export const usePartDragSystem = ({
    */
   const handlePartDragEnd = useCallback(
     (e: Konva.KonvaEventObject<DragEvent>, partId: number) => {
-      if (gameBoardMode === GameBoardMode.PREVIEW || !canEdit) return;
+      if (gameBoardMode === GameBoardMode.PREVIEW || !canInteract) return;
 
       measureOperation('Part Drag Update', () => {
         const originalPositions = originalPositionsRef.current;
@@ -281,7 +281,7 @@ export const usePartDragSystem = ({
       parts,
       getConstrainedPosition,
       dispatch,
-      canEdit,
+      canInteract,
     ]
   );
 

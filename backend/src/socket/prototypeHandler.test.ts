@@ -1,13 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-const { bulkCreateMock } = vi.hoisted(() => ({
+const { bulkCreateMock, updateMock, hasPermissionMock } = vi.hoisted(() => ({
   bulkCreateMock: vi.fn(),
+  updateMock: vi.fn(),
+  hasPermissionMock: vi.fn(),
 }));
 
 vi.mock('../models/Part', () => ({
   default: {
     bulkCreate: bulkCreateMock,
+    update: updateMock,
   },
 }));
 vi.mock('../models/PartProperty', () => ({
@@ -23,6 +26,9 @@ vi.mock('../helpers/prototypeHelper', () => ({
   shuffleDeck: vi.fn(),
   persistDeckOrder: vi.fn(),
   isOverlapping: vi.fn(),
+}));
+vi.mock('../helpers/roleHelper', () => ({
+  hasPermission: hasPermissionMock,
 }));
 vi.mock('../models/Prototype', () => ({
   default: { findByPk: vi.fn() },
@@ -148,6 +154,7 @@ const mockedFindByPk = PrototypeModel.findByPk as unknown as ReturnType<
 describe('rebalanceOrders', () => {
   beforeEach(() => {
     bulkCreateMock.mockReset();
+    updateMock.mockReset();
   });
 
   afterEach(() => {
@@ -217,6 +224,100 @@ describe('rebalanceOrders', () => {
       expect(part.dataValues.order).toBeCloseTo(expectedOrders[index], 10);
       expect(part.getDataValue('updatedAt')).toEqual(fixedNow);
     });
+  });
+});
+
+describe('prototype part mutation permissions', () => {
+  beforeEach(() => {
+    hasPermissionMock.mockReset();
+    updateMock.mockReset();
+  });
+
+  it('allows part updates when write fails but interact is permitted', async () => {
+    const handlers: Record<string, any> = {};
+    const socket = {
+      data: { prototypeId: 'proto-1', userId: 'user-1', username: 'Alice' },
+      on: vi.fn((event: string, handler: any) => {
+        handlers[event] = handler;
+      }),
+      emit: vi.fn(),
+      join: vi.fn(),
+      leave: vi.fn(),
+    } as any;
+
+    const roomEmit = vi.fn();
+    const io = { to: vi.fn(() => ({ emit: roomEmit })) } as any;
+
+    updateMock.mockResolvedValue([
+      1,
+      [{ dataValues: { id: 1, position: { x: 10, y: 20 } } }],
+    ]);
+
+    hasPermissionMock.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+
+    handlePrototype(socket, io);
+
+    await handlers[PROTOTYPE_SOCKET_EVENT.UPDATE_PART]({
+      partId: 1,
+      updatePart: { position: { x: 10, y: 20 } },
+    });
+
+    expect(hasPermissionMock).toHaveBeenNthCalledWith(
+      1,
+      'user-1',
+      'prototype',
+      'write',
+      'proto-1'
+    );
+    expect(hasPermissionMock).toHaveBeenNthCalledWith(
+      2,
+      'user-1',
+      'prototype',
+      'interact',
+      'proto-1'
+    );
+    expect(updateMock).toHaveBeenCalledTimes(1);
+    expect(socket.emit).not.toHaveBeenCalledWith(
+      COMMON_SOCKET_EVENT.ERROR,
+      expect.anything()
+    );
+    expect(roomEmit).toHaveBeenCalledWith(
+      PROTOTYPE_SOCKET_EVENT.UPDATE_PARTS,
+      expect.objectContaining({ parts: expect.any(Array) })
+    );
+  });
+
+  it('denies part updates when neither write nor interact is permitted', async () => {
+    const handlers: Record<string, any> = {};
+    const socket = {
+      data: { prototypeId: 'proto-2', userId: 'user-2', username: 'Bob' },
+      on: vi.fn((event: string, handler: any) => {
+        handlers[event] = handler;
+      }),
+      emit: vi.fn(),
+      join: vi.fn(),
+      leave: vi.fn(),
+    } as any;
+
+    const io = { to: vi.fn(() => ({ emit: vi.fn() })) } as any;
+
+    hasPermissionMock.mockResolvedValue(false);
+
+    handlePrototype(socket, io);
+
+    await handlers[PROTOTYPE_SOCKET_EVENT.UPDATE_PART]({
+      partId: 2,
+      updatePart: { position: { x: 1, y: 2 } },
+    });
+
+    expect(hasPermissionMock).toHaveBeenCalledTimes(2);
+    expect(updateMock).not.toHaveBeenCalled();
+    expect(socket.emit).toHaveBeenCalledWith(
+      COMMON_SOCKET_EVENT.ERROR,
+      expect.objectContaining({
+        message: 'パーツの更新権限がありません',
+      })
+    );
   });
 });
 

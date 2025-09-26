@@ -5,11 +5,13 @@
  * Role Hierarchy (権限の階層):
  * admin:  すべての権限 (read, write, delete, manage)
  * editor: 読み書き権限 (read, write)
+ * player: インスタンスルームでの操作権限 (read, interact)
  * viewer: 読み取り権限のみ (read) - 閲覧のみ
  */
 export const ROLE_TYPE = {
   ADMIN: 'admin',
   EDITOR: 'editor',
+  PLAYER: 'player',
   VIEWER: 'viewer',
 } as const;
 
@@ -18,6 +20,7 @@ export type RoleType = (typeof ROLE_TYPE)[keyof typeof ROLE_TYPE];
 export const ROLE_LABELS: Record<RoleType, string> = {
   admin: '管理者',
   editor: '編集者',
+  player: 'プレイヤー',
   viewer: '閲覧者',
 };
 
@@ -28,7 +31,8 @@ export const ROLE_LABELS: Record<RoleType, string> = {
 export const ROLE_PRIORITY = {
   [ROLE_TYPE.ADMIN]: 0,
   [ROLE_TYPE.EDITOR]: 1,
-  [ROLE_TYPE.VIEWER]: 2,
+  [ROLE_TYPE.PLAYER]: 2,
+  [ROLE_TYPE.VIEWER]: 3,
 } as const satisfies Record<RoleType, number>;
 
 /**
@@ -44,6 +48,7 @@ export const UNKNOWN_ROLE_PRIORITY =
  */
 export const PERMISSION_ACTIONS = {
   READ: 'read',
+  INTERACT: 'interact',
   WRITE: 'write',
   DELETE: 'delete',
   MANAGE: 'manage',

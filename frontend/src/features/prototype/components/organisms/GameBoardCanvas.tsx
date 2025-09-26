@@ -83,7 +83,7 @@ interface GameBoardCanvasProps {
     e: Konva.KonvaEventObject<PointerEvent>,
     partId: number
   ) => void;
-  canEdit: boolean;
+  canInteract: boolean;
   rectForSelection: {
     x: number;
     y: number;
@@ -128,7 +128,7 @@ export default function GameBoardCanvas({
   handlePartDragMove,
   handlePartDragEnd,
   handlePartContextMenu,
-  canEdit,
+  canInteract,
   rectForSelection,
 }: GameBoardCanvasProps): React.ReactElement {
   const sortedParts = useMemo(() => {
@@ -242,7 +242,7 @@ export default function GameBoardCanvas({
                 onDragMove={(e) => handlePartDragMove(e, part.id)}
                 onDragEnd={(e) => handlePartDragEnd(e, part.id)}
                 onContextMenu={(e) => handlePartContextMenu(e, part.id)}
-                canEdit={canEdit}
+                canInteract={canInteract}
               />
             );
           })}

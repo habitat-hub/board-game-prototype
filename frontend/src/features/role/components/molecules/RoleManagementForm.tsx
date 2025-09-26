@@ -1,5 +1,11 @@
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { FaEdit, FaEye, FaPlus, FaUserShield } from 'react-icons/fa';
+import {
+  FaEdit,
+  FaEye,
+  FaHandPaper,
+  FaPlus,
+  FaUserShield,
+} from 'react-icons/fa';
 import { HiOutlineQuestionMarkCircle } from 'react-icons/hi';
 
 import { ROLE_LABELS } from '@/constants/roles';
@@ -25,8 +31,8 @@ interface RoleManagementFormProps {
   filteredUsers: User[];
 
   // ロール選択
-  selectedRole: 'admin' | 'editor' | 'viewer';
-  onRoleChange: (role: 'admin' | 'editor' | 'viewer') => void;
+  selectedRole: RoleValue;
+  onRoleChange: (role: RoleValue) => void;
 
   // アクション
   onAddRole: () => void;
@@ -74,6 +80,15 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
           description: 'プロジェクト内のパーツやルームを編集できます',
           icon: <FaEdit className="h-4 w-4" />,
           iconColor: 'text-kibako-info',
+        },
+        {
+          value: 'player',
+          label: ROLE_LABELS.player,
+          summary: 'INSTANCE操作',
+          description:
+            'プレイルームでパーツの移動や手札操作などのインタラクションが可能です（新規作成や削除はできません）',
+          icon: <FaHandPaper className="h-4 w-4" />,
+          iconColor: 'text-kibako-success',
         },
         {
           value: 'viewer',

@@ -41,6 +41,45 @@ interface SocketData {
   username: string;
 }
 
+const UPDATE_PART_ERROR_MESSAGE = 'パーツの更新権限がありません';
+
+async function ensureCanWriteOrInteract({
+  userId,
+  prototypeId,
+  socket,
+}: {
+  userId: string;
+  prototypeId: string;
+  socket: Socket;
+}): Promise<boolean> {
+  const canWrite = await hasPermission(
+    userId,
+    RESOURCE_TYPES.PROTOTYPE,
+    PERMISSION_ACTIONS.WRITE,
+    prototypeId
+  );
+
+  if (canWrite) {
+    return true;
+  }
+
+  const canInteract = await hasPermission(
+    userId,
+    RESOURCE_TYPES.PROTOTYPE,
+    PERMISSION_ACTIONS.INTERACT,
+    prototypeId
+  );
+
+  if (canInteract) {
+    return true;
+  }
+
+  socket.emit(COMMON_SOCKET_EVENT.ERROR, {
+    message: UPDATE_PART_ERROR_MESSAGE,
+  });
+  return false;
+}
+
 /**
  * 指定されたパーツIDリストに対応するプロパティを画像データを含めて取得する
  * @param partIds - パーツIDの配列
@@ -232,16 +271,12 @@ function handleUpdateParts(socket: Socket, io: Server): void {
       const { prototypeId, userId } = socket.data as SocketData;
 
       try {
-        const hasAccess = await hasPermission(
+        const allowed = await ensureCanWriteOrInteract({
           userId,
-          RESOURCE_TYPES.PROTOTYPE,
-          PERMISSION_ACTIONS.WRITE,
-          prototypeId
-        );
-        if (!hasAccess) {
-          socket.emit(COMMON_SOCKET_EVENT.ERROR, {
-            message: 'パーツの更新権限がありません',
-          });
+          prototypeId,
+          socket,
+        });
+        if (!allowed) {
           return;
         }
 
@@ -481,16 +516,12 @@ function handleUpdatePart(socket: Socket, io: Server): void {
       let updatedPropertiesWithImages: PartPropertyModel[] | null = null;
 
       try {
-        const hasAccess = await hasPermission(
+        const allowed = await ensureCanWriteOrInteract({
           userId,
-          RESOURCE_TYPES.PROTOTYPE,
-          PERMISSION_ACTIONS.WRITE,
-          prototypeId
-        );
-        if (!hasAccess) {
-          socket.emit(COMMON_SOCKET_EVENT.ERROR, {
-            message: 'パーツの更新権限がありません',
-          });
+          prototypeId,
+          socket,
+        });
+        if (!allowed) {
           return;
         }
 
@@ -629,16 +660,12 @@ function handleChangeOrder(socket: Socket, io: Server): void {
       const { prototypeId, userId } = socket.data as SocketData;
 
       try {
-        const hasAccess = await hasPermission(
+        const allowed = await ensureCanWriteOrInteract({
           userId,
-          RESOURCE_TYPES.PROTOTYPE,
-          PERMISSION_ACTIONS.WRITE,
-          prototypeId
-        );
-        if (!hasAccess) {
-          socket.emit(COMMON_SOCKET_EVENT.ERROR, {
-            message: 'パーツの更新権限がありません',
-          });
+          prototypeId,
+          socket,
+        });
+        if (!allowed) {
           return;
         }
 
@@ -787,16 +814,12 @@ function handleShuffleDeck(socket: Socket, io: Server): void {
       const { prototypeId, userId } = socket.data as SocketData;
 
       try {
-        const hasAccess = await hasPermission(
+        const allowed = await ensureCanWriteOrInteract({
           userId,
-          RESOURCE_TYPES.PROTOTYPE,
-          PERMISSION_ACTIONS.WRITE,
-          prototypeId
-        );
-        if (!hasAccess) {
-          socket.emit(COMMON_SOCKET_EVENT.ERROR, {
-            message: 'パーツの更新権限がありません',
-          });
+          prototypeId,
+          socket,
+        });
+        if (!allowed) {
           return;
         }
 

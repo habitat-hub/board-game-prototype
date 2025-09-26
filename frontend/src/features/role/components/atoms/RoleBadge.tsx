@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaUserShield, FaEdit, FaEye } from 'react-icons/fa';
+import { FaUserShield, FaEdit, FaEye, FaHandPaper } from 'react-icons/fa';
 
 import { ROLE_LABELS, RoleType } from '@/constants/roles';
 
@@ -24,6 +24,13 @@ export const getRoleConfig = (role: string) => {
         bgColor: 'bg-kibako-info/10',
         textColor: 'text-kibako-info/80',
         label: ROLE_LABELS.editor,
+      };
+    case 'player':
+      return {
+        icon: <FaHandPaper className="h-3 w-3" />,
+        bgColor: 'bg-kibako-success/10',
+        textColor: 'text-kibako-success/80',
+        label: ROLE_LABELS.player,
       };
     case 'viewer':
       return {

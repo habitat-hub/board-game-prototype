@@ -83,7 +83,7 @@ const RoleSelect: React.FC<RoleSelectProps> = ({
     };
   }, [open, close, updatePosition]);
 
-  const roles: RoleValue[] = ['admin', 'editor', 'viewer'];
+  const roles: RoleValue[] = ['admin', 'editor', 'player', 'viewer'];
 
   const handleSelect = (role: RoleValue) => {
     onChange(role);
@@ -98,6 +98,8 @@ const RoleSelect: React.FC<RoleSelectProps> = ({
         return 'text-kibako-danger';
       case 'editor':
         return 'text-kibako-info';
+      case 'player':
+        return 'text-kibako-success';
       case 'viewer':
       default:
         return 'text-kibako-primary';
@@ -157,7 +159,9 @@ const RoleSelect: React.FC<RoleSelectProps> = ({
                   ? 'text-kibako-danger'
                   : role === 'editor'
                     ? 'text-kibako-info'
-                    : 'text-kibako-primary';
+                    : role === 'player'
+                      ? 'text-kibako-success'
+                      : 'text-kibako-primary';
               return (
                 <li
                   key={role}
