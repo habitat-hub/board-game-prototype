@@ -661,6 +661,12 @@ const TopPage: React.FC = () => {
             >
               利用規約
             </Link>
+            <Link
+              href="/privacy-policy"
+              className="text-amber-700 underline underline-offset-4 decoration-amber-400 hover:text-amber-900 hover:decoration-amber-600 transition-colors"
+            >
+              プライバシーポリシー
+            </Link>
           </div>
         </div>
       </motion.div>
