@@ -147,10 +147,19 @@ export default function GameBoard({
     [userRoles, currentUserId]
   );
   // ロール未取得/不明時は編集不可（デフォルト拒否）
-  const canEdit = useMemo(
+  const canWrite = useMemo(
     () => can(currentRole, PERMISSION_ACTIONS.WRITE),
     [currentRole]
   );
+
+  const canInteract = useMemo(() => {
+    if (canWrite) return true;
+    if (!currentRole) return false;
+    if (gameBoardMode !== GameBoardMode.PLAY) {
+      return false;
+    }
+    return can(currentRole, PERMISSION_ACTIONS.INTERACT);
+  }, [canWrite, currentRole, gameBoardMode]);
 
   // 自分のユーザー情報（色付けに使用）
   const selfUser = useMemo(() => {
@@ -208,10 +217,10 @@ export default function GameBoard({
   // ロール読み込み完了後、閲覧者（編集不可）の場合のみ選択モードを無効化
   useEffect(() => {
     if (!rolesReady) return;
-    if (!canEdit && isSelectionMode) {
+    if (!canInteract && isSelectionMode) {
       setSelectionMode(false, { persist: false });
     }
-  }, [rolesReady, canEdit, isSelectionMode, setSelectionMode]);
+  }, [rolesReady, canInteract, isSelectionMode, setSelectionMode]);
   // ドラッグ機能
   const { handlePartDragStart, handlePartDragMove, handlePartDragEnd } =
     usePartDragSystem({
@@ -219,7 +228,7 @@ export default function GameBoard({
       canvasSize,
       gameBoardMode,
       stageRef: stageRef as React.RefObject<Konva.Stage>,
-      canEdit,
+      canInteract,
     });
 
   const [images, setImages] = useState<Record<string, string>>({});
@@ -246,7 +255,7 @@ export default function GameBoard({
     partId: number
   ) => {
     // Viewerはクリック操作を無効化
-    if (!canEdit) {
+    if (!canInteract) {
       e.cancelBubble = true;
       return;
     }
@@ -268,7 +277,7 @@ export default function GameBoard({
 
   const handleBackgroundClick = () => {
     // Viewerは背景クリックも無効化（選択状態を変更しない）
-    if (!canEdit) return;
+    if (!canInteract) return;
     // 矩形選択中の場合は背景クリックを無効化
     if (isSelectionInProgress) {
       return;
@@ -429,14 +438,14 @@ export default function GameBoard({
 
   // 削除処理のキーボードショートカット
   useGameBoardShortcuts(
-    canEdit ? handleDeleteParts : () => {},
-    canEdit ? handleDuplicatePart : () => {},
-    canEdit ? gameBoardMode : GameBoardMode.PREVIEW
+    canWrite ? handleDeleteParts : () => {},
+    canWrite ? handleDuplicatePart : () => {},
+    canWrite ? gameBoardMode : GameBoardMode.PREVIEW
   );
 
   // スペースキー検出とモード切り替え（編集可能なユーザーのみ）
   useEffect(() => {
-    if (!canEdit) return;
+    if (!canInteract) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // スペースキー以外のイベント、またはスペースキー押下中の場合は無視
@@ -479,7 +488,7 @@ export default function GameBoard({
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, [
-    canEdit,
+    canInteract,
     spacePressing,
     isSelectionMode,
     needToReturnToSelectionMode,
@@ -564,7 +573,7 @@ export default function GameBoard({
     [handleStageClickFromHook, isSelectionInProgress]
   );
 
-  const effectiveSelectionMode = canEdit ? isSelectionMode : false;
+  const effectiveSelectionMode = canInteract ? isSelectionMode : false;
 
   // カーソルのスタイル
   const cursorStyle = useMemo(() => {
@@ -608,8 +617,8 @@ export default function GameBoard({
           handlePartDragStart={handlePartDragStart}
           handlePartDragMove={handlePartDragMove}
           handlePartDragEnd={handlePartDragEnd}
-          handlePartContextMenu={canEdit ? handlePartContextMenu : () => {}}
-          canEdit={canEdit}
+          handlePartContextMenu={canInteract ? handlePartContextMenu : () => {}}
+          canInteract={canInteract}
           rectForSelection={rectForSelection}
         />
 
@@ -633,7 +642,7 @@ export default function GameBoard({
           />
         )}
 
-        {canEdit && gameBoardMode === GameBoardMode.CREATE && (
+        {canWrite && gameBoardMode === GameBoardMode.CREATE && (
           <PartCreateMenu
             onAddPart={handleAddPart}
             camera={camera}
@@ -642,7 +651,7 @@ export default function GameBoard({
           />
         )}
 
-        {canEdit && (
+        {canWrite && (
           <PartPropertyMenu
             selectedPartIds={selectedPartIds}
             parts={parts}
@@ -655,22 +664,23 @@ export default function GameBoard({
         )}
 
         {/* プレイルーム時のサイドバー */}
-        {gameBoardMode === GameBoardMode.PLAY && (
+        {gameBoardMode === GameBoardMode.PLAY && canInteract && (
           <PlaySidebar
             parts={parts}
             onSelectPart={(partId) => {
-              if (!canEdit) return;
+              if (!canInteract) return;
               selectPart(partId);
             }}
             selectedPartId={
               selectedPartIds.length === 1 ? selectedPartIds[0] : null
             }
             userRoles={userRoles}
+            canInteract={canInteract}
           />
         )}
 
         <div className="fixed bottom-4 right-4 z-overlay flex items-center gap-4">
-          {canEdit && (
+          {canInteract && (
             <SelectionModeToggleButton
               isSelectionMode={isSelectionMode}
               onToggle={toggleMode}

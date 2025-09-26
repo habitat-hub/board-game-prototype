@@ -820,6 +820,9 @@
                                   "canWrite": {
                                     "type": "boolean"
                                   },
+                                  "canInteract": {
+                                    "type": "boolean"
+                                  },
                                   "canDelete": {
                                     "type": "boolean"
                                   },
@@ -830,6 +833,7 @@
                                 "required": [
                                   "canRead",
                                   "canWrite",
+                                  "canInteract",
                                   "canDelete",
                                   "canManage"
                                 ]

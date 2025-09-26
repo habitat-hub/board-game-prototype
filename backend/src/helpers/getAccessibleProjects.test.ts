@@ -13,6 +13,7 @@ vi.mock('../const', () => ({
   ROLE_TYPE: {
     ADMIN: 'admin',
     EDITOR: 'editor',
+    PLAYER: 'player',
     VIEWER: 'viewer',
   },
 }));

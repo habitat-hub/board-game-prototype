@@ -2,7 +2,7 @@ import UserRoleModel from '../models/UserRole';
 import RoleModel from '../models/Role';
 import PermissionModel from '../models/Permission';
 import PrototypeModel from '../models/Prototype';
-import { RESOURCE_TYPES } from '../const';
+import { PERMISSION_ACTIONS, RESOURCE_TYPES } from '../const';
 import { Transaction } from 'sequelize';
 
 /**
@@ -14,6 +14,18 @@ export async function hasPermission(
   action: string,
   resourceId?: string
 ): Promise<boolean> {
+  let prototype: PrototypeModel | null = null;
+  if (resource === RESOURCE_TYPES.PROTOTYPE && resourceId) {
+    prototype = await PrototypeModel.findByPk(resourceId);
+
+    if (
+      action === PERMISSION_ACTIONS.INTERACT &&
+      (!prototype || prototype.type !== 'INSTANCE')
+    ) {
+      return false;
+    }
+  }
+
   // リソース固有の権限をチェック
   const resourceSpecificRoles = await UserRoleModel.findAll({
     where: {
@@ -46,38 +58,35 @@ export async function hasPermission(
   }
 
   // プロトタイプの場合、プロジェクトの権限を継承
-  if (resource === RESOURCE_TYPES.PROTOTYPE && resourceId) {
-    const prototype = await PrototypeModel.findByPk(resourceId);
-    if (prototype) {
-      // プロジェクトの権限をチェック
-      const projectRoles = await UserRoleModel.findAll({
-        where: {
-          userId,
-          resourceId: prototype.projectId,
-        },
-        include: [
-          {
-            model: RoleModel,
-            as: 'Role',
-            include: [
-              {
-                model: PermissionModel,
-                as: 'permissions',
-                where: {
-                  resource: RESOURCE_TYPES.PROJECT,
-                  action,
-                },
-                required: true,
+  if (resource === RESOURCE_TYPES.PROTOTYPE && resourceId && prototype) {
+    // プロジェクトの権限をチェック
+    const projectRoles = await UserRoleModel.findAll({
+      where: {
+        userId,
+        resourceId: prototype.projectId,
+      },
+      include: [
+        {
+          model: RoleModel,
+          as: 'Role',
+          include: [
+            {
+              model: PermissionModel,
+              as: 'permissions',
+              where: {
+                resource: RESOURCE_TYPES.PROJECT,
+                action,
               },
-            ],
-            required: true,
-          },
-        ],
-      });
+              required: true,
+            },
+          ],
+          required: true,
+        },
+      ],
+    });
 
-      if (projectRoles.length > 0) {
-        return true;
-      }
+    if (projectRoles.length > 0) {
+      return true;
     }
   }
 

@@ -90,7 +90,12 @@ export const useRoleManagement = (projectId: string): UseRoleManagement => {
       const response = await getProjectRoles(projectId);
       // Normalize API payload (string role names) into RoleValue
       const toRoleValue = (name: string): RoleValue => {
-        if (name === 'admin' || name === 'editor' || name === 'viewer') {
+        if (
+          name === 'admin' ||
+          name === 'editor' ||
+          name === 'player' ||
+          name === 'viewer'
+        ) {
           return name as RoleValue;
         }
         // 想定外のロール名の場合はフォールバックしつつ警告を出す

@@ -16,6 +16,10 @@ const INITIAL_ROLES = [
     description: 'Editor - プロトタイプの作成・編集が可能',
   },
   {
+    name: ROLE_TYPE.PLAYER,
+    description: 'Player - INSTANCEルームでの操作が可能',
+  },
+  {
     name: ROLE_TYPE.VIEWER,
     description: 'Viewer - プロトタイプの閲覧のみ可能',
   },
@@ -34,6 +38,12 @@ const INITIAL_PERMISSIONS = [
     resource: RESOURCE_TYPES.PROJECT,
     action: PERMISSION_ACTIONS.WRITE,
     description: 'プロジェクトの編集',
+  },
+  {
+    name: 'interact_project',
+    resource: RESOURCE_TYPES.PROJECT,
+    action: PERMISSION_ACTIONS.INTERACT,
+    description: 'プロジェクト内のINSTANCEルームでの操作',
   },
   {
     name: 'delete_project',
@@ -61,6 +71,12 @@ const INITIAL_PERMISSIONS = [
     description: 'プロトタイプの編集',
   },
   {
+    name: 'interact_prototype',
+    resource: RESOURCE_TYPES.PROTOTYPE,
+    action: PERMISSION_ACTIONS.INTERACT,
+    description: 'プロトタイプのプレイ操作',
+  },
+  {
     name: 'delete_prototype',
     resource: RESOURCE_TYPES.PROTOTYPE,
     action: PERMISSION_ACTIONS.DELETE,
@@ -86,7 +102,12 @@ const INITIAL_PERMISSIONS = [
  */
 const ROLE_PERMISSION_MAPPING = {
   [ROLE_TYPE.ADMIN]: 'ALL', // 全権限
-  [ROLE_TYPE.EDITOR]: [PERMISSION_ACTIONS.READ, PERMISSION_ACTIONS.WRITE],
+  [ROLE_TYPE.EDITOR]: [
+    PERMISSION_ACTIONS.READ,
+    PERMISSION_ACTIONS.WRITE,
+    PERMISSION_ACTIONS.INTERACT,
+  ],
+  [ROLE_TYPE.PLAYER]: [PERMISSION_ACTIONS.READ, PERMISSION_ACTIONS.INTERACT],
   [ROLE_TYPE.VIEWER]: [PERMISSION_ACTIONS.READ],
 };
 

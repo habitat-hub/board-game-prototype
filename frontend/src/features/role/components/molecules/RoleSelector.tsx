@@ -1,11 +1,12 @@
 import React from 'react';
-import { FaUserShield, FaEdit, FaEye } from 'react-icons/fa';
+import { FaUserShield, FaEdit, FaEye, FaHandPaper } from 'react-icons/fa';
 
 import { ROLE_LABELS } from '@/constants/roles';
+import type { RoleValue } from '@/features/role/types';
 
 interface RoleSelectorProps {
-  selectedRole: 'admin' | 'editor' | 'viewer';
-  onRoleChange: (role: 'admin' | 'editor' | 'viewer') => void;
+  selectedRole: RoleValue;
+  onRoleChange: (role: RoleValue) => void;
   loading?: boolean;
 }
 
@@ -32,6 +33,16 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
       description: '編集権限',
       detailDescription:
         'プロジェクトの内容を編集できますが権限変更はできません',
+      disabled: false,
+    },
+    {
+      value: 'player',
+      name: ROLE_LABELS.player,
+      icon: <FaHandPaper className="h-6 w-6" />,
+      color: 'text-kibako-success',
+      description: 'INSTANCE操作',
+      detailDescription:
+        'プレイルームでのカード移動や手札管理などの操作が可能です',
       disabled: false,
     },
     {
@@ -67,9 +78,7 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
               name="role"
               value={role.value}
               checked={selectedRole === role.value}
-              onChange={(e) =>
-                onRoleChange(e.target.value as 'admin' | 'editor' | 'viewer')
-              }
+              onChange={(e) => onRoleChange(e.target.value as RoleValue)}
               disabled={loading || role.disabled}
               className="sr-only"
             />

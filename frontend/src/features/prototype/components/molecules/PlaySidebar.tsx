@@ -23,6 +23,7 @@ interface PlaySidebarProps {
     user: { id: string; username: string };
     roles: Array<{ name: string; description: string }>;
   }>;
+  canInteract: boolean;
 }
 
 export default function PlaySidebar({
@@ -30,6 +31,7 @@ export default function PlaySidebar({
   onSelectPart,
   selectedPartId,
   userRoles,
+  canInteract,
 }: PlaySidebarProps) {
   /**
    * プレイルームの手札選択・設定を行うサイドバー
@@ -154,6 +156,7 @@ export default function PlaySidebar({
                     : 'border-kibako-secondary/20 hover:border-kibako-secondary/30'
                 }`}
                 onClick={() => {
+                  if (!canInteract) return;
                   clearSelection();
                   setSelectedHandId(hand.id);
                   onSelectPart(hand.id);
@@ -216,8 +219,9 @@ export default function PlaySidebar({
                   size="sm"
                   variant="accent"
                   className="!px-3 !py-1 !text-xs"
+                  disabled={!canInteract}
                   onClick={() => {
-                    if (!user?.id) return;
+                    if (!user?.id || !canInteract) return;
 
                     dispatch({
                       type: 'UPDATE_PART',
@@ -234,7 +238,9 @@ export default function PlaySidebar({
                   size="sm"
                   variant="outline"
                   className="!px-3 !py-1 !text-xs"
+                  disabled={!canInteract}
                   onClick={() => {
+                    if (!canInteract) return;
                     dispatch({
                       type: 'UPDATE_PART',
                       payload: {

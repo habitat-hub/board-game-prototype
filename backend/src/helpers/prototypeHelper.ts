@@ -11,6 +11,7 @@ import { RESOURCE_TYPES, PERMISSION_ACTIONS, ROLE_TYPE } from '../const';
 
 type PermissionFlags = {
   canRead: boolean;
+  canInteract: boolean;
   canWrite: boolean;
   canDelete: boolean;
   canManage: boolean;
@@ -18,6 +19,7 @@ type PermissionFlags = {
 
 const DEFAULT_PERMISSIONS = (): PermissionFlags => ({
   canRead: true,
+  canInteract: false,
   canWrite: false,
   canDelete: false,
   canManage: false,
@@ -26,18 +28,28 @@ const DEFAULT_PERMISSIONS = (): PermissionFlags => ({
 const ROLE_PERMISSION_MAP: Record<string, PermissionFlags> = {
   [ROLE_TYPE.ADMIN]: {
     canRead: true,
+    canInteract: true,
     canWrite: true,
     canDelete: true,
     canManage: true,
   },
   [ROLE_TYPE.EDITOR]: {
     canRead: true,
+    canInteract: true,
     canWrite: true,
+    canDelete: false,
+    canManage: false,
+  },
+  [ROLE_TYPE.PLAYER]: {
+    canRead: true,
+    canInteract: true,
+    canWrite: false,
     canDelete: false,
     canManage: false,
   },
   [ROLE_TYPE.VIEWER]: {
     canRead: true,
+    canInteract: false,
     canWrite: false,
     canDelete: false,
     canManage: false,
@@ -50,6 +62,7 @@ function mergePermissionFlags(
 ): PermissionFlags {
   return {
     canRead: base.canRead || addition.canRead,
+    canInteract: base.canInteract || addition.canInteract,
     canWrite: base.canWrite || addition.canWrite,
     canDelete: base.canDelete || addition.canDelete,
     canManage: base.canManage || addition.canManage,

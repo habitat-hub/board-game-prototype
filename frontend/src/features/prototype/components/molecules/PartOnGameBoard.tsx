@@ -75,7 +75,7 @@ interface PartOnGameBoardProps {
     user: { id: string; username: string };
     roles: Array<{ name: string; description: string }>;
   }>;
-  canEdit: boolean;
+  canInteract: boolean;
 }
 
 /** ゲーム盤上のパーツ描画コンポーネント */
@@ -94,7 +94,7 @@ export default function PartOnGameBoard({
   selectedBy = [],
   selfUser,
   userRoles = [],
-  canEdit,
+  canInteract,
 }: PartOnGameBoardProps): React.ReactElement {
   const groupRef = useRef<Konva.Group>(null);
   const { isReversing, setIsReversing, reverseCard } = useCard(part);
@@ -129,7 +129,7 @@ export default function PartOnGameBoard({
   // 他ユーザーによるロック（自分が選択していないのに他人が選択中）
   const isLockedByOthers = selectedBy.length > 0 && !isActive;
   // ロック中は移動禁止
-  const isDraggable = !isLockedByOthers && canEdit;
+  const isDraggable = !isLockedByOthers && canInteract;
 
   // カーソル制御hooks
   const {
@@ -360,7 +360,7 @@ export default function PartOnGameBoard({
     const isInteractivePart = isCard || isDeck;
     if (!isInteractivePart) return;
     // Viewers (cannot edit) are not allowed to trigger double-click actions
-    if (!canEdit) return;
+    if (!canInteract) return;
 
     if (isDeck) {
       if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);

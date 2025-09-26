@@ -163,6 +163,7 @@ const ProjectList: React.FC = () => {
 
       const permissions = project.permissions ?? {
         canRead: true,
+        canInteract: false,
         canWrite: false,
         canDelete: false,
         canManage: false,
