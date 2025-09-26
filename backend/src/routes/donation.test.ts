@@ -33,11 +33,16 @@ import { app } from '../server';
 
 const { createCheckoutSessionMock } = stripeMocks;
 
-const DONATION_SUCCESS_URL = new URL(
+/** フロントエンドの寄付完了ページURL */
+const DONATION_SUCCESS_URL: string = new URL(
   '/donate/success',
   env.FRONTEND_URL
 ).toString();
-const DONATION_CANCEL_URL = new URL('/donate', env.FRONTEND_URL).toString();
+/** フロントエンドの寄付キャンセルページURL */
+const DONATION_CANCEL_URL: string = new URL(
+  '/donate',
+  env.FRONTEND_URL
+).toString();
 
 describe('donation routes', () => {
   beforeEach(() => {
