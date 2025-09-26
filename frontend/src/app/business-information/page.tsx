@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import React from 'react';
 
-import BussinessInformation from '@/features/information/conponents/template/BussinessInformation';
+import BusinessInformation from '@/features/information/conponents/template/BusinessInformation';
 
 // ページのメタデータ（タイトルや説明文など）を定義
 export const metadata: Metadata = {
@@ -14,8 +14,8 @@ export const metadata: Metadata = {
  * サービス情報ページを描画する。
  * @returns {JSX.Element} サービス情報コンテンツ。
  */
-const BussinessInformationPage: React.FC = () => {
-  return <BussinessInformation />;
+const BusinessInformationPage: React.FC = () => {
+  return <BusinessInformation />;
 };
 
-export default BussinessInformationPage;
+export default BusinessInformationPage;

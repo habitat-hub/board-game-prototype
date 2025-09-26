@@ -650,7 +650,7 @@ const TopPage: React.FC = () => {
           </a>
           <div className="mt-6 flex flex-col items-center gap-2 text-xs md:text-sm">
             <Link
-              href="/bussiness-information"
+              href="/business-information"
               className="text-amber-700 underline underline-offset-4 decoration-amber-400 hover:text-amber-900 hover:decoration-amber-600 transition-colors"
             >
               サービス情報 / 運営概要（特定商取引法に基づく表記 相当）
@@ -660,6 +660,12 @@ const TopPage: React.FC = () => {
               className="text-amber-700 underline underline-offset-4 decoration-amber-400 hover:text-amber-900 hover:decoration-amber-600 transition-colors"
             >
               利用規約
+            </Link>
+            <Link
+              href="/privacy-policy"
+              className="text-amber-700 underline underline-offset-4 decoration-amber-400 hover:text-amber-900 hover:decoration-amber-600 transition-colors"
+            >
+              プライバシーポリシー
             </Link>
           </div>
         </div>
