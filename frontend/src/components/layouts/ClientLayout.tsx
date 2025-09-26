@@ -10,9 +10,10 @@ import Loading from '@/components/organisms/Loading';
 import { useClientPathInfo } from '@/hooks/useClientPathInfo';
 import { useIsPC } from '@/hooks/useIsPC';
 
-const MOBILE_ACCESSIBLE_PATHS = new Set([
+// 非PCで閲覧可能な静的パス一覧
+const MOBILE_ACCESSIBLE_PATHS: ReadonlySet<string> = new Set<string>([
   '/',
-  '/bussiness-information',
+  '/business-information',
   '/privacy-policy',
   '/terms-of-service',
 ]);
