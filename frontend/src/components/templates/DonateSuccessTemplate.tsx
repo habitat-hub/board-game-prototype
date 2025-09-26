@@ -11,7 +11,7 @@ import KibakoLink from '@/components/atoms/KibakoLink';
 const DonateSuccessTemplate: React.FC = () => {
   return (
     <main className="relative mx-auto max-w-3xl px-4 pb-20 pt-24">
-      {/* Subtle layered decorative background (consistency with DonationTemplate) */}
+      {/* DonationTemplate と同じ装飾背景 */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-20">
         <div className="absolute inset-0 bg-gradient-to-b from-white via-white to-kibako-primary/5" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(0,0,0,0.04),transparent_60%)]" />
@@ -21,7 +21,7 @@ const DonateSuccessTemplate: React.FC = () => {
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-40 bg-gradient-to-b from-kibako-primary/15 via-transparent"
       />
 
-      {/* Hero */}
+      {/* ヒーローセクション */}
       <section className="mb-10 text-center">
         <div className="inline-flex items-center gap-2 rounded-full border border-kibako-primary/20 bg-white/70 px-4 py-1 text-xs font-medium text-kibako-primary backdrop-blur">
           <IoSparkles className="h-4 w-4" />
@@ -35,9 +35,9 @@ const DonateSuccessTemplate: React.FC = () => {
         </p>
       </section>
 
-      {/* Content card */}
+      {/* コンテンツカード */}
       <section className="relative rounded-3xl border border-black/5 bg-white/80 p-6 shadow-xl ring-1 ring-black/5 backdrop-blur-md sm:p-8">
-        {/* Gradient accent ring */}
+        {/* グラデーションのアクセントリング */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 rounded-3xl [mask:linear-gradient(white,transparent)]"
